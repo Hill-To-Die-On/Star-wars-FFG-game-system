@@ -45,7 +45,7 @@ const skills = (value) =>
     .filter(Boolean);
 export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
   const bundle = {
-    format: "starfall-library",
+    format: "star-wars-library",
     version: 1,
     documents: { Item: [], Actor: [], JournalEntry: [] },
     report: {

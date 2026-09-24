@@ -76,7 +76,7 @@ const searchText = (value) =>
 
 export function indexReferenceDatabase(database) {
   if (
-    database?.format !== "starfall-reference-database" ||
+    database?.format !== "star-wars-reference-database" ||
     database.version !== 1 ||
     !database.tables
   )

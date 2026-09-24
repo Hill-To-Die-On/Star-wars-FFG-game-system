@@ -80,9 +80,9 @@ export class ReferenceBrowser extends HandlebarsApplicationMixin(
   ApplicationV2,
 ) {
   static DEFAULT_OPTIONS = {
-    id: "starfall-reference-browser",
+    id: "star-wars-reference-browser",
     tag: "section",
-    classes: ["starfall", "sf-catalogue"],
+    classes: ["star-wars", "sf-catalogue"],
     window: { title: "Star Wars FFG · Reference catalogue", resizable: true },
     position: { width: 1120, height: 800 },
     actions: {
@@ -209,9 +209,9 @@ export class ReferenceBrowser extends HandlebarsApplicationMixin(
 }
 class OwnedBooks extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
-    id: "starfall-owned-books",
+    id: "star-wars-owned-books",
     tag: "form",
-    classes: ["starfall", "sf-book-picker"],
+    classes: ["star-wars", "sf-book-picker"],
     window: { title: "Star Wars FFG · Owned books", resizable: true },
     position: { width: 780, height: 740 },
     form: { handler: this.save, closeOnSubmit: true },

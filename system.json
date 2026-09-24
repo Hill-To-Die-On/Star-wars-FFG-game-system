@@ -2,7 +2,7 @@
   "id": "star-wars-ffg",
   "title": "Star Wars FFG",
   "description": "Unofficial, free Star Wars FFG system for Edge of the Empire, Age of Rebellion, and Force and Destiny. Original sheets, narrative dice and a searchable book-reference database; rulebooks required.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "compatibility": {
     "minimum": "14",
     "verified": "14.368",
@@ -15,7 +15,7 @@
     }
   ],
   "esmodules": ["src/main.mjs"],
-  "styles": ["styles/starfall.css"],
+  "styles": ["styles/star-wars.css"],
   "languages": [
     {
       "lang": "en",
@@ -64,7 +64,7 @@
   "secondaryTokenAttribute": "strain",
   "url": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system",
   "manifest": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json",
-  "download": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.2.0/star-wars-ffg.zip",
+  "download": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.2.1/star-wars-ffg.zip",
   "license": "LICENSE",
   "readme": "README.md"
 }

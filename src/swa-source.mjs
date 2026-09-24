@@ -169,7 +169,7 @@ export async function convertSwaSource(
     ? `https://swa.stoogoff.com/ (${input.siteVersion})`
     : "SW Adversaries local export";
   const bundle = {
-    format: "starfall-library",
+    format: "star-wars-library",
     version: 1,
     documents: { Actor: [], JournalEntry: [] },
     report: {

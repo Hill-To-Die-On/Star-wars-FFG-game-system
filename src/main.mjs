@@ -7,10 +7,10 @@ import {
   ItemData,
 } from "./models.mjs";
 import { GroupSheet, refreshGroupSheets } from "./group-sheet.mjs";
-import { StarfallActor, StarfallItem } from "./documents.mjs";
+import { StarWarsActor, StarWarsItem } from "./documents.mjs";
 import {
-  StarfallActorSheet,
-  StarfallItemSheet,
+  StarWarsActorSheet,
+  StarWarsItemSheet,
   importDialog,
   importSwaDialog,
   campaignDialog,
@@ -22,7 +22,7 @@ import { importLibrary, refreshLibraryLabels } from "./library.mjs";
 import { convertSwa } from "./swa-import.mjs";
 import { convertSwaSource } from "./swa-source.mjs";
 import { DICE } from "./dice/core.mjs";
-import { StarfallCombat } from "./combat.mjs";
+import { StarWarsCombat } from "./combat.mjs";
 import {
   refreshGMNotes,
   searchGMSourceNotes,
@@ -162,9 +162,9 @@ async function seedDestiny() {
   });
 }
 Hooks.once("init", () => {
-  CONFIG.Actor.documentClass = StarfallActor;
-  CONFIG.Item.documentClass = StarfallItem;
-  CONFIG.Combat.documentClass = StarfallCombat;
+  CONFIG.Actor.documentClass = StarWarsActor;
+  CONFIG.Item.documentClass = StarWarsItem;
+  CONFIG.Combat.documentClass = StarWarsCombat;
   CONFIG.Actor.dataModels = Object.fromEntries(
     ["character", "minion", "rival", "nemesis"].map((type) => [
       type,
@@ -178,7 +178,7 @@ Hooks.once("init", () => {
   );
   foundry.documents.collections.Actors.registerSheet(
     SYSTEM_ID,
-    StarfallActorSheet,
+    StarWarsActorSheet,
     {
       types: ["character", "minion", "rival", "nemesis", "vehicle"],
       makeDefault: true,
@@ -187,7 +187,7 @@ Hooks.once("init", () => {
   );
   foundry.documents.collections.Items.registerSheet(
     SYSTEM_ID,
-    StarfallItemSheet,
+    StarWarsItemSheet,
     {
       types: ITEM_TYPES,
       makeDefault: true,
@@ -345,7 +345,6 @@ Hooks.once("ready", () => {
   refreshGMNotes().catch((error) =>
     ui.notifications.error(`GM source notes: ${error.message}`),
   );
-  Hooks.callAll("starfallReady", game.system.api);
   Hooks.callAll("starWarsFFGReady", game.system.api);
   console.info("Star Wars FFG | Narrative toolkit ready");
 });

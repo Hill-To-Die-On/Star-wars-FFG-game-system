@@ -9,7 +9,7 @@ import { indexReferenceDatabase } from "../src/reference-data.mjs";
 export function publishDatabase(sql) {
   const tables = parseSqlDump(sql);
   const database = {
-    format: "starfall-reference-database",
+    format: "star-wars-reference-database",
     version: 1,
     provenance: {
       source: "Creator-supplied reference database",

@@ -2,7 +2,7 @@
 
 ## Automated evidence
 
-The 32-test suite covers dice distributions and persisted term compatibility, cancellation, upgrades, Force resources, minion thresholds, damage, initiative, XP paths, SQL parsing, complete database coverage, formatted prices, owned-book filtering, Group context, private source conversion, authenticated encryption and player access guards.
+The 36-test suite covers dice distributions and persisted term compatibility, library upgrades, cancellation, upgrades, Force resources, minion thresholds, damage, initiative, XP paths, SQL parsing, complete database coverage, formatted prices, owned-book filtering, Group context, private source conversion, authenticated encryption and player access guards.
 
 `npm run check` checks syntax, Handlebars templates, manifest paths, version consistency, and all 64 dice image sizes. `npm run build` uses a release allow-list.
 
@@ -32,7 +32,9 @@ The 32-test suite covers dice distributions and persisted term compatibility, ca
 
 Never treat a unit test or preview as proof of a completed adventure playtest.
 
-The Node suite has 32 passing tests. `tests/foundry-smoke.mjs` is an opt-in real-browser test requiring an authenticated, isolated `starfall-validation` world. Set `FOUNDRY_URL`, `FOUNDRY_STORAGE_STATE`, and optionally `CHROMIUM_PATH`; it creates one synthetic actor. Never point it at a campaign world.
+Version 0.2.1 was also checked as an upgrade of the existing isolated world: renamed character, vehicle, Group and item sheets loaded their stylesheet; all seven older narrative die types and an existing chat roll restored; native dice remained intact; all four existing compendiums were found without duplicate creation; 2,309 encrypted GM notes remained accessible with the original browser key; and the catalogue returned all 6,662 rows. No browser errors were recorded.
+
+The Node suite has 36 passing tests. `tests/foundry-smoke.mjs` is an opt-in real-browser test requiring an authenticated, isolated `star-wars-validation` world. Set `FOUNDRY_URL`, `FOUNDRY_STORAGE_STATE`, and optionally `CHROMIUM_PATH`; `FOUNDRY_TEST_WORLD` can select an existing dedicated world whose ID ends in `-validation`. It creates one synthetic actor. Never point it at a campaign world.
 
 The separate DoR adapter work passed its focused adapter/native-check tests, TypeScript checks, lint and full build. Its full suite recorded 894 passing suites and four failures; those same four failures were reproduced with the registry change removed. The failures are in compendium source selection, an AI policy contract, authored travel, and a module file-size contract. The patch is not a released DoR update.
 

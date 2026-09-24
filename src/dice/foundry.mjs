@@ -7,13 +7,14 @@ import {
 } from "./core.mjs";
 import { SYSTEM_ID, SYSTEM_PATH } from "../config.mjs";
 import { escapeHTML } from "../mechanics.mjs";
+import { registerDiceCompatibility } from "./compatibility.mjs";
 export function registerDice() {
   for (const [key, config] of Object.entries(DICE)) {
     const cls = class extends foundry.dice.terms.Die {
       static DENOMINATION = config.term;
       constructor(data = {}) {
         super({ ...data, faces: config.faces.length });
-        this.options.starfallDie = key;
+        this.options.starWarsDie = key;
       }
       get total() {
         return this.results.reduce(
@@ -31,12 +32,12 @@ export function registerDice() {
       }
     };
     Object.defineProperty(cls, "name", {
-      // Serialized v0.1 rolls refer to these names; display branding is separate.
-      value: `Starfall${config.label}Die`,
+      value: `StarWars${config.label}Die`,
     });
     CONFIG.Dice.terms[config.term] = cls;
     CONFIG.Dice.termTypes[cls.name] = cls;
   }
+  registerDiceCompatibility(foundry.dice.terms.RollTerm);
 }
 export async function registerDiceSoNice(dice3d) {
   const { DiceSystem } = await import("/modules/dice-so-nice/api.js");
@@ -84,7 +85,7 @@ export function resultFromRoll(roll) {
       term.results
         .filter((r) => r.active !== false)
         .map((result) => ({
-          die: term.options.starfallDie,
+          die: term.options.starWarsDie,
           result: result.result,
         })),
     ),
@@ -95,13 +96,13 @@ export function rollCard(label, outcome, roll) {
     .flatMap((term) =>
       term.results.map(
         (r) =>
-          `<span style="background:${DICE[term.options.starfallDie].color}" title="${DICE[term.options.starfallDie].label}: ${faceLabel(DICE[term.options.starfallDie].faces[r.result - 1])}">${term.getResultLabel(r)}</span>`,
+          `<span style="background:${DICE[term.options.starWarsDie].color}" title="${DICE[term.options.starWarsDie].label}: ${faceLabel(DICE[term.options.starWarsDie].faces[r.result - 1])}">${term.getResultLabel(r)}</span>`,
       ),
     )
     .join("");
   const forceOnly =
     roll.dice.length > 0 &&
-    roll.dice.every((d) => d.options.starfallDie === "force");
+    roll.dice.every((d) => d.options.starWarsDie === "force");
   return `<article class="sf-chat"><div class="sf-eyebrow">STAR WARS FFG / NARRATIVE CHECK</div><h3>${escapeHTML(label)}</h3><div class="sf-dice-tray">${dice}</div><strong>${forceOnly ? "Force resources" : outcome.passed ? `${outcome.success} net success` : outcome.failure ? `${outcome.failure} net failure` : "No net success"}</strong><p>${[outcome.advantage && `${outcome.advantage} advantage`, outcome.threat && `${outcome.threat} threat`, outcome.triumph && `${outcome.triumph} triumph`, outcome.despair && `${outcome.despair} despair`, outcome.light && `${outcome.light} light`, outcome.dark && `${outcome.dark} dark`].filter(Boolean).join(" · ") || "No additional symbols"}</p><details><summary>Pool</summary>${escapeHTML(roll.formula)}</details></article>`;
 }
 export async function rollPool(
@@ -111,7 +112,7 @@ export async function rollPool(
   const normalized = normalizePool(pool);
   const roll = await new foundry.dice.Roll(poolFormula(normalized)).evaluate();
   const outcome = resultFromRoll(roll);
-  roll.options.starfall = { pool: normalized, outcome };
+  roll.options.starWars = { pool: normalized, outcome };
   if (chatMessage) {
     const data = {
       speaker: ChatMessage.getSpeaker({ actor }),

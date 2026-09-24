@@ -17,6 +17,7 @@ import {
 } from "./rules.mjs";
 import { escapeHTML, minionState } from "./mechanics.mjs";
 import { importWithProgress } from "./library.mjs";
+import { getLibraryPack } from "./library-packs.mjs";
 import { convertSwaSource } from "./swa-source.mjs";
 import { openGMSourceNotes } from "./gm-notes.mjs";
 import { creationPlan } from "./creation.mjs";
@@ -59,12 +60,12 @@ export async function checkDialog(actor, key, item) {
   }
   return result;
 }
-export class StarfallActorSheet extends HandlebarsApplicationMixin(
+export class StarWarsActorSheet extends HandlebarsApplicationMixin(
   foundry.applications.sheets.ActorSheetV2,
 ) {
   static DEFAULT_OPTIONS = {
     tag: "form",
-    classes: ["starfall"],
+    classes: ["star-wars"],
     position: { width: 1000, height: 820 },
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
@@ -412,12 +413,12 @@ export class StarfallActorSheet extends HandlebarsApplicationMixin(
     }
   }
 }
-export class StarfallItemSheet extends HandlebarsApplicationMixin(
+export class StarWarsItemSheet extends HandlebarsApplicationMixin(
   foundry.applications.sheets.ItemSheetV2,
 ) {
   static DEFAULT_OPTIONS = {
     tag: "form",
-    classes: ["starfall"],
+    classes: ["star-wars"],
     position: { width: 650, height: 750 },
     form: { submitOnChange: true, closeOnSubmit: false },
   };
@@ -560,7 +561,7 @@ async function createCharacterDialog(actor) {
     throw new Error(
       "Starting choices have already been applied. Continue with XP advancement.",
     );
-  const pack = game.packs.get("world.starfall-item");
+  const pack = getLibraryPack("Item");
   if (!pack) throw new Error("Import the local reference library first.");
   const campaign = game.settings.get(SYSTEM_ID, "campaign");
   await pack.getIndex({ fields: ["type", "system.source.book"] });

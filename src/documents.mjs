@@ -8,7 +8,7 @@ import {
   characteristicPurchase,
   specializationCost,
 } from "./advancement.mjs";
-export class StarfallActor extends Actor {
+export class StarWarsActor extends Actor {
   assertOwner() {
     if (!this.isOwner) throw new Error("Owner permission is required.");
   }
@@ -264,7 +264,7 @@ export class StarfallActor extends Actor {
     return { cost, itemId: copy._id };
   }
 }
-export class StarfallItem extends Item {
+export class StarWarsItem extends Item {
   async roll(options = {}) {
     if (this.type !== "weapon" || !this.actor || this.actor.isVehicle)
       throw new Error(

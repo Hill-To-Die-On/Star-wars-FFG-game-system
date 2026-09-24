@@ -1,11 +1,14 @@
 /** Opt-in integration test. Requires a running, licensed, isolated Foundry world.
  * FOUNDRY_URL, FOUNDRY_STORAGE_STATE and optional CHROMIUM_PATH configure Playwright.
- * Creates one synthetic test actor in the world named starfall-validation only.
+ * Creates one synthetic actor in an explicitly selected isolated validation world.
  */
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 const url = process.env.FOUNDRY_URL,
-  storageState = process.env.FOUNDRY_STORAGE_STATE;
+  storageState = process.env.FOUNDRY_STORAGE_STATE,
+  testWorld = process.env.FOUNDRY_TEST_WORLD ?? "star-wars-validation";
+if (!testWorld.endsWith("-validation"))
+  throw new Error("The smoke test requires a dedicated validation world.");
 if (!url || !storageState)
   throw new Error(
     "Set FOUNDRY_URL and FOUNDRY_STORAGE_STATE for an authenticated isolated world.",
@@ -33,7 +36,7 @@ try {
   await page.waitForFunction(() => globalThis.game?.ready);
   assert.equal(
     await page.evaluate(() => game.world.id),
-    "starfall-validation",
+    testWorld,
     "Never run this fixture in a campaign world",
   );
   const id = await page.evaluate(async () => {

@@ -294,7 +294,7 @@ export async function convertSwa(input) {
     });
   }
   return {
-    format: "starfall-library",
+    format: "star-wars-library",
     version: 1,
     documents: { Actor: documents },
     report,

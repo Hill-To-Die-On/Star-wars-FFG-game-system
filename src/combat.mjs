@@ -1,6 +1,6 @@
 import { SYSTEM_ID } from "./config.mjs";
 import { initiativeScore } from "./mechanics.mjs";
-export class StarfallCombat extends Combat {
+export class StarWarsCombat extends Combat {
   async rollInitiative(ids, { skill = "vigilance", updateTurn = true } = {}) {
     const updates = [];
     for (const id of typeof ids === "string" ? [ids] : ids) {

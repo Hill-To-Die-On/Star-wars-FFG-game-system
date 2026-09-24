@@ -6,7 +6,7 @@ import {
   sealSource,
   openSource,
 } from "./source-crypto.mjs";
-export const GM_NOTES_PACK = "world.starfall-gm-notes";
+import { getLibraryPack } from "./library-packs.mjs";
 const notes = new Map();
 let refreshQueue = Promise.resolve();
 const worldId = () => game.world.id;
@@ -96,7 +96,7 @@ export function refreshGMNotes() {
   const work = async () => {
     notes.clear();
     if (!game.user.isGM) return;
-    const pack = game.packs.get(GM_NOTES_PACK);
+    const pack = getLibraryPack("GMNotes");
     if (!pack) return;
     const docs = await pack.getDocuments();
     if (!docs.length) return;
@@ -210,7 +210,7 @@ export async function gmSourceLibrary() {
 }
 export async function gmSourceKeyDialog() {
   assertGM();
-  const pack = game.packs.get(GM_NOTES_PACK);
+  const pack = getLibraryPack("GMNotes");
   return foundry.applications.api.DialogV2.wait({
     window: { title: "GM source key · Backup and restore" },
     content:

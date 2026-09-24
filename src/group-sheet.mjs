@@ -6,7 +6,7 @@ export class GroupSheet extends HandlebarsApplicationMixin(
 ) {
   static DEFAULT_OPTIONS = {
     tag: "form",
-    classes: ["starfall", "sf-group"],
+    classes: ["star-wars", "sf-group"],
     position: { width: 1020, height: 840 },
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {

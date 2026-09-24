@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-09-24
+
+- Complete the Star Wars rename across code classes, stylesheet names, CSS namespaces, import formats, application IDs and new compendium names.
+- Restore older saved narrative dice using their serialized type markers and reuse existing reference and encrypted GM libraries without changing document UUIDs.
+- Accept existing version-one private library exports and retain the `starWarsFFGReady` integration hook.
+
 ## 0.2.0 — 2026-09-24
 
 - Use **Star Wars FFG** throughout the visible system, replacing the initial working title. Existing world and compendium identifiers remain compatible.
