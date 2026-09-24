@@ -12,7 +12,7 @@ Network. Its full notice is retained at `assets/vendor/starwarsffg/LICENSE.txt`.
 The symbol font has no additional embedded license notice.
 
 `scripts/generate-dice.py` renders these glyphs into the transparent PNG face
-textures under `assets/dice/`. Face composition follows Starfall's independently
+textures under `assets/dice/`. Face composition follows Star Wars FFG's independently
 implemented mechanical face table. No other system implementation is imported.
 
 Star Wars and associated terminology remain the property of their respective
@@ -25,10 +25,10 @@ The following unmodified font files come from the same pinned community
 repository commit above. Their own font licences apply independently of that
 repository's MIT licence. They are served locally; no font service is contacted.
 
-| Font | Upstream path | Copyright | Licence retained here |
-|---|---|---|---|
-| Roboto Regular | `fonts/Roboto-Regular.ttf` | Font data copyright Google 2011 | Apache 2.0, `assets/vendor/roboto/LICENSE.txt` |
-| Signika Regular | `fonts/Signika-Regular.ttf` | Copyright (c) 2011 Anna Giedrys (http://ancymonic.com), Reserved Font Names "Signika" | SIL OFL 1.1, `assets/vendor/signika/OFL.txt` |
+| Font            | Upstream path               | Copyright                                                                             | Licence retained here                          |
+| --------------- | --------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Roboto Regular  | `fonts/Roboto-Regular.ttf`  | Font data copyright Google 2011                                                       | Apache 2.0, `assets/vendor/roboto/LICENSE.txt` |
+| Signika Regular | `fonts/Signika-Regular.ttf` | Copyright (c) 2011 Anna Giedrys (http://ancymonic.com), Reserved Font Names "Signika" | SIL OFL 1.1, `assets/vendor/signika/OFL.txt`   |
 
 Roboto is used for body text and controls; Signika for headings and the wordmark.
 The licence texts are retained from the font projects:

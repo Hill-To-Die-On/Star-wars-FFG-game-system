@@ -30,7 +30,10 @@ export function registerDice() {
         return `<img class="sf-die-face" src="${SYSTEM_PATH}/assets/dice/${key}-${result.result}.png" alt="${faceLabel(config.faces[result.result - 1])}">`;
       }
     };
-    Object.defineProperty(cls, "name", { value: `Starfall${config.label}Die` });
+    Object.defineProperty(cls, "name", {
+      // Serialized v0.1 rolls refer to these names; display branding is separate.
+      value: `Starfall${config.label}Die`,
+    });
     CONFIG.Dice.terms[config.term] = cls;
     CONFIG.Dice.termTypes[cls.name] = cls;
   }
@@ -40,7 +43,7 @@ export async function registerDiceSoNice(dice3d) {
   dice3d.addSystem(
     new DiceSystem(
       SYSTEM_ID,
-      "Starfall narrative symbols",
+      "Star Wars FFG narrative symbols",
       "preferred",
       "Hill To Die On",
     ),
@@ -50,8 +53,8 @@ export async function registerDiceSoNice(dice3d) {
     dice3d.addColorset(
       {
         name: colorset,
-        description: `Starfall ${die.label}`,
-        category: "Starfall",
+        description: `Star Wars FFG ${die.label}`,
+        category: "Star Wars FFG",
         foreground: die.ink,
         background: die.color,
         outline: "none",
@@ -99,7 +102,7 @@ export function rollCard(label, outcome, roll) {
   const forceOnly =
     roll.dice.length > 0 &&
     roll.dice.every((d) => d.options.starfallDie === "force");
-  return `<article class="sf-chat"><div class="sf-eyebrow">STARFALL / NARRATIVE CHECK</div><h3>${escapeHTML(label)}</h3><div class="sf-dice-tray">${dice}</div><strong>${forceOnly ? "Force resources" : outcome.passed ? `${outcome.success} net success` : outcome.failure ? `${outcome.failure} net failure` : "No net success"}</strong><p>${[outcome.advantage && `${outcome.advantage} advantage`, outcome.threat && `${outcome.threat} threat`, outcome.triumph && `${outcome.triumph} triumph`, outcome.despair && `${outcome.despair} despair`, outcome.light && `${outcome.light} light`, outcome.dark && `${outcome.dark} dark`].filter(Boolean).join(" · ") || "No additional symbols"}</p><details><summary>Pool</summary>${escapeHTML(roll.formula)}</details></article>`;
+  return `<article class="sf-chat"><div class="sf-eyebrow">STAR WARS FFG / NARRATIVE CHECK</div><h3>${escapeHTML(label)}</h3><div class="sf-dice-tray">${dice}</div><strong>${forceOnly ? "Force resources" : outcome.passed ? `${outcome.success} net success` : outcome.failure ? `${outcome.failure} net failure` : "No net success"}</strong><p>${[outcome.advantage && `${outcome.advantage} advantage`, outcome.threat && `${outcome.threat} threat`, outcome.triumph && `${outcome.triumph} triumph`, outcome.despair && `${outcome.despair} despair`, outcome.light && `${outcome.light} light`, outcome.dark && `${outcome.dark} dark`].filter(Boolean).join(" · ") || "No additional symbols"}</p><details><summary>Pool</summary>${escapeHTML(roll.formula)}</details></article>`;
 }
 export async function rollPool(
   pool,

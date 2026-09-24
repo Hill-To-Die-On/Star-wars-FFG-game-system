@@ -1,0 +1,29 @@
+<div class="sf-shell">
+  <header class="sf-header sf-catalogue-header">
+    <span class="sf-eyebrow">STAR WARS FFG / REFERENCE LIBRARY</span>
+    <h1>Find it. Bring the book.</h1>
+    <p>{{databaseTotal}} database entries · {{bookSummary}}</p>
+    {{#if isGM}}<div class="sf-catalogue-actions"><button type="button" data-action="ownedBooks">Owned books</button><button type="button" data-action="populate">Populate compendiums</button></div>{{/if}}
+  </header>
+  <div class="sf-catalogue-filters">
+    <label>Search names, notes and statistics<input type="search" name="query" value="{{query}}" placeholder="Blaster, pilot, planet…"></label>
+    <label>Category<select name="category"><option value="">All categories</option>{{#each categories}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></label>
+    <label>Book<select name="book"><option value="">All allowed books</option>{{#each books}}<option value="{{name}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
+    <button type="button" data-action="search">Search</button>
+  </div>
+  <div class="sf-catalogue-layout">
+    <section class="sf-catalogue-results" aria-label="Search results">
+      <div class="sf-catalogue-count" aria-live="polite">{{total}} results · page {{pageNumber}} of {{pages}}</div>
+      <table><thead><tr><th>Name / category</th><th>Book</th><th>Page</th></tr></thead><tbody>
+      {{#each records}}<tr class="{{#if selected}}selected{{/if}}"><td><button type="button" data-action="select" data-key="{{key}}">{{name}}</button><small>{{categoryLabel}}</small></td><td>{{#if source.book}}{{source.book}}{{else}}No book reference{{/if}}</td><td>{{source.page}}</td></tr>{{else}}<tr><td colspan="3">No matching references. Check the search and the GM's owned-book selection.</td></tr>{{/each}}
+      </tbody></table>
+      <nav class="sf-catalogue-pagination" aria-label="Result pages"><button type="button" data-action="previous" {{#if previousDisabled}}disabled{{/if}}>Previous</button><button type="button" data-action="next" {{#if nextDisabled}}disabled{{/if}}>Next</button></nav>
+    </section>
+    <aside class="sf-catalogue-detail" aria-label="Reference details">
+      {{#if detail}}<span class="sf-eyebrow">{{detail.categoryLabel}}</span><h2>{{detail.name}}</h2>
+      <p class="sf-reference-source">{{#if detail.source.book}}{{detail.source.book}}{{else}}No book reference recorded{{/if}}{{#if detail.source.page}} · p. {{detail.source.page}}{{/if}}</p>
+      <dl>{{#each detail.fields}}<dt>{{label}}</dt><dd>{{#if value}}{{value}}{{else}}—{{/if}}</dd>{{/each}}</dl>
+      {{else}}<h2>A reference at the table</h2><p>Select a result to see its statistics, notes and book page. The catalogue retains the creator's database fields; blank values remain unknown.</p>{{/if}}
+    </aside>
+  </div>
+</div>

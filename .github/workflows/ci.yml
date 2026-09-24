@@ -19,8 +19,8 @@ jobs:
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
-          name: starfall
+          name: star-wars-ffg
           path: |
-            dist/starfall.zip
+            dist/star-wars-ffg.zip
             dist/system.json
             dist/contents.json

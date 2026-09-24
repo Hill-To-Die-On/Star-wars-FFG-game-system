@@ -34,7 +34,7 @@ export class StarfallActor extends Actor {
   async rollSkill(key, options = {}) {
     this.assertOwner();
     key = skillKey(key);
-    if (!key || this.isVehicle)
+    if (!key || this.isVehicle || this.type === "group")
       throw new Error("Choose a character's native skill.");
     const characteristic =
       this.system.skills[key].characteristic || SKILLS[key].characteristic;
@@ -51,6 +51,8 @@ export class StarfallActor extends Actor {
   }
   async rollForce(options = {}) {
     this.assertOwner();
+    if (this.type === "group")
+      throw new Error("Roll Force dice from a character sheet.");
     const force = Math.max(
       0,
       (this.system.forceRating ?? 0) - (this.system.committedForce ?? 0),
@@ -72,6 +74,10 @@ export class StarfallActor extends Actor {
     } = {},
   ) {
     this.assertOwner();
+    if (this.type === "group")
+      throw new Error(
+        "A group record is not a combatant and cannot take damage.",
+      );
     if (this.system.incomplete?.length)
       throw new Error("Verify the missing statistics before applying damage.");
     if (scale !== (this.isVehicle ? "vehicle" : "personal"))

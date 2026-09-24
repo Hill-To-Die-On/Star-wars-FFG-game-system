@@ -1,6 +1,6 @@
 {
-  "name": "starfall-narrative-toolkit",
-  "version": "0.1.0",
+  "name": "star-wars-ffg-system",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "An independent Foundry VTT system for the three FFG Star Wars roleplaying lines.",
@@ -12,7 +12,9 @@
     "test": "node --test tests/*.test.mjs",
     "check": "node scripts/check.mjs",
     "build": "node scripts/build.mjs",
-    "import:database": "node scripts/import-database.mjs"
+    "import:database": "node scripts/import-database.mjs",
+    "publish:database": "node scripts/publish-database.mjs",
+    "import:swa": "node scripts/fetch-swa.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

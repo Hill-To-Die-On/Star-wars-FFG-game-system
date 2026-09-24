@@ -1,22 +1,36 @@
 {
   "id": "star-wars-ffg",
-  "title": "Starfall: Narrative Toolkit",
-  "description": "Independent, free narrative-dice tooling compatible with Edge of the Empire, Age of Rebellion, and Force and Destiny. Original interface with familiar dice symbols; rulebooks required.",
-  "version": "0.1.0",
-  "compatibility": { "minimum": "14", "verified": "14.368", "maximum": "14" },
+  "title": "Star Wars FFG",
+  "description": "Unofficial, free Star Wars FFG system for Edge of the Empire, Age of Rebellion, and Force and Destiny. Original sheets, narrative dice and a searchable book-reference database; rulebooks required.",
+  "version": "0.2.0",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14.368",
+    "maximum": "14"
+  },
   "authors": [
-    { "name": "Hill To Die On", "url": "https://github.com/Hill-To-Die-On" }
+    {
+      "name": "Hill To Die On",
+      "url": "https://github.com/Hill-To-Die-On"
+    }
   ],
   "esmodules": ["src/main.mjs"],
   "styles": ["styles/starfall.css"],
-  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
   "documentTypes": {
     "Actor": {
       "character": {},
       "minion": {},
       "rival": {},
       "nemesis": {},
-      "vehicle": {}
+      "vehicle": {},
+      "group": {}
     },
     "Item": {
       "weapon": {},
@@ -36,16 +50,21 @@
       {
         "id": "dice-so-nice",
         "type": "module",
-        "compatibility": { "minimum": "6.3.1" }
+        "compatibility": {
+          "minimum": "6.3.1"
+        }
       }
     ]
   },
-  "grid": { "distance": 1, "units": "m" },
+  "grid": {
+    "distance": 1,
+    "units": "m"
+  },
   "primaryTokenAttribute": "wounds",
   "secondaryTokenAttribute": "strain",
   "url": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system",
   "manifest": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json",
-  "download": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.1.0/starfall.zip",
+  "download": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.2.0/star-wars-ffg.zip",
   "license": "LICENSE",
   "readme": "README.md"
 }

@@ -95,7 +95,7 @@ test("SWA invalid and duplicate records fail before any import writes", async ()
     [base(), base()],
     { ...base(), type: "Vehicle" },
     { ...base(), name: "<script>bad</script>" },
-    { ...base(), skills: { Brawl: 9 } },
+    { ...base(), skills: { Brawl: 11 } },
     { ...base(), derived: { soak: -1, wounds: 2 } },
   ])
     await assert.rejects(convertSwa(input));

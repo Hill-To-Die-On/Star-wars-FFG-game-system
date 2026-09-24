@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — 2026-09-24
+
+- Use **Star Wars FFG** throughout the visible system, replacing the initial working title. Existing world and compendium identifiers remain compatible.
+- Publish the complete creator-authorized reference database: 6,662 rows, 44 tables and 45 book titles, including creator notes and source pages.
+- Add a searchable reference catalogue, shared owned-book filtering and native compendium population; retain formatted credit prices and flag missing prices.
+- Add Group sheets with Base of Operations, linked member records, story scores, resources, possessions, contacts and shared Destiny.
+- Expand private SW Adversaries intake to six site collections, resolve separate weapon references and retain full source knowledge in a GM-only compendium for DoR.
+- Encrypt GM source prose before persistence, with a browser-held key, key backup/restore and a private source search menu. Direct document retrieval exposes ciphertext rather than source text.
+- Preserve NPC skill values above player advancement caps and alternative Lightsaber characteristics; flag incomplete weapons without discarding the NPC.
+
 ## 0.1.0 — 2026-09-24
 
 - Initial independent Foundry 14 system, original three-theme character and vehicle sheets.

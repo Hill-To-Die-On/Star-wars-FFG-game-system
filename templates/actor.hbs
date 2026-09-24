@@ -1,7 +1,7 @@
 <div class="sf-shell" data-theme="{{system.theme}}">
   <header class="sf-header">
     <div class="sf-wordmark">
-<span class="sf-orbit" aria-hidden="true">✦</span> STARFALL <small>NARRATIVE TOOLKIT</small>
+<span class="sf-orbit" aria-hidden="true">✦</span> STAR WARS FFG <small>NARRATIVE TOOLKIT</small>
 </div>
     <label class="sf-theme-select">Sheet theme<select name="system.theme">{{selectOptions themes selected=system.theme}}</select>
 </label>
@@ -161,13 +161,14 @@
 <input type="checkbox" name="system.skills.{{key}}.career" {{checked career}} aria-label="{{label}} career skill">
 {{#if ../isMinion}}<input type="checkbox" name="system.skills.{{key}}.group" {{checked group}} aria-label="{{label}} minion group skill">{{/if}}
 </label>
-<input type="number" name="system.skills.{{key}}.rank" min="0" max="5" value="{{rank}}" aria-label="{{label}} rank">
+<input type="number" name="system.skills.{{key}}.rank" min="0" max="{{../skillCap}}" value="{{rank}}" aria-label="{{label}} rank">
 <button type="button" data-action="buySkill" data-skill="{{key}}">+ XP</button>
 </div>{{/each}}
 </section>{{/if}}
     {{#if inventory}}<section class="sf-panel">
 <div class="sf-section-heading">
 <h2>Equipment & abilities</h2>
+{{#if hasGMNotes}}<button type="button" data-action="gmNotes">GM source notes</button>{{/if}}
 <button type="button" data-action="addItem">Add item</button>
 </div>
 <p class="sf-hint">Drag entries from the local compendiums onto this sheet. Open an item for statistics and its book reference.</p>

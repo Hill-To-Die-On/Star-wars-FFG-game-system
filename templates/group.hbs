@@ -1,0 +1,43 @@
+<div class="sf-shell" data-theme="{{system.theme}}">
+  <header class="sf-header">
+    <div class="sf-wordmark"><span class="sf-orbit" aria-hidden="true">✦</span> STAR WARS FFG <small>GROUP RECORD</small></div>
+    <label class="sf-theme-select">Sheet theme<select name="system.theme">{{selectOptions themes selected=system.theme}}</select></label>
+    <div class="sf-identity"><div><span class="sf-eyebrow">{{theme.line}} / group</span>
+      <input class="sf-name" name="name" value="{{actor.name}}" aria-label="Group name"><p>{{theme.tagline}}</p></div></div>
+  </header>
+  <main class="sf-content">
+    <div class="sf-group-status">
+      <div><span class="sf-eyebrow">Shared Destiny</span><strong>{{destiny.light}} light · {{destiny.dark}} dark</strong><button type="button" data-action="destiny">Dice & Destiny</button></div>
+      {{#if campaign.obligation}}<div><span class="sf-eyebrow">Group obligation</span><strong>{{obligationTotal}}</strong></div>{{/if}}
+      {{#if campaign.duty}}<div><span class="sf-eyebrow">Group duty</span><strong>{{dutyTotal}}</strong></div>{{/if}}
+      <label>Shared credits<input type="number" min="0" name="system.credits" value="{{system.credits}}"></label>
+    </div>
+    <section class="sf-panel"><h2>Base of Operations</h2>
+      <div class="sf-two-col"><label>Name<input name="system.base.name" value="{{system.base.name}}"></label><label>Location<input name="system.base.location" value="{{system.base.location}}"></label></div>
+      <label>Description<textarea name="system.base.description" rows="3">{{system.base.description}}</textarea></label>
+    </section>
+    <section class="sf-panel"><div class="sf-section-heading"><h2>Group members</h2>
+      {{#if editable}}<button type="button" data-action="syncMembers">Sync linked characters</button><button type="button" data-action="addMember">Add member</button>{{/if}}</div>
+      <p class="sf-hint">Link a character and sync to copy their current story scores and motivation. Changes here stay in the group record.</p>
+      {{#each members}}<fieldset class="sf-group-member" data-member="{{id}}"><legend>{{characterName}}</legend>
+        <div class="sf-form-grid">
+          <label>Linked character<select name="system.members.{{id}}.actorId"><option value="">Manual record</option>{{#each characters}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
+          <label>Player<input name="system.members.{{id}}.playerName" value="{{playerName}}"></label>
+          <label>Character<input name="system.members.{{id}}.characterName" value="{{characterName}}"></label>
+        </div>
+        {{#if ../campaign.obligation}}<div class="sf-form-grid"><label>Obligation value<input type="number" min="0" max="100" name="system.members.{{id}}.obligation" value="{{obligation}}"></label>
+          <label>Obligation type<input name="system.members.{{id}}.obligationType" value="{{obligationType}}"></label><label>Description<input name="system.members.{{id}}.description" value="{{description}}"></label></div>{{/if}}
+        {{#if ../campaign.duty}}<div class="sf-two-col"><label>Duty value<input type="number" min="0" max="100" name="system.members.{{id}}.duty" value="{{duty}}"></label><label>Duty type<input name="system.members.{{id}}.dutyType" value="{{dutyType}}"></label></div>{{/if}}
+        {{#if ../campaign.morality}}<label>Morality<input type="number" min="0" max="100" name="system.members.{{id}}.morality" value="{{morality}}"></label>{{/if}}
+        <label>Motivations<textarea rows="2" name="system.members.{{id}}.motivation">{{motivation}}</textarea></label>
+        <div class="sf-button-row">{{#if linked}}<button type="button" data-action="openMember" data-member="{{id}}">Open character</button>{{/if}}
+          {{#if ../editable}}<button type="button" data-action="removeMember" data-member="{{id}}">Remove member</button>{{/if}}</div>
+      </fieldset>{{else}}<p>No members recorded yet.</p>{{/each}}
+    </section>
+    <div class="sf-two-col"><section class="sf-panel"><h2>Group resources</h2><textarea name="system.resources" aria-label="Group resources" rows="6">{{system.resources}}</textarea></section>
+      <section class="sf-panel"><h2>Group possessions</h2><textarea name="system.possessions" aria-label="Group possessions" rows="6">{{system.possessions}}</textarea></section></div>
+    <section class="sf-panel"><h2>Group contacts</h2><textarea name="system.contacts" aria-label="Group contacts" rows="5">{{system.contacts}}</textarea></section>
+    <section class="sf-panel"><h2>Group notes</h2><textarea name="system.notes" aria-label="Group notes" rows="4">{{system.notes}}</textarea></section>
+  </main>
+  <footer class="sf-footer"><span>HILL TO DIE ON</span><span>Unofficial fan system · Keep the rulebooks at the table</span></footer>
+</div>

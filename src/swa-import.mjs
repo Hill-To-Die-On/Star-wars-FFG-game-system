@@ -14,6 +14,21 @@ const BOOKS = {
 };
 const isObject = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
+function swaSkill(label) {
+  const lightsaber =
+    /^Lightsaber\s*[:(]\s*(Brawn|Agility|Intellect|Cunning|Willpower|Presence)\)?$/i.exec(
+      label,
+    );
+  if (lightsaber)
+    return { key: "lightsaber", characteristic: lightsaber[1].toLowerCase() };
+  const aliases = {
+    "pilot: planetary": "pilotingPlanetary",
+    "pilot: space": "pilotingSpace",
+    negotiate: "negotiation",
+  };
+  const key = skillKey(label) ?? aliases[String(label).trim().toLowerCase()];
+  return { key, characteristic: SKILLS[key]?.characteristic };
+}
 const nameOf = (value) => {
   if (
     typeof value !== "string" ||
@@ -55,20 +70,22 @@ function referenceItems(entries, type, source) {
   if (entries === undefined) return [];
   if (!Array.isArray(entries) || entries.length > 100)
     throw new Error(`Invalid ${type} list.`);
-  return entries.map((entry) => {
-    const name = nameOf(typeof entry === "string" ? entry : entry?.name);
-    const match = type === "talent" ? /^(.*?) (\d+)$/.exec(name) : null;
-    return {
-      name: match ? match[1] : name,
-      type,
-      system: {
-        source,
-        ...(match
-          ? { rank: integer(match[2], "talent rank", [], 100), ranked: true }
-          : {}),
-      },
-    };
-  });
+  return entries
+    .filter((entry) => !(typeof entry === "string" && !entry.trim()))
+    .map((entry) => {
+      const name = nameOf(typeof entry === "string" ? entry : entry?.name);
+      const match = type === "talent" ? /^(.*?) (\d+)$/.exec(name) : null;
+      return {
+        name: match ? match[1] : name,
+        type,
+        system: {
+          source,
+          ...(match
+            ? { rank: integer(match[2], "talent rank", [], 100), ranked: true }
+            : {}),
+        },
+      };
+    });
 }
 function weaponItem(entry, source) {
   const name = nameOf(typeof entry === "string" ? entry : entry?.name);
@@ -85,13 +102,18 @@ function weaponItem(entry, source) {
       },
     };
   const missing = [];
-  const skill = skillKey(entry.skill);
+  const skill = swaSkill(String(entry.skill)).key;
   if (!skill) missing.push("skill");
   const damage =
     typeof entry.damage === "number" ? String(entry.damage) : entry.damage;
   if (typeof damage !== "string" || !/^(?:\d{1,5}|[+]\d{1,2})$/.test(damage))
     missing.push("damage");
-  const critical = integer(entry.critical, "critical", missing, 10);
+  let critical = 0;
+  try {
+    critical = integer(entry.critical, "critical", missing, 10);
+  } catch {
+    missing.push("critical");
+  }
   const range = String(entry.range ?? "").toLowerCase();
   if (!RANGES.includes(range)) missing.push("range");
   const qualities = referenceItems(entry.qualities, "reference", source)
@@ -180,15 +202,15 @@ export async function convertSwa(input) {
     for (const [label, rank] of groupSkills
       ? record.skills.map((label) => [label, 0])
       : Object.entries(record.skills)) {
-      const key = skillKey(nameOf(label));
+      const { key, characteristic } = swaSkill(nameOf(label));
       if (!key) {
         incomplete.push(`Unknown skill: ${label}`);
         continue;
       }
       skills[key] = {
-        rank: integer(rank, `skills.${key}`, incomplete, 5),
+        rank: integer(rank, `skills.${key}`, incomplete, 10),
         group: groupSkills,
-        characteristic: SKILLS[key].characteristic,
+        characteristic,
       };
     }
     const defence = record.derived.defence ?? [0, 0];

@@ -66,7 +66,7 @@ try {
       system: { career: "Test career", tree },
     };
     const actor = await Actor.create({
-      name: "Starfall integration fixture",
+      name: "Star Wars FFG integration fixture",
       type: "character",
       system: {
         career: "Test career",

@@ -1,5 +1,12 @@
 import { SYSTEM_ID, SYSTEM_PATH, ITEM_TYPES } from "./config.mjs";
-import { CharacterData, VehicleData, ItemData } from "./models.mjs";
+import {
+  CharacterData,
+  AdversaryData,
+  VehicleData,
+  GroupData,
+  ItemData,
+} from "./models.mjs";
+import { GroupSheet, refreshGroupSheets } from "./group-sheet.mjs";
 import { StarfallActor, StarfallItem } from "./documents.mjs";
 import {
   StarfallActorSheet,
@@ -11,10 +18,37 @@ import {
 import { registerDice, registerDiceSoNice, rollPool } from "./dice/foundry.mjs";
 import { DEFAULT_CAMPAIGN } from "./rules.mjs";
 import { directorAdapter, actorContext } from "./director-adapter.mjs";
-import { importLibrary } from "./library.mjs";
+import { importLibrary, refreshLibraryLabels } from "./library.mjs";
 import { convertSwa } from "./swa-import.mjs";
+import { convertSwaSource } from "./swa-source.mjs";
 import { DICE } from "./dice/core.mjs";
 import { StarfallCombat } from "./combat.mjs";
+import {
+  refreshGMNotes,
+  searchGMSourceNotes,
+  gmSourceKeyDialog,
+  gmSourceLibrary,
+} from "./gm-notes.mjs";
+import {
+  openReferenceBrowser,
+  openOwnedBooks,
+  refreshReferenceBrowsers,
+  searchReferences,
+  getReference,
+  importPublishedLibrary,
+} from "./reference-browser.mjs";
+class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    openReferenceBrowser();
+    return this;
+  }
+}
+class OwnedBooksMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    openOwnedBooks();
+    return this;
+  }
+}
 class LibraryMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     importDialog();
@@ -39,11 +73,23 @@ class ConsoleMenu extends foundry.applications.api.ApplicationV2 {
     return this;
   }
 }
+class GMSourceKeyMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    gmSourceKeyDialog().catch((error) => ui.notifications.error(error.message));
+    return this;
+  }
+}
+class GMSourceLibraryMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    gmSourceLibrary().catch((error) => ui.notifications.error(error.message));
+    return this;
+  }
+}
 export async function openConsole() {
   const { DialogV2 } = foundry.applications.api;
   const destiny = game.settings.get(SYSTEM_ID, "destiny");
   await DialogV2.wait({
-    window: { title: "Starfall · Session console" },
+    window: { title: "Star Wars FFG · Session console" },
     position: { width: 540 },
     content: `<div class="sf-dialog"><p>Shared Destiny: <strong>${destiny.light} light · ${destiny.dark} dark</strong></p><div class="sf-form-grid">${Object.entries(
       DICE,
@@ -122,10 +168,11 @@ Hooks.once("init", () => {
   CONFIG.Actor.dataModels = Object.fromEntries(
     ["character", "minion", "rival", "nemesis"].map((type) => [
       type,
-      CharacterData,
+      type === "character" ? CharacterData : AdversaryData,
     ]),
   );
   CONFIG.Actor.dataModels.vehicle = VehicleData;
+  CONFIG.Actor.dataModels.group = GroupData;
   CONFIG.Item.dataModels = Object.fromEntries(
     ITEM_TYPES.map((type) => [type, ItemData]),
   );
@@ -135,26 +182,62 @@ Hooks.once("init", () => {
     {
       types: ["character", "minion", "rival", "nemesis", "vehicle"],
       makeDefault: true,
-      label: "Starfall sheet",
+      label: "Star Wars FFG sheet",
     },
   );
   foundry.documents.collections.Items.registerSheet(
     SYSTEM_ID,
     StarfallItemSheet,
-    { types: ITEM_TYPES, makeDefault: true, label: "Starfall reference sheet" },
+    {
+      types: ITEM_TYPES,
+      makeDefault: true,
+      label: "Star Wars FFG reference sheet",
+    },
   );
+  foundry.documents.collections.Actors.registerSheet(SYSTEM_ID, GroupSheet, {
+    types: ["group"],
+    makeDefault: true,
+    label: "Star Wars FFG group sheet",
+  });
   registerDice();
   game.settings.register(SYSTEM_ID, "campaign", {
     scope: "world",
     config: false,
     type: Object,
     default: DEFAULT_CAMPAIGN,
+    onChange: () => {
+      refreshReferenceBrowsers();
+      refreshGroupSheets();
+    },
   });
   game.settings.register(SYSTEM_ID, "destiny", {
     scope: "world",
     config: false,
     type: Object,
     default: { light: 0, dark: 0 },
+    onChange: refreshGroupSheets,
+  });
+  game.settings.register(SYSTEM_ID, "gmSourceKeys", {
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {},
+  });
+  game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
+    name: "GM source key",
+    label: "Backup or restore key",
+    hint: "Keep a private backup to unlock encrypted source notes on another GM browser.",
+    icon: "fas fa-key",
+    type: GMSourceKeyMenu,
+    restricted: true,
+  });
+  game.settings.registerMenu(SYSTEM_ID, "gmSourceLibraryMenu", {
+    name: "GM source library",
+    label: "Search private sources",
+    hint: "Search imported descriptions, abilities and rules in this GM browser.",
+    icon: "fas fa-book-open",
+    type: GMSourceLibraryMenu,
+    restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "campaignMenu", {
     name: "Campaign rulebooks",
@@ -164,10 +247,26 @@ Hooks.once("init", () => {
     type: CampaignMenu,
     restricted: true,
   });
+  game.settings.registerMenu(SYSTEM_ID, "referenceMenu", {
+    name: "Reference catalogue",
+    label: "Search database",
+    hint: "Find names, statistics, notes and book pages in the bundled database.",
+    icon: "fas fa-magnifying-glass",
+    type: ReferenceMenu,
+    restricted: false,
+  });
+  game.settings.registerMenu(SYSTEM_ID, "ownedBooksMenu", {
+    name: "Owned books",
+    label: "Choose available books",
+    hint: "Apply one reference filter for the GM and players.",
+    icon: "fas fa-book-open",
+    type: OwnedBooksMenu,
+    restricted: true,
+  });
   game.settings.registerMenu(SYSTEM_ID, "libraryMenu", {
     name: "Private library",
     label: "Import database",
-    hint: "Populate world compendiums from a local Starfall library JSON.",
+    hint: "Populate world compendiums from a local Star Wars FFG library JSON.",
     icon: "fas fa-file-import",
     type: LibraryMenu,
     restricted: true,
@@ -198,23 +297,31 @@ Hooks.once("init", () => {
     importDialog,
     importSwaDialog,
     convertSwa,
+    convertSwaSource,
+    openReferenceBrowser,
+    openOwnedBooks,
+    searchReferences,
+    getReference,
+    importPublishedLibrary,
+    searchGMSourceNotes,
   });
 });
 Hooks.once("diceSoNiceReady", (dice3d) =>
   registerDiceSoNice(dice3d).catch((e) =>
-    ui.notifications.error(`Starfall dice: ${e.message}`),
+    ui.notifications.error(`Star Wars FFG dice: ${e.message}`),
   ),
 );
 Hooks.on("preCreateActor", (actor, data) => {
   const vehicle = data.type === "vehicle";
+  const group = data.type === "group";
   actor.updateSource({
     img:
       data.img ??
       `${SYSTEM_PATH}/assets/${vehicle ? "vehicle" : "character"}.svg`,
     prototypeToken: {
-      actorLink: data.type === "character",
-      bar1: { attribute: vehicle ? "hullTrauma" : "wounds" },
-      bar2: { attribute: vehicle ? "systemStrain" : "strain" },
+      actorLink: group || data.type === "character",
+      bar1: { attribute: group ? null : vehicle ? "hullTrauma" : "wounds" },
+      bar2: { attribute: group ? null : vehicle ? "systemStrain" : "strain" },
     },
   });
 });
@@ -223,11 +330,22 @@ Hooks.on("renderActorDirectory", (_app, html) => {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "sf-launcher";
-  button.textContent = "Starfall · Dice & Destiny";
+  button.textContent = "Star Wars FFG · Dice & Destiny";
   button.addEventListener("click", openConsole);
   html.querySelector(".directory-footer")?.append(button);
+  const references = document.createElement("button");
+  references.type = "button";
+  references.textContent = "Star Wars FFG · Reference catalogue";
+  references.addEventListener("click", openReferenceBrowser);
+  html.querySelector(".directory-footer")?.append(references);
 });
 Hooks.once("ready", () => {
+  refreshLibraryLabels();
+  ui.compendium.render();
+  refreshGMNotes().catch((error) =>
+    ui.notifications.error(`GM source notes: ${error.message}`),
+  );
   Hooks.callAll("starfallReady", game.system.api);
-  console.info("Starfall | Narrative toolkit ready");
+  Hooks.callAll("starWarsFFGReady", game.system.api);
+  console.info("Star Wars FFG | Narrative toolkit ready");
 });

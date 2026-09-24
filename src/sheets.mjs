@@ -16,8 +16,9 @@ import {
   bookAllowed,
 } from "./rules.mjs";
 import { escapeHTML, minionState } from "./mechanics.mjs";
-import { importLibrary } from "./library.mjs";
-import { convertSwa } from "./swa-import.mjs";
+import { importWithProgress } from "./library.mjs";
+import { convertSwaSource } from "./swa-source.mjs";
+import { openGMSourceNotes } from "./gm-notes.mjs";
 import { creationPlan } from "./creation.mjs";
 const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 const notifyError = (error) => ui.notifications.error(error.message);
@@ -79,12 +80,15 @@ export class StarfallActorSheet extends HandlebarsApplicationMixin(
       damage: this.damage,
       createCharacter: this.createCharacter,
       verifySource: this.verifySource,
+      gmNotes: this.gmNotes,
     },
   };
   static PARTS = { sheet: { template: `${SYSTEM_PATH}/templates/actor.hbs` } };
   activeTab = "overview";
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
+    context.hasGMNotes =
+      game.user.isGM && !!this.actor.getFlag(SYSTEM_ID, "swa")?.notesId;
     const actor = this.actor,
       s = actor.system;
     const campaign = game.settings.get(SYSTEM_ID, "campaign");
@@ -179,6 +183,7 @@ export class StarfallActorSheet extends HandlebarsApplicationMixin(
       editable: this.isEditable,
       isVehicle: actor.isVehicle,
       isMinion: actor.type === "minion",
+      skillCap: actor.type === "character" ? 5 : 10,
       minions:
         actor.type === "minion"
           ? minionState(s.groupSize, s.wounds.value, Math.max(1, s.wounds.max))
@@ -283,6 +288,9 @@ export class StarfallActorSheet extends HandlebarsApplicationMixin(
   static tab(_event, target) {
     this.activeTab = target.dataset.tab;
     this.render();
+  }
+  static gmNotes() {
+    openGMSourceNotes(this.actor).catch((error) => notifyError(error));
   }
   static async skill(_event, target) {
     try {
@@ -449,10 +457,7 @@ export async function importDialog() {
       rejectClose: false,
     });
     if (!file) return;
-    const report = await importLibrary(
-      JSON.parse(await file.text()),
-      (type, done, total) => ui.notifications.info(`${type}: ${done}/${total}`),
-    );
+    const report = await importWithProgress(JSON.parse(await file.text()));
     ui.notifications.info(
       `Library ready: ${Object.entries(report)
         .map(([key, v]) => `${key} ${v.created} new, ${v.preserved} preserved`)
@@ -465,24 +470,37 @@ export async function importDialog() {
 export async function importSwaDialog() {
   try {
     if (!game.user.isGM) throw new Error("Only the GM can import adversaries.");
-    const file = await DialogV2.prompt({
+    const selected = await DialogV2.prompt({
       window: { title: "Import SW Adversaries" },
       content:
-        '<p>Select an SW Adversaries JSON file. Statistics and name references become native actors in this world. Descriptions and images are omitted. Existing actors are preserved.</p><p>On swa.stoogoff.com, copy chosen adversaries to Mine, then export the custom collection.</p><input type="file" name="adversaries" accept=".json">',
+        '<p>Select an SW Adversaries export or the full source bundle prepared by scripts/fetch-swa.mjs. Existing actors are preserved.</p><label><input type="checkbox" name="privateNotes" checked>Keep descriptions, behaviour and rule explanations in GM-only source notes for Director of Realms</label><input type="file" name="adversaries" accept=".json">',
       ok: {
         label: "Review import",
-        callback: (_event, button) => button.form.elements.adversaries.files[0],
+        callback: (_event, button) => ({
+          file: button.form.elements.adversaries.files[0],
+          privateNotes: button.form.elements.privateNotes.checked,
+        }),
       },
       rejectClose: false,
     });
+    const file = selected?.file;
     if (!file) return;
     if (file.size > 10 * 1024 * 1024)
       throw new Error("Choose a JSON file smaller than 10 MB.");
-    const bundle = await convertSwa(JSON.parse(await file.text()));
+    const bundle = await convertSwaSource(JSON.parse(await file.text()), {
+      includePrivateNotes: selected.privateNotes,
+    });
     const report = bundle.report;
     const proceed = await DialogV2.confirm({
       window: { title: "Review adversary import" },
-      content: `<p>${report.records} adversaries · ${report.incompleteActors} with missing statistics · ${report.weaponReferences} unresolved weapon references.</p><p>Named weapons without statistics remain reference items. Replace them from the private equipment library. Talent and ability effects still require the source books.</p><ul>${report.review
+      content: `<p>${report.records} source adversaries · ${bundle.documents.Actor.length} native actors including ${report.vehicles} vehicles · ${report.gmNotes} private GM notes.</p><p>${report.resolvedWeapons} weapon references resolved; ${report.weaponReferences} still require statistics. ${report.rejected.length} records need review before they can become native actors; their source notes are retained when enabled.</p><p>Talent and ability descriptions inform the GM; their mechanical effects still require adjudication.</p><ul>${[
+        ...report.review,
+        ...report.rejected.map((row) => ({
+          name: row.name,
+          missing: [row.reason],
+          weaponReferences: 0,
+        })),
+      ]
         .slice(0, 20)
         .map(
           (row) =>
@@ -494,9 +512,9 @@ export async function importSwaDialog() {
       rejectClose: false,
     });
     if (!proceed) return;
-    const result = await importLibrary(bundle);
+    const result = await importWithProgress(bundle);
     ui.notifications.info(
-      `Adversaries ready: ${result.Actor.created} new, ${result.Actor.preserved} preserved.`,
+      `Adversaries ready: ${result.Actor?.created ?? 0} new, ${result.Actor?.preserved ?? 0} preserved; ${result.GMNotes?.created ?? 0} new private notes.`,
     );
   } catch (error) {
     notifyError(error);
@@ -515,7 +533,7 @@ export async function campaignDialog() {
       )
       .join(
         "",
-      )}<hr>${["obligation", "duty", "morality", "beginnerMode"].map((key) => `<label><input type="checkbox" name="${key}" ${c[key] ? "checked" : ""}>${key === "beginnerMode" ? "Use beginner adventure teaching rules" : key.charAt(0).toUpperCase() + key.slice(1)}</label>`).join("")}<label>Allowed source book titles (one per line; blank allows all)<textarea name="books">${escapeHTML(c.books.join("\n"))}</textarea></label></div>`,
+      )}<hr>${["obligation", "duty", "morality", "beginnerMode"].map((key) => `<label><input type="checkbox" name="${key}" ${c[key] ? "checked" : ""}>${key === "beginnerMode" ? "Use beginner adventure teaching rules" : key.charAt(0).toUpperCase() + key.slice(1)}</label>`).join("")}<p>Use the Owned books menu to manage the shared reference filter.</p></div>`,
     ok: {
       label: "Save campaign",
       callback: (_event, button) =>
@@ -528,15 +546,12 @@ export async function campaignDialog() {
       SYSTEM_ID,
       "campaign",
       validateCampaign({
+        ...c,
         lines: Object.keys(RULE_LINES).filter((key) => data[key]),
         obligation: !!data.obligation,
         duty: !!data.duty,
         morality: !!data.morality,
         beginnerMode: !!data.beginnerMode,
-        books: data.books
-          .split("\n")
-          .map((v) => v.trim())
-          .filter(Boolean),
       }),
     );
 }

@@ -27,6 +27,8 @@ export const DEFAULT_CAMPAIGN = {
   duty: true,
   morality: true,
   books: [],
+  bookMode: "all",
+  includeUnreferenced: false,
   beginnerMode: false,
 };
 export function validateCampaign(value) {
@@ -41,7 +43,16 @@ export function validateCampaign(value) {
     obligation: !!value.obligation,
     duty: !!value.duty,
     morality: !!value.morality,
-    books: [...new Set((value.books ?? []).map(String))],
+    books: [
+      ...new Set(
+        (value.books ?? [])
+          .map(String)
+          .map((book) => book.trim())
+          .filter(Boolean),
+      ),
+    ],
+    bookMode: bookFilterMode(value),
+    includeUnreferenced: value.includeUnreferenced === true,
     beginnerMode: !!value.beginnerMode,
   };
 }
@@ -59,9 +70,26 @@ export function campaignGuidance(campaign) {
     c.beginnerMode
       ? "Beginner mode: follow the active adventure's staged rules. Do not assume the beginner folio is the full core specialization tree; transition explicitly to the core rules. Only introduce Obligation, Duty, Morality, talents or other core subsystems when the active adventure or GM calls for them; enabling a line does not insert those rules into its beginner tutorial."
       : "Core mode: beginner encounters can be used, but their teaching shortcuts do not replace core character creation or advancement.",
-    `Book filter: ${c.books.length ? c.books.join("; ") : "All locally imported references"}.`,
+    `Book filter: ${c.bookMode === "all" ? "All reference books" : c.books.length ? c.books.join("; ") : "No books selected"}. ${c.bookMode === "owned" ? `Entries without a book reference are ${c.includeUnreferenced ? "included" : "excluded"}.` : ""}`,
   ].join("\n");
 }
 export function bookAllowed(book, campaign) {
-  return !campaign.books?.length || campaign.books.includes(book);
+  if (bookFilterMode(campaign) === "all") return true;
+  if (!String(book ?? "").trim()) return campaign.includeUnreferenced === true;
+  return (campaign.books ?? []).some(
+    (title) => normalizeBookTitle(title) === normalizeBookTitle(book),
+  );
+}
+export function bookFilterMode(campaign = {}) {
+  if (["all", "owned"].includes(campaign.bookMode)) return campaign.bookMode;
+  // Existing worlds used a non-empty title list as their filter.
+  return campaign.books?.length ? "owned" : "all";
+}
+export function normalizeBookTitle(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replaceAll("&", "and")
+    .replaceAll("stongholds", "strongholds")
+    .replaceAll("seperatists", "separatists")
+    .replace(/[^a-z0-9]/g, "");
 }

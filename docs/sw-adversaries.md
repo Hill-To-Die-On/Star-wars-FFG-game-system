@@ -1,55 +1,39 @@
 # SW Adversaries connection
 
-Starfall imports local JSON from [SW Adversaries](https://swa.stoogoff.com/).
-This is a one-way file import, not a live API or synchronised account connection.
-It produces native minion, rival and nemesis actors for the world compendium.
+Star Wars FFG imports source material from [SW Adversaries](https://swa.stoogoff.com/) into a private Foundry world. The importer creates native NPC and vehicle statistics, resolves weapons from the separate catalogue, and retains the full source records and related explanations for the GM. It is a one-way import, not account synchronisation.
 
-## At the table
+## Import the site collections
 
-1. On SW Adversaries, open an adversary and use **Copy** to save a custom version
-   in **Mine**. Repeat for the desired encounter. Its export contains the custom
-   collection, not every adversary on the website.
-2. Export that collection to `swa-data.json`.
-3. In Foundry, choose **Configure Settings → Starfall → SW Adversaries → Import
-   adversaries**, select the JSON file, review the counts and import it.
-4. Drag the resulting actor from the world actor compendium into the Actors
-   directory or onto a scene. For a minion group, set its group size on the sheet.
+With Node 24 or later, run from this checkout:
 
-Existing compendium entries are preserved by stable source ID. Re-importing does
-not overwrite changes. This importer also accepts the array files in the
-upstream repository's `src/media/data/adversaries/` directory, or a single
-adversary object. A file is limited to 10 MB and 2,000 adversaries.
+```sh
+npm run import:swa
+```
 
-## What crosses the connection
+This reads the site's current published version and its adversaries, weapons, talents, qualities, skills and vehicles collections. It writes `.local/swa-source.json`, which is excluded from Git and releases. The site does not supply the cross-origin response header needed for a direct browser fetch, so this preparation step runs locally.
 
-Characteristics, wound and strain thresholds, soak, defense, skill ranks or
-minion group skills, complete weapon statistics, talent names/ranks, ability
-names, and available book tags are retained. Minion wounds are stored per member;
-the sheet calculates group state. Unknown book codes remain visible as codes.
-Missing page numbers are left empty.
+In Foundry, choose **Configure Settings → Star Wars FFG → SW Adversaries → Import adversaries**. Select the prepared file, keep **private GM source notes** enabled, review the counts and import. Drag native actors from the world compendium into the Actors directory or onto a scene. Set group size for minions.
 
-Descriptions, notes, gear prose, ability explanations and images are omitted.
-Weapon names without their separately stored statistics become reference items;
-replace those references with the matching weapon from the private equipment
-compendium after checking the book. Vehicles attached by name require a separate
-vehicle import. Missing actor statistics remain flagged. Talent and ability
-effects still need source review and manual application.
+For a smaller selection, the site's **Copy → Mine → Export** workflow produces `swa-data.json`. Single adversary objects and upstream adversary arrays are also accepted. Without the separate collections, named weapons and rules may remain unresolved. Files are limited to 10 MB and 2,000 adversaries.
 
-Director of Realms receives the native actor statistics plus these equipment and
-ability references through Starfall's adapter. This does not complete DoR's
-range-band attack workflow or prove an autonomous adventure play-through.
+## GM knowledge and player visibility
 
-## Provenance and validation
+All supplied descriptions, notes, gear text, ability explanations, talent rules, weapon-quality rules and other source fields are retained in a **Private GM source notes** journal compendium when enabled. Related records are attached to each adversary's notes. Their HTML is escaped, and source material is treated as reference data rather than instructions. The GM can open an actor's **Equipment & abilities → GM source notes** button.
 
-The published [source repository](https://github.com/stoogoff/sw-adversaries)
-contains a React application, static JSON data and a browser export function.
-No documented service API or dataset redistribution licence was found in the
-repository inspected at commit `9f057a470744d5de01addbbafa7699273a96dcad`.
-Starfall ships an independently written format converter; it does not ship the
-website's implementation or dataset. Imports stay in the local Foundry world.
+Native actors contain statistics, names and references. Source prose is encrypted with AES-GCM before entering the separate compendium; the key stays in a client-scoped setting in the GM's browser. Foundry compendium permissions hide the interface but do not prevent direct document retrieval, so the stored pages contain only a placeholder and authenticated ciphertext. Public source names remain reference labels. Player and trusted-player compendium permissions are also set to None. The DoR adapter exposes decrypted prose only for GM users, including vehicle notes. Its narrative-stat prompt includes up to 16,000 characters per actor; the complete retained record is available through actor context and `game.system.api.searchGMSourceNotes(query)`. Images and remote assets are not downloaded; any URLs in the source remain references.
 
-The format was exercised against 12 records in `escapemosshuuta.json`, five in
-`whisper-base.json`, and 17 in `mountaintoprescue.json`. These files can include
-follow-on adventure adversaries. All 34 had the required actor statistics;
-31 weapon entries were unresolved name references. These counts are format
-validation, not a claim of complete encounter or rules coverage.
+Use **GM source library** in system settings to search all unlocked notes, including standalone weapon, talent, quality and skill records. **GM source key → Download key backup** saves the key privately. Restore that backup on another GM browser or after clearing browser data. Without the original key, the library stays locked; no replacement key is generated over existing encrypted notes. Keep the backup outside public repositories and share it only with trusted GMs. HTTPS or localhost is required for browser encryption. A world backup contains encrypted notes but not the browser key.
+
+Re-importing preserves existing compendium entries and links actors to their private source notes. It does not overwrite manual changes or silently refresh old rules. Private notes can be omitted using the import checkbox.
+
+## Statistics and review
+
+The converter retains characteristics, wounds, strain, soak, defense, Force rating, skill ranks, minion group skills, complete weapons, talent names/ranks, ability names, vehicle profiles and source tags. Alternative Lightsaber characteristics are retained. Explicit NPC ranks above the player purchase cap are preserved; player advancement still stops at rank 5. Missing book pages stay empty and unknown book codes remain visible.
+
+Missing or unsupported weapon fields produce reference items instead of usable zero-damage weapons. Unknown skills and missing actor statistics are flagged. Unsupported actor types retain private notes but are not assigned an invented native type. Talent and ability descriptions inform the GM; their mechanical effects still require adjudication. Named attached vehicles are retained as references; the vehicle collection creates separate sheets without guessing occupants or scene placement.
+
+The published site version **2.2.10** supplied 1,346 adversaries, 74 weapons, 755 talents/abilities, 40 qualities, 43 skills and 51 vehicles: **2,309 private source records**. Conversion produced **1,345 NPCs and 51 vehicles**, resolved 907 named weapon references and retained 312 incomplete weapon references. Twelve NPCs have missing or unrecognised statistics; one record lacks an adversary type. These are import coverage counts, not evidence of complete encounter automation or an autonomous campaign.
+
+## Provenance
+
+The [upstream repository](https://github.com/stoogoff/sw-adversaries) contains a React application, static JSON data and browser export support. No documented service API or dataset redistribution licence was found in the repository inspected at commit `9f057a470744d5de01addbbafa7699273a96dcad`. This project publishes its independently written importer. The site's implementation and dataset are not bundled in the public system; fetched material stays in the private world.

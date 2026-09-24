@@ -11,18 +11,26 @@ async function collect(dir) {
 // Positive allow-list: private imports, previews, tests and PDFs can never enter a release.
 for (const dir of ["src", "templates", "styles", "assets", "lang", "docs"])
   await collect(dir);
-for (const name of ["system.json", "README.md", "LICENSE", "CHANGELOG.md", "THIRD_PARTY_NOTICES.md"])
+for (const name of [
+  "system.json",
+  "README.md",
+  "LICENSE",
+  "CHANGELOG.md",
+  "THIRD_PARTY_NOTICES.md",
+  "data/reference-database.json",
+  "data/reference-library.json",
+])
   files[name] = new Uint8Array(await readFile(name));
 for (const name of Object.keys(files))
   if (/(?:\.local|\.pdf$|\.sql$|\.xml$|\.env)/i.test(name))
     throw new Error(`Forbidden release entry ${name}`);
 await mkdir("dist", { recursive: true });
-await writeFile("dist/starfall.zip", zipSync(files, { level: 9 }));
+await writeFile("dist/star-wars-ffg.zip", zipSync(files, { level: 9 }));
 await writeFile("dist/system.json", files["system.json"]);
 await writeFile(
   "dist/contents.json",
   JSON.stringify(Object.keys(files).sort(), null, 2),
 );
 console.log(
-  `Packaged ${Object.keys(files).length} public files; no source books or imported data.`,
+  `Packaged ${Object.keys(files).length} public files, including the creator-authorized reference database; no PDFs or private adventure imports.`,
 );

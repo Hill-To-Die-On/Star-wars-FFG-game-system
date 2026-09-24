@@ -1,8 +1,8 @@
-# Starfall: Narrative Toolkit
+# Star Wars FFG
 
 A free, independent **Foundry VTT 14** game system for campaigns using **Edge of the Empire**, **Age of Rebellion**, and **Force and Destiny**, separately or together. Published by Hill To Die On.
 
-Original sheets and interface, with familiar narrative dice symbols from an attributed community source. This project does not distribute the rulebooks, adventure text, official illustrations, or a public copy of a private database. The books remain necessary. Starfall is not affiliated with or endorsed by Lucasfilm, Fantasy Flight Games, Asmodee, or EDGE Studio.
+Original sheets and interface, with familiar narrative dice symbols from an attributed community source. The complete creator-authorized reference database is included: **6,662 rows across 44 tables**, with statistics, creator notes and book/page references. Rulebooks, adventure text and official illustrations are not distributed. The books remain necessary. Star Wars FFG is not affiliated with or endorsed by Lucasfilm, Fantasy Flight Games, Asmodee, or EDGE Studio.
 
 ## Install
 
@@ -12,23 +12,30 @@ Use this manifest in Foundry's **Install System → Manifest URL**:
 https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json
 ```
 
-Create a world using **Starfall: Narrative Toolkit**. Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
+Create a world using **Star Wars FFG**. Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
 
 ## At the table
 
-- Character, minion, rival, nemesis and vehicle sheets. Frontier, Rebellion and Mystic themes can coexist in a world.
+- Character, minion, rival, nemesis, vehicle and **Group** sheets. Frontier, Rebellion and Mystic themes can coexist in a world.
+- Group records include a **Base of Operations**, members, Obligation, optional Duty/Morality, motivations, resources, possessions, contacts and the world's shared Destiny pool. Link characters and use **Sync linked characters** to refresh their recorded story scores.
 - All seven narrative dice, standard symbol faces, separate result axes, Triumph/Despair retention, and upgrades/downgrades.
 - Skills, wounds, strain, defense, Force dice, inventory, vehicle condition and shields.
-- **Configure Settings → Starfall → Campaign rulebooks** selects rule lines, story mechanics, beginner teaching mode and allowed sources.
+- **Configure Settings → Star Wars FFG → Campaign rulebooks** selects rule lines, story mechanics and beginner teaching mode.
+- **Reference catalogue** searches the full database. **Owned books** lets the GM select sources from 45 book titles; that selection filters the catalogue for the GM and players, the reference API, starting choices and future imports. **Populate compendiums** creates native documents for the selected books.
 - **Dice & Destiny** opens the pool builder and the persistent shared Destiny pool.
 - **Private library** imports local JSON into world compendiums. Importing again preserves existing entries.
-- **SW Adversaries** imports a local [swa.stoogoff.com export](docs/sw-adversaries.md) as native adversaries, retaining statistics and references while omitting prose.
+- **SW Adversaries** imports [site collections or local exports](docs/sw-adversaries.md) as native adversaries and vehicles. Descriptions, ability rules, motivations and related source records are retained in a private GM compendium and supplied to the DoR adapter.
+- **GM source library** searches decrypted source notes. **GM source key** backs up or restores the browser-held key needed to unlock them; source prose is encrypted before world storage.
 - The Advancement tab displays every owned specialization as an interactive tree. Click an eligible talent to spend XP; purchased and shared unranked talents are marked. Drag additional specializations from the compendium to acquire them at their career/universal XP price.
 - Starting character choices apply the selected species and career, free skill ranks, the first specialization, and starting XP. Exceptional species rules require reference review. Purchases are recorded in the actor.
 
 This is an initial development release. Weapon qualities, most talent effects, critical-injury consequences, range adjudication, starship maneuvers and expansion subsystems still require the GM and source books. Automated checks do not constitute an end-to-end adventure playtest. See [validation](docs/validation.md) and [coverage](docs/source-coverage.md) for the exact evidence and remaining gaps.
 
-## Private database and chart import
+## Reference library and private chart import
+
+The bundled database needs no import to search. Use **Reference catalogue → Populate compendiums** to create 4,495 Items, 399 vehicle references and 1,701 journals when all books are enabled. All 6,662 original rows, including the dice tables, remain available in the catalogue. This database is an index to the books: it does not contain every vehicle statistic or connected talent chart. See [the reference-library guide](docs/reference-library.md).
+
+The optional private workflow adds structured charts and vehicle statistics from locally held sources:
 
 Node 24 or later:
 
@@ -40,7 +47,7 @@ python scripts/enrich-library.py "path/to/DataSet_Full DataSet" "path/to/PDF lib
 
 The output is `.local/catalog.json`, deliberately excluded from Git and public releases. Select that file using the **Private library** menu. SQL is parsed without executing it. Descriptions are excluded; names, mechanical values and source references are retained. The optional structured-data pass imports talent nodes and links, and fills matching vehicle statistics. It does not import illustrations or descriptive text.
 
-The supplied sources produced 135 structurally validated specialization references and 6,595 private library entries. Of 399 vehicles, 162 have matched structured statistics; the other 237 remain explicitly incomplete pending source checks. Missing chart coverage identifies 24 chart pages across four books, plus three standalone charts from a fifth book whose full PDF is absent.
+The supplied private sources produced 135 structurally validated specialization references. Of 399 vehicles, 162 have matched structured statistics; the other 237 remain explicitly incomplete pending source checks. These enrichments are separate from the public database. Missing chart coverage identifies 24 chart pages across four books, plus three standalone charts from a fifth book whose full PDF is absent.
 
 [Source coverage and photo requests](docs/source-coverage.md) distinguish missing PDFs, structurally validated trees and pending comparison with the books. Unknown vehicle statistics remain marked, and unverified graphs cannot spend XP.
 
@@ -59,7 +66,7 @@ npm run check
 npm run build
 ```
 
-The release ZIP is `dist/starfall.zip`. Its positive allow-list contains only runtime files, original and attributed assets, their notices, and public documentation. No database or PDF can be included by copying the workspace wholesale. `python scripts/generate-dice.py` regenerates the 256px face textures from the attributed community font using Pillow.
+The release ZIP is `dist/star-wars-ffg.zip`. Its positive allow-list includes runtime files, original and attributed assets, notices, documentation and exactly two authorized database JSON files. PDFs, SQL backups, private charts, adventure passages and SW Adversaries source data remain excluded. `python scripts/generate-dice.py` regenerates the 256px face textures from the attributed community font using Pillow.
 
 API references: [Foundry system development](https://foundryvtt.com/article/system-development/), [Foundry v14](https://foundryvtt.com/api/), [Dice So Nice custom terms](https://riccisi.gitlab.io/foundryvtt-dice-so-nice/api/terms/).
 

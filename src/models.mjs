@@ -58,7 +58,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       strain: resource(),
       soak: number(2),
       defense: new f.SchemaField({ melee: number(0, 4), ranged: number(0, 4) }),
-      credits: number(),
+      credits: number(0, 1000000000000),
       xp: new f.SchemaField({ available: number(), total: number() }),
       forceRating: number(0, 10),
       committedForce: number(0, 10),
@@ -81,6 +81,26 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       source: source(),
       incomplete: list(),
     };
+  }
+}
+export class AdversaryData extends CharacterData {
+  static defineSchema() {
+    const schema = super.defineSchema();
+    // Published NPC statistics may exceed player advancement caps.
+    schema.skills = new f.SchemaField(
+      Object.fromEntries(
+        Object.keys(SKILLS).map((key) => [
+          key,
+          new f.SchemaField({
+            rank: number(0, 10),
+            career: bool(),
+            group: bool(),
+            characteristic: text(SKILLS[key].characteristic),
+          }),
+        ]),
+      ),
+    );
+    return schema;
   }
 }
 export class VehicleData extends foundry.abstract.TypeDataModel {
@@ -120,12 +140,47 @@ export class VehicleData extends foundry.abstract.TypeDataModel {
     };
   }
 }
+export class GroupData extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      theme: new f.StringField({
+        initial: "frontier",
+        choices: Object.keys(THEMES),
+      }),
+      base: new f.SchemaField({
+        name: text(),
+        location: text(),
+        description: text(),
+      }),
+      members: new f.TypedObjectField(
+        new f.SchemaField({
+          actorId: text(),
+          playerName: text(),
+          characterName: text(),
+          obligation: number(0, 100),
+          obligationType: text(),
+          description: text(),
+          motivation: text(),
+          duty: number(0, 100),
+          dutyType: text(),
+          morality: number(50, 100),
+        }),
+        { initial: {} },
+      ),
+      credits: number(0, 1000000000000),
+      resources: text(),
+      possessions: text(),
+      contacts: text(),
+      notes: text(),
+    };
+  }
+}
 export class ItemData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
       description: text(),
       quantity: number(1),
-      price: number(),
+      price: number(0, 1000000000000),
       rarity: number(0, 20),
       encumbrance: number(),
       hardpoints: number(),

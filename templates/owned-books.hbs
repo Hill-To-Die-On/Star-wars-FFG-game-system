@@ -1,0 +1,11 @@
+<div class="sf-shell sf-owned-books-content">
+  <h2>The campaign's bookshelf</h2>
+  <p>This selection filters the catalogue and reference API for GMs and players, starting choices, item drops and future compendium imports. Existing characters and compendium documents are preserved.</p>
+  <label>Book filter<select name="bookMode"><option value="all" {{#unless owned}}selected{{/unless}}>All books</option><option value="owned" {{#if owned}}selected{{/if}}>Only selected books</option></select></label>
+  <label class="sf-checkbox"><input type="checkbox" name="includeUnreferenced" {{checked includeUnreferenced}}>Include entries without a book reference when filtering</label>
+  <div class="sf-book-tools"><label>Find a book<input type="search" name="bookSearch" placeholder="Core, Force, Republic…"></label><button type="button" data-action="selectAll">Select all</button><button type="button" data-action="clearAll">Clear all</button></div>
+  <div class="sf-book-list">{{#each books}}<label class="sf-book-choice"><input type="checkbox" name="books" value="{{name}}" {{checked selected}}><span>{{name}}</span></label>{{/each}}</div>
+  <label>Additional source titles, one per line<textarea name="additional" rows="2">{{additional}}</textarea></label>
+  <p class="sf-hint">Only selected books + no selection shows no book-sourced entries.</p>
+  <button type="submit">Save owned books</button>
+</div>

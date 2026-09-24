@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { parseSqlDump } from "./sql-parser.mjs";
 import { skillKey, SYSTEM_ID } from "../src/config.mjs";
 import { escapeHTML } from "../src/mechanics.mjs";
+import { ROW_NAMES, referenceSource } from "../src/reference-data.mjs";
 const nameColumns = {
   weapons: "Weapon",
   armour: "Armour",
@@ -30,55 +31,64 @@ const itemTypes = {
   vehicle_attachments: "attachment",
   force_powers: "forcePower",
 };
-const num = (value) => (/^\d+$/.test(String(value ?? "")) ? Number(value) : 0);
+const parsedNumber = (value) => {
+  const text = String(value ?? "").trim();
+  if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.0+)?$/.test(text)) return null;
+  const number = Number(text.replaceAll(",", ""));
+  return Number.isSafeInteger(number) ? number : null;
+};
+const num = (value) => parsedNumber(value) ?? 0;
 const skills = (value) =>
   String(value ?? "")
     .split(",")
     .map((s) => skillKey(s))
     .filter(Boolean);
-const source = (table, row) => ({
-  table,
-  id: String(row.ID ?? ""),
-  book: String(row.Book ?? ""),
-  page: String(row.Page ?? ""),
-});
-export function convertDatabase(tables) {
+export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
   const bundle = {
     format: "starfall-library",
     version: 1,
     documents: { Item: [], Actor: [], JournalEntry: [] },
-    report: { tables: {}, missingVehicleStats: 0, omittedProse: true },
+    report: {
+      tables: {},
+      missingVehicleStats: 0,
+      omittedProse: !retainCreatorNotes,
+    },
   };
   const ids = new Set();
   for (const [table, rows] of Object.entries(tables)) {
     bundle.report.tables[table] = rows.length;
     if (table.startsWith("dice_") || table === "dice_sides") continue;
     for (const [index, row] of rows.entries()) {
-      const name = String(
-        row[nameColumns[table]] ??
-          row.Name ??
-          row.Specialisation ??
-          row.Specialization ??
-          row.Force_Power ??
-          row.Equipment ??
-          row.Attachment ??
-          row.Vehicle_Weapon ??
-          row.Weapon ??
-          Object.entries(row).find(
-            ([k, v]) => k !== "ID" && typeof v === "string" && v.trim(),
-          )?.[1] ??
-          `${table} ${index + 1}`,
-      ).trim();
+      const name =
+        String(
+          row[ROW_NAMES[table]] ??
+            row[nameColumns[table]] ??
+            row.Name ??
+            row.Specialisation ??
+            row.Specialization ??
+            row.Force_Power ??
+            row.Equipment ??
+            row.Attachment ??
+            row.Vehicle_Weapon ??
+            row.Weapon ??
+            Object.entries(row).find(
+              ([k, v]) => k !== "ID" && typeof v === "string" && v.trim(),
+            )?.[1] ??
+            `${table} ${index + 1}`,
+        ).trim() ||
+        `${table.replaceAll("_", " ")} reference ${row.ID ?? index + 1}`;
       const key = `${table}:${row.ID ?? index}:${index}`;
       const id = createHash("sha256").update(key).digest("hex").slice(0, 16);
       if (ids.has(id)) throw new Error("Duplicate generated id");
       ids.add(id);
-      // A strict set of excluded prose fields; original source files are never bundled.
+      // The explicitly published creator database retains its own reference notes.
+      // Other local imports keep the original prose-excluding default.
       const metadata = Object.fromEntries(
         Object.entries(row).filter(
           ([k, v]) =>
             v !== null &&
-            !/description|^rule$|^special$|text|biography|notes/i.test(k),
+            (retainCreatorNotes ||
+              !/description|^rule$|^special$|text|biography|notes/i.test(k)),
         ),
       );
       const common = {
@@ -86,7 +96,7 @@ export function convertDatabase(tables) {
         name,
         flags: { [SYSTEM_ID]: { importKey: key } },
       };
-      const ref = source(table, row);
+      const ref = referenceSource(table, row);
       if (table === "vehicles") {
         bundle.report.missingVehicleStats++;
         bundle.documents.Actor.push({
@@ -158,14 +168,20 @@ export function convertDatabase(tables) {
           encumbrance: num(row.Encumbrance),
           hardpoints: num(row.HP),
           restricted: String(row.Restricted).toLowerCase() === "true",
+          incomplete:
+            Object.hasOwn(row, "Price") && parsedNumber(row.Price) === null
+              ? ["price not recorded"]
+              : [],
         };
         if (type === "weapon")
           Object.assign(system, {
             skill: skillKey(row.Skill) ?? "gunnery",
             damage: String(row.Damage ?? "0"),
             critical: num(row.Critical),
-            range: String(row.Range ?? "short").toLowerCase(),
-            qualities: String(row.Special ?? ""),
+            range: String(
+              row.Range ?? row.Weapon_Range ?? "short",
+            ).toLowerCase(),
+            qualities: String(row.Special ?? row.Qualities ?? ""),
             scale: table === "vehicle_weapons" ? "vehicle" : "personal",
           });
         if (type === "armor")

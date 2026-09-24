@@ -96,7 +96,7 @@ test("reject invalid pools and face results without coercing unknown dice", () =
 });
 test("every valid characteristic/rank combination preserves positive pool size", () => {
   for (let a = 0; a <= 7; a++)
-    for (let b = 0; b <= 5; b++) {
+    for (let b = 0; b <= 10; b++) {
       const p = skillPool(a, b);
       assert.equal(p.ability + p.proficiency, Math.max(a, b));
       assert.equal(p.proficiency, Math.min(a, b));

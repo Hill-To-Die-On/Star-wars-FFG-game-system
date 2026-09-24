@@ -6,8 +6,8 @@ A companion registry change has been built and tested in an isolated DoR 0.10.11
 
 ## Private adventure intake
 
-1. Choose the campaign rule lines and beginner/core mode in Starfall settings.
-2. Import the private reference library and create characters from the correct starting package.
+1. Choose the campaign rule lines and beginner/core mode in Star Wars FFG settings.
+2. Populate the bundled reference compendiums, add any private chart enrichment and create characters from the correct starting package.
 3. Enable Director of Realms and configure the intended AI provider.
 4. Use Campaign Studio's local PDF intake for a legally held adventure. Keep extracted adventure material inside the private Foundry world.
 5. Bind characters, source references and scenes; validate the imported encounter difficulty, native skills, enemy statistics and chapter transitions.
@@ -38,6 +38,8 @@ python scripts/prepare-adventure.py "path/to/scanned-adventure.pdf" --ocr
 Import the generated `.local/adventures/<name>/<name>.md` in Campaign Studio's source library. All three prepared bundles were imported into the isolated world. Source passages remain unreviewed: OCR can misread custom dice symbols, tables and unusual layouts. Compare encounter pools and statistics with the PDF before play. This text workflow does not import maps or handout artwork.
 
 ## Automation boundary
+
+The expanded SW Adversaries importer retains descriptions, ability rules and related source records in a GM-only compendium. The adapter supplies those notes alongside native statistics when running as the GM. Group actors expose their base, membership, resources, contacts and shared Destiny through narrative context. The public database search API applies the GM's owned-book selection. See [SW Adversaries](sw-adversaries.md) and [the reference library](reference-library.md) for access and coverage details.
 
 The native provider supplies actor facts, book configuration, legal talent purchases, check guidance and explicit skill-pool execution. Most talent/weapon effects, Force-power upgrades, critical consequences and vehicle maneuvers still need source adjudication. Autonomous tactical attacks need native range-band and pool integration; `executeAttack` deliberately reports that missing capability. Full unattended play has not passed acceptance.
 

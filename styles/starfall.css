@@ -1,12 +1,12 @@
 @font-face {
-  font-family: "Starfall Roboto";
+  font-family: "Star Wars FFG Roboto";
   src: url("../assets/vendor/roboto/Roboto-Regular.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
-  font-family: "Starfall Signika";
+  font-family: "Star Wars FFG Signika";
   src: url("../assets/vendor/signika/Signika-Regular.ttf") format("truetype");
   font-style: normal;
   font-weight: 400;
@@ -22,7 +22,7 @@
   --sf-dark: #253a42;
   --sf-wash: #ede0c6;
   color: var(--sf-ink);
-  font-family: "Starfall Roboto", Arial, Helvetica, sans-serif;
+  font-family: "Star Wars FFG Roboto", Arial, Helvetica, sans-serif;
 }
 .starfall[data-theme="rebellion"],
 .starfall [data-theme="rebellion"] {
@@ -71,7 +71,7 @@
   );
 }
 .sf-wordmark {
-  font-family: "Starfall Signika", Arial, sans-serif;
+  font-family: "Star Wars FFG Signika", Arial, sans-serif;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -122,7 +122,7 @@
 }
 .sf-eyebrow {
   font:
-    700 10px/1.5 "Starfall Roboto",
+    700 10px/1.5 "Star Wars FFG Roboto",
     Arial,
     sans-serif;
   letter-spacing: 0.15em;
@@ -262,7 +262,7 @@
 }
 .sf-shell button {
   font:
-    600 12px/1.4 "Starfall Roboto",
+    600 12px/1.4 "Star Wars FFG Roboto",
     Arial,
     sans-serif;
   min-height: 30px;
@@ -542,7 +542,7 @@
   border-radius: 7px;
   background: #f6f0e3;
   color: #263942;
-  font-family: "Starfall Roboto", Arial, sans-serif;
+  font-family: "Star Wars FFG Roboto", Arial, sans-serif;
 }
 .sf-chat h3 {
   font-size: 16px;
@@ -638,14 +638,14 @@
 }
 .sf-shell .sf-header .sf-name {
   font:
-    750 32px/1.2 "Starfall Signika",
+    750 32px/1.2 "Star Wars FFG Signika",
     Arial,
     Helvetica,
     sans-serif !important;
 }
 .sf-shell h2,
 .sf-shell h3 {
-  font-family: "Starfall Signika", Arial, Helvetica, sans-serif !important;
+  font-family: "Star Wars FFG Signika", Arial, Helvetica, sans-serif !important;
 }
 .sf-shell .sf-talent:disabled {
   opacity: 1;
@@ -662,4 +662,235 @@
 
 .starfall .sf-resource h3 {
   color: var(--sf-ink);
+}
+
+.sf-catalogue .sf-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.sf-catalogue-header {
+  padding: 20px 24px;
+}
+.sf-catalogue-header h1 {
+  font:
+    600 28px "Star Wars FFG Signika",
+    sans-serif;
+  margin: 8px 0;
+  color: #fff;
+  border: 0;
+}
+.sf-catalogue-header p {
+  margin: 0;
+  color: #d7e0df;
+}
+.sf-catalogue-actions {
+  position: absolute;
+  right: 24px;
+  top: 28px;
+  display: flex;
+  gap: 8px;
+}
+.sf-catalogue-actions button {
+  background: #172630;
+  border: 1px solid #68818b;
+  color: white;
+}
+.sf-catalogue-filters {
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.7fr auto;
+  align-items: end;
+  gap: 12px;
+  border-bottom: 1px solid var(--sf-line);
+}
+.sf-catalogue-filters label,
+.sf-owned-books-content > label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+}
+.sf-catalogue input,
+.sf-catalogue select,
+.sf-book-picker input,
+.sf-book-picker select,
+.sf-book-picker textarea {
+  background: var(--sf-paper);
+  color: var(--sf-ink);
+  border: 1px solid var(--sf-line);
+}
+.sf-catalogue button,
+.sf-book-picker button {
+  color: var(--sf-ink);
+  background: var(--sf-wash);
+  border: 1px solid var(--sf-line);
+}
+.sf-catalogue-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  min-height: 0;
+  flex: 1;
+}
+.sf-catalogue-results,
+.sf-catalogue-detail {
+  overflow: auto;
+  padding: 16px 20px;
+}
+.sf-catalogue-detail {
+  border-left: 1px solid var(--sf-line);
+  background: var(--sf-paper);
+}
+.sf-catalogue-detail h2 {
+  margin-top: 10px;
+}
+.sf-catalogue-count {
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--sf-muted);
+}
+.sf-catalogue-results table {
+  margin: 0;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+}
+.sf-catalogue-results th {
+  text-align: left;
+  color: var(--sf-ink);
+  text-shadow: none;
+  background: var(--sf-wash);
+  padding: 8px;
+}
+.sf-catalogue-results td {
+  padding: 9px 8px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--sf-line);
+}
+.sf-catalogue-results tr.selected {
+  background: var(--sf-wash);
+}
+.sf-catalogue-results td:first-child {
+  width: 45%;
+}
+.sf-catalogue-results td button {
+  display: block;
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--sf-accent);
+  font-weight: 600;
+}
+.sf-catalogue-results small {
+  display: block;
+  color: var(--sf-muted);
+  font-size: 10px;
+  margin-top: 3px;
+}
+.sf-reference-source {
+  padding: 10px;
+  background: var(--sf-wash);
+  border-left: 3px solid var(--sf-accent);
+}
+.sf-catalogue-detail dl {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 8px 12px;
+  font-size: 12px;
+}
+.sf-catalogue-detail dt {
+  font-weight: bold;
+}
+.sf-catalogue-detail dd {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.sf-catalogue-pagination {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.sf-owned-books-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sf-owned-books-content .sf-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.sf-book-tools {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}
+.sf-book-tools label {
+  flex: 1;
+}
+.sf-book-list {
+  max-height: 300px;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px;
+  background: var(--sf-paper);
+  border: 1px solid var(--sf-line);
+}
+.sf-book-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.sf-book-choice[hidden] {
+  display: none;
+}
+.sf-group-status {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 0 20px;
+  flex-wrap: wrap;
+}
+.sf-group-status > div {
+  display: grid;
+  gap: 6px;
+}
+.sf-group-status strong {
+  font-size: 24px;
+  color: var(--sf-accent);
+}
+.sf-group-status > label {
+  margin-left: auto;
+}
+.sf-group-member {
+  border: 1px solid var(--sf-line);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.sf-group-member legend {
+  color: var(--sf-accent);
+  padding: 0 8px;
+}
+.sf-group-member > label {
+  margin: 10px 0;
+  display: block;
+}
+.starfall .sf-catalogue-detail,
+.starfall .sf-owned-books-content h2,
+.starfall .sf-catalogue-detail h2,
+.starfall .sf-catalogue-detail dt,
+.starfall .sf-catalogue-detail dd {
+  color: var(--sf-ink);
+  text-shadow: none;
 }
