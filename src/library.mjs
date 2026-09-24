@@ -40,7 +40,7 @@ export async function importLibrary(bundle, onProgress = () => {}) {
         await foundry.documents.collections.CompendiumCollection.createCompendium(
           {
             name,
-            label: `Starfall · ${type === "Actor" ? "Vehicles" : type === "Item" ? "Equipment & advancement" : "Places & references"}`,
+            label: `Starfall · ${type === "Actor" ? "Actors & vehicles" : type === "Item" ? "Equipment & advancement" : "Places & references"}`,
             type,
           },
         );

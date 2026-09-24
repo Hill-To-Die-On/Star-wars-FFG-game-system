@@ -7,3 +7,5 @@
 - Native roll resolution, XP paths, starting character choices, campaign rule-line settings and private library import.
 - Source coverage register for specialization PDFs, graphs and photo requests.
 - Director of Realms adapter contract with explicit integration and acceptance status.
+- Local SW Adversaries JSON import with native NPC statistics and explicit unresolved weapon references.
+- Self-hosted Roboto body text and Signika headings with their font licences retained.

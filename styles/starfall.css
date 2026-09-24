@@ -1,3 +1,17 @@
+@font-face {
+  font-family: "Starfall Roboto";
+  src: url("../assets/vendor/roboto/Roboto-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Starfall Signika";
+  src: url("../assets/vendor/signika/Signika-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 .starfall {
   --sf-bg: #f4f0e6;
   --sf-paper: #fffdf7;
@@ -8,7 +22,7 @@
   --sf-dark: #253a42;
   --sf-wash: #ede0c6;
   color: var(--sf-ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Starfall Roboto", Arial, Helvetica, sans-serif;
 }
 .starfall[data-theme="rebellion"],
 .starfall [data-theme="rebellion"] {
@@ -57,6 +71,7 @@
   );
 }
 .sf-wordmark {
+  font-family: "Starfall Signika", Arial, sans-serif;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -107,7 +122,8 @@
 }
 .sf-eyebrow {
   font:
-    700 10px/1.5 Arial,
+    700 10px/1.5 "Starfall Roboto",
+    Arial,
     sans-serif;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -246,7 +262,8 @@
 }
 .sf-shell button {
   font:
-    600 12px/1.4 Arial,
+    600 12px/1.4 "Starfall Roboto",
+    Arial,
     sans-serif;
   min-height: 30px;
   border: 1px solid var(--sf-line);
@@ -525,7 +542,7 @@
   border-radius: 7px;
   background: #f6f0e3;
   color: #263942;
-  font-family: Arial, sans-serif;
+  font-family: "Starfall Roboto", Arial, sans-serif;
 }
 .sf-chat h3 {
   font-size: 16px;
@@ -621,13 +638,14 @@
 }
 .sf-shell .sf-header .sf-name {
   font:
-    750 32px/1.2 Arial,
+    750 32px/1.2 "Starfall Signika",
+    Arial,
     Helvetica,
     sans-serif !important;
 }
 .sf-shell h2,
 .sf-shell h3 {
-  font-family: Arial, Helvetica, sans-serif !important;
+  font-family: "Starfall Signika", Arial, Helvetica, sans-serif !important;
 }
 .sf-shell .sf-talent:disabled {
   opacity: 1;
@@ -637,6 +655,11 @@
   color: white;
 }
 
-.sf-panel legend { color: var(--sf-ink); font-weight: 600; }
+.sf-panel legend {
+  color: var(--sf-ink);
+  font-weight: 600;
+}
 
-.starfall .sf-resource h3 { color: var(--sf-ink); }
+.starfall .sf-resource h3 {
+  color: var(--sf-ink);
+}

@@ -1,7 +1,7 @@
 {
   "id": "star-wars-ffg",
   "title": "Starfall: Narrative Toolkit",
-  "description": "Independent, free narrative-dice tooling compatible with Edge of the Empire, Age of Rebellion, and Force and Destiny. Original interface and symbols; rulebooks required.",
+  "description": "Independent, free narrative-dice tooling compatible with Edge of the Empire, Age of Rebellion, and Force and Destiny. Original interface with familiar dice symbols; rulebooks required.",
   "version": "0.1.0",
   "compatibility": { "minimum": "14", "verified": "14.368", "maximum": "14" },
   "authors": [

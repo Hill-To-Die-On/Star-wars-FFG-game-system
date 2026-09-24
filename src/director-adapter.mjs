@@ -33,6 +33,26 @@ export function actorContext(actor) {
     creation: s.creation,
     phase: s.phase,
     advancement: s.advancement,
+    equipmentAndAbilities: (actor.items?.contents ?? [])
+      .filter((item) =>
+        ["weapon", "talent", "reference", "forcePower"].includes(item.type),
+      )
+      .map((item) => ({
+        name: item.name,
+        type: item.type,
+        source: item.system.source,
+        incomplete: item.system.incomplete,
+        ...(item.type === "weapon"
+          ? {
+              skill: item.system.skill,
+              damage: item.system.damage,
+              critical: item.system.critical,
+              range: item.system.range,
+              qualities: item.system.qualities,
+            }
+          : {}),
+        ...(item.type === "talent" ? { rank: item.system.rank } : {}),
+      })),
     specializations: (actor.items?.contents ?? [])
       .filter((i) => i.type === "specialization")
       .map((item) => ({
@@ -140,6 +160,16 @@ export const directorAdapter = {
       {
         label: "Available talent paths",
         value: paths || "No specialization attached",
+      },
+      {
+        label: "Equipment and ability references",
+        value: JSON.stringify(actorContext(actor).equipmentAndAbilities),
+      },
+      {
+        label: "Missing source statistics",
+        value:
+          s.incomplete.join(", ") ||
+          "None recorded; talent and ability effects require source review.",
       },
       {
         label: "Campaign rules",

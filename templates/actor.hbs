@@ -176,6 +176,7 @@
 <div>
 <button type="button" data-action="item" data-item="{{id}}">{{name}}</button>
 <small>{{type}} · {{system.source.book}} {{system.source.page}}</small>
+{{#if system.incomplete.length}}<small>Source statistics needed</small>{{/if}}
 </div>
 <span>×{{system.quantity}}</span>
 {{#if weapon}}<button type="button" data-action="skill" data-item="{{id}}">Roll</button>{{/if}}

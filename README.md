@@ -22,6 +22,7 @@ Create a world using **Starfall: Narrative Toolkit**. Enable **Dice So Nice 6.3.
 - **Configure Settings → Starfall → Campaign rulebooks** selects rule lines, story mechanics, beginner teaching mode and allowed sources.
 - **Dice & Destiny** opens the pool builder and the persistent shared Destiny pool.
 - **Private library** imports local JSON into world compendiums. Importing again preserves existing entries.
+- **SW Adversaries** imports a local [swa.stoogoff.com export](docs/sw-adversaries.md) as native adversaries, retaining statistics and references while omitting prose.
 - The Advancement tab displays every owned specialization as an interactive tree. Click an eligible talent to spend XP; purchased and shared unranked talents are marked. Drag additional specializations from the compendium to acquire them at their career/universal XP price.
 - Starting character choices apply the selected species and career, free skill ranks, the first specialization, and starting XP. Exceptional species rules require reference review. Purchases are recorded in the actor.
 
@@ -64,4 +65,4 @@ API references: [Foundry system development](https://foundryvtt.com/article/syst
 
 MIT license for original project code and artwork only; third-party content is excluded from that grant.
 
-Dice symbol provenance and the retained MIT notice are recorded in [third-party notices](THIRD_PARTY_NOTICES.md).
+The interface uses locally bundled Roboto and Signika fonts. Font licences, dice symbol provenance and retained notices are recorded in [third-party notices](THIRD_PARTY_NOTICES.md).

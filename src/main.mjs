@@ -5,12 +5,14 @@ import {
   StarfallActorSheet,
   StarfallItemSheet,
   importDialog,
+  importSwaDialog,
   campaignDialog,
 } from "./sheets.mjs";
 import { registerDice, registerDiceSoNice, rollPool } from "./dice/foundry.mjs";
 import { DEFAULT_CAMPAIGN } from "./rules.mjs";
 import { directorAdapter, actorContext } from "./director-adapter.mjs";
 import { importLibrary } from "./library.mjs";
+import { convertSwa } from "./swa-import.mjs";
 import { DICE } from "./dice/core.mjs";
 import { StarfallCombat } from "./combat.mjs";
 class LibraryMenu extends foundry.applications.api.ApplicationV2 {
@@ -22,6 +24,12 @@ class LibraryMenu extends foundry.applications.api.ApplicationV2 {
 class CampaignMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     campaignDialog().catch((e) => ui.notifications.error(e.message));
+    return this;
+  }
+}
+class AdversariesMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    importSwaDialog();
     return this;
   }
 }
@@ -172,6 +180,14 @@ Hooks.once("init", () => {
     type: ConsoleMenu,
     restricted: false,
   });
+  game.settings.registerMenu(SYSTEM_ID, "adversariesMenu", {
+    name: "SW Adversaries",
+    label: "Import adversaries",
+    hint: "Read a local swa.stoogoff.com JSON export into this world's actor compendium.",
+    icon: "fas fa-file-import",
+    type: AdversariesMenu,
+    restricted: true,
+  });
   game.system.api = Object.freeze({
     rollPool,
     importLibrary,
@@ -180,6 +196,8 @@ Hooks.once("init", () => {
     openConsole,
     campaignDialog,
     importDialog,
+    importSwaDialog,
+    convertSwa,
   });
 });
 Hooks.once("diceSoNiceReady", (dice3d) =>

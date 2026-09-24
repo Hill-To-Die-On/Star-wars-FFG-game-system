@@ -17,6 +17,7 @@ import {
 } from "./rules.mjs";
 import { escapeHTML, minionState } from "./mechanics.mjs";
 import { importLibrary } from "./library.mjs";
+import { convertSwa } from "./swa-import.mjs";
 import { creationPlan } from "./creation.mjs";
 const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 const notifyError = (error) => ui.notifications.error(error.message);
@@ -456,6 +457,46 @@ export async function importDialog() {
       `Library ready: ${Object.entries(report)
         .map(([key, v]) => `${key} ${v.created} new, ${v.preserved} preserved`)
         .join("; ")}`,
+    );
+  } catch (error) {
+    notifyError(error);
+  }
+}
+export async function importSwaDialog() {
+  try {
+    if (!game.user.isGM) throw new Error("Only the GM can import adversaries.");
+    const file = await DialogV2.prompt({
+      window: { title: "Import SW Adversaries" },
+      content:
+        '<p>Select an SW Adversaries JSON file. Statistics and name references become native actors in this world. Descriptions and images are omitted. Existing actors are preserved.</p><p>On swa.stoogoff.com, copy chosen adversaries to Mine, then export the custom collection.</p><input type="file" name="adversaries" accept=".json">',
+      ok: {
+        label: "Review import",
+        callback: (_event, button) => button.form.elements.adversaries.files[0],
+      },
+      rejectClose: false,
+    });
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024)
+      throw new Error("Choose a JSON file smaller than 10 MB.");
+    const bundle = await convertSwa(JSON.parse(await file.text()));
+    const report = bundle.report;
+    const proceed = await DialogV2.confirm({
+      window: { title: "Review adversary import" },
+      content: `<p>${report.records} adversaries · ${report.incompleteActors} with missing statistics · ${report.weaponReferences} unresolved weapon references.</p><p>Named weapons without statistics remain reference items. Replace them from the private equipment library. Talent and ability effects still require the source books.</p><ul>${report.review
+        .slice(0, 20)
+        .map(
+          (row) =>
+            `<li>${escapeHTML(row.name)}: ${escapeHTML([...row.missing, ...(row.weaponReferences ? [`${row.weaponReferences} weapon references`] : [])].join("; "))}</li>`,
+        )
+        .join("")}</ul>`,
+      yes: { label: "Import into this world" },
+      no: { label: "Cancel" },
+      rejectClose: false,
+    });
+    if (!proceed) return;
+    const result = await importLibrary(bundle);
+    ui.notifications.info(
+      `Adversaries ready: ${result.Actor.created} new, ${result.Actor.preserved} preserved.`,
     );
   } catch (error) {
     notifyError(error);

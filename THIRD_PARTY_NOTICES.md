@@ -18,3 +18,24 @@ implemented mechanical face table. No other system implementation is imported.
 Star Wars and associated terminology remain the property of their respective
 owners. Upstream attribution does not imply endorsement or an official licence
 from Lucasfilm, Fantasy Flight Games, Asmodee or EDGE Studio.
+
+## Interface fonts
+
+The following unmodified font files come from the same pinned community
+repository commit above. Their own font licences apply independently of that
+repository's MIT licence. They are served locally; no font service is contacted.
+
+| Font | Upstream path | Copyright | Licence retained here |
+|---|---|---|---|
+| Roboto Regular | `fonts/Roboto-Regular.ttf` | Font data copyright Google 2011 | Apache 2.0, `assets/vendor/roboto/LICENSE.txt` |
+| Signika Regular | `fonts/Signika-Regular.ttf` | Copyright (c) 2011 Anna Giedrys (http://ancymonic.com), Reserved Font Names "Signika" | SIL OFL 1.1, `assets/vendor/signika/OFL.txt` |
+
+Roboto is used for body text and controls; Signika for headings and the wordmark.
+The licence texts are retained from the font projects:
+[Roboto](https://github.com/googlefonts/roboto-2/blob/main/LICENSE) and
+[Signika](https://github.com/googlefonts/Signika/blob/master/OFL.txt).
+The bundled Signika font's original 2011 copyright above remains applicable;
+the font project's licence file also identifies its later project authors.
+
+Elektra and Star Jedi are not included. Their presence in a public repository
+does not establish redistribution permission for this system.
