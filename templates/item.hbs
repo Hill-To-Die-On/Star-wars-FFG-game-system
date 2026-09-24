@@ -1,0 +1,70 @@
+<div class="sf-shell" data-theme="frontier"><header class="sf-header"><span
+      class="sf-eyebrow"
+    >STARFALL / {{item.type}}</span><input
+      class="sf-name"
+      name="name"
+      value="{{item.name}}"
+      aria-label="Item name"
+    /></header><main class="sf-content"><section class="sf-panel"><div
+        class="sf-form-grid"
+      >{{#each fields}}<label>{{key}}<input
+              type="number"
+              min="0"
+              name="system.{{key}}"
+              value="{{value}}"
+            /></label>{{/each}}<label><input
+            type="checkbox"
+            name="system.equipped"
+            {{checked system.equipped}}
+          />Equipped</label><label><input
+            type="checkbox"
+            name="system.restricted"
+            {{checked system.restricted}}
+          />Restricted</label></div>{{#if weapon}}<div
+          class="sf-form-grid"
+        ><label>Skill<select name="system.skill">{{selectOptions
+                skills
+                selected=system.skill
+              }}</select></label><label>Damage (+N adds Brawn)<input
+              name="system.damage"
+              value="{{system.damage}}"
+            /></label><label>Critical rating<input
+              type="number"
+              name="system.critical"
+              value="{{system.critical}}"
+            /></label><label>Range<select name="system.range">{{selectOptions
+                ranges
+                selected=system.range
+              }}</select></label><label>Scale<input
+              name="system.scale"
+              value="{{system.scale}}"
+            /></label></div><label>Qualities<input
+            name="system.qualities"
+            value="{{system.qualities}}"
+          /></label>{{/if}}{{#if armor}}<div class="sf-form-grid"><label
+          >Soak<input
+              type="number"
+              name="system.soak"
+              value="{{system.soak}}"
+            /></label><label>Defense<input
+              type="number"
+              name="system.defense"
+              value="{{system.defense}}"
+            /></label></div>{{/if}}<label>Personal notes<textarea
+          name="system.description"
+          rows="5"
+        >{{system.description}}</textarea></label></section><section
+      class="sf-panel"
+    ><h2>Look it up</h2><div class="sf-form-grid"><label>Book<input
+            name="system.source.book"
+            value="{{system.source.book}}"
+          /></label><label>Page<input
+            name="system.source.page"
+            value="{{system.source.page}}"
+          /></label></div><p class="sf-hint">This entry is a reference. The
+        source book explains the rule.</p>{{#if hasTree}}<p>Attach this
+          specialization to a character to view and purchase its connected
+          talents.</p>{{/if}}<details><summary>Imported facts</summary><dl
+          class="sf-facts"
+        >{{#each metadata}}<dt>{{key}}</dt><dd
+            >{{value}}</dd>{{/each}}</dl></details></section></main></div>

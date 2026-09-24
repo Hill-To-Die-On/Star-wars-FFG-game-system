@@ -1,0 +1,250 @@
+<div class="sf-shell" data-theme="{{system.theme}}">
+  <header class="sf-header">
+    <div class="sf-wordmark">
+<span class="sf-orbit" aria-hidden="true">✦</span> STARFALL <small>NARRATIVE TOOLKIT</small>
+</div>
+    <label class="sf-theme-select">Sheet theme<select name="system.theme">{{selectOptions themes selected=system.theme}}</select>
+</label>
+    <div class="sf-identity">
+<img src="{{actor.img}}" alt="{{actor.name}}" data-action="editImage" data-edit="img">
+<div>
+<span class="sf-eyebrow">{{theme.line}} / {{actor.type}}</span>
+<input class="sf-name" name="name" value="{{actor.name}}" aria-label="Name">
+<p>{{theme.tagline}}</p>
+</div>
+</div>
+    <div class="sf-header-meta">
+{{#if isVehicle}}<label>Model<input name="system.model" value="{{system.model}}">
+</label>
+<label>Manufacturer<input name="system.manufacturer" value="{{system.manufacturer}}">
+</label>{{else}}<label>Species<input name="system.species" value="{{system.species}}">
+</label>
+<label>Career<input name="system.career" value="{{system.career}}">
+</label>
+<label>Creation rules<select name="system.line">{{selectOptions lines selected=system.line}}</select>
+</label>{{/if}}
+</div>
+  </header>
+  <nav class="sf-tabs" aria-label="Character sections">
+{{#each tabs}}<button type="button" data-action="switchSection" data-tab="{{id}}" aria-selected="{{active}}" class="{{#if active}}active{{/if}}">{{label}}</button>{{/each}}
+</nav>
+  <main class="sf-content">
+    {{#if system.incomplete.length}}<aside class="sf-notice">
+<strong>Source check needed</strong>
+<span>
+{{#each system.incomplete}}{{this}}{{#unless @last}} · {{/unless}}{{/each}}
+</span>
+<button type="button" data-action="verifySource">Confirm source checks</button>
+</aside>{{/if}}
+    {{#if overview}}
+      {{#unless isVehicle}}<section class="sf-characteristics" aria-label="Characteristics">
+{{#each characteristics}}<label>
+<span>{{label}}</span>
+<input name="system.characteristics.{{key}}" type="number" value="{{value}}" min="0" max="7">
+{{#if ../creation}}<button type="button" data-action="buyCharacteristic" data-characteristic="{{key}}" title="Purchase next characteristic rating with XP">+ XP</button>{{/if}}
+</label>{{/each}}
+</section>{{/unless}}
+      <div class="sf-two-col">
+<section class="sf-panel">
+<h2>
+{{#if isVehicle}}Condition{{else}}Vitals{{/if}}
+</h2>
+<div class="sf-resources">
+{{#each resources}}<div class="sf-resource {{#if exceeded}}exceeded{{/if}}">
+<h3>{{label}}</h3>
+<label>Current<input type="number" min="0" name="system.{{key}}.value" value="{{value}}">
+</label>
+<span>/</span>
+<label>Threshold<input type="number" min="0" name="system.{{key}}.max" value="{{max}}">
+</label>
+{{#if exceeded}}<small>Threshold exceeded</small>{{/if}}
+</div>{{/each}}
+</div>
+<button type="button" class="sf-primary" data-action="damage">Apply damage</button>
+<p class="sf-hint">Damage accumulates. A threshold is exceeded only when the current value is greater.</p>
+</section>
+      <section class="sf-panel">
+<h2>
+{{#if isVehicle}}Flight profile{{else}}Readiness{{/if}}
+</h2>
+<div class="sf-form-grid">
+{{#if isVehicle}}{{#each vehicleFields}}<label>{{label}}<input type="number" name="system.{{key}}" value="{{value}}">
+</label>{{/each}}
+<label>Speed<input type="number" min="0" name="system.speed.value" value="{{system.speed.value}}">
+</label>
+<label>Maximum speed<input type="number" min="0" name="system.speed.max" value="{{system.speed.max}}">
+</label>{{else}}<label>Soak<input type="number" min="0" name="system.soak" value="{{system.soak}}">
+</label>
+<label>Melee defense<input type="number" min="0" max="4" name="system.defense.melee" value="{{system.defense.melee}}">
+</label>
+<label>Ranged defense<input type="number" min="0" max="4" name="system.defense.ranged" value="{{system.defense.ranged}}">
+</label>
+<label>Force rating<input type="number" min="0" name="system.forceRating" value="{{system.forceRating}}">
+</label>
+<label>Committed dice<input type="number" min="0" name="system.committedForce" value="{{system.committedForce}}">
+</label>
+<label>Credits<input type="number" min="0" name="system.credits" value="{{system.credits}}">
+</label>{{/if}}
+</div>
+{{#unless isVehicle}}<div class="sf-button-row">
+<button type="button" data-action="force">Roll Force</button>
+<button type="button" data-action="skill" data-skill="cool">Cool</button>
+<button type="button" data-action="skill" data-skill="vigilance">Vigilance</button>
+</div>{{/unless}}</section>
+</div>
+      {{#if isVehicle}}<section class="sf-panel">
+<h2>Deflector shields</h2>
+<div class="sf-form-grid">
+{{#each shields}}<label>{{key}}<input type="number" min="0" max="4" name="system.shields.{{key}}" value="{{value}}">
+</label>{{/each}}
+</div>
+<div class="sf-form-grid">
+<label>Crew<input name="system.crew" value="{{system.crew}}">
+</label>
+<label>Passengers<input name="system.passengers" value="{{system.passengers}}">
+</label>
+<label>Hyperdrive<input name="system.hyperdrive" value="{{system.hyperdrive}}">
+</label>
+<label>Cargo<input name="system.cargo" value="{{system.cargo}}">
+</label>
+</div>
+</section>{{else}}<section class="sf-panel">
+<h2>A place in the galaxy</h2>
+<div class="sf-form-grid">
+{{#if campaign.obligation}}<fieldset>
+<legend>Obligation</legend>
+<label>Type<input name="system.obligation.label" value="{{system.obligation.label}}">
+</label>
+<label>Value<input type="number" name="system.obligation.value" value="{{system.obligation.value}}" min="0" max="100">
+</label>
+</fieldset>{{/if}}{{#if campaign.duty}}<fieldset>
+<legend>Duty</legend>
+<label>Type<input name="system.duty.label" value="{{system.duty.label}}">
+</label>
+<label>Value<input type="number" name="system.duty.value" value="{{system.duty.value}}" min="0" max="100">
+</label>
+<label>Contribution<input type="number" name="system.duty.contribution" value="{{system.duty.contribution}}" min="0">
+</label>
+</fieldset>{{/if}}{{#if campaign.morality}}<fieldset>
+<legend>Morality</legend>
+<label>Value<input type="number" name="system.morality.value" value="{{system.morality.value}}" min="0" max="100">
+</label>
+<label>Conflict<input type="number" name="system.morality.conflict" value="{{system.morality.conflict}}" min="0">
+</label>
+</fieldset>{{/if}}
+</div>
+</section>{{/if}}
+      {{#if isMinion}}<section class="sf-panel">
+<h2>Minion group</h2>
+<label>Starting members<input type="number" min="1" name="system.groupSize" value="{{system.groupSize}}">
+</label>
+<p>{{minions.remaining}} active · {{minions.defeated}} defeated · group skill rank {{minions.rank}}</p>
+<p class="sf-hint">Enter the wound threshold of one member above. Mark trained group skills on the Skills tab.</p>
+</section>{{/if}}
+    {{/if}}
+    {{#if showSkills}}<section class="sf-panel">
+<h2>Skills <small>Roll a name to build its pool</small>
+</h2>
+<div class="sf-skill-head">
+<span>Skill / characteristic</span>
+<span>Career</span>
+<span>Rank</span>
+<span>Advance</span>
+</div>
+{{#each skills}}<div class="sf-skill">
+<div>
+<button type="button" data-action="skill" data-skill="{{key}}">{{label}}</button>
+<small>{{pool}}</small>
+<select name="system.skills.{{key}}.characteristic" aria-label="{{label}} characteristic">{{selectOptions characteristicOptions selected=characteristic}}</select>
+</div>
+<label>
+<input type="checkbox" name="system.skills.{{key}}.career" {{checked career}} aria-label="{{label}} career skill">
+{{#if ../isMinion}}<input type="checkbox" name="system.skills.{{key}}.group" {{checked group}} aria-label="{{label}} minion group skill">{{/if}}
+</label>
+<input type="number" name="system.skills.{{key}}.rank" min="0" max="5" value="{{rank}}" aria-label="{{label}} rank">
+<button type="button" data-action="buySkill" data-skill="{{key}}">+ XP</button>
+</div>{{/each}}
+</section>{{/if}}
+    {{#if inventory}}<section class="sf-panel">
+<div class="sf-section-heading">
+<h2>Equipment & abilities</h2>
+<button type="button" data-action="addItem">Add item</button>
+</div>
+<p class="sf-hint">Drag entries from the local compendiums onto this sheet. Open an item for statistics and its book reference.</p>
+{{#each items}}<div class="sf-item-row">
+<img src="{{img}}" alt="">
+<div>
+<button type="button" data-action="item" data-item="{{id}}">{{name}}</button>
+<small>{{type}} · {{system.source.book}} {{system.source.page}}</small>
+</div>
+<span>×{{system.quantity}}</span>
+{{#if weapon}}<button type="button" data-action="skill" data-item="{{id}}">Roll</button>{{/if}}
+<button type="button" data-action="removeItem" data-item="{{id}}" aria-label="Remove {{name}}">×</button>
+</div>{{else}}<p>Ready for the first loadout.</p>{{/each}}
+</section>{{/if}}
+    {{#if advancement}}<section class="sf-panel">
+<h2>Build a character. Follow a path.</h2>
+<div class="sf-form-grid">
+<label>Available XP<input type="number" min="0" name="system.xp.available" value="{{system.xp.available}}">
+</label>
+<label>Total earned XP<input type="number" min="0" name="system.xp.total" value="{{system.xp.total}}">
+</label>
+<label>Phase<select name="system.phase">
+<option value="creation" {{#if creation}}selected{{/if}}>Character creation</option>
+<option value="play" {{#unless creation}}selected{{/unless}}>Campaign play</option>
+</select>
+</label>
+</div>
+<button type="button" data-action="createCharacter">Choose starting species & career</button>
+<p class="sf-hint">Purchase connected talents with available XP. Consult the book for the talent's effect. Grit, Toughened and Force Rating adjust their native resources; other effects are applied from the book.</p>
+</section>
+{{#each specializations}}<section class="sf-panel">
+<h2>{{name}}</h2>
+<p class="sf-hint">{{source.book}} · p. {{source.page}} · {{#if verified}}Structured graph imported{{else}}Awaiting source chart verification{{/if}}
+</p>
+{{#if nodes.length}}<div class="sf-tree">
+<svg viewBox="0 0 800 650" preserveAspectRatio="none" aria-hidden="true">
+{{#each edges}}<line x1="{{x1}}" y1="{{y1}}" x2="{{x2}}" y2="{{y2}}"/>{{/each}}
+</svg>
+{{#each nodes}}<button type="button" class="sf-talent {{#if owned}}owned{{/if}} {{#if knownElsewhere}}owned{{/if}} {{#if available}}available{{/if}}" style="left:{{x}}%;top:{{y}}%" data-action="buyTalent" data-item="{{itemId}}" data-node="{{id}}" {{#if disabled}}disabled{{/if}}>
+<span>{{name}}</span>
+<small>
+{{#if owned}}Purchased{{else}}{{#if knownElsewhere}}Learned in another tree{{else}}{{cost}} XP{{/if}}{{/if}}
+</small>
+</button>{{/each}}
+</div>{{else}}<p>Add the chart with the private PDF tree importer. A list of talent names alone does not define a valid upgrade path.</p>{{/if}}
+</section>{{else}}<section class="sf-panel">
+<p>Add a specialization from the library to see its upgrade paths.</p>
+</section>{{/each}}
+<section class="sf-panel">
+<h2>Advancement record</h2>
+{{#each system.advancement}}<p>{{name}} <small>{{cost}} XP</small>
+</p>{{else}}<p>No XP purchases yet.</p>{{/each}}
+</section>{{/if}}
+    {{#if story}}<section class="sf-panel">
+<h2>Logbook</h2>
+{{#if isVehicle}}<label>Notes<textarea name="system.notes" rows="15">{{system.notes}}</textarea>
+</label>{{else}}<label>Motivation<input name="system.motivation" value="{{system.motivation}}">
+</label>
+<label>Biography & notes<textarea name="system.biography" rows="12">{{system.biography}}</textarea>
+</label>
+<div class="sf-form-grid">
+<label>Emotional strength<input name="system.morality.strength" value="{{system.morality.strength}}">
+</label>
+<label>Emotional weakness<input name="system.morality.weakness" value="{{system.morality.weakness}}">
+</label>
+</div>{{/if}}
+<h3>Source reference</h3>
+<div class="sf-form-grid">
+<label>Book<input name="system.source.book" value="{{system.source.book}}">
+</label>
+<label>Page<input name="system.source.page" value="{{system.source.page}}">
+</label>
+</div>
+</section>{{/if}}
+  </main>
+<footer class="sf-footer">
+<span>HILL TO DIE ON</span>
+<span>Independent tooling · Keep the rulebooks at the table</span>
+</footer>
+</div>

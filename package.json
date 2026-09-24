@@ -1,0 +1,22 @@
+{
+  "name": "starfall-narrative-toolkit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "An independent Foundry VTT system for the three FFG Star Wars roleplaying lines.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "build": "node scripts/build.mjs",
+    "import:database": "node scripts/import-database.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "fflate": "^0.8.3",
+    "handlebars": "^4.7.9"
+  }
+}

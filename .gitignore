@@ -1,0 +1,12 @@
+node_modules/
+.local/
+dist/
+coverage/
+*.log
+*.pdf
+*.sql
+*.accdb
+*.mdb
+.env*
+!.env.example
+test-results/

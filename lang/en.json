@@ -1,0 +1,17 @@
+{
+  "TYPES.Actor.character": "Character",
+  "TYPES.Actor.minion": "Minion group",
+  "TYPES.Actor.rival": "Rival",
+  "TYPES.Actor.nemesis": "Nemesis",
+  "TYPES.Actor.vehicle": "Vehicle",
+  "TYPES.Item.weapon": "Weapon",
+  "TYPES.Item.armor": "Armor",
+  "TYPES.Item.gear": "Gear",
+  "TYPES.Item.talent": "Talent",
+  "TYPES.Item.forcePower": "Force power",
+  "TYPES.Item.species": "Species",
+  "TYPES.Item.career": "Career",
+  "TYPES.Item.specialization": "Specialization",
+  "TYPES.Item.attachment": "Attachment",
+  "TYPES.Item.reference": "Reference"
+}
