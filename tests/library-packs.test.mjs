@@ -5,7 +5,10 @@ import {
   libraryPackName,
   refreshLibraryLabels,
 } from "../src/library-packs.mjs";
-import { validateBundle } from "../src/library.mjs";
+import {
+  mergeSpecializationEnrichment,
+  validateBundle,
+} from "../src/library.mjs";
 
 const pack = (collection, documentName, label) => ({
   collection,
@@ -81,5 +84,90 @@ test("existing version-one library exports still import with full schema validat
         documents: { Item: [{ _id: "invalid", name: "Reference" }] },
       }),
     /unique valid IDs/,
+  );
+});
+
+test("private talent guidance fills missing tree fields without replacing user data", () => {
+  const existing = {
+      type: "specialization",
+      system: {
+        tree: {
+          verified: true,
+          edges: [["a", "b"]],
+          nodes: [
+            {
+              id: "a",
+              name: "First",
+              summary: "User-authored guidance",
+              row: 0,
+              col: 0,
+              cost: 5,
+            },
+            { id: "b", name: "Second", row: 1, col: 0, cost: 10 },
+          ],
+        },
+      },
+    },
+    incoming = {
+      type: "specialization",
+      system: {
+        tree: {
+          verified: true,
+          edges: [["a", "b"]],
+          nodes: [
+            { id: "a", summary: "Imported first", effects: [] },
+            {
+              id: "b",
+              summary: "Imported second",
+              activation: "Passive",
+              effects: [
+                {
+                  type: "pool",
+                  operation: "add",
+                  target: "boost",
+                  count: 1,
+                  skills: ["leadership"],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+    merged = mergeSpecializationEnrichment(existing, incoming);
+  assert.equal(merged.nodes[0].summary, "User-authored guidance");
+  assert.equal(merged.nodes[1].summary, "Imported second");
+  assert.equal(merged.nodes[1].effects[0].target, "boost");
+  assert.deepEqual(merged.edges, [["a", "b"]]);
+});
+
+test("private signature trees use the same additive enrichment boundary", () => {
+  const existing = {
+      type: "signatureAbility",
+      system: { tree: { verified: false, nodes: [], edges: [] } },
+    },
+    incoming = {
+      type: "signatureAbility",
+      system: {
+        tree: {
+          verified: true,
+          edges: [],
+          nodes: [
+            {
+              id: "base",
+              name: "Base ability",
+              row: 0,
+              col: 0,
+              span: 4,
+              cost: 30,
+              entry: true,
+            },
+          ],
+        },
+      },
+    };
+  assert.deepEqual(
+    mergeSpecializationEnrichment(existing, incoming),
+    incoming.system.tree,
   );
 });

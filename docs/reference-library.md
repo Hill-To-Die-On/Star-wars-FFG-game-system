@@ -10,6 +10,8 @@ The filter applies to the catalogue and its search/detail API for every connecte
 
 **Populate compendiums** imports all references allowed by the owned-book settings, regardless of the current search/category filter. Repeated imports preserve existing documents. With all books enabled, this creates 4,495 Items, 399 vehicle references and 1,701 journals. Source data absent from the database remains marked as incomplete; a name, list of talents or book citation does not supply missing statistics or talent-tree connections.
 
+The optional local enrichment command writes connected specialization and signature-ability charts, player guidance, motivation guidance and structured passive modifiers only to `.local/catalog.json`. Use `--include-private-talent-text` when the locally held dataset may be used for the current table. The public repository and release archive never contain that prose. Importing the private file fills missing node guidance and effects while preserving user-authored specialization text and graph edits. The 38 public signature entries remain book-reference placeholders until this private enrichment supplies the 36 available graphs.
+
 The API is available to GM tools and player interfaces:
 
 ```js

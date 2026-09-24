@@ -21,6 +21,26 @@ export const RULE_LINES = {
     freeSpecializationRanks: 2,
   },
 };
+const RULE_THEMES = new Set(Object.values(RULE_LINES).map((rule) => rule.theme));
+
+export function resolveSheetTheme(
+  selection = "auto",
+  line,
+  campaignLines = [],
+) {
+  if (selection !== "auto" && RULE_THEMES.has(selection)) return selection;
+  if (RULE_LINES[line]) return RULE_LINES[line].theme;
+  const campaignLine = (Array.isArray(campaignLines) ? campaignLines : []).find(
+    (candidate) => RULE_LINES[candidate],
+  );
+  return RULE_LINES[campaignLine ?? "edge"].theme;
+}
+
+export function resolveInterfaceTheme(selection = "auto", campaignLines = []) {
+  if (selection === "default") return null;
+  return resolveSheetTheme(selection, undefined, campaignLines);
+}
+
 export const DEFAULT_CAMPAIGN = {
   lines: ["edge", "age", "force"],
   obligation: true,

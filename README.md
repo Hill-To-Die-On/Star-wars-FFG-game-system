@@ -14,9 +14,13 @@ https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/down
 
 Create a world using **Star Wars FFG**. Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
 
+The compact seven-die tray beside the chat bar supports quick ad-hoc pools and follows Foundry's public, GM, blind and self chat buttons. Each player can hide it under **Configure Settings → Star Wars FFG → Compact dice tray by chat**.
+
 ## At the table
 
-- Character, minion, rival, nemesis, vehicle and **Group** sheets. Frontier, Rebellion and Mystic themes can coexist in a world.
+- Character, minion, rival, nemesis, vehicle and **Group** sheets use an original print-inspired layout and paper texture. Automatic mode maps Edge characters to Frontier, Age characters to Rebellion and Force characters to Mystic; vehicles and Groups follow the campaign's first enabled ruleset. **Default sheet theme** can override automatic selection for one client, and each sheet can make its own final choice.
+- **Foundry interface theme** applies the same three schemes across an original cinematic space backdrop, locally bundled interface typography, custom sidebar and pause icons, chat cards, combat tracker, scene tools, player list, hotbar, windows, journals and handouts. It can follow the campaign automatically, use a manually selected scheme or leave Foundry's standard interface untouched. Authored scene artwork remains unobscured.
+- The paper-style Skills tab keeps all 35 standard skills, pools, characteristics, career/group marks, ranks and XP controls in one desktop view. Each user can switch between rulebook-style groups and a single A–Z list; both retain the balanced three-column layout. Its `+` control adds as many persistent custom skills as a character needs, with edit/remove controls, XP advancement and the same automatic/manual roll workflow.
 - Group records include a **Base of Operations**, members, Obligation, optional Duty/Morality, motivations, resources, possessions, contacts and the world's shared Destiny pool. Link characters and use **Sync linked characters** to refresh their recorded story scores.
 - All seven narrative dice, standard symbol faces, separate result axes, Triumph/Despair retention, and upgrades/downgrades.
 - Skills, wounds, strain, defense, Force dice, inventory, vehicle condition and shields.
@@ -26,10 +30,12 @@ Create a world using **Star Wars FFG**. Enable **Dice So Nice 6.3.1 or later** f
 - **Private library** imports local JSON into world compendiums. Importing again preserves existing entries.
 - **SW Adversaries** imports [site collections or local exports](docs/sw-adversaries.md) as native adversaries and vehicles. Descriptions, ability rules, motivations and related source records are retained in a private GM compendium and supplied to the DoR adapter.
 - **GM source library** searches decrypted source notes. **GM source key** backs up or restores the browser-held key needed to unlock them; source prose is encrypted before world storage.
-- The Advancement tab displays every owned specialization as an interactive tree. Click an eligible talent to spend XP; purchased and shared unranked talents are marked. Drag additional specializations from the compendium to acquire them at their career/universal XP price.
+- The Advancement tab displays every owned specialization as an interactive tree. Privately imported node guidance appears inside each box. Click an eligible talent to spend XP; purchased and shared unranked talents are marked. Structured passive talent effects marked **Auto** feed both sheet and API dice pools.
+- Signature abilities attach to an eligible owned career specialization. Their base node stays locked until a matching bottom-row talent is learned, after which the connected upgrades use the same click-to-buy XP ledger. The supplied private data provides 36 of 38 graphs; the coverage register names the two charts still needed.
+- The Story tab supports any number of structured motivations with category, active/dormant state, player/GM guidance and book reference. The freeform legacy field remains available. Dragging a motivation reference from a privately enriched library carries its local guidance onto the character.
 - Starting character choices apply the selected species and career, free skill ranks, the first specialization, and starting XP. Exceptional species rules require reference review. Purchases are recorded in the actor.
 
-This is an initial development release. Weapon qualities, most talent effects, critical-injury consequences, range adjudication, starship maneuvers and expansion subsystems still require the GM and source books. Automated checks do not constitute an end-to-end adventure playtest. See [validation](docs/validation.md) and [coverage](docs/source-coverage.md) for the exact evidence and remaining gaps.
+This is an initial development release. The private dataset supplies guidance for all 2,700 imported specialization nodes, most supplied signature-ability nodes, 298 motivation references and structured pool automation for 28 unique passive talents. Six signature graphs have incomplete node guidance, and two signature charts are absent. Other active or situational effects, weapon qualities, critical-injury consequences, range adjudication, starship maneuvers and expansion subsystems still require an explicit player/GM decision or source adjudication. Automated checks do not constitute an end-to-end adventure playtest. See [validation](docs/validation.md) and [coverage](docs/source-coverage.md) for the exact evidence and remaining gaps.
 
 ## Reference library and private chart import
 
@@ -42,18 +48,18 @@ Node 24 or later:
 ```powershell
 npm ci
 npm run import:database -- "path/to/database-backup.sql"
-python scripts/enrich-library.py "path/to/DataSet_Full DataSet" "path/to/PDF library"
+python scripts/enrich-library.py "path/to/DataSet_Full DataSet" "path/to/PDF library" --include-private-talent-text
 ```
 
-The output is `.local/catalog.json`, deliberately excluded from Git and public releases. Select that file using the **Private library** menu. SQL is parsed without executing it. Descriptions are excluded; names, mechanical values and source references are retained. The optional structured-data pass imports talent nodes and links, and fills matching vehicle statistics. It does not import illustrations or descriptive text.
+The output is `.local/catalog.json`, deliberately excluded from Git and public releases. Select that file using the **Private library** menu. SQL is parsed without executing it. Public database descriptions remain excluded. The optional flag copies locally held specialization, signature-ability and motivation guidance into this private file; it also imports machine-readable passive dice modifiers. Re-importing fills missing tree guidance and effects without replacing user-authored node text. Illustrations and source files are never imported.
 
-The supplied private sources produced 135 structurally validated specialization references. Of 399 vehicles, 162 have matched structured statistics; the other 237 remain explicitly incomplete pending source checks. These enrichments are separate from the public database. Missing chart coverage identifies 24 chart pages across four books, plus three standalone charts from a fifth book whose full PDF is absent.
+The supplied private sources produced 135 structurally validated specialization references and 36 structurally validated signature-ability graphs. Two signature charts are absent: Peerless Interception and Unmatched Teamwork. Of 399 vehicles, 162 have matched structured statistics; the other 237 remain explicitly incomplete pending source checks. These enrichments are separate from the public database. Missing specialization coverage identifies 24 chart pages across four books, plus three standalone charts from a fifth book whose full PDF is absent.
 
 [Source coverage and photo requests](docs/source-coverage.md) distinguish missing PDFs, structurally validated trees and pending comparison with the books. Unknown vehicle statistics remain marked, and unverified graphs cannot spend XP.
 
 ## Director of Realms
 
-The system exposes `game.system.api.directorOfRealms` with native actor facts, check guidance, narrative checks, damage handling, campaign configuration and accessible advancement choices. `game.system.api.actorContext(actor)` returns structured context for a character, including legal next talent purchases and source references.
+The system exposes `game.system.api.directorOfRealms` with native actor facts, check guidance, narrative checks, damage handling, campaign configuration and accessible advancement choices. `game.system.api.actorContext(actor)` returns structured motivations, learned talent and signature guidance, signature link/unlock state, legal next purchases and source references. `getCheckTalentRules(actor, skill)` reports automatic modifiers and unresolved decisions before DoR calls `executeCheck`; the same passive modifiers are applied by ordinary character-sheet rolls.
 
 Director of Realms needs to discover this adapter through its registry. The integration status and installation steps are recorded in [the integration guide](docs/director-of-realms.md). PDF intake remains private through Campaign Studio; it is not part of the public game-system download. A configured AI provider and separate adventure playtests are required before claiming autonomous GM acceptance.
 
@@ -72,4 +78,4 @@ API references: [Foundry system development](https://foundryvtt.com/article/syst
 
 MIT license for original project code and artwork only; third-party content is excluded from that grant.
 
-The interface uses locally bundled Roboto and Signika fonts. Font licences, dice symbol provenance and retained notices are recorded in [third-party notices](THIRD_PARTY_NOTICES.md).
+The interface uses locally bundled Roboto, Signika and Rajdhani fonts. Font licences, dice symbol provenance and retained notices are recorded in [third-party notices](THIRD_PARTY_NOTICES.md).

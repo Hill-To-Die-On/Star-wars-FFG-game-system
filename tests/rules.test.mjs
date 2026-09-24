@@ -27,6 +27,8 @@ import {
   validateCampaign,
   campaignGuidance,
   DEFAULT_CAMPAIGN,
+  resolveSheetTheme,
+  resolveInterfaceTheme,
 } from "../src/rules.mjs";
 test("all seven physical distributions match their independent symbol totals", () => {
   const expected = {
@@ -161,6 +163,22 @@ test("mixed campaigns retain three mechanics independently", () => {
   assert.ok(c.obligation && c.duty && c.morality);
   assert.match(campaignGuidance(c), /Do not grant a second starting package/);
   assert.throws(() => validateCampaign({ lines: [] }));
+});
+test("automatic themes follow the actor line and campaign lead", () => {
+  assert.equal(resolveSheetTheme("auto", "edge"), "frontier");
+  assert.equal(resolveSheetTheme("auto", "age"), "rebellion");
+  assert.equal(resolveSheetTheme("auto", "force"), "mystic");
+  assert.equal(
+    resolveSheetTheme("auto", undefined, ["age", "force"]),
+    "rebellion",
+  );
+  assert.equal(
+    resolveSheetTheme("mystic", "edge", ["edge"]),
+    "mystic",
+    "a manual sheet choice overrides the ruleset",
+  );
+  assert.equal(resolveInterfaceTheme("default", ["edge"]), null);
+  assert.equal(resolveInterfaceTheme("auto", ["force"]), "mystic");
 });
 test("initiative prioritizes success, then advantage, then PC tie", () => {
   assert.ok(

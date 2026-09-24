@@ -73,7 +73,6 @@ export function creationPlan({
   );
   return {
     line,
-    theme: rule.theme,
     phase: "creation",
     species: species.name,
     career: career.name,

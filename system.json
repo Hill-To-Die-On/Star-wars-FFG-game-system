@@ -15,7 +15,7 @@
     }
   ],
   "esmodules": ["src/main.mjs"],
-  "styles": ["styles/star-wars.css"],
+  "styles": ["styles/star-wars.css", "styles/star-wars-interface.css"],
   "languages": [
     {
       "lang": "en",
@@ -41,6 +41,7 @@
       "species": {},
       "career": {},
       "specialization": {},
+      "signatureAbility": {},
       "attachment": {},
       "reference": {}
     }

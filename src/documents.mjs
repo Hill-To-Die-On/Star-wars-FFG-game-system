@@ -8,6 +8,32 @@ import {
   characteristicPurchase,
   specializationCost,
 } from "./advancement.mjs";
+import {
+  appendCustomSkill,
+  customSkillDefinition,
+  customSkillKey,
+  discardCustomSkill,
+  replaceCustomSkill,
+  resolveCustomSkill,
+} from "./custom-skills.mjs";
+import {
+  applyTalentPool,
+  effectiveTalentTraits,
+  learnedTalentRules,
+  talentPurchaseUpdates,
+  talentRulesForCheck as resolveTalentRulesForCheck,
+} from "./talent-rules.mjs";
+import {
+  appendMotivation,
+  discardMotivation,
+  normalizeMotivation,
+  replaceMotivation,
+} from "./motivations.mjs";
+import {
+  availableSignatureNodes,
+  signatureAttachmentCandidates,
+  validateSignatureAttachment,
+} from "./signature-abilities.mjs";
 export class StarWarsActor extends Actor {
   assertOwner() {
     if (!this.isOwner) throw new Error("Owner permission is required.");
@@ -15,8 +41,45 @@ export class StarWarsActor extends Actor {
   get isVehicle() {
     return this.type === "vehicle";
   }
+  customSkillSources() {
+    return Array.from(this.system.customSkills ?? [], (skill) => ({
+      id: skill.id,
+      label: skill.label,
+      characteristic: skill.characteristic,
+      type: skill.type,
+      rank: skill.rank,
+      career: skill.career,
+      group: skill.group,
+    }));
+  }
+  motivationSources() {
+    return Array.from(this.system.motivations ?? [], (motivation) =>
+      normalizeMotivation(motivation),
+    );
+  }
+  skillDefinition(key) {
+    const nativeKey = SKILLS[key] ? key : skillKey(key);
+    if (nativeKey)
+      return {
+        key: nativeKey,
+        ...SKILLS[nativeKey],
+        state: this.system.skills[nativeKey],
+        custom: false,
+      };
+    const state = resolveCustomSkill(this.system.customSkills, key),
+      definition = customSkillDefinition(state);
+    return definition
+      ? {
+          key: customSkillKey(state.id),
+          id: state.id,
+          ...definition,
+          state,
+        }
+      : null;
+  }
   skillRank(key) {
-    const skill = this.system.skills?.[key];
+    const definition = this.skillDefinition(key),
+      skill = definition?.state;
     if (!skill) throw new Error(`Unknown skill: ${key}`);
     return this.type === "minion"
       ? skill.group
@@ -31,22 +94,40 @@ export class StarWarsActor extends Actor {
         : 0
       : skill.rank;
   }
+  learnedTalentRules() {
+    return learnedTalentRules(this);
+  }
+  effectiveTraits() {
+    return effectiveTalentTraits(this);
+  }
+  talentRulesForCheck(key, options = {}) {
+    const definition = this.skillDefinition(key);
+    if (!definition) throw new Error(`Unknown skill: ${key}`);
+    return resolveTalentRulesForCheck(this, definition, options);
+  }
   async rollSkill(key, options = {}) {
     this.assertOwner();
-    key = skillKey(key);
-    if (!key || this.isVehicle || this.type === "group")
+    const definition = this.skillDefinition(key);
+    if (!definition || this.isVehicle || this.type === "group")
       throw new Error("Choose a character's native skill.");
     const characteristic =
-      this.system.skills[key].characteristic || SKILLS[key].characteristic;
-    const pool = skillPool(
-      this.system.characteristics[characteristic],
-      this.skillRank(key),
-      options,
-    );
+      definition.state.characteristic || definition.characteristic;
+    const { selectedTalents = [], label, ...rollOptions } = options,
+      rules = this.talentRulesForCheck(definition.key, { selectedTalents }),
+      pool = applyTalentPool(
+        skillPool(
+          this.system.characteristics[characteristic],
+          this.skillRank(definition.key),
+          rollOptions,
+        ),
+        rules,
+      );
     return rollPool(pool, {
-      label: `${this.name} · ${SKILLS[key].label}`,
+      label: label ?? `${this.name} · ${definition.label}`,
       actor: this,
-      ...options,
+      ...rollOptions,
+      automaticResults: rules.automaticResults,
+      ruleNotes: rules.reasons,
     });
   }
   async rollForce(options = {}) {
@@ -86,7 +167,11 @@ export class StarWarsActor extends Actor {
       );
     const applied = damageAfterSoak(
       amount,
-      ignoreSoak ? 0 : this.isVehicle ? this.system.armor : this.system.soak,
+      ignoreSoak
+        ? 0
+        : this.isVehicle
+          ? this.system.armor
+          : this.effectiveTraits().soak,
       pierce,
       breach,
       scale,
@@ -118,7 +203,28 @@ export class StarWarsActor extends Actor {
     const owned = ledger
       .filter((e) => e.itemId === itemId)
       .map((e) => e.nodeId);
-    const known = ledger.filter((e) => e.ranked === false).map((e) => e.name);
+    const specializationIds = new Set(
+        this.items
+          .filter((candidate) => candidate.type === "specialization")
+          .map((candidate) => candidate.id),
+      ),
+      known =
+        item.type === "specialization"
+          ? ledger
+              .filter(
+                (entry) =>
+                  entry.ranked === false &&
+                  specializationIds.has(entry.itemId),
+              )
+              .map((entry) => entry.name)
+          : [];
+    if (
+      item.type === "signatureAbility" &&
+      !availableSignatureNodes(this, item).some((node) => node.id === nodeId)
+    )
+      throw new Error(
+        "This signature upgrade is locked. Learn a matching bottom-row talent on its linked specialization first, then follow the connected ability path.",
+      );
     const purchase = talentPurchase(
       item.system.tree,
       owned,
@@ -137,16 +243,22 @@ export class StarWarsActor extends Actor {
           cost: purchase.node.cost,
           ranked: purchase.node.ranked,
           source: item.system.source,
+          category: item.type,
           time: Date.now(),
         },
       ],
     };
-    const name = purchase.node.name.toLowerCase();
-    if (name === "grit")
+    const name = purchase.node.name.toLowerCase(),
+      structuredChanges = talentPurchaseUpdates(this, purchase.node),
+      hasStructuredAttribute = (purchase.node.effects ?? []).some(
+        (effect) => effect.type === "attribute" && !effect.requirements,
+      );
+    Object.assign(changes, structuredChanges);
+    if (!hasStructuredAttribute && name === "grit")
       changes["system.strain.max"] = this.system.strain.max + 1;
-    if (name === "toughened")
+    if (!hasStructuredAttribute && name === "toughened")
       changes["system.wounds.max"] = this.system.wounds.max + 2;
-    if (name === "force rating")
+    if (!hasStructuredAttribute && name === "force rating")
       changes["system.forceRating"] = this.system.forceRating + 1;
     if (name === "dedication") {
       const current = this.system.characteristics[characteristic];
@@ -164,7 +276,8 @@ export class StarWarsActor extends Actor {
   }
   async buySkill(key) {
     this.assertOwner();
-    const skill = this.system.skills[key];
+    const definition = this.skillDefinition(key),
+      skill = definition?.state;
     if (!skill) throw new Error("Unknown skill.");
     const purchase = skillPurchase(
       skill.rank,
@@ -172,18 +285,76 @@ export class StarWarsActor extends Actor {
       this.system.xp.available,
       this.system.phase === "creation",
     );
-    await this.update({
-      [`system.skills.${key}.rank`]: purchase.rank,
+    const updates = {
       "system.xp.available": purchase.xp,
       "system.advancement": [
         ...this.system.advancement,
         {
-          name: `${SKILLS[key].label} ${purchase.rank}`,
+          name: `${definition.label} ${purchase.rank}`,
           cost: purchase.cost,
           time: Date.now(),
         },
       ],
+    };
+    if (definition.custom) {
+      const customSkills = this.customSkillSources(),
+        custom = customSkills.find((candidate) => candidate.id === definition.id);
+      custom.rank = purchase.rank;
+      updates["system.customSkills"] = customSkills;
+    } else updates[`system.skills.${definition.key}.rank`] = purchase.rank;
+    await this.update(updates);
+  }
+  async createCustomSkill(data) {
+    this.assertOwner();
+    if (this.isVehicle || this.type === "group")
+      throw new Error("Custom skills belong to character and adversary sheets.");
+    const customSkills = appendCustomSkill(this.customSkillSources(), data, {
+      id: foundry.utils.randomID(),
+      rankCap: this.type === "character" ? 5 : 10,
     });
+    await this.update({ "system.customSkills": customSkills });
+    return customSkills.at(-1);
+  }
+  async updateCustomSkill(id, data) {
+    this.assertOwner();
+    const customSkills = replaceCustomSkill(
+      this.customSkillSources(),
+      id,
+      data,
+      { rankCap: this.type === "character" ? 5 : 10 },
+    );
+    await this.update({ "system.customSkills": customSkills });
+    return customSkills.find((skill) => skill.id === id);
+  }
+  async deleteCustomSkill(id) {
+    this.assertOwner();
+    const customSkills = discardCustomSkill(this.customSkillSources(), id);
+    await this.update({ "system.customSkills": customSkills });
+  }
+  async createMotivation(data) {
+    this.assertOwner();
+    if (this.type !== "character")
+      throw new Error("Structured motivations belong to player characters.");
+    const motivations = appendMotivation(this.motivationSources(), data, {
+      id: foundry.utils.randomID(),
+    });
+    await this.update({ "system.motivations": motivations });
+    return motivations.at(-1);
+  }
+  async updateMotivation(id, data) {
+    this.assertOwner();
+    const motivations = replaceMotivation(
+      this.motivationSources(),
+      id,
+      data,
+    );
+    await this.update({ "system.motivations": motivations });
+    return motivations.find((motivation) => motivation.id === id);
+  }
+  async deleteMotivation(id) {
+    this.assertOwner();
+    const motivations = discardMotivation(this.motivationSources(), id);
+    await this.update({ "system.motivations": motivations });
   }
   async buyCharacteristic(key) {
     this.assertOwner();
@@ -262,6 +433,36 @@ export class StarWarsActor extends Actor {
       updates["system.forceRating"] = item.system.grantedForceRating;
     await this.update(updates);
     return { cost, itemId: copy._id };
+  }
+  signatureAttachmentCandidates(item) {
+    return signatureAttachmentCandidates(this, item);
+  }
+  async acquireSignatureAbility(item, specializationId) {
+    this.assertOwner();
+    if (this.type !== "character")
+      throw new Error("Signature abilities belong to player characters.");
+    validateSignatureAttachment(this, item, specializationId);
+    const identity = (name) =>
+      name
+        .replace(/\s+\([^)]*\)$/, " ")
+        .trim()
+        .toLocaleLowerCase();
+    if (
+      this.items.some(
+        (owned) =>
+          owned.type === "signatureAbility" &&
+          identity(owned.name) === identity(item.name),
+      )
+    )
+      throw new Error("This signature ability is already attached.");
+    const copy = item.toObject();
+    delete copy._id;
+    copy.system.linkedSpecializationId = specializationId;
+    const [created] = await this.createEmbeddedDocuments("Item", [copy]);
+    return {
+      itemId: created.id,
+      linkedSpecializationId: specializationId,
+    };
   }
 }
 export class StarWarsItem extends Item {

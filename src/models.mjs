@@ -17,12 +17,47 @@ const resource = (max = 10) =>
   new f.SchemaField({ value: number(), max: number(max) });
 const source = () =>
   new f.SchemaField({ book: text(), page: text(), table: text(), id: text() });
+const customSkills = (rankMax = 5) =>
+  new f.ArrayField(
+    new f.SchemaField({
+      id: text(),
+      label: text(),
+      characteristic: new f.StringField({
+        required: true,
+        nullable: false,
+        initial: "intellect",
+        choices: Object.keys(CHARACTERISTICS),
+      }),
+      type: new f.StringField({
+        required: true,
+        nullable: false,
+        initial: "general",
+        choices: ["general", "melee", "ranged"],
+      }),
+      rank: number(0, rankMax),
+      career: bool(),
+      group: bool(),
+    }),
+    { initial: [] },
+  );
+const motivations = () =>
+  new f.ArrayField(
+    new f.SchemaField({
+      id: text(),
+      name: text(),
+      category: text(),
+      description: text(),
+      active: bool(true),
+      source: source(),
+    }),
+    { initial: [] },
+  );
 export class CharacterData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
       theme: new f.StringField({
-        initial: "frontier",
-        choices: Object.keys(THEMES),
+        initial: "auto",
+        choices: ["auto", ...Object.keys(THEMES)],
       }),
       line: new f.StringField({
         initial: "edge",
@@ -35,6 +70,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       species: text(),
       career: text(),
       motivation: text(),
+      motivations: motivations(),
       biography: text(),
       characteristics: new f.SchemaField(
         Object.fromEntries(
@@ -54,6 +90,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
           ]),
         ),
       ),
+      customSkills: customSkills(),
       wounds: resource(),
       strain: resource(),
       soak: number(2),
@@ -100,6 +137,7 @@ export class AdversaryData extends CharacterData {
         ]),
       ),
     );
+    schema.customSkills = customSkills(10);
     return schema;
   }
 }
@@ -107,8 +145,8 @@ export class VehicleData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
       theme: new f.StringField({
-        initial: "frontier",
-        choices: Object.keys(THEMES),
+        initial: "auto",
+        choices: ["auto", ...Object.keys(THEMES)],
       }),
       hullTrauma: resource(20),
       systemStrain: resource(15),
@@ -144,8 +182,8 @@ export class GroupData extends foundry.abstract.TypeDataModel {
   static defineSchema() {
     return {
       theme: new f.StringField({
-        initial: "frontier",
-        choices: Object.keys(THEMES),
+        initial: "auto",
+        choices: ["auto", ...Object.keys(THEMES)],
       }),
       base: new f.SchemaField({
         name: text(),
@@ -202,6 +240,10 @@ export class ItemData extends foundry.abstract.TypeDataModel {
       forceRating: number(0, 10),
       universal: bool(),
       grantedForceRating: number(0, 10),
+      eligibleCareers: list(),
+      abilityCategory: text(),
+      matchingNodes: new f.ArrayField(bool(), { initial: [] }),
+      linkedSpecializationId: text(),
       tree: new f.ObjectField({
         initial: { nodes: [], edges: [], verified: false },
       }),

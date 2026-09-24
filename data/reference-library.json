@@ -113075,14 +113075,14 @@
         }
       },
       {
-        "_id": "46adb42c9ef3b256",
+        "_id": "14b710c863b5df75",
         "name": "Always Get My Mark",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:29:0"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113105,18 +113105,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Bounty Hunter"
+          ],
+          "abilityCategory": "Investigator",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "876c095bdd85b152",
+        "_id": "2af61b303e4948d1",
         "name": "Counterespionage",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:19:1"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113139,18 +113152,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Spy"
+          ],
+          "abilityCategory": "Under Cover",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "6266a94b1e453e53",
+        "_id": "a39a06df36791a5c",
         "name": "Deadly Reputation",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:13:2"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113173,18 +113199,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Warrior"
+          ],
+          "abilityCategory": "Defensive",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "3a36bc05ae567bec",
+        "_id": "cc81b95180ba1abd",
         "name": "Diplomatic Solution",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:37:3"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113207,18 +113246,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Diplomat"
+          ],
+          "abilityCategory": "Politics",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "0af63c4d1a635be6",
+        "_id": "53d0f62f0c0a8b59",
         "name": "Fated Duel",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:9:4"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113241,18 +113293,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Guardian"
+          ],
+          "abilityCategory": "Combat",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "c78171e09d12eec8",
+        "_id": "8e1744a64a00f2af",
         "name": "Insightful Revelation",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:25:5"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113275,18 +113340,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Colonist"
+          ],
+          "abilityCategory": "Inner Knowledge",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "91f189ee627b1de5",
+        "_id": "69a4f07191441040",
         "name": "Inventive Creation",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:33:6"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113309,18 +113387,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Technician"
+          ],
+          "abilityCategory": "Engineering (Mechanical)",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "9728298ff6030bed",
+        "_id": "b0b9df26e3696471",
         "name": "Last One Standing",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:3:7"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113343,18 +113434,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Hired Gun"
+          ],
+          "abilityCategory": "Combat",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "26596a7d1689fbd9",
+        "_id": "050773c71eaabf40",
         "name": "Much to Learn",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:27:8"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113377,18 +113481,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Consular"
+          ],
+          "abilityCategory": "Combat Support",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "407a88eaf2a5d12f",
+        "_id": "014acf43c77719ab",
         "name": "My City",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:11:9"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113411,18 +113528,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Sentinel"
+          ],
+          "abilityCategory": "Investigator",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "c3e05ca6ee43a3b7",
+        "_id": "5678eca354e56769",
         "name": "Narrow Escape",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:1:10"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113445,18 +113575,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Smuggler"
+          ],
+          "abilityCategory": "Defensive",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "00a51569fd190b89",
+        "_id": "12f934905ab41a42",
         "name": "Peerless Interception",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:24:11"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113479,18 +113622,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Jedi"
+          ],
+          "abilityCategory": "Defensive",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "0b8697d4db3f3eb9",
+        "_id": "207d7f84c6825150",
         "name": "Prophecy",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:17:12"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113513,18 +113669,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Mystic"
+          ],
+          "abilityCategory": "Leader",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "13f4c49379fa9f9c",
+        "_id": "6bf3e4abb9f29f90",
         "name": "Rousing Oratory",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:35:13"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113547,18 +113716,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Commander"
+          ],
+          "abilityCategory": "Leader",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "293b5680e40165c7",
+        "_id": "d8f60e3de3611008",
         "name": "Sudden Discovery",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:7:14"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113581,18 +113763,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Explorer"
+          ],
+          "abilityCategory": "Explorer",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "e48b846c2de444be",
+        "_id": "559b29ce2ecf48bd",
         "name": "The Bigger They Are…",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:5:15"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113615,18 +113810,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Soldier"
+          ],
+          "abilityCategory": "Combat Support",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "d6253dee9e7ccc9f",
+        "_id": "b41d2eef63765777",
         "name": "The Harder They Fall",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:32:16"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113649,18 +113857,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Engineer"
+          ],
+          "abilityCategory": "Engineering (Mechanical)",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "560faed9feb7acab",
+        "_id": "997f149704958556",
         "name": "This One Is Mine",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:21:17"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113683,18 +113904,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Ace"
+          ],
+          "abilityCategory": "Piloting",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "270edfe8ba154961",
+        "_id": "9016bb3f91945684",
         "name": "Unexpected Demise",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:15:18"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113717,18 +113951,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Seeker"
+          ],
+          "abilityCategory": "Aggressive",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "b4fa19ae79fe4721",
+        "_id": "bb4974f69325dfd8",
         "name": "Unmatched Authority",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:36:19"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113751,18 +113998,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Commander"
+          ],
+          "abilityCategory": "Leader",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "ff49f411350b07d3",
+        "_id": "6aebea125ac0078e",
         "name": "Unmatched Calibration",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:34:20"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113785,18 +114045,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Technician"
+          ],
+          "abilityCategory": "Any",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "5a4bc218dbbc1d21",
+        "_id": "8429b514335a937b",
         "name": "Unmatched Courage",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:6:21"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113819,18 +114092,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Soldier"
+          ],
+          "abilityCategory": "Defensive",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "eb761e832ef085b5",
+        "_id": "3b6577659ea0119f",
         "name": "Unmatched Destiny",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:18:22"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113853,18 +114139,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Mystic"
+          ],
+          "abilityCategory": "Inner Knowledge",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "a74d284848bffbc9",
+        "_id": "933a5fa6f0a6a55d",
         "name": "Unmatched Devistation",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:30:23"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113887,18 +114186,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Bounty Hunter"
+          ],
+          "abilityCategory": "Aggressive",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "c4976b63662b8fb8",
+        "_id": "15d973998d4a02bd",
         "name": "Unmatched Expertise",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:26:24"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113921,18 +114233,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Colonist"
+          ],
+          "abilityCategory": "Any",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "c68582e2dbe1875f",
+        "_id": "4daf04e4e81f42bb",
         "name": "Unmatched Ferocity",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:14:25"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113955,18 +114280,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Warrior"
+          ],
+          "abilityCategory": "Aggressive",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "f9a714665ac6c590",
+        "_id": "e0a076d0e4e4c93a",
         "name": "Unmatched Fortune",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:2:26"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -113989,18 +114327,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Smuggler"
+          ],
+          "abilityCategory": "Any",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "681bb0d7e06338a3",
+        "_id": "0f2ca99054fd157f",
         "name": "Unmatched Heroism",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:10:27"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114023,18 +114374,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Guardian"
+          ],
+          "abilityCategory": "Combat Support",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "0e1581d6715eefcd",
+        "_id": "d211ba0a568b91e7",
         "name": "Unmatched Ingenuity",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:31:28"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114057,18 +114421,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Engineer"
+          ],
+          "abilityCategory": "Engineering (Mechanical)",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "1bbb344de840c31d",
+        "_id": "496aa5b4812ad91b",
         "name": "Unmatched Insight",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:38:29"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114091,18 +114468,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Diplomat"
+          ],
+          "abilityCategory": "Leader",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "833912b7db3f15d9",
+        "_id": "68c15a7d1e906110",
         "name": "Unmatched Mobility",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:8:30"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114125,18 +114515,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Explorer"
+          ],
+          "abilityCategory": "Gymnast",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "9abfc5bf32c88e3a",
+        "_id": "f36d3cdbb28ef49a",
         "name": "Unmatched Negotiation",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:28:31"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114159,18 +114562,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Consular"
+          ],
+          "abilityCategory": "Politics",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "2b55babe52f792d2",
+        "_id": "9b9322c86f6ab819",
         "name": "Unmatched Protection",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:4:32"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114193,18 +114609,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Hired Gun"
+          ],
+          "abilityCategory": "Defensive",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "039e1345b23a9581",
+        "_id": "a22b24085f02d876",
         "name": "Unmatched Pursuit",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:16:33"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114227,18 +114656,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Seeker"
+          ],
+          "abilityCategory": "Investigator",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "1300b152c94e1cfb",
+        "_id": "7b29dcf7b612c700",
         "name": "Unmatched Survivability",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:22:34"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114261,18 +114703,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Ace"
+          ],
+          "abilityCategory": "Piloting",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "cc0131d735651daa",
+        "_id": "d6a7cc13afc70ed2",
         "name": "Unmatched Teamwork",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:23:35"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114295,18 +114750,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Clone Soldier"
+          ],
+          "abilityCategory": "Combat Support",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "bb0f068c5dbaea78",
+        "_id": "578e1a4af0dfe204",
         "name": "Unmatched Tradecraft",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:20:36"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114329,18 +114797,31 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Spy"
+          ],
+          "abilityCategory": "Under Cover",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {
-        "_id": "103a8dae96e85abe",
+        "_id": "0f7ac4a8988cce22",
         "name": "Unmatched Vigilance",
         "flags": {
           "star-wars-ffg": {
             "importKey": "signature_abilities:12:37"
           }
         },
-        "type": "reference",
+        "type": "signatureAbility",
         "img": "systems/star-wars-ffg/assets/item.svg",
         "system": {
           "source": {
@@ -114363,7 +114844,20 @@
           "encumbrance": 0,
           "hardpoints": 0,
           "restricted": false,
-          "incomplete": []
+          "incomplete": [
+            "tree"
+          ],
+          "eligibleCareers": [
+            "Sentinel"
+          ],
+          "abilityCategory": "Combat",
+          "matchingNodes": [],
+          "linkedSpecializationId": "",
+          "tree": {
+            "nodes": [],
+            "edges": [],
+            "verified": false
+          }
         }
       },
       {

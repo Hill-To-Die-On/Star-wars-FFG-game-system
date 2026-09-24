@@ -1,4 +1,4 @@
-import { SYSTEM_ID, SYSTEM_PATH, ITEM_TYPES } from "./config.mjs";
+import { SYSTEM_ID, SYSTEM_PATH, THEMES, ITEM_TYPES } from "./config.mjs";
 import {
   CharacterData,
   AdversaryData,
@@ -16,7 +16,14 @@ import {
   campaignDialog,
 } from "./sheets.mjs";
 import { registerDice, registerDiceSoNice, rollPool } from "./dice/foundry.mjs";
-import { DEFAULT_CAMPAIGN } from "./rules.mjs";
+import {
+  refreshCompactChatDice,
+  registerCompactChatDice,
+} from "./dice/compact-tray.mjs";
+import {
+  DEFAULT_CAMPAIGN,
+  resolveInterfaceTheme,
+} from "./rules.mjs";
 import { directorAdapter, actorContext } from "./director-adapter.mjs";
 import { importLibrary, refreshLibraryLabels } from "./library.mjs";
 import { convertSwa } from "./swa-import.mjs";
@@ -84,6 +91,18 @@ class GMSourceLibraryMenu extends foundry.applications.api.ApplicationV2 {
     gmSourceLibrary().catch((error) => ui.notifications.error(error.message));
     return this;
   }
+}
+export function applyInterfaceTheme() {
+  const selection = game.settings.get(SYSTEM_ID, "interfaceTheme");
+  const campaign = game.settings.get(SYSTEM_ID, "campaign");
+  const theme = resolveInterfaceTheme(selection, campaign.lines);
+  if (theme) document.body.dataset.starWarsTheme = theme;
+  else delete document.body.dataset.starWarsTheme;
+}
+function refreshThemedSheets() {
+  for (const actor of game.actors ?? [])
+    for (const app of Object.values(actor.apps))
+      if (app.rendered) app.render({ force: true });
 }
 export async function openConsole() {
   const { DialogV2 } = foundry.applications.api;
@@ -206,9 +225,47 @@ Hooks.once("init", () => {
     type: Object,
     default: DEFAULT_CAMPAIGN,
     onChange: () => {
+      applyInterfaceTheme();
       refreshReferenceBrowsers();
-      refreshGroupSheets();
+      refreshThemedSheets();
     },
+  });
+  game.settings.register(SYSTEM_ID, "sheetTheme", {
+    name: "Default sheet theme",
+    hint: "Automatic matches each character's creation rules and uses the campaign's first enabled ruleset for vehicles and groups. A sheet's own theme control can override this setting.",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: {
+      auto: "Automatic (ruleset)",
+      ...Object.fromEntries(
+        Object.entries(THEMES).map(([key, theme]) => [key, theme.name]),
+      ),
+    },
+    default: "auto",
+    onChange: refreshThemedSheets,
+  });
+  game.settings.register(SYSTEM_ID, "interfaceTheme", {
+    name: "Foundry interface theme",
+    hint: "Style the space backdrop, sidebar, chat, combat tracker, journals, windows, scene controls, player list and hotbar. Automatic follows the first enabled campaign ruleset; choose a scheme here to override it.",
+    scope: "client",
+    config: true,
+    type: String,
+    choices: {
+      auto: "Automatic (campaign ruleset)",
+      ...Object.fromEntries(
+        Object.entries(THEMES).map(([key, theme]) => [key, theme.name]),
+      ),
+      default: "Foundry default",
+    },
+    default: "auto",
+    onChange: applyInterfaceTheme,
+  });
+  game.settings.register(SYSTEM_ID, "skillView", {
+    scope: "client",
+    config: false,
+    type: String,
+    default: "grouped",
   });
   game.settings.register(SYSTEM_ID, "destiny", {
     scope: "world",
@@ -223,6 +280,16 @@ Hooks.once("init", () => {
     type: Object,
     default: {},
   });
+  game.settings.register(SYSTEM_ID, "compactChatDice", {
+    name: "Compact dice tray by chat",
+    hint: "Show a minimal seven-die pool beside the chat bar. It uses the active chat visibility button for public, GM, blind or self rolls.",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: refreshCompactChatDice,
+  });
+  registerCompactChatDice();
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
     name: "GM source key",
     label: "Backup or restore key",
@@ -340,7 +407,9 @@ Hooks.on("renderActorDirectory", (_app, html) => {
   html.querySelector(".directory-footer")?.append(references);
 });
 Hooks.once("ready", () => {
+  applyInterfaceTheme();
   refreshLibraryLabels();
+  refreshCompactChatDice();
   ui.compendium.render();
   refreshGMNotes().catch((error) =>
     ui.notifications.error(`GM source notes: ${error.message}`),

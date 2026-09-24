@@ -63,6 +63,26 @@ test("reference importer omits prose, preserves books, escapes journal HTML and 
     }),
   );
 });
+test("signature ability references are native attachable tree placeholders", () => {
+  const bundle = convertDatabase({
+      signature_abilities: [
+        {
+          ID: 1,
+          signature_abilities: "Example ability",
+          career: "Explorer",
+          career_type: "Discovery",
+          book: "Held book",
+          page: 42,
+        },
+      ],
+    }),
+    ability = bundle.documents.Item[0];
+  assert.equal(ability.type, "signatureAbility");
+  assert.deepEqual(ability.system.eligibleCareers, ["Explorer"]);
+  assert.equal(ability.system.abilityCategory, "Discovery");
+  assert.deepEqual(ability.system.incomplete, ["tree"]);
+  validateBundle(bundle);
+});
 test("creation follows the chosen line and prevents mismatched free specializations", () => {
   const species = {
     type: "species",
@@ -109,6 +129,11 @@ test("creation follows the chosen line and prevents mismatched free specializati
   assert.equal(plan.skills.athletics.rank, 2);
   assert.equal(plan.wounds.max, 12);
   assert.equal(plan.forceRating, 0);
+  assert.equal(
+    Object.hasOwn(plan, "theme"),
+    false,
+    "character creation must preserve the sheet's automatic or manual theme choice",
+  );
   const force = creationPlan({
     species,
     career,

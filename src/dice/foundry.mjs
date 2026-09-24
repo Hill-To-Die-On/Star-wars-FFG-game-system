@@ -1,5 +1,6 @@
 import {
   DICE,
+  applyAutomaticResults,
   faceLabel,
   resolveFaces,
   poolFormula,
@@ -91,7 +92,13 @@ export function resultFromRoll(roll) {
     ),
   );
 }
-export function rollCard(label, outcome, roll) {
+export function rollCard(
+  label,
+  outcome,
+  roll,
+  automaticResults = {},
+  ruleNotes = [],
+) {
   const dice = roll.dice
     .flatMap((term) =>
       term.results.map(
@@ -103,24 +110,47 @@ export function rollCard(label, outcome, roll) {
   const forceOnly =
     roll.dice.length > 0 &&
     roll.dice.every((d) => d.options.starWarsDie === "force");
-  return `<article class="sf-chat"><div class="sf-eyebrow">STAR WARS FFG / NARRATIVE CHECK</div><h3>${escapeHTML(label)}</h3><div class="sf-dice-tray">${dice}</div><strong>${forceOnly ? "Force resources" : outcome.passed ? `${outcome.success} net success` : outcome.failure ? `${outcome.failure} net failure` : "No net success"}</strong><p>${[outcome.advantage && `${outcome.advantage} advantage`, outcome.threat && `${outcome.threat} threat`, outcome.triumph && `${outcome.triumph} triumph`, outcome.despair && `${outcome.despair} despair`, outcome.light && `${outcome.light} light`, outcome.dark && `${outcome.dark} dark`].filter(Boolean).join(" · ") || "No additional symbols"}</p><details><summary>Pool</summary>${escapeHTML(roll.formula)}</details></article>`;
+  const fixed = Object.entries(automaticResults)
+      .filter(([, value]) => value)
+      .map(([key, value]) => `${value > 0 ? "+" : ""}${value} ${key}`),
+    applied = [
+      ...ruleNotes,
+      ...(fixed.length ? [`Automatic results: ${fixed.join(", ")}`] : []),
+    ];
+  return `<article class="sf-chat"><div class="sf-eyebrow">STAR WARS FFG / NARRATIVE CHECK</div><h3>${escapeHTML(label)}</h3><div class="sf-dice-tray">${dice}</div><strong>${forceOnly ? "Force resources" : outcome.passed ? `${outcome.success} net success` : outcome.failure ? `${outcome.failure} net failure` : "No net success"}</strong><p>${[outcome.advantage && `${outcome.advantage} advantage`, outcome.threat && `${outcome.threat} threat`, outcome.triumph && `${outcome.triumph} triumph`, outcome.despair && `${outcome.despair} despair`, outcome.light && `${outcome.light} light`, outcome.dark && `${outcome.dark} dark`].filter(Boolean).join(" · ") || "No additional symbols"}</p><details><summary>Pool & applied rules</summary><p>${escapeHTML(roll.formula)}</p>${applied.length ? `<ul>${applied.map((note) => `<li>${escapeHTML(note)}</li>`).join("")}</ul>` : ""}</details></article>`;
 }
 export async function rollPool(
   pool,
-  { label = "Narrative check", actor, rollMode, chatMessage = true } = {},
+  {
+    label = "Narrative check",
+    actor,
+    rollMode,
+    chatMessage = true,
+    automaticResults = {},
+    ruleNotes = [],
+  } = {},
 ) {
   const normalized = normalizePool(pool);
   const roll = await new foundry.dice.Roll(poolFormula(normalized)).evaluate();
-  const outcome = resultFromRoll(roll);
-  roll.options.starWars = { pool: normalized, outcome };
+  const outcome = applyAutomaticResults(
+    resultFromRoll(roll),
+    automaticResults,
+  );
+  roll.options.starWars = { pool: normalized, outcome, automaticResults };
   if (chatMessage) {
     const data = {
       speaker: ChatMessage.getSpeaker({ actor }),
       flavor: label,
-      content: rollCard(label, outcome, roll),
+      content: rollCard(label, outcome, roll, automaticResults, ruleNotes),
       rolls: [roll],
       flags: {
-        [SYSTEM_ID]: { pool: normalized, outcome, actorUuid: actor?.uuid },
+        [SYSTEM_ID]: {
+          pool: normalized,
+          outcome,
+          automaticResults,
+          ruleNotes,
+          actorUuid: actor?.uuid,
+        },
       },
     };
     await ChatMessage.create(

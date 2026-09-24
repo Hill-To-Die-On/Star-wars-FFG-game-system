@@ -1,5 +1,6 @@
 import { SYSTEM_ID, SYSTEM_PATH, THEMES } from "./config.mjs";
 import { groupSummary, memberFromCharacter } from "./group.mjs";
+import { resolveSheetTheme } from "./rules.mjs";
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 export class GroupSheet extends HandlebarsApplicationMixin(
   foundry.applications.sheets.ActorSheetV2,
@@ -20,6 +21,15 @@ export class GroupSheet extends HandlebarsApplicationMixin(
   static PARTS = { sheet: { template: `${SYSTEM_PATH}/templates/group.hbs` } };
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
+    const campaign = game.settings.get(SYSTEM_ID, "campaign");
+    const sheetTheme = game.settings.get(SYSTEM_ID, "sheetTheme");
+    const themeKey = resolveSheetTheme(
+      this.actor.system.theme === "auto"
+        ? sheetTheme
+        : this.actor.system.theme,
+      undefined,
+      campaign.lines,
+    );
     const summary = groupSummary(
       this.actor.system,
       game.settings.get(SYSTEM_ID, "destiny"),
@@ -30,11 +40,15 @@ export class GroupSheet extends HandlebarsApplicationMixin(
       system: this.actor.system,
       ...summary,
       editable: this.isEditable,
-      campaign: game.settings.get(SYSTEM_ID, "campaign"),
-      theme: THEMES[this.actor.system.theme],
-      themes: Object.fromEntries(
-        Object.entries(THEMES).map(([key, theme]) => [key, theme.name]),
-      ),
+      campaign,
+      themeKey,
+      theme: THEMES[themeKey],
+      themes: {
+        auto: `Automatic · ${THEMES[themeKey].name}`,
+        ...Object.fromEntries(
+          Object.entries(THEMES).map(([key, theme]) => [key, theme.name]),
+        ),
+      },
       members: summary.members.map((member) => ({
         ...member,
         characters: game.actors
@@ -70,7 +84,7 @@ export class GroupSheet extends HandlebarsApplicationMixin(
   }
   _onRender(context, options) {
     super._onRender(context, options);
-    this.element.dataset.theme = this.actor.system.theme;
+    this.element.dataset.theme = context.themeKey;
   }
   static async addMember() {
     if (!this.isEditable) return;

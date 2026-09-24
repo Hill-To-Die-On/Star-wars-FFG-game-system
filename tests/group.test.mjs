@@ -31,6 +31,14 @@ test("explicit member sync preserves group-authored details and never modifies a
       duty: { value: 3, label: "Support" },
       morality: { value: 52 },
       motivation: "Test motive",
+      motivations: [
+        {
+          id: "m1",
+          name: "Protect the crew",
+          category: "Relationship",
+          active: true,
+        },
+      ],
     },
   };
   const before = structuredClone(pc);
@@ -42,6 +50,7 @@ test("explicit member sync preserves group-authored details and never modifies a
   assert.equal(result.characterName, pc.name);
   assert.equal(result.description, "Group-specific history");
   assert.equal(result.playerName, "Player");
+  assert.equal(result.motivation, "Relationship: Protect the crew");
   assert.deepEqual(pc, before);
   assert.throws(() => memberFromCharacter({ ...pc, type: "vehicle" }));
 });

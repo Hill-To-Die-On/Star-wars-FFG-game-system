@@ -1,5 +1,6 @@
 import { count } from "./dice/core.mjs";
 import { skillCost } from "./mechanics.mjs";
+import { validateTalentNodeRules } from "./talent-rules.mjs";
 export function validateTree(tree) {
   if (!tree || !Array.isArray(tree.nodes) || !Array.isArray(tree.edges))
     throw new Error("A talent tree needs nodes and edges.");
@@ -13,6 +14,7 @@ export function validateTree(tree) {
     count(node.cost, "talent cost", 100);
     count(node.row, "row", 20);
     count(node.col, "column", 20);
+    validateTalentNodeRules(node);
   }
   for (const edge of tree.edges)
     if (

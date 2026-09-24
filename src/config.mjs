@@ -77,6 +77,7 @@ export const ITEM_TYPES = [
   "species",
   "career",
   "specialization",
+  "signatureAbility",
   "attachment",
   "reference",
 ];

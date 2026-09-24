@@ -52,6 +52,11 @@ test("published creator database retains every table and row with usable referen
     { Item: 4495, Actor: 399, JournalEntry: 1701 },
   );
   assert.equal(library.report.omittedProse, false);
+  assert.equal(
+    library.documents.Item.filter((item) => item.type === "signatureAbility")
+      .length,
+    38,
+  );
   for (const row of index.records) {
     assert.ok(row.name.trim());
     assert.deepEqual(

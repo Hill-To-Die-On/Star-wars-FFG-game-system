@@ -62,9 +62,11 @@
             name="system.source.page"
             value="{{system.source.page}}"
           /></label></div><p class="sf-hint">This entry is a reference. The
-        source book explains the rule.</p>{{#if hasTree}}<p>Attach this
+        source book explains the rule.</p>{{#if signatureAbility}}<p><strong>Eligible career:</strong>
+          {{#each system.eligibleCareers}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{#if system.abilityCategory}}
+          · {{system.abilityCategory}}{{/if}}</p><p>Attach this ability to an eligible owned specialization. Its base node unlocks after a matching bottom-row talent is learned.</p>{{else}}{{#if hasTree}}<p>Attach this
           specialization to a character to view and purchase its connected
-          talents.</p>{{/if}}<details><summary>Imported facts</summary><dl
+          talents.</p>{{/if}}{{/if}}<details><summary>Imported facts</summary><dl
           class="sf-facts"
         >{{#each metadata}}<dt>{{key}}</dt><dd
             >{{value}}</dd>{{/each}}</dl></details></section></main></div>

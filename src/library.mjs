@@ -7,6 +7,45 @@ import {
   libraryPackLabel,
 } from "./library-packs.mjs";
 export { refreshLibraryLabels } from "./library-packs.mjs";
+export function mergeSpecializationEnrichment(existing, incoming) {
+  if (
+    !["specialization", "signatureAbility"].includes(existing?.type) ||
+    incoming?.type !== existing?.type ||
+    !incoming.system?.tree?.nodes?.length
+  )
+    return null;
+  const current = existing.system?.tree;
+  if (!current?.nodes?.length) return structuredClone(incoming.system.tree);
+  const incomingNodes = new Map(
+      incoming.system.tree.nodes.map((node) => [node.id, node]),
+    ),
+    nodes = current.nodes.map((node) => {
+      const source = incomingNodes.get(node.id);
+      if (!source) return node;
+      return {
+        ...node,
+        ...(!node.key && source.key ? { key: source.key } : {}),
+        ...(!node.activation && source.activation
+          ? { activation: source.activation }
+          : {}),
+        ...(!node.summary && source.summary ? { summary: source.summary } : {}),
+        ...(!(node.effects?.length) && source.effects?.length
+          ? { effects: structuredClone(source.effects) }
+          : {}),
+        ...(!node.reference && source.reference
+          ? { reference: structuredClone(source.reference) }
+          : {}),
+      };
+    }),
+    merged = {
+      ...current,
+      nodes,
+      ...(!current.verified && incoming.system.tree.verified
+        ? { verified: true }
+        : {}),
+    };
+  return JSON.stringify(merged) === JSON.stringify(current) ? null : merged;
+}
 export function validateBundle(bundle) {
   // Version-one libraries keep the same schema across branding changes.
   if (
@@ -30,7 +69,10 @@ export function validateBundle(bundle) {
           "Library documents require unique valid IDs and names.",
         );
       ids.add(doc._id);
-      if (doc.type === "specialization" && doc.system?.tree?.nodes?.length)
+      if (
+        ["specialization", "signatureAbility"].includes(doc.type) &&
+        doc.system?.tree?.nodes?.length
+      )
         validateTree(doc.system.tree);
     }
     total += documents.length;
@@ -125,6 +167,53 @@ export async function importLibrary(bundle, onProgress = () => {}) {
         });
         onProgress(type, Math.min(i + 100, missing.length), missing.length);
       }
+      let enriched = 0;
+      if (type === "Item") {
+        const updates = [];
+        for (const incoming of documents.filter(
+          (doc) =>
+            ["specialization", "signatureAbility"].includes(doc.type) &&
+            !createdIds.has(doc._id),
+        )) {
+          const existing = await pack.getDocument(incoming._id),
+            existingObject = existing?.toObject?.() ?? existing;
+          const tree = mergeSpecializationEnrichment(existingObject, incoming);
+          if (tree) {
+            const update = { _id: incoming._id, "system.tree": tree };
+            if (incoming.type === "signatureAbility") {
+              if (
+                !existing.system?.eligibleCareers?.length &&
+                incoming.system?.eligibleCareers?.length
+              )
+                update["system.eligibleCareers"] =
+                  incoming.system.eligibleCareers;
+              if (
+                !existing.system?.matchingNodes?.length &&
+                incoming.system?.matchingNodes?.length
+              )
+                update["system.matchingNodes"] = incoming.system.matchingNodes;
+              if (
+                !existing.system?.abilityCategory &&
+                incoming.system?.abilityCategory
+              )
+                update["system.abilityCategory"] =
+                  incoming.system.abilityCategory;
+              if (
+                existing.system?.incomplete?.includes("tree") &&
+                incoming.system?.incomplete
+              )
+                update["system.incomplete"] = incoming.system.incomplete;
+            }
+            updates.push(update);
+          }
+        }
+        for (let i = 0; i < updates.length; i += 100)
+          await pack.documentClass.updateDocuments(updates.slice(i, i + 100), {
+            pack: pack.collection,
+            render: false,
+          });
+        enriched = updates.length;
+      }
       if (type === "Actor") {
         const links = documents
           .filter(
@@ -151,6 +240,7 @@ export async function importLibrary(bundle, onProgress = () => {}) {
       report[privateNotes ? "GMNotes" : type] = {
         created: missing.length,
         preserved: documents.length - missing.length,
+        ...(enriched ? { enriched } : {}),
       };
     } finally {
       await pack.configure({ locked });

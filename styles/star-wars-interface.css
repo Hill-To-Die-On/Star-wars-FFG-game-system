@@ -1,0 +1,582 @@
+@font-face {
+  font-family: "Star Wars FFG Rajdhani";
+  src: url("../assets/vendor/rajdhani/Rajdhani-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Star Wars FFG Rajdhani";
+  src: url("../assets/vendor/rajdhani/Rajdhani-SemiBold.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] {
+  background-color: #071014;
+  background-image:
+    linear-gradient(135deg, #071014d9, #07101424 47%, #071014c7),
+    url("../assets/ui/galactic-interface-backdrop.webp");
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  :is(#interface, #hud, #pause, #notifications, #tooltip) {
+  font-family: "Star Wars FFG Rajdhani", "Star Wars FFG Roboto", Arial,
+    sans-serif;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #interface {
+  --font-body: "Star Wars FFG Rajdhani", "Star Wars FFG Roboto", Arial,
+    sans-serif;
+  --font-sans: "Star Wars FFG Rajdhani", "Star Wars FFG Roboto", Arial,
+    sans-serif;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #sidebar-content {
+  isolation: isolate;
+  background-color: color-mix(in srgb, var(--sf-ui-dark) 92%, #071014);
+  background-image:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--sf-ui-dark) 90%, transparent),
+      #071014f0 34%,
+      #071014f7
+    ),
+    url("../assets/ui/galactic-interface-backdrop.webp"),
+    url("../assets/ui/paper-grain.svg");
+  background-position: center, 58% center, center;
+  background-size: auto, cover, 256px 256px;
+  background-blend-mode: normal, soft-light, overlay;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #sidebar-content::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, var(--sf-ui-accent), transparent 24%) top / 100% 1px
+      no-repeat,
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 33px,
+      color-mix(in srgb, var(--sf-ui-signal) 10%, transparent) 34px
+    );
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #sidebar-tabs {
+  padding: 5px 3px;
+  background-image:
+    linear-gradient(180deg, #ffffff09, transparent 42%),
+    url("../assets/ui/paper-grain.svg");
+  background-blend-mode: screen, multiply;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #sidebar-tabs .ui-control {
+  min-width: 36px;
+  min-height: 36px;
+  margin: 2px 0;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  border-radius: 2px 7px 2px 7px;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar-tabs
+  .ui-control:is(:hover, :focus-visible, [aria-pressed="true"]) {
+  border-color: color-mix(in srgb, var(--sf-ui-signal) 44%, transparent);
+  border-left-color: var(--sf-ui-signal);
+  box-shadow:
+    inset 0 0 14px color-mix(in srgb, var(--sf-ui-accent) 46%, transparent),
+    0 0 10px #0007;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  aside#sidebar
+  nav#sidebar-tabs
+  button.ui-control.icon:is(
+    [data-tab="chat"],
+    [data-tab="combat"],
+    [data-tab="scenes"],
+    [data-tab="actors"],
+    [data-tab="items"],
+    [data-tab="journal"]
+  )::before {
+  content: "";
+  display: block;
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  inline-size: 20px !important;
+  height: 20px !important;
+  font-size: 20px !important;
+  line-height: 20px !important;
+  margin: auto;
+  background: currentColor;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar-tabs
+  button[data-tab="chat"]::before {
+  mask-image: url("../assets/ui/icon-chat-comlink.svg");
+  -webkit-mask-image: url("../assets/ui/icon-chat-comlink.svg");
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar-tabs
+  button[data-tab="combat"]::before {
+  mask-image: url("../assets/ui/icon-combat-target.svg");
+  -webkit-mask-image: url("../assets/ui/icon-combat-target.svg");
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar-tabs
+  button[data-tab="scenes"]::before {
+  mask-image: url("../assets/ui/icon-scenes-orbit.svg");
+  -webkit-mask-image: url("../assets/ui/icon-scenes-orbit.svg");
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar-tabs
+  button[data-tab="actors"]::before {
+  mask-image: url("../assets/ui/icon-actors-dossier.svg");
+  -webkit-mask-image: url("../assets/ui/icon-actors-dossier.svg");
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar-tabs
+  button[data-tab="items"]::before {
+  mask-image: url("../assets/ui/icon-items-crate.svg");
+  -webkit-mask-image: url("../assets/ui/icon-items-crate.svg");
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar-tabs
+  button[data-tab="journal"]::before {
+  mask-image: url("../assets/ui/icon-journal-datapad.svg");
+  -webkit-mask-image: url("../assets/ui/icon-journal-datapad.svg");
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar
+  :is(.directory-header, .directory-footer) {
+  padding: 8px;
+  background-color: color-mix(in srgb, var(--sf-ui-dark) 82%, #071014);
+  background-image:
+    linear-gradient(105deg, #ffffff0b, transparent 48%),
+    url("../assets/ui/paper-grain.svg");
+  background-size: auto, 256px 256px;
+  border-color: color-mix(in srgb, var(--sf-ui-signal) 32%, transparent);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar
+  :is(.directory-header, .directory-footer)
+  button {
+  min-height: 34px;
+  color: var(--sf-ui-paper);
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--sf-ui-mid) 82%, #071014),
+    color-mix(in srgb, var(--sf-ui-dark) 90%, #071014)
+  );
+  border: 1px solid color-mix(in srgb, var(--sf-ui-signal) 42%, #071014);
+  border-radius: 2px 7px 2px 7px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar
+  :is(.directory-header, .directory-footer)
+  button:hover {
+  color: #fff;
+  border-color: var(--sf-ui-signal);
+  background: linear-gradient(105deg, var(--sf-ui-accent), var(--sf-ui-dark));
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar
+  .directory-list
+  .directory-item:not(.folder) {
+  border-bottom: 1px dotted
+    color-mix(in srgb, var(--sf-ui-signal) 28%, transparent);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar
+  .directory-list
+  .directory-item:not(.folder):hover {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--sf-ui-accent) 38%, transparent),
+    transparent 82%
+  );
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #sidebar
+  .folder
+  > .folder-header {
+  border-left: 4px solid var(--sf-ui-signal);
+  box-shadow: inset 0 0 0 1px #ffffff16;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #chat .chat-scroll {
+  background:
+    linear-gradient(180deg, #07101442, #071014b8),
+    radial-gradient(circle at 70% 5%, var(--sf-ui-accent) 0, transparent 32%);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #chat .chat-log {
+  padding: 4px 2px 12px;
+  background: transparent;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #chat .chat-message {
+  position: relative;
+  margin: 8px 7px;
+  padding: 9px 10px 10px;
+  overflow: hidden;
+  color: #27343a;
+  background-color: #eee7d8;
+  background-image:
+    radial-gradient(circle at 100% 0, #ffffff8c, transparent 38%),
+    url("../assets/ui/paper-grain.svg");
+  background-size: auto, 256px 256px;
+  border: 1px solid #8f978c;
+  border-left: 4px solid var(--sf-ui-accent);
+  border-radius: 2px 9px 2px 9px;
+  box-shadow:
+    inset 0 1px #fff,
+    0 5px 13px #0007;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat
+  .chat-message::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 46%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--sf-ui-signal));
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat
+  .chat-message:is(.whisper, .blind) {
+  border-left-color: var(--sf-ui-signal);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat
+  .chat-message
+  .message-header {
+  padding-bottom: 5px;
+  border-bottom: 1px dotted #848d84;
+  color: #334148;
+  font-family: "Star Wars FFG Rajdhani", sans-serif;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat
+  .chat-message
+  .message-sender {
+  color: color-mix(in srgb, var(--sf-ui-accent) 78%, #26343b);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat
+  .chat-message
+  .message-content {
+  color: #27343a;
+  font-family: "Star Wars FFG Roboto", Arial, sans-serif;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat
+  .chat-message
+  :is(a, h2, h3, h4) {
+  color: color-mix(in srgb, var(--sf-ui-accent) 76%, #27343a);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat
+  :is(.chat-form, #chat-form) {
+  padding: 8px;
+  background: color-mix(in srgb, var(--sf-ui-dark) 88%, #071014);
+  border-top: 2px solid var(--sf-ui-accent);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat
+  :is(#chat-message, textarea) {
+  color: var(--sf-ui-paper);
+  caret-color: var(--sf-ui-signal);
+  background: #071014c7;
+  border: 1px solid color-mix(in srgb, var(--sf-ui-signal) 46%, #071014);
+  border-radius: 2px 8px 2px 8px;
+  font: 500 15px/1.35 "Star Wars FFG Rajdhani", sans-serif;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #chat-controls
+  .ui-control[aria-pressed="true"] {
+  color: #fff;
+  background: var(--sf-ui-accent);
+  border-color: var(--sf-ui-signal);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #combat
+  :is(.combat-tracker-header, .encounter-controls, .combat-controls) {
+  margin: 5px 6px;
+  padding: 7px;
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--sf-ui-mid) 74%, #071014),
+    #071014d9
+  );
+  border: 1px solid color-mix(in srgb, var(--sf-ui-signal) 38%, transparent);
+  border-left: 4px solid var(--sf-ui-accent);
+  border-radius: 2px 8px 2px 8px;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #combat
+  :is(.combatant, .combat-tracker .combatant) {
+  margin: 4px 6px;
+  overflow: hidden;
+  background: linear-gradient(90deg, #071014dc, var(--sf-ui-dark) 72%);
+  border: 1px solid color-mix(in srgb, var(--sf-ui-signal) 24%, transparent);
+  border-left: 4px solid transparent;
+  border-radius: 2px 8px 2px 8px;
+  box-shadow: 0 3px 9px #0005;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #combat
+  :is(.combatant.active, .combatant.current) {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--sf-ui-accent) 65%, #071014),
+    var(--sf-ui-dark) 74%
+  );
+  border-left-color: var(--sf-ui-signal);
+  box-shadow:
+    inset 0 0 18px color-mix(in srgb, var(--sf-ui-accent) 36%, transparent),
+    0 0 12px #0008;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #combat
+  :is(.token-name, .combatant-name) {
+  color: var(--sf-ui-paper);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #combat
+  :is(.token-initiative, .combatant-initiative) {
+  color: var(--sf-ui-signal);
+  background: #07101499;
+  border: 1px solid color-mix(in srgb, var(--sf-ui-signal) 38%, transparent);
+  border-radius: 50%;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #combat
+  :is(.combat-control, .combatant-control) {
+  color: color-mix(in srgb, var(--sf-ui-paper) 84%, var(--sf-ui-signal));
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  #combat
+  :is(.combat-control, .combatant-control):hover {
+  color: var(--sf-ui-signal);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  .application:not(#director-widget):has(> .window-header) {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--sf-ui-signal) 52%, #071014);
+  border-radius: 2px 11px 2px 11px;
+  box-shadow:
+    0 0 0 1px #000b,
+    0 12px 34px #000a,
+    0 0 24px color-mix(in srgb, var(--sf-ui-accent) 15%, transparent);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  .application:not(#director-widget)
+  > .window-header {
+  min-height: 34px;
+  color: var(--sf-ui-paper);
+  background-color: color-mix(in srgb, var(--sf-ui-dark) 92%, #071014);
+  background-image:
+    linear-gradient(105deg, #ffffff0d, transparent 45%, #00000030),
+    url("../assets/ui/galactic-interface-backdrop.webp");
+  background-position: center, 56% 28%;
+  background-size: auto, cover;
+  border-bottom: 2px solid var(--sf-ui-accent);
+  font-family: "Star Wars FFG Rajdhani", sans-serif;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  .application:not(#director-widget)
+  > .window-header
+  .window-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  .application:not(#director-widget)
+  > .window-header
+  button:hover {
+  color: var(--sf-ui-signal);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  .application:is(.journal-sheet, .journal-entry-sheet, .image-popout)
+  > .window-content {
+  background-color: #e9e2d3;
+  background-image:
+    radial-gradient(circle at 85% 0, #ffffffa3, transparent 38%),
+    url("../assets/ui/paper-grain.svg");
+  background-size: auto, 256px 256px;
+  color: #27343a;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  :is(.journal-sheet, .journal-entry-sheet)
+  :is(.journal-sidebar, .journal-entry-pages) {
+  background: color-mix(in srgb, var(--sf-ui-dark) 94%, #071014);
+  border-color: var(--sf-ui-accent);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  :is(.journal-sheet, .journal-entry-sheet)
+  :is(.journal-entry-content, .journal-page-content, .editor-content) {
+  color: #27343a;
+  background-color: #f2ecde;
+  background-image: url("../assets/ui/paper-grain.svg");
+  background-size: 256px 256px;
+  font-family: "Star Wars FFG Roboto", Arial, sans-serif;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  :is(.journal-sheet, .journal-entry-sheet)
+  :is(.journal-entry-content, .journal-page-content, .editor-content)
+  :is(h1, h2, h3, h4) {
+  color: color-mix(in srgb, var(--sf-ui-accent) 72%, #27343a);
+  font-family: "Star Wars FFG Rajdhani", sans-serif;
+  letter-spacing: 0.025em;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme]
+  :is(.journal-sheet, .journal-entry-sheet)
+  .directory-item.active {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--sf-ui-accent) 66%, #071014),
+    transparent
+  );
+  border-left: 3px solid var(--sf-ui-signal);
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #tooltip {
+  color: var(--sf-ui-paper);
+  background: color-mix(in srgb, var(--sf-ui-dark) 94%, #071014);
+  border: 1px solid var(--sf-ui-signal);
+  border-radius: 2px 7px 2px 7px;
+  box-shadow: 0 5px 15px #0009;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #notifications .notification {
+  border: 1px solid color-mix(in srgb, var(--sf-ui-signal) 44%, #071014);
+  border-left: 4px solid var(--sf-ui-accent);
+  border-radius: 2px 8px 2px 8px;
+  font-family: "Star Wars FFG Rajdhani", sans-serif;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #pause img {
+  display: none !important;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #pause::before {
+  content: "";
+  display: block;
+  width: 104px;
+  height: 104px;
+  margin: 0 auto -4px;
+  background: linear-gradient(145deg, var(--sf-ui-signal), var(--sf-ui-accent));
+  filter: drop-shadow(0 0 8px #000) drop-shadow(0 0 15px var(--sf-ui-accent));
+  mask: url("../assets/ui/icon-pause-orbit.svg") center / contain no-repeat;
+  -webkit-mask: url("../assets/ui/icon-pause-orbit.svg") center / contain
+    no-repeat;
+  animation: sf-interface-orbit 18s linear infinite;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] #pause figcaption {
+  padding: 4px 18px;
+  background: #071014bd;
+  border-top: 1px solid var(--sf-ui-signal);
+  border-bottom: 1px solid var(--sf-ui-accent);
+  clip-path: polygon(
+    9px 0,
+    calc(100% - 9px) 0,
+    100% 50%,
+    calc(100% - 9px) 100%,
+    9px 100%,
+    0 50%
+  );
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+body.system-star-wars-ffg[data-star-wars-theme] :is(#sidebar, .application) {
+  scrollbar-color: var(--sf-ui-accent) #07101499;
+}
+
+@keyframes sf-interface-orbit {
+  to {
+    rotate: 1turn;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.system-star-wars-ffg[data-star-wars-theme] #pause::before {
+    animation: none;
+  }
+}

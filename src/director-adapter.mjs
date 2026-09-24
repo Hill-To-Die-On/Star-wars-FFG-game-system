@@ -4,10 +4,53 @@ import { availableTalents } from "./advancement.mjs";
 import { minionState } from "./mechanics.mjs";
 import { getGMSourceNotes, searchGMSourceNotes } from "./gm-notes.mjs";
 import { groupSummary } from "./group.mjs";
+import { customSkillKey } from "./custom-skills.mjs";
+import { motivationSummary } from "./motivations.mjs";
+import { signatureAbilityStatus } from "./signature-abilities.mjs";
+import {
+  learnedTalentRules,
+  talentAutomation,
+  talentRulesForCheck,
+} from "./talent-rules.mjs";
 export function actorContext(actor) {
   const s = actor.system;
   const campaign =
     globalThis.game?.settings?.get(SYSTEM_ID, "campaign") ?? DEFAULT_CAMPAIGN;
+  const customSkills = Array.from(s.customSkills ?? [], (skill) => ({
+    key: customSkillKey(skill.id),
+    name: skill.label,
+    characteristic: skill.characteristic,
+    type: skill.type,
+    rank: actor.skillRank?.(customSkillKey(skill.id)) ?? skill.rank,
+    career: skill.career,
+    group: skill.group,
+  })),
+    talentRules = ["group", "vehicle"].includes(actor.type)
+      ? []
+      : learnedTalentRules(actor),
+    talentAutomationStatus = Object.fromEntries(
+      ["automatic", "decision", "guidance", "reference"].map((status) => [
+        status,
+        talentRules.filter((rule) => rule.automation === status).length,
+      ]),
+    ),
+    effectiveTraits = actor.effectiveTraits?.();
+  const specializationIds = new Set(
+      (actor.items?.contents ?? [])
+        .filter((item) => item.type === "specialization")
+        .map((item) => item.id),
+    ),
+    motivations = Array.from(s.motivations ?? [], (motivation) => ({
+      id: motivation.id,
+      name: motivation.name,
+      category: motivation.category,
+      description: motivation.description,
+      active: motivation.active !== false,
+      source: motivation.source ?? {},
+    })),
+    signatureAbilities = (actor.items?.contents ?? [])
+      .filter((item) => item.type === "signatureAbility")
+      .map((item) => signatureAbilityStatus(actor, item));
   return {
     systemId: SYSTEM_ID,
     actorUuid: actor.uuid,
@@ -28,10 +71,16 @@ export function actorContext(actor) {
       : {}),
     characteristics: s.characteristics,
     skills: s.skills,
+    customSkills,
+    motivation: motivationSummary(s),
+    motivations,
+    biography: s.biography,
+    talentRules,
+    talentAutomationStatus,
     wounds: s.wounds,
     strain: s.strain,
-    soak: s.soak,
-    defense: s.defense,
+    soak: effectiveTraits?.soak ?? s.soak,
+    defense: effectiveTraits?.defense ?? s.defense,
     hullTrauma: s.hullTrauma,
     systemStrain: s.systemStrain,
     armor: s.armor,
@@ -43,7 +92,7 @@ export function actorContext(actor) {
     obligation: campaign.obligation ? s.obligation : undefined,
     duty: campaign.duty ? s.duty : undefined,
     morality: campaign.morality ? s.morality : undefined,
-    forceRating: s.forceRating,
+    forceRating: effectiveTraits?.forceRating ?? s.forceRating,
     xp: s.xp,
     creation: s.creation,
     phase: s.phase,
@@ -81,16 +130,29 @@ export function actorContext(actor) {
                 .filter((e) => e.itemId === item.id)
                 .map((e) => e.nodeId),
               (s.advancement ?? [])
-                .filter((e) => e.ranked === false)
+                .filter(
+                  (entry) =>
+                    entry.ranked === false &&
+                    specializationIds.has(entry.itemId),
+                )
                 .map((e) => e.name),
             ).map((node) => ({
               id: node.id,
               name: node.name,
               cost: node.cost,
               affordable: node.cost <= s.xp.available,
+              activation: node.activation ?? "",
+              summary: node.summary ?? "",
+              effects: node.effects ?? [],
+              automation: talentAutomation({
+                activation: node.activation ?? "",
+                summary: node.summary ?? "",
+                effects: node.effects ?? [],
+              }),
             }))
           : [],
       })),
+    signatureAbilities,
   };
 }
 export const directorAdapter = {
@@ -125,10 +187,16 @@ export const directorAdapter = {
   },
   extractSkills(actor) {
     return Object.fromEntries(
-      Object.keys(SKILLS).map((key) => [
-        SKILLS[key].label,
-        actor.system.skills?.[key]?.rank ?? 0,
-      ]),
+      [
+        ...Object.keys(SKILLS).map((key) => [
+          SKILLS[key].label,
+          actor.system.skills?.[key]?.rank ?? 0,
+        ]),
+        ...Array.from(actor.system.customSkills ?? [], (skill) => [
+          skill.label,
+          actor.skillRank(customSkillKey(skill.id)),
+        ]),
+      ],
     );
   },
   getItemQuantity(item) {
@@ -202,12 +270,21 @@ export const directorAdapter = {
         },
         ...privateNotes,
       ];
-    const paths = actorContext(actor)
+    const context = actorContext(actor),
+      paths = context
       .specializations.map(
         (tree) =>
           `${tree.name} (${tree.source.book}, p. ${tree.source.page}): ${tree.verified ? tree.available.map((n) => `${n.name} ${n.cost} XP${n.affordable ? "" : " (not affordable)"}`).join("; ") : "chart unavailable"}`,
       )
       .join("\n");
+    const signaturePaths = context.signatureAbilities
+        .map(
+          (ability) =>
+            `${ability.name} (${ability.source.book}, p. ${ability.source.page}): linked to ${ability.linkedSpecialization || "no specialization"}; ${ability.linkUnlocked ? "base path unlocked" : "base path locked"}; ${ability.available.map((node) => `${node.name} ${node.cost} XP`).join("; ") || "no currently available upgrades"}`,
+        )
+        .join("\n"),
+      customSkills = context.customSkills,
+      talentRules = context.talentRules;
     return [
       {
         label: "Characteristics",
@@ -215,6 +292,19 @@ export const directorAdapter = {
           .map(([key, label]) => `${label} ${s.characteristics[key]}`)
           .join(", "),
       },
+      ...(customSkills.length
+        ? [
+            {
+              label: "Custom skills",
+              value: customSkills
+                .map(
+                  (skill) =>
+                    `${skill.name} ${skill.rank} (${CHARACTERISTICS[skill.characteristic]}, ${skill.type}${skill.career ? ", career" : ""})`,
+                )
+                .join("; "),
+            },
+          ]
+        : []),
       {
         label: "Wounds / threshold",
         value: `${s.wounds.value}/${s.wounds.max}`,
@@ -232,8 +322,26 @@ export const directorAdapter = {
         value: `${s.xp.available} available XP; ${s.career}; ${s.phase}`,
       },
       {
+        label: "Motivations",
+        value:
+          (context.motivations.length
+            ? JSON.stringify(context.motivations)
+            : context.motivation) || "No motivation recorded.",
+      },
+      { label: "Biography and character notes", value: s.biography ?? "" },
+      {
         label: "Available talent paths",
         value: paths || "No specialization attached",
+      },
+      {
+        label: "Signature abilities",
+        value: signaturePaths || "No signature ability attached",
+      },
+      {
+        label: "Learned talent rules",
+        value:
+          JSON.stringify(talentRules) ||
+          "No learned talents are recorded on this character.",
       },
       {
         label: "Equipment and ability references",
@@ -261,8 +369,13 @@ export const directorAdapter = {
       targetSemantics: "successes",
       defaultTarget: 1,
       guidance:
-        "Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty}). Difficulty is a count of purple dice, not a DC. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target.",
+        "Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target.",
     };
+  },
+  getCheckTalentRules(actor, skill, options = {}) {
+    const definition = actor.skillDefinition(skill);
+    if (!definition) throw new Error(`Unknown skill: ${skill}`);
+    return talentRulesForCheck(actor, definition, options);
   },
   async executeCheck(actor, skill, options) {
     return actor.rollSkill(skill, options);

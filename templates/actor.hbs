@@ -1,4 +1,4 @@
-<div class="sf-shell" data-theme="{{system.theme}}">
+<div class="sf-shell" data-theme="{{themeKey}}" data-section="{{activeTab}}">
   <header class="sf-header">
     <div class="sf-wordmark">
 <span class="sf-orbit" aria-hidden="true">✦</span> STAR WARS FFG <small>NARRATIVE TOOLKIT</small>
@@ -142,28 +142,45 @@
 <p class="sf-hint">Enter the wound threshold of one member above. Mark trained group skills on the Skills tab.</p>
 </section>{{/if}}
     {{/if}}
-    {{#if showSkills}}<section class="sf-panel">
-<h2>Skills <small>Roll a name to build its pool</small>
-</h2>
-<div class="sf-skill-head">
-<span>Skill / characteristic</span>
-<span>Career</span>
-<span>Rank</span>
-<span>Advance</span>
-</div>
-{{#each skills}}<div class="sf-skill">
-<div>
-<button type="button" data-action="skill" data-skill="{{key}}">{{label}}</button>
-<small>{{pool}}</small>
-<select name="system.skills.{{key}}.characteristic" aria-label="{{label}} characteristic">{{selectOptions characteristicOptions selected=characteristic}}</select>
-</div>
-<label>
-<input type="checkbox" name="system.skills.{{key}}.career" {{checked career}} aria-label="{{label}} career skill">
-{{#if ../isMinion}}<input type="checkbox" name="system.skills.{{key}}.group" {{checked group}} aria-label="{{label}} minion group skill">{{/if}}
-</label>
-<input type="number" name="system.skills.{{key}}.rank" min="0" max="{{../skillCap}}" value="{{rank}}" aria-label="{{label}} rank">
-<button type="button" data-action="buySkill" data-skill="{{key}}">+ XP</button>
+    {{#if showSkills}}<section class="sf-panel sf-skills-panel">
+<div class="sf-section-heading"><h2>Skills <small>Click a skill to build and roll its pool</small></h2><span class="sf-skill-view-toggle" role="group" aria-label="Skill order">{{#each skillViews}}<button type="button" data-action="setSkillView" data-skill-view="{{id}}" class="{{#if active}}active{{/if}}" aria-pressed="{{active}}">{{label}}</button>{{/each}}</span><span class="sf-skill-legend"><b>C</b> Career · <i class="fa-solid fa-dice" aria-hidden="true"></i> Roll</span></div>
+<div class="sf-skill-sheet {{#if isMinion}}minion{{/if}}">
+{{#each skillColumns}}<div class="sf-skill-column">
+<div class="sf-skill-compact-head"><span>Skill / pool</span><span>Char</span><span>{{#if ../isMinion}}C/G{{else}}C{{/if}}</span><span>Rank</span><span></span></div>
+{{#each sections}}<section class="sf-skill-group">
+<h3><span>{{label}}</span>{{#if addCustom}}<button type="button" data-action="addCustomSkill" title="Add a custom skill" aria-label="Add a custom skill"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>{{/if}}</h3>
+{{#each skills}}<div class="sf-skill-compact-row {{#if showGroup}}minion{{/if}} {{#if custom}}custom{{/if}}">
+{{#if custom}}<span class="sf-custom-skill-name-cell">
+<button type="button" class="sf-skill-roll sf-skill-roll-compact" data-action="skill" data-skill="{{key}}" aria-label="Roll {{label}} using {{characteristicLabel}} {{characteristicValue}} and rank {{rank}}">
+<strong title="{{label}}">{{label}}</strong>
+<span class="sf-inline-pool" aria-label="{{pool}}">{{#each poolDice}}<span class="sf-die-count" title="{{count}} {{label}} dice"><b>{{count}}</b><i class="sf-die-shape sf-die-{{key}}" aria-hidden="true"></i><span class="sr-only">{{label}}</span></span>{{else}}<small>—</small>{{/each}}</span>
+<i class="fa-solid fa-dice sf-compact-roll-cue" aria-hidden="true"></i>
+</button>
+<span class="sf-custom-skill-hover-actions" aria-label="Custom skill actions">
+<button type="button" data-action="editCustomSkill" data-custom-id="{{id}}" title="Edit {{label}}" aria-label="Edit {{label}}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
+<button type="button" data-action="removeCustomSkill" data-custom-id="{{id}}" title="Remove {{label}}" aria-label="Remove {{label}}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+</span>
+</span>
+<span class="sf-skill-characteristic sf-custom-characteristic" title="{{characteristicLabel}}">{{characteristicShort}}</span>
+<span class="sf-paper-checks"><span class="sf-paper-check sf-readonly-check {{#if career}}checked{{/if}}" title="{{#if career}}Career skill{{else}}Not a career skill{{/if}}"><span>C</span></span>
+{{#if showGroup}}<span class="sf-paper-check sf-readonly-check {{#if group}}checked{{/if}}" title="{{#if group}}Minion group skill{{else}}Not a minion group skill{{/if}}"><span>G</span></span>{{/if}}</span>
+<span class="sf-skill-rank sf-skill-rank-display" aria-label="{{label}} rank {{rank}}">{{rank}}</span>
+{{else}}
+<button type="button" class="sf-skill-roll sf-skill-roll-compact" data-action="skill" data-skill="{{key}}" aria-label="Roll {{label}} using {{characteristicLabel}} {{characteristicValue}} and rank {{rank}}">
+<strong title="{{label}}">{{label}}</strong>
+<span class="sf-inline-pool" aria-label="{{pool}}">{{#each poolDice}}<span class="sf-die-count" title="{{count}} {{label}} dice"><b>{{count}}</b><i class="sf-die-shape sf-die-{{key}}" aria-hidden="true"></i><span class="sr-only">{{label}}</span></span>{{else}}<small>—</small>{{/each}}</span>
+<i class="fa-solid fa-dice sf-compact-roll-cue" aria-hidden="true"></i>
+</button>
+<select class="sf-skill-characteristic" name="{{path}}.characteristic" aria-label="{{label}} characteristic" title="{{characteristicLabel}}">{{selectOptions characteristicShortOptions selected=characteristic}}</select>
+<span class="sf-paper-checks"><label class="sf-paper-check" title="Career skill"><input type="checkbox" name="{{path}}.career" {{checked career}} aria-label="{{label}} career skill"><span>C</span></label>
+{{#if showGroup}}<label class="sf-paper-check" title="Minion group skill"><input type="checkbox" name="{{path}}.group" {{checked group}} aria-label="{{label}} minion group skill"><span>G</span></label>{{/if}}</span>
+<input class="sf-skill-rank" type="number" name="{{path}}.rank" min="0" max="{{cap}}" value="{{rank}}" aria-label="{{label}} rank">
+{{/if}}
+<button type="button" class="sf-skill-buy" data-action="buySkill" data-skill="{{key}}" title="Purchase next {{label}} rank with XP" aria-label="Purchase next {{label}} rank"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
 </div>{{/each}}
+</section>{{/each}}
+</div>{{/each}}
+</div>
 </section>{{/if}}
     {{#if inventory}}<section class="sf-panel">
 <div class="sf-section-heading">
@@ -198,25 +215,25 @@
 </label>
 </div>
 <button type="button" data-action="createCharacter">Choose starting species & career</button>
-<p class="sf-hint">Purchase connected talents with available XP. Consult the book for the talent's effect. Grit, Toughened and Force Rating adjust their native resources; other effects are applied from the book.</p>
+<p class="sf-hint">Purchase connected talents with available XP. Each imported node shows its player guidance. Structured passive effects marked Auto feed the dice pool; situational and active effects remain explicit choices.</p>
 </section>
-{{#each specializations}}<section class="sf-panel">
-<h2>{{name}}</h2>
+{{#each advancementTrees}}<section class="sf-panel">
+<h2>{{#if signature}}Signature ability · {{/if}}{{name}}</h2>
 <p class="sf-hint">{{source.book}} · p. {{source.page}} · {{#if verified}}Structured graph imported{{else}}Awaiting source chart verification{{/if}}
+{{#if signature}} · Linked to {{#if linkSpecialization}}{{linkSpecialization}}{{else}}no specialization{{/if}} · {{#if linkUnlocked}}Base ability unlocked{{else}}Learn a marked bottom-row talent to unlock the base ability{{/if}}{{/if}}
 </p>
-{{#if nodes.length}}<div class="sf-tree">
-<svg viewBox="0 0 800 650" preserveAspectRatio="none" aria-hidden="true">
+{{#if nodes.length}}<div class="sf-tree" style="height:{{treeHeight}}px">
+<svg viewBox="0 0 800 {{svgHeight}}" preserveAspectRatio="none" aria-hidden="true">
 {{#each edges}}<line x1="{{x1}}" y1="{{y1}}" x2="{{x2}}" y2="{{y2}}"/>{{/each}}
 </svg>
-{{#each nodes}}<button type="button" class="sf-talent {{#if owned}}owned{{/if}} {{#if knownElsewhere}}owned{{/if}} {{#if available}}available{{/if}}" style="left:{{x}}%;top:{{y}}%" data-action="buyTalent" data-item="{{itemId}}" data-node="{{id}}" {{#if disabled}}disabled{{/if}}>
-<span>{{name}}</span>
-<small>
-{{#if owned}}Purchased{{else}}{{#if knownElsewhere}}Learned in another tree{{else}}{{cost}} XP{{/if}}{{/if}}
-</small>
+{{#each nodes}}<button type="button" class="sf-talent {{#if owned}}owned{{/if}} {{#if knownElsewhere}}owned{{/if}} {{#if available}}available{{/if}}" style="left:{{x}}%;top:{{y}}%;width:{{width}}%;height:{{height}}%" data-action="buyTalent" data-item="{{itemId}}" data-node="{{id}}" title="{{#if summary}}{{summary}}{{else}}{{name}} · use {{../source.book}}, p. {{../source.page}}{{/if}}" {{#if disabled}}disabled{{/if}}>
+<span class="sf-talent-name">{{name}}</span>
+<span class="sf-talent-description">{{#if summary}}{{summary}}{{else}}Use the cited book for this talent's effect.{{/if}}</span>
+<small><span>{{#if owned}}Purchased{{else}}{{#if knownElsewhere}}Learned elsewhere{{else}}{{cost}} XP{{/if}}{{/if}}</span><span class="sf-talent-automation {{#if automatic}}automatic{{/if}}">{{automationLabel}}</span></small>
 </button>{{/each}}
 </div>{{else}}<p>Add the chart with the private PDF tree importer. A list of talent names alone does not define a valid upgrade path.</p>{{/if}}
 </section>{{else}}<section class="sf-panel">
-<p>Add a specialization from the library to see its upgrade paths.</p>
+<p>Add a specialization or signature ability from the library to see its upgrade paths.</p>
 </section>{{/each}}
 <section class="sf-panel">
 <h2>Advancement record</h2>
@@ -226,7 +243,17 @@
     {{#if story}}<section class="sf-panel">
 <h2>Logbook</h2>
 {{#if isVehicle}}<label>Notes<textarea name="system.notes" rows="15">{{system.notes}}</textarea>
-</label>{{else}}<label>Motivation<input name="system.motivation" value="{{system.motivation}}">
+</label>{{else}}<div class="sf-section-heading"><h3>Motivations</h3><button type="button" data-action="addMotivation" title="Add a motivation"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add</button></div>
+<p class="sf-hint">Add as many active or dormant motivations as the character needs. Director of Realms receives their category, guidance and source reference.</p>
+<div class="sf-motivation-list">
+{{#each motivations}}<article class="sf-motivation {{#unless active}}inactive{{/unless}}">
+<div><strong>{{name}}</strong>{{#if category}}<span>{{category}}</span>{{/if}}{{#unless active}}<span>Dormant</span>{{/unless}}</div>
+{{#if description}}<p>{{description}}</p>{{/if}}
+{{#if source.book}}<small>{{source.book}}{{#if source.page}} · p. {{source.page}}{{/if}}</small>{{/if}}
+<span class="sf-motivation-actions"><button type="button" data-action="editMotivation" data-motivation-id="{{id}}" aria-label="Edit {{name}}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button><button type="button" data-action="removeMotivation" data-motivation-id="{{id}}" aria-label="Remove {{name}}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button></span>
+</article>{{else}}<p>No structured motivations yet. Use Add or drag a motivation reference from the library.</p>{{/each}}
+</div>
+<label>Freeform motivation summary<input name="system.motivation" value="{{system.motivation}}">
 </label>
 <label>Biography & notes<textarea name="system.biography" rows="12">{{system.biography}}</textarea>
 </label>

@@ -169,15 +169,7 @@ export function skillPool(
     force,
   });
 }
-export function resolveFaces(results) {
-  const raw = Object.fromEntries(SYMBOLS.map((key) => [key, 0]));
-  for (const { die, result, active = true } of results) {
-    if (!active) continue;
-    const symbols = DICE[die]?.faces[result - 1];
-    if (!symbols || !Number.isInteger(result))
-      throw new RangeError(`Invalid ${die} face: ${result}`);
-    for (const key of SYMBOLS) raw[key] += symbols[key];
-  }
+function outcomeFromRaw(raw) {
   const netSuccess = raw.success - raw.failure,
     netAdvantage = raw.advantage - raw.threat;
   return {
@@ -194,6 +186,29 @@ export function resolveFaces(results) {
     dark: raw.dark,
     passed: netSuccess > 0,
   };
+}
+export function resolveFaces(results) {
+  const raw = Object.fromEntries(SYMBOLS.map((key) => [key, 0]));
+  for (const { die, result, active = true } of results) {
+    if (!active) continue;
+    const symbols = DICE[die]?.faces[result - 1];
+    if (!symbols || !Number.isInteger(result))
+      throw new RangeError(`Invalid ${die} face: ${result}`);
+    for (const key of SYMBOLS) raw[key] += symbols[key];
+  }
+  return outcomeFromRaw(raw);
+}
+export function applyAutomaticResults(outcome, additions = {}) {
+  for (const key of Object.keys(additions))
+    if (!SYMBOLS.includes(key) || !Number.isInteger(additions[key]))
+      throw new Error(`Invalid automatic result: ${key}`);
+  const raw = Object.fromEntries(
+    SYMBOLS.map((key) => [
+      key,
+      Math.max(0, outcome.raw[key] + (additions[key] ?? 0)),
+    ]),
+  );
+  return outcomeFromRaw(raw);
 }
 export function poolFormula(pool) {
   return (

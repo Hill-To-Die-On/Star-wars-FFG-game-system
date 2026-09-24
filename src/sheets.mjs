@@ -8,11 +8,21 @@ import {
   RANGES,
 } from "./config.mjs";
 import { DICE, skillPool } from "./dice/core.mjs";
+import { rollPool } from "./dice/foundry.mjs";
+import {
+  ROLL_DICE,
+  DIFFICULTY_PRESETS,
+  automaticCheckPool,
+  adjustPool,
+  setDifficulty,
+  shiftUpgrade,
+} from "./dice/builder.mjs";
 import { availableTalents } from "./advancement.mjs";
 import {
   DEFAULT_CAMPAIGN,
   validateCampaign,
   RULE_LINES,
+  resolveSheetTheme,
   bookAllowed,
 } from "./rules.mjs";
 import { escapeHTML, minionState } from "./mechanics.mjs";
@@ -21,6 +31,15 @@ import { getLibraryPack } from "./library-packs.mjs";
 import { convertSwaSource } from "./swa-source.mjs";
 import { openGMSourceNotes } from "./gm-notes.mjs";
 import { creationPlan } from "./creation.mjs";
+import {
+  CUSTOM_SKILL_TYPES,
+  customSkillKey,
+} from "./custom-skills.mjs";
+import {
+  availableSignatureNodes,
+  signatureLinkState,
+} from "./signature-abilities.mjs";
+import { buildSkillColumns, SKILL_VIEWS } from "./skill-layout.mjs";
 const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 const notifyError = (error) => ui.notifications.error(error.message);
 const optionsHTML = (options, selected) =>
@@ -32,26 +51,456 @@ const optionsHTML = (options, selected) =>
     .join("");
 const numericInput = (name, label, value = 0, max = 40) =>
   `<label>${label}<input type="number" name="${name}" value="${value}" min="0" max="${max}" step="1"></label>`;
-export async function checkDialog(actor, key, item) {
-  const skill = SKILLS[key];
-  if (!skill) throw new Error("Select a valid skill.");
-  const form = await DialogV2.prompt({
-    window: { title: `${item?.name ?? skill.label} · Build dice pool` },
-    content: `<div class="sf-dialog"><p>${escapeHTML(actor.name)} · ${escapeHTML(skill.label)}</p><div class="sf-form-grid">${numericInput("difficulty", "Difficulty", 2, 10)}${numericInput("boost", "Boost")}${numericInput("setback", "Setback / defense")}${numericInput("upgradeDifficulty", "Upgrade difficulty / Adversary")}${numericInput("upgradeAbility", "Upgrade ability")}</div><p>Set range difficulty and situational modifiers from the encounter. Effects of Destiny flips and talents must be included in the pool.</p><label>Visibility<select name="rollMode">${optionsHTML({ publicroll: "Public", gmroll: "GM", blindroll: "Blind GM", selfroll: "Self" }, game.settings.get("core", "rollMode"))}</select></label></div>`,
+const DIE_HINTS = {
+  ability: "Natural aptitude",
+  proficiency: "Training and expertise",
+  boost: "Helpful circumstances",
+  difficulty: "Task and range",
+  challenge: "Upgraded opposition",
+  setback: "Defense and hindrances",
+};
+const dieShape = (key) =>
+  `<span class="sf-die-shape sf-die-${key}" aria-hidden="true"></span>`;
+const poolPreviewHTML = (pool) => {
+  const dice = ROLL_DICE.flatMap((key) =>
+    Array.from({ length: pool[key] ?? 0 }, () =>
+      `<span class="sf-pool-token" title="${DICE[key].label}">${dieShape(key)}<span class="sr-only">${DICE[key].label}</span></span>`,
+    ),
+  ).join("");
+  return dice || '<span class="sf-empty-pool">No dice selected</span>';
+};
+const poolControlHTML = (key, value) =>
+  `<div class="sf-die-control" data-die="${key}">
+    <div class="sf-die-control-label">${dieShape(key)}<span><strong>${DICE[key].label}</strong><small>${DIE_HINTS[key]}</small></span></div>
+    <div class="sf-stepper">
+      <button type="button" data-pool-delta="-1" aria-label="Remove one ${DICE[key].label} die">−</button>
+      <input type="number" name="${key}" value="${value}" min="0" max="40" step="1" aria-label="${DICE[key].label} dice">
+      <button type="button" data-pool-delta="1" aria-label="Add one ${DICE[key].label} die">+</button>
+    </div>
+  </div>`;
+const difficultyPresetsHTML = (difficulty, attribute) =>
+  DIFFICULTY_PRESETS.map(
+    ({ value, label }) =>
+      `<button type="button" ${attribute}="${value}" class="${difficulty === value ? "active" : ""}"><span>${label}</span><small>${value ? `${value} difficulty` : "No check"}</small></button>`,
+  ).join("");
+const targetContext = (key, meleeOverride) => {
+  const targets = Array.from(game.user?.targets ?? []),
+    token = targets[0] ?? null,
+    actor = token?.actor ?? null,
+    melee =
+      meleeOverride ?? ["brawl", "melee", "lightsaber"].includes(key),
+    traits = actor?.effectiveTraits?.(),
+    defense = actor
+      ? Math.max(
+          0,
+          Number(
+            traits?.defense?.[melee ? "melee" : "ranged"] ??
+              actor.system.defense?.[melee ? "melee" : "ranged"],
+          ) || 0,
+        )
+      : 0,
+    adversary = actor
+      ? Math.max(
+          0,
+          ...actor.items
+            .filter(
+              (candidate) =>
+                candidate.type === "talent" &&
+                candidate.name.trim().toLowerCase() === "adversary",
+            )
+            .map((candidate) => Number(candidate.system.rank) || 1),
+        )
+      : 0;
+  const rangeBand = token?.document?.getFlag?.(SYSTEM_ID, "rangeBand");
+  return {
+    name: actor?.name ?? "",
+    defense,
+    adversary,
+    rangeBand: RANGES.includes(rangeBand) ? rangeBand : "",
+    extraTargets: Math.max(0, targets.length - 1),
+  };
+};
+const titleCase = (value) =>
+  value ? value.charAt(0).toUpperCase() + value.slice(1) : "";
+const CHARACTERISTIC_SHORT = {
+  brawn: "Br",
+  agility: "Ag",
+  intellect: "Int",
+  cunning: "Cun",
+  willpower: "Will",
+  presence: "Pr",
+};
+async function customSkillDialog(actor, id = "") {
+  const definition = id
+      ? actor.skillDefinition(customSkillKey(id))
+      : null,
+    skill = definition?.state ?? {
+      label: "",
+      characteristic: "intellect",
+      type: "general",
+      rank: 0,
+      career: false,
+      group: false,
+    };
+  if (id && !definition) throw new Error("Custom skill was not found.");
+  const result = await DialogV2.prompt({
+    window: {
+      title: id ? `Edit custom skill · ${skill.label}` : "Add custom skill",
+    },
+    classes: ["star-wars"],
+    position: { width: 440 },
+    content: `<div class="sf-dialog sf-custom-skill-dialog">
+      <label>Skill name<input name="label" maxlength="60" value="${escapeHTML(skill.label)}" autofocus></label>
+      <label>Characteristic<select name="characteristic">${optionsHTML(CHARACTERISTICS, skill.characteristic)}</select></label>
+      <label>Automatic roll handling<select name="type">${optionsHTML(CUSTOM_SKILL_TYPES, skill.type)}</select></label>
+      <label>Current rank<input type="number" name="rank" min="0" max="${actor.type === "character" ? 5 : 10}" value="${skill.rank}"></label>
+      <label><input type="checkbox" name="career" ${skill.career ? "checked" : ""}> Career skill</label>
+      ${actor.type === "minion" ? `<label><input type="checkbox" name="group" ${skill.group ? "checked" : ""}> Minion group skill</label>` : ""}
+      <p class="sf-hint">General skills use a chosen task difficulty. Combat skills use the selected target, range, defense and Adversary rating.</p>
+    </div>`,
     ok: {
-      label: "Roll pool",
-      callback: (_event, button) =>
-        Object.fromEntries(new FormData(button.form)),
+      label: id ? "Save changes" : "Add skill",
+      icon: id ? "fa-solid fa-check" : "fa-solid fa-plus",
+      callback: (_event, button) => {
+        const data = Object.fromEntries(new FormData(button.form));
+        return {
+          label: data.label,
+          characteristic: data.characteristic,
+          type: data.type,
+          rank: Number(data.rank),
+          career: !!data.career,
+          group: !!data.group,
+        };
+      },
+    },
+    rejectClose: false,
+  });
+  if (!result) return null;
+  return id
+    ? actor.updateCustomSkill(id, result)
+    : actor.createCustomSkill(result);
+}
+async function motivationDialog(actor, id = "") {
+  const motivation = id
+    ? actor.motivationSources().find((entry) => entry.id === id)
+    : {
+        name: "",
+        category: "",
+        description: "",
+        active: true,
+        source: { book: "", page: "", table: "", id: "" },
+      };
+  if (!motivation) throw new Error("Motivation was not found.");
+  const result = await DialogV2.prompt({
+    window: {
+      title: id ? `Edit motivation · ${motivation.name}` : "Add motivation",
+    },
+    classes: ["star-wars"],
+    position: { width: 520 },
+    content: `<div class="sf-dialog sf-motivation-dialog">
+      <label>Motivation<input name="name" maxlength="160" value="${escapeHTML(motivation.name)}" autofocus></label>
+      <label>Category or type<input name="category" maxlength="100" value="${escapeHTML(motivation.category)}" placeholder="Ambition, Cause, Relationship…"></label>
+      <label>Player and GM guidance<textarea name="description" maxlength="4000" rows="6">${escapeHTML(motivation.description)}</textarea></label>
+      <label><input type="checkbox" name="active" ${motivation.active ? "checked" : ""}> Active motivation</label>
+      <div class="sf-form-grid">
+        <label>Source book<input name="book" maxlength="160" value="${escapeHTML(motivation.source.book)}"></label>
+        <label>Page<input name="page" maxlength="32" value="${escapeHTML(motivation.source.page)}"></label>
+      </div>
+    </div>`,
+    ok: {
+      label: id ? "Save changes" : "Add motivation",
+      icon: id ? "fa-solid fa-check" : "fa-solid fa-plus",
+      callback: (_event, button) => {
+        const data = Object.fromEntries(new FormData(button.form));
+        return {
+          name: data.name,
+          category: data.category,
+          description: data.description,
+          active: !!data.active,
+          source: {
+            book: data.book,
+            page: data.page,
+            table: motivation.source.table,
+            id: motivation.source.id,
+          },
+        };
+      },
+    },
+    rejectClose: false,
+  });
+  if (!result) return null;
+  return id
+    ? actor.updateMotivation(id, result)
+    : actor.createMotivation(result);
+}
+function poolBuilderContext(actor, key, item, skill, characteristic, rank) {
+  const combat = skill.group === "Combat",
+    melee = skill.melee ?? ["brawl", "melee", "lightsaber"].includes(key),
+    target = targetContext(key, melee),
+    weaponRange = RANGES.includes(item?.system.range) ? item.system.range : "",
+    rangeBand = melee
+      ? "engaged"
+      : target.rangeBand || (weaponRange === "engaged" ? "engaged" : "short"),
+    context = {
+      actorName: actor.name,
+      skillKey: key,
+      skillLabel: skill.label,
+      characteristic,
+      characteristicLabel: CHARACTERISTICS[characteristic],
+      characteristicValue: Number(actor.system.characteristics[characteristic]),
+      rank,
+      combat,
+      melee,
+      itemName: item?.name ?? "",
+      weaponRange,
+      target,
+      difficulty: 2,
+      rangeBand,
+      talentRules: actor.talentRulesForCheck(key),
+    };
+  context.automatic = automaticCheckPool({
+    characteristic: context.characteristicValue,
+    rank,
+    skill: key,
+    weaponRange,
+    rangeBand,
+    difficulty: context.difficulty,
+    defense: target.defense,
+    adversary: target.adversary,
+    combat,
+    melee,
+    talentRules: context.talentRules,
+  });
+  return context;
+}
+function automaticContextHTML(context) {
+  if (!context.combat)
+    return `<div class="sf-auto-context">
+      <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
+      <div><strong>Task difficulty</strong><span>Choose the difficulty that best matches the current action.</span></div>
+    </div>`;
+  const target = context.target.name
+    ? `<strong>${escapeHTML(context.target.name)}</strong><span>${context.target.defense} ${context.melee ? "melee" : "ranged"} defence · Adversary ${context.target.adversary}${context.target.extraTargets ? ` · ${context.target.extraTargets} other target${context.target.extraTargets === 1 ? "" : "s"} ignored` : ""}</span>`
+    : "<strong>No target selected</strong><span>Select a token to add its defence and Adversary upgrades automatically.</span>";
+  return `<div class="sf-auto-context">
+    <i class="fa-solid fa-crosshairs" aria-hidden="true"></i>
+    <div>${target}</div>
+  </div>`;
+}
+function poolBuilderHTML(context) {
+  const pool = context.automatic.pool,
+    automaticControl = context.combat
+      ? context.melee
+        ? `<div class="sf-fixed-range"><span class="sf-eyebrow">Range</span><strong>Engaged</strong><small>Melee attacks use Average difficulty.</small></div>`
+        : `<div class="sf-range-presets">${RANGES.map(
+            (range) =>
+              `<button type="button" data-auto-range="${range}" class="${range === context.rangeBand ? "active" : ""}"><span>${titleCase(range)}</span><small>${range === "engaged" ? "Close contact" : `${{ short: 1, medium: 2, long: 3, extreme: 4 }[range]} difficulty`}</small></button>`,
+          ).join("")}</div>`
+      : `<div class="sf-difficulty-presets">${difficultyPresetsHTML(context.difficulty, "data-auto-difficulty")}</div>`;
+  return `<div class="sf-pool-builder">
+    <section class="sf-pool-origin">
+      <div><span class="sf-eyebrow">SKILL + CHARACTERISTIC</span>
+      <h2>${escapeHTML(context.itemName || context.skillLabel)}</h2>
+      <p><strong>${escapeHTML(context.skillLabel)}</strong> uses <strong>${escapeHTML(context.characteristicLabel)} ${context.characteristicValue}</strong> with <strong>rank ${context.rank}</strong>.</p></div>
+      <div class="sf-builder-mode" role="tablist" aria-label="Dice pool mode">
+        <button type="button" class="active" data-builder-mode="auto" role="tab" aria-selected="true"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Auto<small>Use sheet & target</small></span></button>
+        <button type="button" data-builder-mode="manual" role="tab" aria-selected="false"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Manual<small>Set every die</small></span></button>
+      </div>
+    </section>
+    <section class="sf-pool-preview" aria-live="polite">
+      <span>Dice to roll</span><div data-pool-preview>${poolPreviewHTML(pool)}</div>
+    </section>
+    <div data-mode-panel="auto">
+      <section class="sf-pool-section sf-auto-section">
+        <div class="sf-pool-section-title"><div><span class="sf-step-number">1</span><h3>${context.combat ? context.melee ? "Attack at engaged range" : "Choose the range band" : "Choose the task difficulty"}</h3><p>${context.combat ? "The selected target supplies opposition automatically." : "Your characteristic and training are already included."}</p></div></div>
+        ${automaticControl}
+        ${automaticContextHTML(context)}
+      </section>
+      <section class="sf-auto-breakdown">
+        <div class="sf-auto-explanation"><span class="sf-eyebrow">WHY THIS POOL?</span><ul data-auto-reasons></ul></div>
+        <p class="sf-pool-error" data-auto-error hidden></p>
+        <div class="sf-auto-actions"><button type="button" data-modify-pool><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Modify this pool<small>Copy these dice into Manual</small></span></button></div>
+      </section>
+    </div>
+    <div data-mode-panel="manual" hidden>
+      <section class="sf-pool-section">
+        <div class="sf-pool-section-title"><div><span class="sf-step-number">1</span><h3>Adjust the automatic pool</h3><p>The automatic dice are already loaded. Change only what the situation requires.</p></div><button type="button" data-pool-reset><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reset to auto</button></div>
+        <div class="sf-difficulty-presets sf-manual-presets">${difficultyPresetsHTML(pool.challenge ? -1 : pool.difficulty, "data-manual-difficulty")}</div>
+      <div class="sf-pool-groups">
+        <fieldset><legend>Skill</legend>${poolControlHTML("ability", pool.ability)}${poolControlHTML("proficiency", pool.proficiency)}<div class="sf-upgrade-row"><button type="button" data-pool-upgrade="positive" data-direction="1">Upgrade skill die</button><button type="button" data-pool-upgrade="positive" data-direction="-1">Downgrade</button></div></fieldset>
+        <fieldset><legend>Opposition</legend>${poolControlHTML("difficulty", pool.difficulty)}${poolControlHTML("challenge", pool.challenge)}<div class="sf-upgrade-row"><button type="button" data-pool-upgrade="negative" data-direction="1">Upgrade difficulty</button><button type="button" data-pool-upgrade="negative" data-direction="-1">Downgrade</button></div></fieldset>
+        <fieldset><legend>Situation</legend>${poolControlHTML("boost", pool.boost)}${poolControlHTML("setback", pool.setback)}${poolControlHTML("force", pool.force)}</fieldset>
+      </div>
+      </section>
+    </div>
+    <input type="hidden" name="poolMode" value="auto">
+    <label class="sf-roll-visibility">Roll visibility<select name="rollMode">${optionsHTML({ publicroll: "Public", gmroll: "GM", blindroll: "Blind GM", selfroll: "Self" }, game.settings.get("core", "rollMode"))}</select></label>
+  </div>`;
+}
+function attachPoolBuilder(dialog, context) {
+  const root = dialog.element.querySelector(".sf-pool-builder");
+  if (!root || root.dataset.ready) return;
+  root.dataset.ready = "true";
+  const readPool = () =>
+    Object.fromEntries(
+      ROLL_DICE.map((key) => [
+        key,
+        Math.max(0, Math.min(40, Number(root.querySelector(`[name="${key}"]`).value) || 0)),
+      ]),
+    );
+  const writePool = (pool) => {
+    for (const key of ROLL_DICE) root.querySelector(`[name="${key}"]`).value = pool[key];
+    root.querySelector("[data-pool-preview]").innerHTML = poolPreviewHTML(pool);
+    for (const button of root.querySelectorAll("[data-manual-difficulty]"))
+      button.classList.toggle(
+        "active",
+        pool.challenge === 0 &&
+          Number(button.dataset.manualDifficulty) === pool.difficulty,
+      );
+  };
+  const automatic = () =>
+    automaticCheckPool({
+      characteristic: context.characteristicValue,
+      rank: context.rank,
+      skill: context.skillKey,
+      weaponRange: context.weaponRange,
+      rangeBand:
+        root.querySelector("[data-auto-range].active")?.dataset.autoRange ??
+        context.rangeBand,
+      difficulty: Number(
+        root.querySelector("[data-auto-difficulty].active")?.dataset
+          .autoDifficulty ?? context.difficulty,
+      ),
+      defense: context.target.defense,
+      adversary: context.target.adversary,
+      combat: context.combat,
+      melee: context.melee,
+      talentRules: context.talentRules,
+    });
+  const renderAutomatic = () => {
+    const result = automatic();
+    writePool(result.pool);
+    const reasons = [
+      `${context.characteristicLabel} ${context.characteristicValue} + ${context.skillLabel} rank ${context.rank}: ${result.pool.ability} ability, ${result.pool.proficiency} proficiency`,
+      ...result.reasons.slice(1),
+    ];
+    root.querySelector("[data-auto-reasons]").innerHTML = reasons
+      .map((reason) => `<li>${escapeHTML(reason)}</li>`)
+      .join("");
+    const error = root.querySelector("[data-auto-error]");
+    error.hidden = !result.error;
+    error.textContent = result.error;
+    root.dataset.autoError = result.error ? "true" : "false";
+    const submit = dialog.element.querySelector('button[data-action="ok"]');
+    if (submit && root.dataset.mode !== "manual") submit.disabled = !!result.error;
+  };
+  const setMode = (mode) => {
+    root.dataset.mode = mode;
+    root.querySelector('[name="poolMode"]').value = mode;
+    for (const button of root.querySelectorAll("[data-builder-mode]")) {
+      const active = button.dataset.builderMode === mode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    }
+    for (const panel of root.querySelectorAll("[data-mode-panel]"))
+      panel.hidden = panel.dataset.modePanel !== mode;
+    const submit = dialog.element.querySelector('button[data-action="ok"]');
+    if (mode === "auto") renderAutomatic();
+    else if (submit) submit.disabled = false;
+  };
+  const enterManual = () => {
+    writePool(automatic().pool);
+    setMode("manual");
+  };
+  root.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    let pool = readPool();
+    if (button.hasAttribute("data-builder-mode")) {
+      if (
+        button.dataset.builderMode === "manual" &&
+        root.dataset.mode !== "manual"
+      )
+        enterManual();
+      else setMode(button.dataset.builderMode);
+      return;
+    }
+    if (button.hasAttribute("data-modify-pool")) {
+      enterManual();
+      return;
+    }
+    if (button.hasAttribute("data-auto-range")) {
+      for (const peer of root.querySelectorAll("[data-auto-range]"))
+        peer.classList.toggle("active", peer === button);
+      renderAutomatic();
+      return;
+    }
+    if (button.hasAttribute("data-auto-difficulty")) {
+      for (const peer of root.querySelectorAll("[data-auto-difficulty]"))
+        peer.classList.toggle("active", peer === button);
+      renderAutomatic();
+      return;
+    }
+    if (button.hasAttribute("data-pool-delta"))
+      pool = adjustPool(pool, button.closest("[data-die]").dataset.die, Number(button.dataset.poolDelta));
+    else if (button.hasAttribute("data-manual-difficulty"))
+      pool = setDifficulty(pool, Number(button.dataset.manualDifficulty));
+    else if (button.hasAttribute("data-pool-upgrade"))
+      pool = shiftUpgrade(pool, button.dataset.poolUpgrade, Number(button.dataset.direction));
+    else if (button.hasAttribute("data-pool-reset")) pool = automatic().pool;
+    else return;
+    writePool(pool);
+  });
+  root.addEventListener("input", (event) => {
+    if (event.target.matches("[data-die] input")) writePool(readPool());
+  });
+  setMode("auto");
+}
+export async function checkDialog(actor, key, item) {
+  const definition = actor.skillDefinition(key);
+  if (!definition) throw new Error("Select a valid skill.");
+  actor.assertOwner();
+  if (actor.isVehicle || actor.type === "group")
+    throw new Error("Choose a character's native skill.");
+  const characteristic =
+      definition.state.characteristic || definition.characteristic,
+    rank = actor.skillRank(definition.key),
+    context = poolBuilderContext(
+      actor,
+      definition.key,
+      item,
+      definition,
+      characteristic,
+      rank,
+    );
+  const form = await DialogV2.prompt({
+    window: { title: `${item?.name ?? definition.label} · Build dice pool` },
+    classes: ["star-wars", "sf-pool-builder-window"],
+    position: { width: 780 },
+    content: poolBuilderHTML(context),
+    render: (_event, dialog) => attachPoolBuilder(dialog, context),
+    ok: {
+      label: "Roll these dice",
+      icon: "fa-solid fa-dice",
+      callback: (_event, button) => {
+        const data = Object.fromEntries(new FormData(button.form));
+        return {
+          rollMode: data.rollMode,
+          pool: Object.fromEntries(
+            ROLL_DICE.map((die) => [die, Number(data[die])]),
+          ),
+        };
+      },
     },
     rejectClose: false,
   });
   if (!form) return;
-  const { rollMode, ...numbers } = form;
-  const result = await actor.rollSkill(key, {
-    ...Object.fromEntries(
-      Object.entries(numbers).map(([k, v]) => [k, Number(v)]),
-    ),
-    rollMode,
+  const result = await rollPool(form.pool, {
+    label: `${actor.name} · ${item?.name ?? definition.label}`,
+    actor,
+    rollMode: form.rollMode,
+    automaticResults: context.talentRules.automaticResults,
+    ruleNotes: context.talentRules.reasons,
   });
   if (item && result.outcome.passed) {
     ui.notifications.info(
@@ -70,11 +519,18 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
       switchSection: this.tab,
+      setSkillView: this.setSkillView,
       skill: this.skill,
       force: this.force,
       item: this.item,
       addItem: this.addItem,
       removeItem: this.removeItem,
+      addCustomSkill: this.addCustomSkill,
+      editCustomSkill: this.editCustomSkill,
+      removeCustomSkill: this.removeCustomSkill,
+      addMotivation: this.addMotivation,
+      editMotivation: this.editMotivation,
+      removeMotivation: this.removeMotivation,
       buySkill: this.buySkill,
       buyCharacteristic: this.buyCharacteristic,
       buyTalent: this.buyTalent,
@@ -92,59 +548,138 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       game.user.isGM && !!this.actor.getFlag(SYSTEM_ID, "swa")?.notesId;
     const actor = this.actor,
       s = actor.system;
-    const campaign = game.settings.get(SYSTEM_ID, "campaign");
-    const skills = actor.isVehicle
-      ? []
-      : Object.entries(SKILLS).map(([key, skill]) => ({
-          key,
-          ...skill,
-          ...s.skills[key],
-          rank: s.skills[key].rank,
-          pool: (() => {
+    const campaign = game.settings.get(SYSTEM_ID, "campaign"),
+      skillViewMode = game.settings.get(SYSTEM_ID, "skillView"),
+      sheetTheme = game.settings.get(SYSTEM_ID, "sheetTheme"),
+      themeKey = resolveSheetTheme(
+        s.theme === "auto" ? sheetTheme : s.theme,
+        s.line,
+        campaign.lines,
+      );
+    const skillView = (definition, index = -1) => {
+        const state = definition.state,
+          characteristic = state.characteristic || definition.characteristic;
+        return {
+          key: definition.key,
+          id: definition.id,
+          label: definition.label,
+          characteristic,
+          characteristicShort: CHARACTERISTIC_SHORT[characteristic],
+          career: state.career,
+          group: state.group,
+          category: definition.group,
+          rank: state.rank,
+          custom: definition.custom,
+          path: definition.custom
+            ? `system.customSkills.${index}`
+            : `system.skills.${definition.key}`,
+          ...(() => {
             try {
               const p = skillPool(
-                s.characteristics[s.skills[key].characteristic],
-                actor.skillRank(key),
+                s.characteristics[characteristic],
+                actor.skillRank(definition.key),
                 { difficulty: 0 },
               );
-              return `${p.proficiency} proficiency · ${p.ability} ability`;
+              return {
+                pool: `${p.proficiency} proficiency · ${p.ability} ability`,
+                poolDice: ["proficiency", "ability"]
+                  .filter((die) => p[die])
+                  .map((die) => ({
+                    key: die,
+                    count: p[die],
+                    label: DICE[die].label,
+                  })),
+                characteristicLabel: CHARACTERISTICS[characteristic],
+                characteristicValue: s.characteristics[characteristic],
+              };
             } catch {
-              return "Verify statistics";
+              return { pool: "Verify statistics", poolDice: [] };
             }
           })(),
           characteristicOptions: CHARACTERISTICS,
-        }));
-    const specializations = actor.items
-      .filter((i) => i.type === "specialization")
-      .map((item) => {
+          characteristicShortOptions: CHARACTERISTIC_SHORT,
+          cap: actor.type === "character" ? 5 : 10,
+          showGroup: actor.type === "minion",
+        };
+      },
+      skills = actor.isVehicle
+        ? []
+        : Object.keys(SKILLS).map((key) =>
+            skillView(actor.skillDefinition(key)),
+          ),
+      customSkills = actor.isVehicle
+        ? []
+        : Array.from(s.customSkills ?? []).flatMap((skill, index) => {
+            const definition = actor.skillDefinition(customSkillKey(skill.id));
+            return definition ? [skillView(definition, index)] : [];
+          });
+    const skillColumns = actor.isVehicle
+      ? []
+      : buildSkillColumns(skills, customSkills, skillViewMode);
+    const advancementTree = (item) => {
         const tree = item.system.tree,
+          signature = item.type === "signatureAbility",
           owned = s.advancement
             .filter((e) => e.itemId === item.id)
             .map((e) => e.nodeId);
-        const shared = new Set(
-          s.advancement
-            .filter((e) => e.ranked === false)
-            .map((e) => e.name.toLowerCase()),
-        );
-        const available = tree?.verified
-          ? availableTalents(
-              tree,
-              owned,
-              s.advancement
-                .filter((e) => e.ranked === false)
-                .map((e) => e.name),
-            )
-          : [];
+        const specializationIds = new Set(
+            actor.items
+              .filter((candidate) => candidate.type === "specialization")
+              .map((candidate) => candidate.id),
+          ),
+          shared = new Set(
+            s.advancement
+              .filter(
+                (entry) =>
+                  entry.ranked === false &&
+                  specializationIds.has(entry.itemId),
+              )
+              .map((e) => e.name.toLowerCase()),
+          );
+        const available = signature
+            ? availableSignatureNodes(actor, item)
+            : tree?.verified
+              ? availableTalents(
+                  tree,
+                  owned,
+                  s.advancement
+                    .filter(
+                      (entry) =>
+                        entry.ranked === false &&
+                        specializationIds.has(entry.itemId),
+                    )
+                    .map((e) => e.name),
+                )
+              : [],
+          rows = Math.max(
+            1,
+            ...Array.from(tree?.nodes ?? [], (node) => Number(node.row) + 1),
+          ),
+          link = signature ? signatureLinkState(actor, item) : null;
         return {
           id: item.id,
           name: item.name,
+          signature,
           source: item.system.source,
           verified: tree?.verified,
+          treeHeight: rows * 130,
+          svgHeight: rows * 130,
+          linkSpecialization: link?.specialization?.name ?? "",
+          linkUnlocked: link?.unlocked ?? false,
           nodes: (tree?.nodes ?? []).map((n) => ({
             ...n,
             itemId: item.id,
+            automatic:
+              n.activation === "Passive" && (n.effects?.length ?? 0) > 0,
+            automationLabel:
+              n.activation === "Passive" && (n.effects?.length ?? 0) > 0
+                ? "Auto"
+                : n.summary
+                  ? n.activation || "Guidance"
+                  : "Book reference",
             owned: owned.includes(n.id),
             knownElsewhere:
+              !signature &&
               !owned.includes(n.id) &&
               n.ranked === false &&
               shared.has(n.name.toLowerCase()),
@@ -154,20 +689,29 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
               !available.some((a) => a.id === n.id) ||
               n.cost > s.xp.available,
             x: n.col * 25 + 0.5,
-            y: n.row * 20 + 1,
+            y: n.row * (100 / rows) + 1,
+            width: Math.max(1, Number(n.span) || 1) * 25 - 1,
+            height: 100 / rows - 3,
           })),
           edges: (tree?.edges ?? []).map(([a, b]) => {
             const n = tree.nodes.find((n) => n.id === a),
               m = tree.nodes.find((n) => n.id === b);
             return {
-              x1: n.col * 200 + 100,
+              x1: (n.col + (Number(n.span) || 1) / 2) * 200,
               y1: n.row * 130 + 65,
-              x2: m.col * 200 + 100,
+              x2: (m.col + (Number(m.span) || 1) / 2) * 200,
               y2: m.row * 130 + 65,
             };
           }),
         };
-      });
+      },
+      specializations = actor.items
+        .filter((item) => item.type === "specialization")
+        .map(advancementTree),
+      signatureAbilities = actor.items
+        .filter((item) => item.type === "signatureAbility")
+        .map(advancementTree),
+      advancementTrees = [...specializations, ...signatureAbilities];
     const stats = actor.isVehicle
       ? [
           ["hullTrauma", "Hull trauma"],
@@ -189,10 +733,14 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
         actor.type === "minion"
           ? minionState(s.groupSize, s.wounds.value, Math.max(1, s.wounds.max))
           : null,
-      theme: THEMES[s.theme],
-      themes: Object.fromEntries(
-        Object.entries(THEMES).map(([k, v]) => [k, v.name]),
-      ),
+      themeKey,
+      theme: THEMES[themeKey],
+      themes: {
+        auto: `Automatic · ${THEMES[themeKey].name}`,
+        ...Object.fromEntries(
+          Object.entries(THEMES).map(([k, v]) => [k, v.name]),
+        ),
+      },
       campaign,
       creation: s.phase === "creation",
       tabs: ["overview", "skills", "inventory", "advancement", "story"]
@@ -206,6 +754,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
           active: this.activeTab === id,
         })),
       overview: this.activeTab === "overview",
+      activeTab: this.activeTab,
       showSkills: this.activeTab === "skills",
       inventory: this.activeTab === "inventory",
       advancement: this.activeTab === "advancement",
@@ -218,7 +767,17 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
             value: s.characteristics[key],
           })),
       skills,
+      skillColumns,
+      skillView: skillViewMode,
+      skillViews: Object.entries(SKILL_VIEWS).map(([id, label]) => ({
+        id,
+        label,
+        active: skillViewMode === id,
+      })),
       specializations,
+      signatureAbilities,
+      advancementTrees,
+      motivations: Array.from(s.motivations ?? []),
       resources: stats.map(([key, label]) => ({
         key,
         label,
@@ -248,7 +807,23 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
   }
   _onRender(context, options) {
     super._onRender(context, options);
-    this.element.dataset.theme = this.actor.system.theme;
+    this.element.dataset.theme = context.themeKey;
+    if (this.activeTab === "skills") {
+      requestAnimationFrame(() => {
+        if (this.activeTab !== "skills" || !this.element?.isConnected) return;
+        const content = this.element.querySelector(".window-content"),
+          overflow = content
+            ? Math.max(0, content.scrollHeight - content.clientHeight)
+            : 0;
+        const height = Math.min(
+          window.innerHeight - 48,
+          this.position.height + overflow,
+        );
+        if (overflow > 1 && height > this.position.height)
+          this.setPosition({ height });
+      });
+    } else if (this.position.height !== 820)
+      this.setPosition({ height: 820 });
     this.element.addEventListener("dragover", (event) =>
       event.preventDefault(),
     );
@@ -279,6 +854,51 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
           await this.actor.acquireSpecialization(item);
         return;
       }
+      if (
+        item.type === "signatureAbility" &&
+        this.actor.type === "character"
+      ) {
+        const candidates = this.actor.signatureAttachmentCandidates(item);
+        if (!candidates.length)
+          throw new Error(
+            "Add a specialization from this signature ability's career before attaching it.",
+          );
+        const specializationId =
+          candidates.length === 1
+            ? candidates[0].id
+            : await DialogV2.prompt({
+                window: { title: `Attach ${item.name}` },
+                content: `<label>Linked specialization<select name="specialization">${optionsHTML(Object.fromEntries(candidates.map((candidate) => [candidate.id, candidate.name])))}</select></label>`,
+                ok: {
+                  label: "Attach ability",
+                  callback: (_event, button) =>
+                    button.form.elements.specialization.value,
+                },
+                rejectClose: false,
+              });
+        if (specializationId)
+          await this.actor.acquireSignatureAbility(item, specializationId);
+        return;
+      }
+      if (
+        this.actor.type === "character" &&
+        ["motivation", "deteremine_motivation"].includes(
+          item.system.source?.table,
+        )
+      ) {
+        await this.actor.createMotivation({
+          name: item.name,
+          category: String(
+            item.system.metadata?.Motivation_Type ??
+              item.system.metadata?.Career ??
+              "",
+          ),
+          description: item.system.description ?? "",
+          active: true,
+          source: item.system.source,
+        });
+        return;
+      }
       const copy = item.toObject();
       delete copy._id;
       await this.actor.createEmbeddedDocuments("Item", [copy]);
@@ -288,6 +908,12 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
   }
   static tab(_event, target) {
     this.activeTab = target.dataset.tab;
+    this.render();
+  }
+  static async setSkillView(_event, target) {
+    const view = target.dataset.skillView;
+    if (!Object.hasOwn(SKILL_VIEWS, view)) return;
+    await game.settings.set(SYSTEM_ID, "skillView", view);
     this.render();
   }
   static gmNotes() {
@@ -330,6 +956,76 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       })
     )
       await this.actor.deleteEmbeddedDocuments("Item", [target.dataset.item]);
+  }
+  static async addCustomSkill() {
+    try {
+      await customSkillDialog(this.actor);
+      this.render();
+    } catch (error) {
+      notifyError(error);
+    }
+  }
+  static async editCustomSkill(_event, target) {
+    try {
+      await customSkillDialog(this.actor, target.dataset.customId);
+      this.render();
+    } catch (error) {
+      notifyError(error);
+    }
+  }
+  static async removeCustomSkill(_event, target) {
+    try {
+      const definition = this.actor.skillDefinition(
+        customSkillKey(target.dataset.customId),
+      );
+      if (!definition) throw new Error("Custom skill was not found.");
+      if (
+        await DialogV2.confirm({
+          window: { title: `Remove custom skill · ${definition.label}` },
+          content: `<p>Remove <strong>${escapeHTML(definition.label)}</strong> from this actor? Its past XP entries remain in the advancement record.</p>`,
+        })
+      ) {
+        await this.actor.deleteCustomSkill(definition.id);
+        this.render();
+      }
+    } catch (error) {
+      notifyError(error);
+    }
+  }
+  static async addMotivation() {
+    try {
+      await motivationDialog(this.actor);
+      this.render();
+    } catch (error) {
+      notifyError(error);
+    }
+  }
+  static async editMotivation(_event, target) {
+    try {
+      await motivationDialog(this.actor, target.dataset.motivationId);
+      this.render();
+    } catch (error) {
+      notifyError(error);
+    }
+  }
+  static async removeMotivation(_event, target) {
+    try {
+      const motivation = this.actor
+        .motivationSources()
+        .find((entry) => entry.id === target.dataset.motivationId);
+      if (!motivation) throw new Error("Motivation was not found.");
+      if (
+        await DialogV2.confirm({
+          window: { title: `Remove motivation · ${motivation.name}` },
+          content: `<p>Remove <strong>${escapeHTML(motivation.name)}</strong> from this character?</p>`,
+        })
+      ) {
+        await this.actor.deleteMotivation(motivation.id);
+        this.render();
+      }
+    } catch (error) {
+      notifyError(error);
+    }
   }
   static async buySkill(_event, target) {
     try {
@@ -431,8 +1127,15 @@ export class StarWarsItemSheet extends HandlebarsApplicationMixin(
       editable: this.isEditable,
       weapon: this.item.type === "weapon",
       armor: this.item.type === "armor",
+      signatureAbility: this.item.type === "signatureAbility",
       skills: Object.fromEntries(
-        Object.entries(SKILLS).map(([k, v]) => [k, v.label]),
+        [
+          ...Object.entries(SKILLS).map(([k, v]) => [k, v.label]),
+          ...Array.from(this.item.actor?.system.customSkills ?? [], (skill) => [
+            customSkillKey(skill.id),
+            skill.label,
+          ]),
+        ],
       ),
       ranges: Object.fromEntries(RANGES.map((r) => [r, r])),
       metadata: Object.entries(this.item.system.metadata ?? {}).map(

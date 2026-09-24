@@ -1,3 +1,5 @@
+import { motivationSummary } from "./motivations.mjs";
+
 /** Shared records have no combat statistics; Destiny always comes from world state. */
 export function groupSummary(system, destiny = { light: 0, dark: 0 }) {
   const members = Object.entries(system.members ?? {}).map(([id, member]) => ({
@@ -33,7 +35,7 @@ export function memberFromCharacter(actor, member = {}) {
     characterName: actor.name,
     obligation: s.obligation.value,
     obligationType: s.obligation.label,
-    motivation: s.motivation,
+    motivation: motivationSummary(s),
     duty: s.duty.value,
     dutyType: s.duty.label,
     morality: s.morality.value,

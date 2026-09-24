@@ -27,6 +27,7 @@ const itemTypes = {
   species: "species",
   careers: "career",
   career_specialisations: "specialization",
+  signature_abilities: "signatureAbility",
   attachments: "attachment",
   vehicle_attachments: "attachment",
   force_powers: "forcePower",
@@ -78,7 +79,13 @@ export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
         ).trim() ||
         `${table.replaceAll("_", " ")} reference ${row.ID ?? index + 1}`;
       const key = `${table}:${row.ID ?? index}:${index}`;
-      const id = createHash("sha256").update(key).digest("hex").slice(0, 16);
+      // Signature abilities used to enter compendiums as generic references.
+      // A native-id namespace lets existing worlds preserve those references
+      // while receiving attachable signature-ability documents alongside them.
+      const id = createHash("sha256")
+        .update(table === "signature_abilities" ? `native:${key}` : key)
+        .digest("hex")
+        .slice(0, 16);
       if (ids.has(id)) throw new Error("Duplicate generated id");
       ids.add(id);
       // The explicitly published creator database retains its own reference notes.
@@ -205,6 +212,15 @@ export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
             ),
             forceRating: num(row.Force_Rating),
             incomplete: type === "specialization" ? ["tree"] : [],
+          });
+        if (type === "signatureAbility")
+          Object.assign(system, {
+            eligibleCareers: [String(row.career ?? "")].filter(Boolean),
+            abilityCategory: String(row.career_type ?? ""),
+            matchingNodes: [],
+            linkedSpecializationId: "",
+            tree: { nodes: [], edges: [], verified: false },
+            incomplete: ["tree"],
           });
         bundle.documents.Item.push({
           ...common,
