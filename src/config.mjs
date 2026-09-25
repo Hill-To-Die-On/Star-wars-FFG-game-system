@@ -67,7 +67,28 @@ export const SKILLS = Object.fromEntries(
     { label, characteristic, group },
   ]),
 );
-export const RANGES = ["engaged", "short", "medium", "long", "extreme"];
+export const PERSONAL_RANGES = Object.freeze([
+  "engaged",
+  "short",
+  "medium",
+  "long",
+  "extreme",
+]);
+export const VEHICLE_RANGES = Object.freeze([
+  "close",
+  "short",
+  "medium",
+  "long",
+  "extreme",
+]);
+export const RANGES = Object.freeze([
+  "engaged",
+  "close",
+  "short",
+  "medium",
+  "long",
+  "extreme",
+]);
 export const ITEM_TYPES = [
   "weapon",
   "armor",

@@ -6,6 +6,8 @@ import {
   SKILLS,
   ITEM_TYPES,
   RANGES,
+  PERSONAL_RANGES,
+  VEHICLE_RANGES,
 } from "./config.mjs";
 import { DICE, skillPool } from "./dice/core.mjs";
 import { rollPool } from "./dice/foundry.mjs";
@@ -40,6 +42,7 @@ import {
   signatureLinkState,
 } from "./signature-abilities.mjs";
 import { buildSkillColumns, SKILL_VIEWS } from "./skill-layout.mjs";
+import { measureActorTargetRange } from "./range-overlay/foundry.mjs";
 const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
 const notifyError = (error) => ui.notifications.error(error.message);
 const optionsHTML = (options, selected) =>
@@ -83,7 +86,7 @@ const difficultyPresetsHTML = (difficulty, attribute) =>
     ({ value, label }) =>
       `<button type="button" ${attribute}="${value}" class="${difficulty === value ? "active" : ""}"><span>${label}</span><small>${value ? `${value} difficulty` : "No check"}</small></button>`,
   ).join("");
-const targetContext = (key, meleeOverride) => {
+const targetContext = (key, meleeOverride, sourceActor) => {
   const targets = Array.from(game.user?.targets ?? []),
     token = targets[0] ?? null,
     actor = token?.actor ?? null,
@@ -111,12 +114,30 @@ const targetContext = (key, meleeOverride) => {
             .map((candidate) => Number(candidate.system.rank) || 1),
         )
       : 0;
-  const rangeBand = token?.document?.getFlag?.(SYSTEM_ID, "rangeBand");
+  const measured =
+      token && sourceActor && !melee
+        ? measureActorTargetRange(sourceActor, token)
+        : null,
+    flaggedRange = token?.document?.getFlag?.(SYSTEM_ID, "rangeBand"),
+    rangeBand = measured?.available
+      ? measured.band
+      : RANGES.includes(flaggedRange)
+        ? flaggedRange
+        : "";
   return {
     name: actor?.name ?? "",
     defense,
     adversary,
-    rangeBand: RANGES.includes(rangeBand) ? rangeBand : "",
+    rangeBand,
+    rangeSource: measured?.available
+      ? "overlay"
+      : RANGES.includes(flaggedRange)
+        ? "token-flag"
+        : "",
+    rangeScale: measured?.scale ?? "",
+    rangeMode: measured?.profileMode ?? "",
+    sceneDistance: measured?.sceneDistance ?? null,
+    sceneUnits: measured?.units ?? "",
     extraTargets: Math.max(0, targets.length - 1),
   };
 };
@@ -236,11 +257,24 @@ async function motivationDialog(actor, id = "") {
 function poolBuilderContext(actor, key, item, skill, characteristic, rank) {
   const combat = skill.group === "Combat",
     melee = skill.melee ?? ["brawl", "melee", "lightsaber"].includes(key),
-    target = targetContext(key, melee),
+    target = targetContext(key, melee, actor),
     weaponRange = RANGES.includes(item?.system.range) ? item.system.range : "",
+    vehicleScale =
+      actor.type === "vehicle" || item?.system.scale === "vehicle",
+    rangeOptions =
+      target.rangeScale && target.rangeScale !== "personal"
+        ? VEHICLE_RANGES
+        : vehicleScale
+          ? VEHICLE_RANGES
+          : PERSONAL_RANGES,
     rangeBand = melee
       ? "engaged"
-      : target.rangeBand || (weaponRange === "engaged" ? "engaged" : "short"),
+      : target.rangeBand ||
+        (weaponRange === "engaged"
+          ? "engaged"
+          : vehicleScale
+            ? "close"
+            : "short"),
     context = {
       actorName: actor.name,
       skillKey: key,
@@ -256,6 +290,7 @@ function poolBuilderContext(actor, key, item, skill, characteristic, rank) {
       target,
       difficulty: 2,
       rangeBand,
+      rangeOptions,
       talentRules: actor.talentRulesForCheck(key),
     };
   context.automatic = automaticCheckPool({
@@ -279,8 +314,11 @@ function automaticContextHTML(context) {
       <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
       <div><strong>Task difficulty</strong><span>Choose the difficulty that best matches the current action.</span></div>
     </div>`;
-  const target = context.target.name
-    ? `<strong>${escapeHTML(context.target.name)}</strong><span>${context.target.defense} ${context.melee ? "melee" : "ranged"} defence · Adversary ${context.target.adversary}${context.target.extraTargets ? ` · ${context.target.extraTargets} other target${context.target.extraTargets === 1 ? "" : "s"} ignored` : ""}</span>`
+  const measuredRange = context.target.rangeSource === "overlay"
+      ? ` · ${context.target.rangeBand === "beyond" ? "Beyond Extreme" : `${titleCase(context.target.rangeBand)} range`} (${context.target.rangeMode === "map" ? "map scale" : "ToM calibration"})`
+      : "",
+    target = context.target.name
+    ? `<strong>${escapeHTML(context.target.name)}</strong><span>${context.target.defense} ${context.melee ? "melee" : "ranged"} defence · Adversary ${context.target.adversary}${measuredRange}${context.target.extraTargets ? ` · ${context.target.extraTargets} other target${context.target.extraTargets === 1 ? "" : "s"} ignored` : ""}</span>`
     : "<strong>No target selected</strong><span>Select a token to add its defence and Adversary upgrades automatically.</span>";
   return `<div class="sf-auto-context">
     <i class="fa-solid fa-crosshairs" aria-hidden="true"></i>
@@ -292,9 +330,9 @@ function poolBuilderHTML(context) {
     automaticControl = context.combat
       ? context.melee
         ? `<div class="sf-fixed-range"><span class="sf-eyebrow">Range</span><strong>Engaged</strong><small>Melee attacks use Average difficulty.</small></div>`
-        : `<div class="sf-range-presets">${RANGES.map(
+        : `<div class="sf-range-presets">${context.rangeOptions.map(
             (range) =>
-              `<button type="button" data-auto-range="${range}" class="${range === context.rangeBand ? "active" : ""}"><span>${titleCase(range)}</span><small>${range === "engaged" ? "Close contact" : `${{ short: 1, medium: 2, long: 3, extreme: 4 }[range]} difficulty`}</small></button>`,
+              `<button type="button" data-auto-range="${range}" class="${range === context.rangeBand ? "active" : ""}"><span>${titleCase(range)}</span><small>${range === "engaged" ? "Close contact" : `${{ close: 1, short: 1, medium: 2, long: 3, extreme: 4 }[range]} difficulty`}</small></button>`,
           ).join("")}</div>`
       : `<div class="sf-difficulty-presets">${difficultyPresetsHTML(context.difficulty, "data-auto-difficulty")}</div>`;
   return `<div class="sf-pool-builder">
