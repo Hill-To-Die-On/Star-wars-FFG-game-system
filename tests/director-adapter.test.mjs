@@ -52,6 +52,8 @@ test("Director of Realms receives every custom skill with its effective rank", (
     group: false,
   });
   assert.equal(directorAdapter.extractSkills(actor)["Custom 8"], 8);
+  assert.equal(typeof directorAdapter.getCombatRange, "function");
+  assert.equal(typeof directorAdapter.getRangeProfile, "function");
   assert.equal(context.motivation, "Relationship: Protect the crew");
   assert.equal(context.motivations[0].description.includes("loyalties"), true);
 });

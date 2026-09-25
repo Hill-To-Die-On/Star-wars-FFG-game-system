@@ -12,6 +12,10 @@ import {
   talentAutomation,
   talentRulesForCheck,
 } from "./talent-rules.mjs";
+import {
+  getSceneRangeProfile,
+  measureTokenRange,
+} from "./range-overlay/foundry.mjs";
 export function actorContext(actor) {
   const s = actor.system;
   const campaign =
@@ -369,7 +373,7 @@ export const directorAdapter = {
       targetSemantics: "successes",
       defaultTarget: 1,
       guidance:
-        "Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target.",
+        "Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target.",
     };
   },
   getCheckTalentRules(actor, skill, options = {}) {
@@ -384,14 +388,18 @@ export const directorAdapter = {
     return actor.applyDamage(amount, options);
   },
   getCharacterContext: actorContext,
+  getRangeProfile: getSceneRangeProfile,
+  getCombatRange(sourceToken, targetToken, options = {}) {
+    return measureTokenRange(sourceToken, targetToken, options);
+  },
   searchGMSourceNotes,
   openAdvancement(actor) {
     return actor.sheet.render({ force: true });
   },
-  // Native range bands cannot safely be inferred from a token's distance in metres.
+  // The range service supplies a band, but weapon and GM decisions remain explicit.
   async executeAttack() {
     throw new Error(
-      "Narrative attacks require an explicit range band, weapon, target defense and GM-approved pool. Use the Star Wars FFG weapon workflow.",
+      "Narrative attacks require a weapon, target defense and GM-approved pool. Read getCombatRange, then use the Star Wars FFG weapon workflow.",
     );
   },
 };
