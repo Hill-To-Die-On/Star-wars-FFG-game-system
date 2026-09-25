@@ -1,0 +1,13 @@
+# The maintainer reviews all changes, including generated dependency updates.
+* @JoelBondoux
+
+# These paths define the public release, dependency, and third-party content boundary.
+/.github/ @JoelBondoux
+/package.json @JoelBondoux
+/package-lock.json @JoelBondoux
+/system.json @JoelBondoux
+/scripts/build.mjs @JoelBondoux
+/data/ @JoelBondoux
+/assets/vendor/ @JoelBondoux
+/LICENSE @JoelBondoux
+/THIRD_PARTY_NOTICES.md @JoelBondoux
