@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "managedBy": "atlasmind:reviewed-pr-local-ci:v1",
+  "enabled": true,
+  "repository": "Hill-To-Die-On/Star-wars-FFG-game-system",
+  "trustedBaseBranch": "main",
+  "workflowFile": "atlasmind-reviewed-pr-local-ci.yml",
+  "runnerLabel": "atlasmind-reviewed-pr-x64",
+  "statusContext": "AtlasMind/local-ci",
+  "controllerNodeVersion": "24",
+  "evidence": "linux-container",
+  "allowForks": false,
+  "commands": [
+    {
+      "label": "Install locked dependencies",
+      "command": "npm",
+      "args": [
+        "ci"
+      ],
+      "timeoutMinutes": 20
+    },
+    {
+      "label": "Run check",
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ],
+      "timeoutMinutes": 45
+    }
+  ],
+  "detection": {
+    "kind": "node",
+    "packageManager": "npm",
+    "detail": "Detected npm with a lockfile and the aggregate check script."
+  }
+}
