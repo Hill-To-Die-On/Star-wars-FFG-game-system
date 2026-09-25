@@ -56,7 +56,7 @@ Published tags and releases are retained as historical delivery artifacts. Curre
 | Dependency security | Dependency graph, Dependabot alerts, and Dependabot security updates enabled |
 | Vulnerability intake | Private vulnerability reporting enabled |
 | Secret protection | Secret scanning and push protection enabled when available to the organization |
-| Merge hygiene | Automatic source-branch deletion and branch-update suggestions enabled |
+| Merge hygiene | Long-lived promotion branches retained; branch-update suggestions enabled; feature branches deleted deliberately after merge |
 | Discovery topics | `foundry-vtt`, `foundry-vtt-system`, `star-wars-rpg`, `ffg`, `genesys`, `tabletop-rpg`, `narrative-dice`, `javascript` |
 | Managed labels | `breaking-change`, `content`, `dependencies`, `github-actions`, `javascript`, `needs-triage`, `security`, `skip-changelog`, plus GitHub defaults |
 
