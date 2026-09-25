@@ -1,0 +1,90 @@
+name: Bug report
+description: Report reproducible incorrect behaviour in the Foundry system.
+title: "[Bug]: "
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem. Do not attach rulebook or adventure PDFs, copied rules prose, licence keys, world secrets, or other private material.
+
+  - type: input
+    id: system-version
+    attributes:
+      label: Star Wars FFG version
+      description: Found in Foundry's Game Systems list or system.json.
+      placeholder: "0.2.1"
+    validations:
+      required: true
+
+  - type: input
+    id: foundry-version
+    attributes:
+      label: Foundry VTT version
+      placeholder: "14.x"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: rule-line
+    attributes:
+      label: Campaign rules in use
+      multiple: true
+      options:
+        - Edge of the Empire
+        - Age of Rebellion
+        - Force and Destiny
+        - Mixed campaign
+        - Rules-independent interface or API
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include the action taken, the observed result, and any visible error.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Create or open ...
+        2. Select ...
+        3. Click ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: modules
+    attributes:
+      label: Active modules and browser
+      description: List Dice So Nice, Director of Realms, other active modules, and the browser or Foundry desktop client.
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or screenshots
+      description: Paste the smallest useful console excerpt or attach a screenshot after removing private campaign material.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I reproduced this with the latest release or current development build.
+          required: true
+        - label: I removed private campaign content, credentials, PDFs, and copied book text from this report.
+          required: true

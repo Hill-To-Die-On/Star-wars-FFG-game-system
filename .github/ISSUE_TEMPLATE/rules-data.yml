@@ -1,0 +1,67 @@
+name: Rules or reference data correction
+description: Report a structured-data, source-reference, talent-tree, or automation gap.
+title: "[Data]: "
+labels:
+  - content
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form records facts needed to verify the public index or a privately imported chart. Supply book and page references, not copied prose or scans. Never attach a PDF or photograph to a public issue.
+
+  - type: dropdown
+    id: data-type
+    attributes:
+      label: Data type
+      options:
+        - Specialization talent tree
+        - Signature ability
+        - Motivation
+        - Species or career
+        - Item or weapon
+        - Vehicle or starship
+        - Adversary
+        - Location or source reference
+        - Dice or automation rule
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: record
+    attributes:
+      label: Record name
+    validations:
+      required: true
+
+  - type: input
+    id: source
+    attributes:
+      label: Book and page
+      placeholder: "Book title, p. 00"
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current system data or behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: correction
+    attributes:
+      label: Expected correction
+      description: Paraphrase the correction or describe the graph/statistical difference without copying protected prose.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: rights
+    attributes:
+      label: Content boundary
+      options:
+        - label: I have supplied references and original explanation only, with no scans, copied prose, or official artwork.
+          required: true
