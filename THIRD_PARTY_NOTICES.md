@@ -1,5 +1,27 @@
 # Third-party notices
 
+## Public-domain interface backdrop
+
+`assets/ui/cassini-saturn-pia08387.jpg` is an unmodified copy of NASA image
+PIA08387, *Saturn view from Iapetus*. The natural-colour panorama was assembled
+from 15 red, green and blue Cassini wide-angle photographs acquired on
+10 September 2007. It depicts Saturn with Dione, Enceladus, Mimas, Rhea,
+Tethys and Titan; Earth is not present. No generative AI was used to create or
+modify the bundled image.
+
+- Source file: [NASA Image and Video Library](https://images-assets.nasa.gov/image/PIA08387/PIA08387~orig.jpg)
+- Catalogue record: [NASA/JPL Photojournal PIA08387](https://photojournal.jpl.nasa.gov/catalog/PIA08387)
+- Public-domain record: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Saturn_view_from_Iapetus.jpg)
+- Credit: NASA/JPL/Space Science Institute
+- SHA-256: `9313D2D3811DC91B3C5A1B4E07555CFF467482AB2EF166A2B895DFA1DBED515A`
+
+The Commons record identifies the image as public domain in the United States.
+NASA's media guidelines state that NASA content generally is not subject to
+copyright in the United States, request acknowledgement of NASA as the source,
+and prohibit implying NASA endorsement. The image contains no NASA identifier,
+logo or person. It is excluded from the project's MIT grant and is distributed
+under its own public-domain status and the applicable NASA usage guidelines.
+
 ## Narrative dice symbol font
 
 `assets/vendor/starwarsffg/EotESymbol-Regular-PLUS.otf` is copied unchanged from

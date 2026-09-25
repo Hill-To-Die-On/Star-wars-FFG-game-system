@@ -1,5 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import Handlebars from "handlebars";
 import { DICE } from "../src/dice/core.mjs";
 async function walk(dir) {
@@ -35,6 +36,16 @@ for (const path of [
   ...manifest.languages.map((l) => l.path),
 ])
   await readFile(path);
+const backdrop = await readFile("assets/ui/cassini-saturn-pia08387.jpg");
+const backdropHash = createHash("sha256")
+  .update(backdrop)
+  .digest("hex")
+  .toUpperCase();
+if (
+  backdropHash !==
+  "9313D2D3811DC91B3C5A1B4E07555CFF467482AB2EF166A2B895DFA1DBED515A"
+)
+  throw new Error("Cassini backdrop differs from the recorded NASA source");
 for (const [key, die] of Object.entries(DICE))
   for (let i = 1; i <= die.faces.length; i++) {
     const png = await readFile(`assets/dice/${key}-${i}.png`);
@@ -42,5 +53,5 @@ for (const [key, die] of Object.entries(DICE))
       throw new Error("Dice face must be 256 × 256");
   }
 console.log(
-  "Syntax, templates, manifest, integration schema, versions and all 64 dice assets passed.",
+  "Syntax, templates, manifest, integration schema, versions, NASA backdrop provenance and all 64 dice assets passed.",
 );
