@@ -123,9 +123,16 @@ test("chat roll results expose all seven semantic dice and their distinct silhou
     assert.match(html, new RegExp(`data-die="${key}"`));
   }
   assert.match(css, /\.sf-die-ability[^{]*\{[^}]*clip-path:/s);
-  assert.match(css, /\.sf-die-proficiency[^{]*\{[^}]*clip-path:/s);
   assert.match(css, /\.sf-die-boost[^{]*\{[^}]*border-radius:/s);
-  assert.match(css, /\.sf-die-force[^{]*\{[^}]*border-radius:\s*50%/s);
+  assert.match(
+    css,
+    /\.sf-die-proficiency,\s*\.sf-die-challenge,\s*\.sf-die-force\s*\{[^}]*clip-path:\s*polygon\([^}]+\)[^}]*border-radius:\s*0/s,
+  );
+  assert.doesNotMatch(css, /\.sf-die-force\s*\{[^}]*border-radius:\s*50%/s);
+  assert.match(
+    css,
+    /span\[style\*="#edc94e"\],\s*\.sf-dice-tray > span\[style\*="#b93d4e"\],\s*\.sf-dice-tray > span\[style\*="#edece6"\]\s*\{[^}]*clip-path:\s*polygon\([^}]+\)[^}]*border-radius:\s*0/s,
+  );
   assert.match(
     css,
     /\.sf-dice-tray \.sf-die-result,[^{]*\{[^}]*background:\s*var\(--sf-die-color,\s*#77848a\)/s,

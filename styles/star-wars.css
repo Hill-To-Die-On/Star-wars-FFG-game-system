@@ -640,21 +640,17 @@
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 .sf-dice-tray > span[style*="#edc94e"],
-.sf-dice-tray > span[style*="#b93d4e"] {
+.sf-dice-tray > span[style*="#b93d4e"],
+.sf-dice-tray > span[style*="#edece6"] {
   clip-path: polygon(
-    25% 6.7%,
-    50% 0,
-    75% 6.7%,
-    93.3% 25%,
+    25% 4%,
+    75% 4%,
     100% 50%,
-    93.3% 75%,
-    75% 93.3%,
-    50% 100%,
-    25% 93.3%,
-    6.7% 75%,
-    0 50%,
-    6.7% 25%
+    75% 96%,
+    25% 96%,
+    0 50%
   );
+  border-radius: 0;
 }
 .sf-dice-tray > span[style*="#79cce7"],
 .sf-dice-tray > span[style*="#242a32"] {
@@ -662,7 +658,6 @@
 }
 .sf-dice-tray > span[style*="#edece6"] {
   border-color: #6d797d;
-  border-radius: 50%;
 }
 .sf-die-face {
   width: 34px;
@@ -1231,20 +1226,6 @@ body[data-star-wars-theme] #pause figcaption {
 }
 .sf-die-proficiency {
   --sf-die-color: #edc94e;
-  clip-path: polygon(
-    25% 6.7%,
-    50% 0,
-    75% 6.7%,
-    93.3% 25%,
-    100% 50%,
-    93.3% 75%,
-    75% 93.3%,
-    50% 100%,
-    25% 93.3%,
-    6.7% 75%,
-    0 50%,
-    6.7% 25%
-  );
 }
 .sf-die-boost {
   --sf-die-color: #79cce7;
@@ -1256,20 +1237,6 @@ body[data-star-wars-theme] #pause figcaption {
 }
 .sf-die-challenge {
   --sf-die-color: #b93d4e;
-  clip-path: polygon(
-    25% 6.7%,
-    50% 0,
-    75% 6.7%,
-    93.3% 25%,
-    100% 50%,
-    93.3% 75%,
-    75% 93.3%,
-    50% 100%,
-    25% 93.3%,
-    6.7% 75%,
-    0 50%,
-    6.7% 25%
-  );
 }
 .sf-die-setback {
   --sf-die-color: #242a32;
@@ -1278,7 +1245,12 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-die-force {
   --sf-die-color: #edece6;
   border-color: #8b959a;
-  border-radius: 50%;
+}
+.sf-die-proficiency,
+.sf-die-challenge,
+.sf-die-force {
+  clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%);
+  border-radius: 0;
 }
 
 /* Minimal pool beside Foundry's chat bar. */

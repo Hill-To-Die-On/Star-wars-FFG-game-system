@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add a versioned public integration API for character-builder sites, character round trips, declarative community rule packs, mixed bundles and registered connectors, with reviewed JSON, direct-link and origin-bound one-package browser handoffs.
-- Give rolled narrative dice their physical square, diamond, twelve-sided and circular silhouettes in chat, including compatibility styling for stored rolls.
+- Give rolled narrative dice their physical square, diamond and strongly faceted d12 silhouettes in chat, including compatibility styling for stored rolls.
 - Raise muted, accent and active-control color pairs to WCAG 2.1 AA text contrast across all three sheet and Foundry interface themes.
 - Add an original print-inspired sheet treatment with a bundled paper texture, technical panel rules and three distinct color schemes.
 - Select sheet colors automatically from character creation rules or campaign rules while retaining client-wide and per-sheet manual overrides.
