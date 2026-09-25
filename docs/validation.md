@@ -2,7 +2,7 @@
 
 ## Automated evidence
 
-The 78-test suite covers dice distributions and persisted term compatibility, distinct chat-die silhouettes, WCAG AA theme tokens, both public interchange versions and transport limits, connector isolation, community-rule safety, library upgrades, cancellation, upgrades, Force resources, unlimited custom skills, grouped and alphabetical skill layouts, automatic and manual theme resolution, structured motivations, signature attachment/unlock paths, talent-rule validation and stacking, minion thresholds, damage, initiative, XP paths, SQL parsing, complete database coverage, formatted prices, owned-book filtering, Group context, private source conversion, authenticated encryption and player access guards.
+The 89-test suite covers dice distributions and persisted term compatibility, distinct chat-die silhouettes, WCAG AA theme tokens, both public interchange versions and transport limits, connector isolation, community-rule safety, library upgrades, cancellation, upgrades, Force resources, unlimited custom skills, grouped and alphabetical skill layouts, automatic and manual theme resolution, structured motivations, signature attachment/unlock paths, talent-rule validation and stacking, minion thresholds, damage, initiative, XP paths, all three range scales, map and Theatre-of-the-Mind range profiles, single/multi-origin selection, public/DoR range services, SQL parsing, complete database coverage, formatted prices, owned-book filtering, Group context, private source conversion, authenticated encryption and player access guards.
 
 `npm run check` checks syntax, Handlebars templates, manifest paths, version consistency, and all 64 dice image sizes. `npm run build` uses a release allow-list.
 
@@ -34,6 +34,7 @@ The 78-test suite covers dice distributions and persisted term compatibility, di
 | Mixed-ruleline campaign and progression      | Pure-rule tests and native prompt facts passed; live campaign play pending                                                                                                          |
 | Shared book filtering                        | Passed with GM and player browsers: 6,662 rows with all books, 530 for Edge core, zero for an empty owned selection; direct detail lookup and open results refreshed                |
 | Group sheet                                  | Passed: member add/edit, linked-character sync, preserved inaccessible links, shared ownership editing, shared Destiny updates, totals and reload persistence                       |
+| Combat range overlay                         | Passed in isolated Foundry 14.368 with Dice So Nice 6.3.1 and DoR 0.10.1120: dedicated scene controls, Personal/Ship/Battlefield scales, single and multi-origin selection, colour bands, live scale switching and character-sheet/public/DoR range agreement. A 10 m grid measured the test pair at 50 m; the duplicated gridless scene used a pointer-set Close radius, persisted it through logout/rejoin, classified the pair as Short, and did not affect the scaled map. No Star Wars system browser errors were recorded |
 | Player and trusted-player source access      | Passed: no GM controls or browser key; source helpers deny access; direct source-document reads reveal no prose                                                                     |
 | Concurrent XP changes                        | Pending                                                                                                                                                                             |
 
@@ -41,10 +42,12 @@ Never treat a unit test or preview as proof of a completed adventure playtest.
 
 Version 0.2.1 was also checked as an upgrade of the existing isolated world: renamed character, vehicle, Group and item sheets loaded their stylesheet; all seven older narrative die types and an existing chat roll restored; native dice remained intact; all four existing compendiums were found without duplicate creation; 2,309 encrypted GM notes remained accessible with the original browser key; and the catalogue returned all 6,662 rows. No browser errors were recorded.
 
-The Node suite has 63 passing tests. `tests/foundry-smoke.mjs` is an opt-in real-browser test requiring an authenticated, isolated `star-wars-validation` world. Set `FOUNDRY_URL`, `FOUNDRY_STORAGE_STATE`, and optionally `CHROMIUM_PATH`; `FOUNDRY_TEST_WORLD` can select an existing dedicated world whose ID ends in `-validation`. It creates one synthetic actor. Never point it at a campaign world.
+The Node suite has 89 passing tests. `tests/foundry-smoke.mjs` is an opt-in real-browser test requiring an authenticated, isolated `star-wars-validation` world. Set `FOUNDRY_URL`, `FOUNDRY_STORAGE_STATE`, and optionally `CHROMIUM_PATH`; `FOUNDRY_TEST_WORLD` can select an existing dedicated world whose ID ends in `-validation`. It creates one synthetic actor. Never point it at a campaign world.
 
 The separate DoR adapter work passed its focused adapter/native-check tests, TypeScript checks, lint and full build. Its full suite recorded 894 passing suites and four failures; those same four failures were reproduced with the registry change removed. The failures are in compendium source selection, an AI policy contract, authored travel, and a module file-size contract. The patch is not a released DoR update.
 
 Both the resident 12B local model and one installed 4B fallback were declined by DoR's existing resource guard. No guard was disabled and no resident model was forcibly unloaded. A successful direct connection probe is not evidence of an admitted DoR game session.
 
 GitHub Actions did not start the first public repository workflow because the account was locked by a billing issue. Local test and build results are separate from hosted CI, which remains unverified.
+
+The repository's AtlasMind local-CI contract also passed from a clean staging copy in the `node:24-bookworm` Linux container: locked dependency installation and `npm run check` both completed successfully with zero audit vulnerabilities.
