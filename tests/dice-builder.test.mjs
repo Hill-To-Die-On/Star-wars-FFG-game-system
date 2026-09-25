@@ -49,6 +49,26 @@ test("automatic attack difficulty respects range, engaged weapon rules and reach
     automaticCheckPool({
       characteristic: 3,
       rank: 2,
+      skill: "gunnery",
+      weaponRange: "medium",
+      rangeBand: "close",
+    }).difficulty,
+    1,
+  );
+  assert.match(
+    automaticCheckPool({
+      characteristic: 3,
+      rank: 2,
+      skill: "gunnery",
+      weaponRange: "close",
+      rangeBand: "short",
+    }).error,
+    /beyond/,
+  );
+  assert.equal(
+    automaticCheckPool({
+      characteristic: 3,
+      rank: 2,
       skill: "rangedHeavy",
       weaponRange: "long",
       rangeBand: "engaged",
@@ -85,6 +105,16 @@ test("automatic attack difficulty respects range, engaged weapon rules and reach
       rangeBand: "long",
     }).error,
     /beyond/,
+  );
+  assert.match(
+    automaticCheckPool({
+      characteristic: 3,
+      rank: 2,
+      skill: "rangedLight",
+      weaponRange: "extreme",
+      rangeBand: "beyond",
+    }).error,
+    /beyond the configured Extreme/i,
   );
 });
 

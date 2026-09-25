@@ -678,6 +678,27 @@
 .sf-custom-skill-dialog {
   padding: 12px;
 }
+.sf-range-scale-dialog {
+  padding: 12px;
+}
+.sf-range-scale-dialog label {
+  display: grid;
+  gap: 5px;
+  font-weight: 600;
+}
+.sf-range-scale-dialog select {
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 9px;
+  border: 1px solid var(--sf-line);
+  border-radius: 3px;
+  color: var(--sf-ink);
+  background: var(--sf-paper);
+}
+.sf-range-scale-dialog select:focus-visible {
+  outline: 3px solid var(--sf-accent);
+  outline-offset: 2px;
+}
 .sf-custom-skill-dialog label {
   display: grid;
   gap: 4px;

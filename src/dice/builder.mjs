@@ -22,13 +22,21 @@ export const DIFFICULTY_PRESETS = Object.freeze([
 
 export const RANGE_DIFFICULTY = Object.freeze({
   engaged: 1,
+  close: 1,
   short: 1,
   medium: 2,
   long: 3,
   extreme: 4,
 });
 
-const RANGE_ORDER = Object.keys(RANGE_DIFFICULTY);
+const RANGE_RANK = Object.freeze({
+  engaged: 0,
+  close: 0,
+  short: 1,
+  medium: 2,
+  long: 3,
+  extreme: 4,
+});
 const MELEE_SKILLS = new Set(["brawl", "melee", "lightsaber"]);
 const RANGED_SKILLS = new Set(["rangedLight", "rangedHeavy", "gunnery"]);
 
@@ -53,12 +61,15 @@ export function automaticCheckPool({
     taskDifficulty = difficulty;
   if (combat) {
     taskDifficulty = melee ? 2 : RANGE_DIFFICULTY[rangeBand];
-    if (!Number.isInteger(taskDifficulty)) error = "Choose a valid range band.";
-    const rangeIndex = RANGE_ORDER.indexOf(rangeBand),
-      weaponRangeIndex = RANGE_ORDER.indexOf(weaponRange);
+    if (rangeBand === "beyond")
+      error = "Target is beyond the configured Extreme range.";
+    else if (!Number.isInteger(taskDifficulty))
+      error = "Choose a valid range band.";
+    const rangeIndex = RANGE_RANK[rangeBand],
+      weaponRangeIndex = RANGE_RANK[weaponRange];
     if (
       !error &&
-      weaponRangeIndex >= 0 &&
+      Number.isInteger(weaponRangeIndex) &&
       rangeIndex > weaponRangeIndex
     )
       error = `Target is beyond the weapon's ${weaponRange} range.`;
