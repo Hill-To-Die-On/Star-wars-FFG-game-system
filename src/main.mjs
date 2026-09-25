@@ -49,6 +49,10 @@ import {
   openIntegrationImport,
   processIntegrationHandoff,
 } from "./integration-api.mjs";
+import {
+  rangeOverlayApi,
+  registerRangeOverlay,
+} from "./range-overlay/foundry.mjs";
 class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openReferenceBrowser();
@@ -301,6 +305,7 @@ Hooks.once("init", () => {
     onChange: refreshCompactChatDice,
   });
   registerCompactChatDice();
+  registerRangeOverlay();
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
     name: "GM source key",
     label: "Backup or restore key",
@@ -391,6 +396,7 @@ Hooks.once("init", () => {
     importPublishedLibrary,
     searchGMSourceNotes,
     integration: integrationApi,
+    range: rangeOverlayApi,
   });
 });
 Hooks.once("diceSoNiceReady", (dice3d) =>
