@@ -17,9 +17,47 @@ const integration = game.system.api.integration;
 console.table(integration.getCapabilities());
 ```
 
-Version 1 accepts player characters, community rule packs and bundles containing both. It exports player characters and supports JSON files, compact URL-fragment handoffs and an origin-bound `postMessage` handoff.
+Version 1 remains supported unchanged for player characters, community rule packs and bundles containing both. Version 2 adds reviewed Actor packages for characters, minions, rivals, nemeses, vehicles and groups; its bundles can combine those Actors with version-two rule packs. Both versions support JSON files, compact URL-fragment handoffs and an origin-bound `postMessage` handoff.
 
-The returned `schema` path points to the bundled [JSON Schema](schemas/integration-v1.schema.json), which sites can use for editor hints and preflight validation. The runtime validator remains authoritative for size limits and detailed talent-tree rules.
+The returned `schema` path points to the latest bundled [version 2 JSON Schema](schemas/integration-v2.schema.json), while `schemas[1]` and `schemas[2]` expose both contracts. Sites can use them for editor hints and preflight validation. The runtime validator remains authoritative for size limits, actor-specific fields and detailed talent-tree rules.
+
+## Version 2 Actor package
+
+Version 2 uses `kind: "actor"` and accepts every native system Actor type: `character`, `minion`, `rival`, `nemesis`, `vehicle` and `group`. This is the contract used by SW-RPG.info to send generated enemies, ships, parties and home bases as well as characters.
+
+```json
+{
+  "format": "star-wars-ffg-interchange",
+  "version": 2,
+  "kind": "actor",
+  "source": {
+    "id": "sw-rpg.info",
+    "name": "SW-RPG.info",
+    "version": "0.1.0",
+    "url": "https://sw-rpg.info/"
+  },
+  "payload": {
+    "name": "Rook Cell",
+    "type": "group",
+    "system": {
+      "base": {
+        "name": "Rook Waystation",
+        "location": "Outer Rim",
+        "description": ""
+      },
+      "members": {},
+      "credits": 2500,
+      "resources": "",
+      "possessions": "",
+      "contacts": "",
+      "notes": ""
+    },
+    "items": []
+  }
+}
+```
+
+Player-character Actors retain the ordinary Actor-create permission and are owned by their non-GM importer. Importing an adversary, vehicle or group is GM-only. Every Actor import creates a new document; version 2 does not silently update an existing Actor.
 
 ## Interchange envelope
 
@@ -258,7 +296,9 @@ Hooks.once("starWarsFFGReady", (api) => {
 | `summarizePackage(data)` | Produce safe review metadata |
 | `importPackage(data, options)` | Import a character, rule pack or bundle |
 | `importCharacter(data, options)` | Create one player character |
+| `importActor(data, options)` | Create one version 2 character, adversary, vehicle or group |
 | `exportCharacter(actorOrUuid, options)` | Export an observable player character |
+| `exportActor(actorOrUuid, options)` | Export any observable native Actor as version 2 |
 | `importRulePack(data, options)` | GM-only community Item import |
 | `openImportDialog()` | Open the file/paste review flow |
 | `createHandoffUrl(data, foundryUrl)` | Create a compact direct-import URL |

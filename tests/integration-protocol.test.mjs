@@ -131,6 +131,96 @@ function rulePack() {
   };
 }
 
+function actorPackage(type = "vehicle") {
+  const systems = {
+    character: {
+      line: "edge",
+      phase: "creation",
+      species: "Human",
+      characteristics: { brawn: 2, agility: 2 },
+      wounds: { value: 0, max: 12 },
+      strain: { value: 0, max: 12 },
+    },
+    minion: {
+      line: "edge",
+      phase: "play",
+      species: "Droid",
+      characteristics: { brawn: 3, agility: 2 },
+      skills: {
+        vigilance: {
+          rank: 8,
+          career: false,
+          group: true,
+          characteristic: "willpower",
+        },
+      },
+      wounds: { value: 0, max: 5 },
+      strain: { value: 0, max: 0 },
+      groupSize: 3,
+    },
+    rival: { line: "edge", phase: "play", characteristics: { brawn: 3 } },
+    nemesis: { line: "edge", phase: "play", characteristics: { willpower: 4 } },
+    vehicle: {
+      hullTrauma: { value: 0, max: 20 },
+      systemStrain: { value: 0, max: 15 },
+      armor: 3,
+      silhouette: 4,
+      speed: { value: 0, max: 3 },
+      handling: -1,
+      shields: { fore: 1, aft: 1, port: 0, starboard: 0 },
+      model: "YT-1300",
+      manufacturer: "Corellian Engineering Corporation",
+      source: { book: "Edge Core", page: "260", table: "vehicles", id: "1" },
+      incomplete: ["source review required"],
+    },
+    group: {
+      base: { name: "Waystation", location: "Outer Rim", description: "" },
+      members: {
+        pilot: {
+          actorId: "",
+          playerName: "",
+          characterName: "Ria Vale",
+          obligation: 10,
+          obligationType: "Debt",
+          description: "",
+          motivation: "",
+          duty: 0,
+          dutyType: "",
+          morality: 50,
+        },
+      },
+      credits: 2500,
+      resources: "",
+      possessions: "Comlink",
+      contacts: "",
+      notes: "",
+    },
+  };
+  return {
+    format: INTEGRATION_FORMAT,
+    version: 2,
+    kind: "actor",
+    source: { ...source, id: "sw-rpg.info", name: "SW-RPG.info" },
+    payload: {
+      name: type === "group" ? "Vale Cell" : "Field test actor",
+      type,
+      system: systems[type],
+      items: [
+        {
+          name: "Field kit",
+          type: "gear",
+          system: {
+            description: "",
+            quantity: 1,
+            price: 50,
+            source: { book: "Edge Core", page: "170", table: "equipment", id: "3" },
+          },
+        },
+      ],
+    },
+  };
+}
+
 test("character interchange validates, normalizes and round-trips through a handoff token", () => {
   const input = characterPackage(),
     validated = validateIntegrationPackage(input),
@@ -205,6 +295,57 @@ test("character constraints reject impossible ranks and unknown item types", () 
   );
 });
 
+test("version 2 actors validate every supported Foundry actor type", () => {
+  for (const type of ["character", "minion", "rival", "nemesis", "vehicle", "group"]) {
+    const validated = validateIntegrationPackage(actorPackage(type));
+    assert.equal(validated.version, 2);
+    assert.equal(validated.kind, "actor");
+    assert.equal(validated.payload.type, type);
+  }
+  assert.deepEqual(integrationSummary(actorPackage("vehicle")), {
+    kind: "actor",
+    label: "Field test actor",
+    source: "SW-RPG.info",
+    entries: 1,
+    items: 1,
+    actorType: "vehicle",
+  });
+});
+
+test("version boundaries remain explicit and adversary ranks do not widen player limits", () => {
+  const legacyActor = actorPackage("vehicle");
+  legacyActor.version = 1;
+  assert.throws(() => validateIntegrationPackage(legacyActor), /kind: unsupported package kind/);
+
+  const futureCharacter = characterPackage();
+  futureCharacter.version = 2;
+  assert.throws(() => validateIntegrationPackage(futureCharacter), /kind: unsupported package kind/);
+
+  const player = actorPackage("character");
+  player.payload.system.skills = {
+    vigilance: { rank: 8, career: false, group: false, characteristic: "willpower" },
+  };
+  assert.throws(() => validateIntegrationPackage(player), /rank: must be an integer from 0 to 5/);
+  assert.doesNotThrow(() => validateIntegrationPackage(actorPackage("minion")));
+});
+
+test("capability discovery advertises legacy and all-actor interchange without weakening v1", () => {
+  const capabilities = integrationCapabilities();
+  assert.deepEqual(capabilities.versions, [1, 2]);
+  assert.deepEqual(capabilities.actorTypes, [
+    "character",
+    "minion",
+    "rival",
+    "nemesis",
+    "vehicle",
+    "group",
+  ]);
+  assert.ok(capabilities.imports.includes("actor"));
+  assert.match(capabilities.schemas[1], /integration-v1/);
+  assert.match(capabilities.schemas[2], /integration-v2/);
+  assert.equal(validateIntegrationPackage(characterPackage()).version, 1);
+});
+
 test("community rule packs accept declarative effects and reject executable or duplicate rules", () => {
   const valid = validateIntegrationPackage(rulePack());
   assert.equal(valid.payload.rules[0].system.tree.nodes[0].effects[0].target, "boost");
@@ -239,6 +380,27 @@ test("bundles combine characters and rules without allowing recursive bundles", 
   const recursive = structuredClone(bundle);
   recursive.payload.packages[0] = structuredClone(bundle);
   assert.throws(() => validateIntegrationPackage(recursive), /nested bundles are not supported/);
+});
+
+test("version 2 bundles combine actors and rules without mixing contract versions", () => {
+  const actor = actorPackage("group"),
+    rules = { ...rulePack(), version: 2 },
+    bundle = {
+      format: INTEGRATION_FORMAT,
+      version: 2,
+      kind: "bundle",
+      source,
+      payload: { packages: [actor, rules] },
+    },
+    summary = integrationSummary(bundle);
+  assert.equal(summary.entries, 2);
+  assert.equal(summary.packages[0].actorType, "group");
+
+  bundle.payload.packages[1] = rulePack();
+  assert.throws(
+    () => validateIntegrationPackage(bundle),
+    /bundle entries must use version 2/,
+  );
 });
 
 test("direct links fail closed when a valid package is too large for a browser URL", () => {
@@ -290,9 +452,10 @@ test("connector registration is duplicate-safe and returns defensive copies", ()
 test("capability discovery publishes explicit limits and supported document types", () => {
   const capabilities = integrationCapabilities();
   assert.equal(capabilities.format, INTEGRATION_FORMAT);
-  assert.deepEqual(capabilities.versions, [1]);
-  assert.match(capabilities.schema, /integration-v1\.schema\.json$/);
+  assert.deepEqual(capabilities.versions, [1, 2]);
+  assert.match(capabilities.schema, /integration-v2\.schema\.json$/);
   assert.ok(capabilities.itemTypes.includes("specialization"));
+  assert.ok(capabilities.actorTypes.includes("vehicle"));
   assert.ok(capabilities.transports.includes("post-message"));
   assert.equal(capabilities.limits.characterItems, 250);
 });

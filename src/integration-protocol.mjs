@@ -6,11 +6,23 @@ import {
 import { validateTree } from "./advancement.mjs";
 
 export const INTEGRATION_FORMAT = "star-wars-ffg-interchange";
-export const INTEGRATION_VERSION = 1;
+export const INTEGRATION_VERSION = 2;
+export const INTEGRATION_VERSIONS = Object.freeze([1, 2]);
 export const MAX_PACKAGE_BYTES = 2 * 1024 * 1024;
 export const MAX_HANDOFF_BYTES = 192 * 1024;
 
-const PACKAGE_KINDS = Object.freeze(["character", "rulePack", "bundle"]);
+const PACKAGE_KINDS = Object.freeze({
+  1: ["character", "rulePack", "bundle"],
+  2: ["actor", "rulePack", "bundle"],
+});
+const ACTOR_TYPES = Object.freeze([
+  "character",
+  "minion",
+  "rival",
+  "nemesis",
+  "vehicle",
+  "group",
+]);
 const ACTOR_SYSTEM_FIELDS = new Set([
   "theme",
   "line",
@@ -74,6 +86,36 @@ const ITEM_SYSTEM_FIELDS = new Set([
   "source",
   "metadata",
   "incomplete",
+]);
+const VEHICLE_SYSTEM_FIELDS = new Set([
+  "theme",
+  "hullTrauma",
+  "systemStrain",
+  "armor",
+  "silhouette",
+  "speed",
+  "handling",
+  "shields",
+  "model",
+  "manufacturer",
+  "crew",
+  "passengers",
+  "hyperdrive",
+  "cargo",
+  "notes",
+  "source",
+  "incomplete",
+  "metadata",
+]);
+const GROUP_SYSTEM_FIELDS = new Set([
+  "theme",
+  "base",
+  "members",
+  "credits",
+  "resources",
+  "possessions",
+  "contacts",
+  "notes",
 ]);
 const UNSAFE_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 const SOURCE_FIELDS = new Set(["book", "page", "table", "id"]);
@@ -226,7 +268,7 @@ function validateStoryScore(value, path, fields) {
   }
 }
 
-function validateCharacterSystem(system, path) {
+function validateCharacterSystem(system, path, { skillRankMax = 5 } = {}) {
   allowedFields(system, ACTOR_SYSTEM_FIELDS, path);
   if (system.theme !== undefined && !["auto", "frontier", "rebellion", "mystic"].includes(system.theme))
     fail(`${path}.theme`, "unsupported theme");
@@ -247,7 +289,8 @@ function validateCharacterSystem(system, path) {
     for (const [key, skill] of Object.entries(system.skills)) {
       const skillPath = `${path}.skills.${key}`;
       allowedFields(skill, new Set(["rank", "career", "group", "characteristic"]), skillPath);
-      if (skill.rank !== undefined) integerAt(skill.rank, `${skillPath}.rank`, 0, 5);
+      if (skill.rank !== undefined)
+        integerAt(skill.rank, `${skillPath}.rank`, 0, skillRankMax);
       if (skill.career !== undefined) booleanAt(skill.career, `${skillPath}.career`);
       if (skill.group !== undefined) booleanAt(skill.group, `${skillPath}.group`);
       if (
@@ -276,7 +319,7 @@ function validateCharacterSystem(system, path) {
         fail(`${skillPath}.characteristic`, "unknown characteristic");
       if (!["general", "melee", "ranged"].includes(skill.type))
         fail(`${skillPath}.type`, "unsupported custom skill type");
-      integerAt(skill.rank, `${skillPath}.rank`, 0, 5);
+      integerAt(skill.rank, `${skillPath}.rank`, 0, skillRankMax);
       booleanAt(skill.career, `${skillPath}.career`);
       booleanAt(skill.group, `${skillPath}.group`);
     });
@@ -346,6 +389,106 @@ function validateCharacterSystem(system, path) {
   validateSourceReference(system.source, `${path}.source`);
   if (system.advancement !== undefined && (!Array.isArray(system.advancement) || system.advancement.length > 1000))
     fail(`${path}.advancement`, "must contain no more than 1,000 entries");
+}
+
+function validateTheme(value, path) {
+  if (value !== undefined && !["auto", "frontier", "rebellion", "mystic"].includes(value))
+    fail(path, "unsupported theme");
+}
+
+function validateVehicleSystem(system, path) {
+  allowedFields(system, VEHICLE_SYSTEM_FIELDS, path);
+  validateTheme(system.theme, `${path}.theme`);
+  validateResource(system.hullTrauma, `${path}.hullTrauma`, 100000);
+  validateResource(system.systemStrain, `${path}.systemStrain`, 100000);
+  validateResource(system.speed, `${path}.speed`, 20);
+  for (const [key, maximum] of Object.entries({ armor: 100000, silhouette: 20 }))
+    if (system[key] !== undefined)
+      integerAt(system[key], `${path}.${key}`, 0, maximum);
+  if (system.handling !== undefined)
+    integerAt(system.handling, `${path}.handling`, -10, 10);
+  if (system.shields !== undefined) {
+    allowedFields(
+      system.shields,
+      new Set(["fore", "aft", "port", "starboard"]),
+      `${path}.shields`,
+    );
+    for (const [key, value] of Object.entries(system.shields))
+      integerAt(value, `${path}.shields.${key}`, 0, 4);
+  }
+  for (const key of [
+    "model",
+    "manufacturer",
+    "crew",
+    "passengers",
+    "hyperdrive",
+    "cargo",
+    "notes",
+  ])
+    if (system[key] !== undefined)
+      stringAt(system[key], `${path}.${key}`, { max: 100000 });
+  validateSourceReference(system.source, `${path}.source`);
+  validateStringArray(system.incomplete, `${path}.incomplete`);
+  if (system.metadata !== undefined) objectAt(system.metadata, `${path}.metadata`);
+}
+
+function validateGroupSystem(system, path) {
+  allowedFields(system, GROUP_SYSTEM_FIELDS, path);
+  validateTheme(system.theme, `${path}.theme`);
+  if (system.base !== undefined) {
+    allowedFields(
+      system.base,
+      new Set(["name", "location", "description"]),
+      `${path}.base`,
+    );
+    for (const key of ["name", "location", "description"])
+      if (system.base[key] !== undefined)
+        stringAt(system.base[key], `${path}.base.${key}`, { max: 100000 });
+  }
+  if (system.members !== undefined) {
+    objectAt(system.members, `${path}.members`);
+    const entries = Object.entries(system.members);
+    if (entries.length > 100) fail(`${path}.members`, "must contain no more than 100 members");
+    for (const [id, member] of entries) {
+      stringAt(id, `${path}.members key`, { min: 1, max: 100 });
+      const memberPath = `${path}.members.${id}`;
+      allowedFields(
+        member,
+        new Set([
+          "actorId",
+          "playerName",
+          "characterName",
+          "obligation",
+          "obligationType",
+          "description",
+          "motivation",
+          "duty",
+          "dutyType",
+          "morality",
+        ]),
+        memberPath,
+      );
+      for (const key of [
+        "actorId",
+        "playerName",
+        "characterName",
+        "obligationType",
+        "description",
+        "motivation",
+        "dutyType",
+      ])
+        if (member[key] !== undefined)
+          stringAt(member[key], `${memberPath}.${key}`, { max: 100000 });
+      for (const key of ["obligation", "duty", "morality"])
+        if (member[key] !== undefined)
+          integerAt(member[key], `${memberPath}.${key}`, 0, 100);
+    }
+  }
+  if (system.credits !== undefined)
+    integerAt(system.credits, `${path}.credits`, 0, 1000000000000);
+  for (const key of ["resources", "possessions", "contacts", "notes"])
+    if (system[key] !== undefined)
+      stringAt(system[key], `${path}.${key}`, { max: 100000 });
 }
 
 function validateItemSystem(system, path) {
@@ -486,6 +629,40 @@ function normalizeCharacter(payload, path) {
   return result;
 }
 
+function normalizeActor(payload, path) {
+  allowedFields(payload, new Set(["name", "type", "img", "system", "items"]), path);
+  const type = stringAt(payload.type, `${path}.type`, { min: 1, max: 40 });
+  if (!ACTOR_TYPES.includes(type)) fail(`${path}.type`, "unsupported actor type");
+  const result = {
+    name: stringAt(payload.name, `${path}.name`, { min: 1, max: 160 }),
+    type,
+    ...(payload.img !== undefined ? { img: payload.img } : {}),
+    system: jsonClone(objectAt(payload.system, `${path}.system`)),
+    items: [],
+  };
+  validateAsset(result.img, `${path}.img`);
+  if (["character", "minion", "rival", "nemesis"].includes(type))
+    validateCharacterSystem(result.system, `${path}.system`, {
+      skillRankMax: type === "character" ? 5 : 10,
+    });
+  else if (type === "vehicle")
+    validateVehicleSystem(result.system, `${path}.system`);
+  else validateGroupSystem(result.system, `${path}.system`);
+  if (payload.items !== undefined && !Array.isArray(payload.items))
+    fail(`${path}.items`, "expected an array");
+  if ((payload.items?.length ?? 0) > 250)
+    fail(`${path}.items`, "must contain no more than 250 items");
+  const ids = new Set();
+  result.items = Array.from(payload.items ?? [], (item, index) => {
+    const normalized = normalizeItem(item, `${path}.items[${index}]`, { allowId: true });
+    if (normalized.id && ids.has(normalized.id))
+      fail(`${path}.items[${index}].id`, "duplicate embedded item id");
+    if (normalized.id) ids.add(normalized.id);
+    return normalized;
+  });
+  return result;
+}
+
 function normalizeRulePack(payload, path) {
   allowedFields(payload, new Set(["id", "name", "version", "rules"]), path);
   if (!Array.isArray(payload.rules) || !payload.rules.length || payload.rules.length > 500)
@@ -516,12 +693,14 @@ function normalizePackage(value, path = "package", allowBundle = true) {
   allowedFields(value, new Set(["format", "version", "kind", "source", "payload"]), path);
   if (value.format !== INTEGRATION_FORMAT)
     fail(`${path}.format`, `expected ${INTEGRATION_FORMAT}`);
-  if (value.version !== INTEGRATION_VERSION)
+  if (!INTEGRATION_VERSIONS.includes(value.version))
     fail(`${path}.version`, `unsupported interchange version ${value.version}`);
-  if (!PACKAGE_KINDS.includes(value.kind)) fail(`${path}.kind`, "unsupported package kind");
+  if (!PACKAGE_KINDS[value.version].includes(value.kind))
+    fail(`${path}.kind`, "unsupported package kind");
   const source = normalizeSource(value.source, `${path}.source`);
   let payload;
   if (value.kind === "character") payload = normalizeCharacter(value.payload, `${path}.payload`);
+  else if (value.kind === "actor") payload = normalizeActor(value.payload, `${path}.payload`);
   else if (value.kind === "rulePack")
     payload = normalizeRulePack(value.payload, `${path}.payload`);
   else {
@@ -534,12 +713,18 @@ function normalizePackage(value, path = "package", allowBundle = true) {
     )
       fail(`${path}.payload.packages`, "must contain 1-20 packages");
     payload = {
-      packages: value.payload.packages.map((entry, index) =>
-        normalizePackage(entry, `${path}.payload.packages[${index}]`, false),
-      ),
+      packages: value.payload.packages.map((entry, index) => {
+        const entryPath = `${path}.payload.packages[${index}]`;
+        if (entry?.version !== value.version)
+          fail(
+            `${entryPath}.version`,
+            `bundle entries must use version ${value.version}`,
+          );
+        return normalizePackage(entry, entryPath, false);
+      }),
     };
   }
-  return { format: INTEGRATION_FORMAT, version: INTEGRATION_VERSION, kind: value.kind, source, payload };
+  return { format: INTEGRATION_FORMAT, version: value.version, kind: value.kind, source, payload };
 }
 
 export function validateIntegrationPackage(value) {
@@ -552,12 +737,16 @@ export function validateIntegrationPackage(value) {
 export function integrationCapabilities() {
   return {
     format: INTEGRATION_FORMAT,
-    versions: [INTEGRATION_VERSION],
-    schema: "systems/star-wars-ffg/docs/schemas/integration-v1.schema.json",
-    imports: ["character", "rulePack", "bundle"],
-    exports: ["character"],
+    versions: [...INTEGRATION_VERSIONS],
+    schema: "systems/star-wars-ffg/docs/schemas/integration-v2.schema.json",
+    schemas: {
+      1: "systems/star-wars-ffg/docs/schemas/integration-v1.schema.json",
+      2: "systems/star-wars-ffg/docs/schemas/integration-v2.schema.json",
+    },
+    imports: ["character", "actor", "rulePack", "bundle"],
+    exports: ["character", "actor"],
     transports: ["json-file", "url-fragment", "post-message"],
-    actorTypes: ["character"],
+    actorTypes: [...ACTOR_TYPES],
     itemTypes: [...ITEM_TYPES],
     limits: {
       packageBytes: MAX_PACKAGE_BYTES,
@@ -578,6 +767,15 @@ export function integrationSummary(value) {
       source: pkg.source.name,
       entries: 1,
       items: pkg.payload.items.length,
+    };
+  if (pkg.kind === "actor")
+    return {
+      kind: pkg.kind,
+      label: pkg.payload.name,
+      source: pkg.source.name,
+      entries: 1,
+      items: pkg.payload.items.length,
+      actorType: pkg.payload.type,
     };
   if (pkg.kind === "rulePack")
     return {

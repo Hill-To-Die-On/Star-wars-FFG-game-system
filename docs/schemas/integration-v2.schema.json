@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Hill-To-Die-On/Star-wars-FFG-game-system/main/docs/schemas/integration-v2.schema.json",
+  "title": "Star Wars FFG interchange package v2",
+  "description": "Data-only interchange for characters, adversaries, vehicles, groups, community rule packs and mixed bundles. Runtime validation remains authoritative for actor-specific system fields.",
+  "$ref": "#/$defs/package",
+  "$defs": {
+    "actorPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "system", "items"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "type": {
+          "enum": ["character", "minion", "rival", "nemesis", "vehicle", "group"]
+        },
+        "img": { "type": "string", "minLength": 1, "maxLength": 2048 },
+        "system": {
+          "type": "object",
+          "maxProperties": 2000,
+          "description": "Allow-listed and validated according to the selected Actor type by the Foundry runtime."
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 250,
+          "items": { "$ref": "integration-v1.schema.json#/$defs/embeddedItem" }
+        }
+      }
+    },
+    "actorPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "version", "kind", "source", "payload"],
+      "properties": {
+        "format": { "const": "star-wars-ffg-interchange" },
+        "version": { "const": 2 },
+        "kind": { "const": "actor" },
+        "source": { "$ref": "integration-v1.schema.json#/$defs/source" },
+        "payload": { "$ref": "#/$defs/actorPayload" }
+      }
+    },
+    "rulePackPackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "version", "kind", "source", "payload"],
+      "properties": {
+        "format": { "const": "star-wars-ffg-interchange" },
+        "version": { "const": 2 },
+        "kind": { "const": "rulePack" },
+        "source": { "$ref": "integration-v1.schema.json#/$defs/source" },
+        "payload": { "$ref": "integration-v1.schema.json#/$defs/rulePackPayload" }
+      }
+    },
+    "leafPackage": {
+      "oneOf": [
+        { "$ref": "#/$defs/actorPackage" },
+        { "$ref": "#/$defs/rulePackPackage" }
+      ]
+    },
+    "bundlePackage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "version", "kind", "source", "payload"],
+      "properties": {
+        "format": { "const": "star-wars-ffg-interchange" },
+        "version": { "const": 2 },
+        "kind": { "const": "bundle" },
+        "source": { "$ref": "integration-v1.schema.json#/$defs/source" },
+        "payload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["packages"],
+          "properties": {
+            "packages": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 20,
+              "items": { "$ref": "#/$defs/leafPackage" }
+            }
+          }
+        }
+      }
+    },
+    "package": {
+      "oneOf": [
+        { "$ref": "#/$defs/actorPackage" },
+        { "$ref": "#/$defs/rulePackPackage" },
+        { "$ref": "#/$defs/bundlePackage" }
+      ]
+    }
+  }
+}

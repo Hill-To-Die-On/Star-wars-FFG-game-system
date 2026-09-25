@@ -27,7 +27,10 @@ for (const file of await walk("templates"))
   Handlebars.precompile(await readFile(file, "utf8"));
 const manifest = JSON.parse(await readFile("system.json", "utf8"));
 const pkg = JSON.parse(await readFile("package.json", "utf8"));
-JSON.parse(await readFile("docs/schemas/integration-v1.schema.json", "utf8"));
+for (const version of [1, 2])
+  JSON.parse(
+    await readFile(`docs/schemas/integration-v${version}.schema.json`, "utf8"),
+  );
 if (manifest.version !== pkg.version)
   throw new Error("Manifest and package versions differ");
 for (const path of [
@@ -55,5 +58,5 @@ for (const [key, die] of Object.entries(DICE))
       throw new Error("Dice face must be 256 × 256");
   }
 console.log(
-  "Syntax, templates, manifest, integration schema, versions, NASA backdrop provenance and all 64 dice assets passed.",
+  "Syntax, templates, manifest, integration schemas, versions, NASA backdrop provenance and all 64 dice assets passed.",
 );

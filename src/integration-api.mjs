@@ -33,8 +33,15 @@ function assertCharacterImportPermission() {
     throw new Error("Your Foundry role cannot create actors in this world.");
 }
 
+function assertActorImportPermission(pkg) {
+  if (pkg.payload.type === "character") return assertCharacterImportPermission();
+  if (!game.user.isGM)
+    throw new Error("Only the GM can import adversaries, vehicles and groups.");
+}
+
 function assertPackagePermissions(pkg) {
   if (pkg.kind === "character") assertCharacterImportPermission();
+  if (pkg.kind === "actor") assertActorImportPermission(pkg);
   if (pkg.kind === "rulePack" && !game.user.isGM)
     throw new Error("Only the GM can import community rule packs.");
   if (pkg.kind === "bundle")
@@ -48,7 +55,7 @@ function provenance(pkg, extra = {}) {
     sourceVersion: pkg.source.version ?? "",
     sourceUrl: pkg.source.url ?? "",
     format: INTEGRATION_FORMAT,
-    formatVersion: INTEGRATION_VERSION,
+    formatVersion: pkg.version,
     importedAt: new Date().toISOString(),
     ...extra,
   };
@@ -90,6 +97,40 @@ export async function importIntegrationCharacter(value, options = {}) {
   return result;
 }
 
+export async function importIntegrationActor(value, options = {}) {
+  const pkg = validateIntegrationPackage(value);
+  if (pkg.kind !== "actor")
+    throw new Error("Choose a version 2 actor interchange package.");
+  assertActorImportPermission(pkg);
+  const payload = pkg.payload,
+    owner = globalThis.CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OWNER ?? 3,
+    source = {
+      name: payload.name,
+      type: payload.type,
+      ...(payload.img ? { img: payload.img } : {}),
+      system: jsonClone(payload.system),
+      items: payload.items.map(embeddedItemSource),
+      flags: { [SYSTEM_ID]: { integration: provenance(pkg) } },
+      ...(!game.user.isGM && payload.type === "character"
+        ? { ownership: { [game.user.id]: owner } }
+        : {}),
+    },
+    actor = await Actor.create(source, {
+      renderSheet: options.renderSheet !== false,
+      keepEmbeddedIds: true,
+    });
+  if (!actor) throw new Error("Foundry did not create the actor.");
+  const result = {
+    kind: "actor",
+    actorType: actor.type,
+    actorId: actor.id,
+    actorUuid: actor.uuid,
+    name: actor.name,
+  };
+  Hooks.callAll("starWarsFFGIntegrationImported", result, pkg);
+  return result;
+}
+
 async function resolveActor(actorOrUuid) {
   if (typeof actorOrUuid !== "string") return actorOrUuid;
   return game.actors.get(actorOrUuid) ?? (await fromUuid(actorOrUuid));
@@ -115,7 +156,7 @@ export async function exportIntegrationCharacter(actorOrUuid, options = {}) {
     }),
     pkg = {
       format: INTEGRATION_FORMAT,
-      version: INTEGRATION_VERSION,
+      version: 1,
       kind: "character",
       source: {
         id: SYSTEM_ID,
@@ -141,6 +182,49 @@ export async function exportIntegrationCharacter(actorOrUuid, options = {}) {
     );
   }
   return validated;
+}
+
+export async function exportIntegrationActor(actorOrUuid, options = {}) {
+  const actor = await resolveActor(actorOrUuid),
+    actorTypes = integrationCapabilities().actorTypes;
+  if (!actor || actor.documentName !== "Actor" || !actorTypes.includes(actor.type))
+    throw new Error("Choose a Star Wars FFG actor to export.");
+  if (!actor.testUserPermission(game.user, "OBSERVER"))
+    throw new Error("Observer permission is required to export this actor.");
+  const source = actor.toObject(),
+    items = Array.from(actor.items, (item) => {
+      const itemSource = item.toObject();
+      return {
+        id: item.id,
+        name: item.name,
+        type: item.type,
+        ...(itemSource.img ? { img: itemSource.img } : {}),
+        system: jsonClone(itemSource.system),
+      };
+    }),
+    pkg = validateIntegrationPackage({
+      format: INTEGRATION_FORMAT,
+      version: 2,
+      kind: "actor",
+      source: {
+        id: SYSTEM_ID,
+        name: game.system.title,
+        version: game.system.version,
+        ...(game.system.url ? { url: game.system.url } : {}),
+      },
+      payload: {
+        name: actor.name,
+        type: actor.type,
+        ...(source.img ? { img: source.img } : {}),
+        system: jsonClone(source.system),
+        items,
+      },
+    });
+  if (options.download) {
+    const filename = `${actor.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "actor"}.star-wars-ffg.json`;
+    saveDataToFile(JSON.stringify(pkg, null, 2), "application/json", filename);
+  }
+  return pkg;
 }
 
 async function getCommunityPack() {
@@ -264,6 +348,7 @@ export async function importIntegrationPackage(value, options = {}) {
   assertPackagePermissions(pkg);
   if (pkg.kind === "character")
     return importIntegrationCharacter(pkg, options);
+  if (pkg.kind === "actor") return importIntegrationActor(pkg, options);
   if (pkg.kind === "rulePack")
     return importIntegrationRulePack(pkg, options);
   const results = [];
@@ -280,7 +365,7 @@ function reviewDescription(pkg, { origin } = {}) {
       ? `<p>Connection: <strong>${escapeHTML(origin)}</strong></p>`
       : "",
     details =
-      summary.kind === "character"
+      summary.kind === "character" || summary.kind === "actor"
         ? `${summary.items} embedded item${summary.items === 1 ? "" : "s"}`
         : summary.kind === "rulePack"
           ? `${summary.items} community rule${summary.items === 1 ? "" : "s"}`
@@ -308,10 +393,10 @@ export async function reviewIntegrationPackage(value, context = {}) {
 export async function openIntegrationImport() {
   try {
     const selection = await foundry.applications.api.DialogV2.prompt({
-      window: { title: "Import external character or community rules" },
+      window: { title: "Import external Star Wars FFG data" },
       position: { width: 620 },
       content:
-        '<div class="sf-dialog"><p>Select a <code>.json</code> interchange file from a character builder or community-rules site, or paste its JSON below.</p><label>Interchange file<input type="file" name="integrationFile" accept=".json,application/json"></label><label>Paste JSON<textarea name="integrationJson" rows="12" spellcheck="false"></textarea></label></div>',
+        '<div class="sf-dialog"><p>Select a <code>.json</code> interchange file from a character or campaign builder, community-rules site or companion tool, or paste its JSON below.</p><label>Interchange file<input type="file" name="integrationFile" accept=".json,application/json"></label><label>Paste JSON<textarea name="integrationJson" rows="12" spellcheck="false"></textarea></label></div>',
       ok: {
         label: "Review import",
         callback: (_event, button) => ({
@@ -483,8 +568,10 @@ export const integrationApi = Object.freeze({
   summarizePackage: integrationSummary,
   importPackage: importIntegrationPackage,
   importCharacter: importIntegrationCharacter,
+  importActor: importIntegrationActor,
   importRulePack: importIntegrationRulePack,
   exportCharacter: exportIntegrationCharacter,
+  exportActor: exportIntegrationActor,
   openImportDialog: openIntegrationImport,
   createHandoffUrl: createIntegrationHandoffUrl,
   encodeHandoff: encodeIntegrationPackage,

@@ -65,7 +65,7 @@ Director of Realms needs to discover this adapter through its registry. The inte
 
 ## Public integration API
 
-`game.system.api.integration` lets external character builders, community-rule sites and companion Foundry modules discover capabilities, validate versioned packages, import or export player characters, publish declarative Item rule packs and register site connectors. Small packages can use a direct URL; larger sites can send one package through an exact-origin, nonce-bound browser handoff. Every external handoff is reviewed in the authenticated Foundry client before it changes the world, and imported data cannot install scripts, macros, arbitrary Active Effects or document permissions.
+`game.system.api.integration` lets external character and campaign builders, community-rule sites and companion Foundry modules discover capabilities, validate versioned packages, import or export characters, adversaries, vehicles and Groups, publish declarative Item rule packs and register site connectors. Version-one character and rule packages remain supported; version two adds the wider Actor contract. Small packages can use a direct URL; larger sites can send one package through an exact-origin, nonce-bound browser handoff. Every external handoff is reviewed in the authenticated Foundry client before it changes the world, and imported data cannot install scripts, macros, arbitrary Active Effects or document permissions.
 
 The full interchange schema, website example and API reference are in the [public integration guide](docs/integration-api.md). Community rules appear in a player-readable world compendium; the GM controls imports and whether an existing external rule is preserved or explicitly replaced.
 

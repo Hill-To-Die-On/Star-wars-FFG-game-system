@@ -14,6 +14,8 @@ The system must also distinguish community data from executable Foundry extensio
 The system provides a versioned `star-wars-ffg-interchange` envelope through `game.system.api.integration`.
 
 - Version 1 supports player-character packages, community Item rule packs and non-recursive mixed bundles.
+- Version 2 adds allow-listed Actor packages for characters, adversaries, vehicles and groups while leaving version 1 validation unchanged.
+- Non-character version 2 imports are GM-only; player characters retain normal Actor-create permission and importer ownership.
 - Character imports create new Actors. Foundry's role permission controls who may create them, and non-GM creators own their imported Actor.
 - Rule packs are GM-only and use a dedicated player-readable world compendium. Stable external keys support preserve-by-default and explicit replacement.
 - Imported sources are rebuilt from public allow-lists. Ownership, folders, sort order, arbitrary flags, Active Effects, unknown fields, functions and unsafe object keys are excluded.
@@ -24,6 +26,6 @@ The system provides a versioned `star-wars-ffg-interchange` envelope through `ga
 
 ## Consequences
 
-Character builders can create a one-click handoff while retaining a JSON fallback. Rule authors receive a searchable, draggable native Foundry library. The interchange contract can add a new version without silently changing version 1 semantics.
+Character and campaign builders can create a one-click handoff while retaining a JSON fallback. Rule authors receive a searchable, draggable native Foundry library. Version 2 demonstrates that the interchange contract can expand without silently changing version 1 semantics.
 
 The user must have an authenticated Foundry session and approve the connection and import. Sites cannot silently synchronize in the background. Very large packages use the message or file transport rather than a URL. Version 1 creates characters rather than updating existing Actors, avoiding accidental replacement of campaign state; a future update protocol would need an explicit merge contract and conflict review.
