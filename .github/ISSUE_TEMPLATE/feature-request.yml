@@ -1,0 +1,66 @@
+name: Feature request
+description: Propose a user-facing feature or workflow improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the gameplay or Foundry problem first. Book and page references are welcome; do not paste copyrighted rules prose or official artwork.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Who encounters the problem, and during which workflow?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+      description: Describe what the system should do from the user's point of view.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Relevant area
+      multiple: true
+      options:
+        - Character sheets and advancement
+        - Vehicles and encounters
+        - Group and Base of Operations
+        - Narrative dice and chat
+        - Reference library and owned books
+        - Director of Realms
+        - Public integration API
+        - Foundry interface and accessibility
+        - Packaging or installation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Source references
+      description: List rules line, book title, and page number only where relevant.
+      placeholder: "Edge of the Empire — book title, p. 00"
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Current workaround or alternatives
+
+  - type: checkboxes
+    id: rights
+    attributes:
+      label: Content boundary
+      options:
+        - label: This request contains references and original explanation only; it does not reproduce protected book or adventure content.
+          required: true

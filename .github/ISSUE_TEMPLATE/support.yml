@@ -1,0 +1,42 @@
+name: Installation or usage help
+description: Ask for help using the system without disclosing private campaign content.
+title: "[Support]: "
+labels:
+  - question
+  - needs-triage
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Star Wars FFG and Foundry versions
+      placeholder: "Star Wars FFG 0.2.1; Foundry VTT 14.x"
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What have you tried?
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Relevant modules and environment
+      description: Include active integration modules and whether you use the Foundry desktop client or a browser.
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials, private campaign material, PDFs, and copied book text.
+          required: true

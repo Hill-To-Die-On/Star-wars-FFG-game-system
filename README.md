@@ -71,6 +71,8 @@ The full interchange schema, website example and API reference are in the [publi
 
 ## Development
 
+Start contribution branches from `dev`; maintainer promotion runs through protected `staging` and `main`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow, content boundaries, and review evidence, and [the GitHub artifact inventory](.github/REPOSITORY_ARTIFACTS.md) for repository governance, dependency automation, and release assets.
+
 ```sh
 npm ci
 npm test
