@@ -2,25 +2,26 @@
 
 ## Public-domain interface backdrop
 
-`assets/ui/cassini-saturn-pia08387.jpg` is an unmodified copy of NASA image
-PIA08387, *Saturn view from Iapetus*. The natural-colour panorama was assembled
-from 15 red, green and blue Cassini wide-angle photographs acquired on
-10 September 2007. It depicts Saturn with Dione, Enceladus, Mimas, Rhea,
-Tethys and Titan; Earth is not present. No generative AI was used to create or
-modify the bundled image.
+`assets/ui/saturn-enceladus-concept.webp` is a lossless WebP transcode of
+NASA's *Saturn Through the Veil of Enceladus – Artist's Concept*. NASA credits
+the work to named human artist Dan Gallagher (eMITS). The transcode retains the
+source PNG's 4800 × 2160 dimensions and RGB pixel values exactly. It depicts
+Saturn beyond Enceladus's south-polar geysers, with Titan and Rhea in the
+distance; Earth is not present. The source provenance does not identify any use
+of generative AI.
 
-- Source file: [NASA Image and Video Library](https://images-assets.nasa.gov/image/PIA08387/PIA08387~orig.jpg)
-- Catalogue record: [NASA/JPL Photojournal PIA08387](https://photojournal.jpl.nasa.gov/catalog/PIA08387)
-- Public-domain record: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Saturn_view_from_Iapetus.jpg)
-- Credit: NASA/JPL/Space Science Institute
-- SHA-256: `9313D2D3811DC91B3C5A1B4E07555CFF467482AB2EF166A2B895DFA1DBED515A`
+- Lossless source file: [NASA SVS PNG](https://svs.gsfc.nasa.gov/vis/a010000/a014100/a014162/SaturnMoonsConceptArt.png)
+- Catalogue and credit record: [NASA SVS item 14162](https://svs.gsfc.nasa.gov/14162)
+- Public-domain policy: [NASA SVS help](https://svs.gsfc.nasa.gov/help/)
+- Credit: NASA's Goddard Space Flight Center; art by Dan Gallagher (eMITS)
+- Source PNG SHA-256: `13849E687C80EFDBF7C980EFAB0D54D0D88C4701740283ECA24BB9E0AA976422`
+- Bundled WebP SHA-256: `D20F953A162694D91BDBD5BE034C61E5A19D62DA75D79AA03EED62D110519337`
 
-The Commons record identifies the image as public domain in the United States.
-NASA's media guidelines state that NASA content generally is not subject to
-copyright in the United States, request acknowledgement of NASA as the source,
-and prohibit implying NASA endorsement. The image contains no NASA identifier,
-logo or person. It is excluded from the project's MIT grant and is distributed
-under its own public-domain status and the applicable NASA usage guidelines.
+NASA SVS states that its content is public domain unless otherwise noted and
+requests acknowledgement of NASA as the source. The image contains no NASA
+identifier, logo or person. It is excluded from the project's MIT grant and is
+distributed under its own public-domain status and the applicable NASA usage
+guidelines.
 
 ## Narrative dice symbol font
 

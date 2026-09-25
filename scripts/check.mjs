@@ -36,16 +36,18 @@ for (const path of [
   ...manifest.languages.map((l) => l.path),
 ])
   await readFile(path);
-const backdrop = await readFile("assets/ui/cassini-saturn-pia08387.jpg");
+const backdrop = await readFile("assets/ui/saturn-enceladus-concept.webp");
 const backdropHash = createHash("sha256")
   .update(backdrop)
   .digest("hex")
   .toUpperCase();
 if (
   backdropHash !==
-  "9313D2D3811DC91B3C5A1B4E07555CFF467482AB2EF166A2B895DFA1DBED515A"
+  "D20F953A162694D91BDBD5BE034C61E5A19D62DA75D79AA03EED62D110519337"
 )
-  throw new Error("Cassini backdrop differs from the recorded NASA source");
+  throw new Error(
+    "Interface backdrop differs from the recorded lossless transcode",
+  );
 for (const [key, die] of Object.entries(DICE))
   for (let i = 1; i <= die.faces.length; i++) {
     const png = await readFile(`assets/dice/${key}-${i}.png`);

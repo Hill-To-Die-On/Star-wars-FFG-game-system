@@ -7,7 +7,7 @@
 - Raise muted, accent and active-control color pairs to WCAG 2.1 AA text contrast across all three sheet and Foundry interface themes.
 - Add an original print-inspired sheet treatment with a bundled paper texture, technical panel rules and three distinct color schemes.
 - Select sheet colors automatically from character creation rules or campaign rules while retaining client-wide and per-sheet manual overrides.
-- Add an optional themed Foundry interface with a public-domain NASA Cassini panorama of Saturn and retained provenance, locally bundled Rajdhani typography, custom navigation and pause icons, chat cards, combat tracker, windows, journals and handouts, plus the sidebar, scene controls, player list and hotbar. Retain automatic, manual and Foundry-default modes.
+- Add an optional themed Foundry interface with a losslessly bundled public-domain NASA artist's concept of Saturn beyond Enceladus's geysers and retained provenance, locally bundled Rajdhani typography, custom navigation and pause icons, chat cards, combat tracker, windows, journals and handouts, plus the sidebar, scene controls, player list and hotbar. Retain automatic, manual and Foundry-default modes.
 - Keep unlimited custom-skill rows aligned by revealing edit and delete controls inside the name cell on hover or keyboard focus.
 
 ## 0.2.1 — 2026-09-24

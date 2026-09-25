@@ -18,9 +18,10 @@ body.system-star-wars-ffg[data-star-wars-theme] {
   background-color: #071014;
   background-image:
     linear-gradient(135deg, #071014d9, #07101424 47%, #071014c7),
-    url("../assets/ui/cassini-saturn-pia08387.jpg");
+    url("../assets/ui/saturn-enceladus-concept.webp");
   background-position: center;
   background-size: cover;
+  background-repeat: no-repeat;
   background-attachment: fixed;
 }
 
@@ -47,7 +48,7 @@ body.system-star-wars-ffg[data-star-wars-theme] #sidebar-content {
       #071014f0 34%,
       #071014f7
     ),
-    url("../assets/ui/cassini-saturn-pia08387.jpg"),
+    url("../assets/ui/saturn-enceladus-concept.webp"),
     url("../assets/ui/paper-grain.svg");
   background-position: center, 58% center, center;
   background-size: auto, cover, 256px 256px;
@@ -443,7 +444,7 @@ body.system-star-wars-ffg[data-star-wars-theme]
   background-color: color-mix(in srgb, var(--sf-ui-dark) 92%, #071014);
   background-image:
     linear-gradient(105deg, #ffffff0d, transparent 45%, #00000030),
-    url("../assets/ui/cassini-saturn-pia08387.jpg");
+    url("../assets/ui/saturn-enceladus-concept.webp");
   background-position: center, 56% 28%;
   background-size: auto, cover;
   border-bottom: 2px solid var(--sf-ui-accent);
