@@ -17,8 +17,10 @@
   --sf-paper: #faf7ed;
   --sf-panel: #faf7ede0;
   --sf-ink: #253138;
-  --sf-muted: #637069;
+  --sf-muted: #4f5b56;
   --sf-accent: #9d5233;
+  --sf-accent-text: #8d472c;
+  --sf-on-accent: #fff;
   --sf-secondary: #78836f;
   --sf-characteristic: #78836f;
   --sf-signal: #79afb2;
@@ -34,6 +36,8 @@
   --sf-paper: #f8f3e4;
   --sf-panel: #f8f3e4df;
   --sf-accent: #ad482f;
+  --sf-accent-text: #97402b;
+  --sf-on-accent: #fff;
   --sf-secondary: #c36935;
   --sf-characteristic: #c36935;
   --sf-signal: #6fa5a4;
@@ -47,6 +51,8 @@
   --sf-paper: #fbf8ef;
   --sf-panel: #fbf8efe0;
   --sf-accent: #bf6b37;
+  --sf-accent-text: #93451f;
+  --sf-on-accent: #071014;
   --sf-secondary: #66765d;
   --sf-characteristic: #c78d4c;
   --sf-signal: #83aeb0;
@@ -313,7 +319,7 @@
 .sf-shell .sf-primary {
   background: var(--sf-accent);
   border-color: var(--sf-accent);
-  color: #fff;
+  color: var(--sf-on-accent);
 }
 .sf-form-grid {
   display: grid;
@@ -327,7 +333,7 @@
   padding: 10px;
 }
 .sf-form-grid legend {
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   font-weight: bold;
   font-size: 12px;
 }
@@ -613,10 +619,50 @@
   margin: 10px 0;
 }
 .sf-dice-tray span {
+  display: inline-grid;
+  place-items: center;
+}
+.sf-dice-tray .sf-die-result,
+.sf-dice-tray > span[style*="background:"] {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  padding: 4px;
+  overflow: hidden;
+  background: var(--sf-die-color, #77848a);
+  border: 1px solid #0710148f;
+  filter:
+    drop-shadow(0 1px 0 #fff7)
+    drop-shadow(0 2px 2px #07101466);
+}
+.sf-dice-tray > span[style*="#47ad68"],
+.sf-dice-tray > span[style*="#7953ad"] {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.sf-dice-tray > span[style*="#edc94e"],
+.sf-dice-tray > span[style*="#b93d4e"] {
+  clip-path: polygon(
+    25% 6.7%,
+    50% 0,
+    75% 6.7%,
+    93.3% 25%,
+    100% 50%,
+    93.3% 75%,
+    75% 93.3%,
+    50% 100%,
+    25% 93.3%,
+    6.7% 75%,
+    0 50%,
+    6.7% 25%
+  );
+}
+.sf-dice-tray > span[style*="#79cce7"],
+.sf-dice-tray > span[style*="#242a32"] {
   border-radius: 6px;
-  display: inline-flex;
-  padding: 2px;
-  border: 1px solid #0003;
+}
+.sf-dice-tray > span[style*="#edece6"] {
+  border-color: #6d797d;
+  border-radius: 50%;
 }
 .sf-die-face {
   width: 34px;
@@ -746,6 +792,8 @@ body[data-star-wars-theme="frontier"] {
   --sf-ui-dark: #263c3a;
   --sf-ui-mid: #46564b;
   --sf-ui-accent: #a45736;
+  --sf-ui-accent-text: #8d472c;
+  --sf-ui-on-accent: #fff;
   --sf-ui-secondary: #7a846e;
   --sf-ui-signal: #7db1b2;
   --sf-ui-paper: #e9e2d1;
@@ -754,6 +802,8 @@ body[data-star-wars-theme="rebellion"] {
   --sf-ui-dark: #40282a;
   --sf-ui-mid: #5d3730;
   --sf-ui-accent: #c34b32;
+  --sf-ui-accent-text: #97402b;
+  --sf-ui-on-accent: #fff;
   --sf-ui-secondary: #d0783d;
   --sf-ui-signal: #70a7a6;
   --sf-ui-paper: #e8dfca;
@@ -762,6 +812,8 @@ body[data-star-wars-theme="mystic"] {
   --sf-ui-dark: #293753;
   --sf-ui-mid: #3c4b61;
   --sf-ui-accent: #ce8440;
+  --sf-ui-accent-text: #93451f;
+  --sf-ui-on-accent: #071014;
   --sf-ui-secondary: #728069;
   --sf-ui-signal: #85b0b2;
   --sf-ui-paper: #ebe3d4;
@@ -815,7 +867,11 @@ body[data-star-wars-theme]
   #sidebar-tabs
   .ui-control:is(:hover, :focus-visible, [aria-pressed="true"]) {
   color: #fff;
-  background: linear-gradient(90deg, var(--sf-ui-accent), transparent 84%);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--sf-ui-accent) 58%, #071014),
+    transparent 84%
+  );
   border-left-color: var(--sf-ui-signal);
 }
 body[data-star-wars-theme]
@@ -839,8 +895,8 @@ body[data-star-wars-theme] #hotbar .slot:hover {
   color: #fff;
   background-color: color-mix(
     in srgb,
-    var(--sf-ui-accent) 84%,
-    var(--sf-ui-dark)
+    var(--sf-ui-accent) 58%,
+    #071014
   );
   border-color: var(--sf-ui-signal);
 }
@@ -849,7 +905,7 @@ body[data-star-wars-theme] #scene-navigation .scene {
   clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 50%, calc(100% - 8px) 100%, 0 100%);
 }
 body[data-star-wars-theme] #hotbar .slot .key {
-  color: #fff;
+  color: var(--sf-ui-on-accent);
   background: var(--sf-ui-accent);
   border-color: color-mix(in srgb, var(--sf-ui-signal) 58%, transparent);
 }
@@ -1032,7 +1088,7 @@ body[data-star-wars-theme] #pause figcaption {
   border: 0;
   background: transparent;
   text-align: left;
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   font-weight: 600;
 }
 .sf-catalogue-results small {
@@ -1117,7 +1173,7 @@ body[data-star-wars-theme] #pause figcaption {
 }
 .sf-group-status strong {
   font-size: 24px;
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
 }
 .sf-group-status > label {
   margin-left: auto;
@@ -1129,7 +1185,7 @@ body[data-star-wars-theme] #pause figcaption {
   margin-bottom: 16px;
 }
 .sf-group-member legend {
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   padding: 0 8px;
 }
 .sf-group-member > label {
@@ -1378,7 +1434,7 @@ body[data-star-wars-theme] #pause figcaption {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.04em;
@@ -1433,7 +1489,7 @@ body[data-star-wars-theme] #pause figcaption {
 }
 .sf-skill-legend b,
 .sf-skill-legend i {
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
 }
 .sf-skill-view-toggle {
   display: inline-flex;
@@ -1512,7 +1568,7 @@ body[data-star-wars-theme] #pause figcaption {
   height: 18px;
   min-height: 18px;
   padding: 0;
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   background: var(--sf-paper);
   border: 1px solid var(--sf-accent);
   font-size: 8px;
@@ -1570,7 +1626,7 @@ body[data-star-wars-theme] #pause figcaption {
   flex-basis: 12px;
 }
 .sf-compact-roll-cue {
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   font-size: 8px;
   opacity: 0.35;
 }
@@ -1616,12 +1672,12 @@ body[data-star-wars-theme] #pause figcaption {
   font-weight: 750;
 }
 .sf-paper-check input:checked + span {
-  color: #fff;
+  color: var(--sf-on-accent);
   background: var(--sf-accent);
   border-color: var(--sf-accent);
 }
 .sf-paper-check.sf-readonly-check.checked span {
-  color: #fff;
+  color: var(--sf-on-accent);
   background: var(--sf-accent);
   border-color: var(--sf-accent);
 }
@@ -1653,7 +1709,7 @@ body[data-star-wars-theme] #pause figcaption {
   width: 25px;
   min-height: 23px;
   padding: 0;
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   font-size: 9px;
 }
 .sf-custom-skill-name-cell {
@@ -1900,7 +1956,7 @@ body[data-star-wars-theme] #pause figcaption {
   place-items: center;
   width: 25px;
   height: 25px;
-  color: #fff;
+  color: var(--sf-on-accent);
   background: var(--sf-accent);
   border-radius: 50%;
   font-weight: 750;
@@ -1931,14 +1987,14 @@ body[data-star-wars-theme] #pause figcaption {
 }
 .sf-pool-builder .sf-difficulty-presets button.active,
 .sf-pool-builder .sf-range-presets button.active {
-  color: #fff;
+  color: var(--sf-on-accent);
   background: var(--sf-accent);
   border-color: var(--sf-accent);
 }
 .sf-pool-builder .sf-difficulty-presets button.active small,
 .sf-pool-builder .sf-range-presets button.active small {
-  color: #fff;
-  opacity: 0.8;
+  color: var(--sf-on-accent);
+  opacity: 1;
 }
 .sf-fixed-range {
   display: grid;
@@ -1952,7 +2008,7 @@ body[data-star-wars-theme] #pause figcaption {
 }
 .sf-fixed-range .sf-eyebrow {
   grid-row: 1 / 3;
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
 }
 .sf-fixed-range small {
   color: var(--sf-muted);
@@ -1967,7 +2023,7 @@ body[data-star-wars-theme] #pause figcaption {
   border-left: 3px solid var(--sf-accent);
 }
 .sf-auto-context > i {
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   font-size: 18px;
 }
 .sf-auto-context > div {
@@ -1989,7 +2045,7 @@ body[data-star-wars-theme] #pause figcaption {
   flex: 1;
 }
 .sf-auto-breakdown .sf-eyebrow {
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
 }
 .sf-auto-breakdown ul {
   display: flex;
@@ -2009,7 +2065,7 @@ body[data-star-wars-theme] #pause figcaption {
   align-items: center;
   min-height: 44px;
   padding: 7px 13px;
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   background: var(--sf-wash);
   border-color: var(--sf-accent);
   text-align: left;
@@ -2050,7 +2106,7 @@ body[data-star-wars-theme] #pause figcaption {
 }
 .sf-pool-groups legend {
   padding: 0 5px;
-  color: var(--sf-accent);
+  color: var(--sf-accent-text);
   font-size: 10px;
   font-weight: 750;
   letter-spacing: 0.08em;
@@ -2146,7 +2202,7 @@ body[data-star-wars-theme] #pause figcaption {
   border-radius: 4px;
 }
 .sf-pool-builder-window footer button[data-action="ok"] {
-  color: #fff;
+  color: var(--sf-on-accent);
   background: var(--sf-accent);
   border-color: var(--sf-accent);
 }

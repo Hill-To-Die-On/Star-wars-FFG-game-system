@@ -63,6 +63,12 @@ The system exposes `game.system.api.directorOfRealms` with native actor facts, c
 
 Director of Realms needs to discover this adapter through its registry. The integration status and installation steps are recorded in [the integration guide](docs/director-of-realms.md). PDF intake remains private through Campaign Studio; it is not part of the public game-system download. A configured AI provider and separate adventure playtests are required before claiming autonomous GM acceptance.
 
+## Public integration API
+
+`game.system.api.integration` lets external character builders, community-rule sites and companion Foundry modules discover capabilities, validate versioned packages, import or export player characters, publish declarative Item rule packs and register site connectors. Small packages can use a direct URL; larger sites can send one package through an exact-origin, nonce-bound browser handoff. Every external handoff is reviewed in the authenticated Foundry client before it changes the world, and imported data cannot install scripts, macros, arbitrary Active Effects or document permissions.
+
+The full interchange schema, website example and API reference are in the [public integration guide](docs/integration-api.md). Community rules appear in a player-readable world compendium; the GM controls imports and whether an existing external rule is preserved or explicitly replaced.
+
 ## Development
 
 ```sh

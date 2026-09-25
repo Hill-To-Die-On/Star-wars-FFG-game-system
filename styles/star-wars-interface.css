@@ -206,7 +206,11 @@ body.system-star-wars-ffg[data-star-wars-theme]
   button:hover {
   color: #fff;
   border-color: var(--sf-ui-signal);
-  background: linear-gradient(105deg, var(--sf-ui-accent), var(--sf-ui-dark));
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--sf-ui-accent) 66%, #071014),
+    var(--sf-ui-dark)
+  );
 }
 
 body.system-star-wars-ffg[data-star-wars-theme]
@@ -300,7 +304,7 @@ body.system-star-wars-ffg[data-star-wars-theme]
   #chat
   .chat-message
   .message-sender {
-  color: color-mix(in srgb, var(--sf-ui-accent) 78%, #26343b);
+  color: var(--sf-ui-accent-text);
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 0.025em;
@@ -318,7 +322,8 @@ body.system-star-wars-ffg[data-star-wars-theme]
   #chat
   .chat-message
   :is(a, h2, h3, h4) {
-  color: color-mix(in srgb, var(--sf-ui-accent) 76%, #27343a);
+  color: var(--sf-ui-accent-text);
+  font-weight: 600;
 }
 
 body.system-star-wars-ffg[data-star-wars-theme]
@@ -343,7 +348,7 @@ body.system-star-wars-ffg[data-star-wars-theme]
 body.system-star-wars-ffg[data-star-wars-theme]
   #chat-controls
   .ui-control[aria-pressed="true"] {
-  color: #fff;
+  color: var(--sf-ui-on-accent);
   background: var(--sf-ui-accent);
   border-color: var(--sf-ui-signal);
 }
@@ -494,8 +499,9 @@ body.system-star-wars-ffg[data-star-wars-theme]
   :is(.journal-sheet, .journal-entry-sheet)
   :is(.journal-entry-content, .journal-page-content, .editor-content)
   :is(h1, h2, h3, h4) {
-  color: color-mix(in srgb, var(--sf-ui-accent) 72%, #27343a);
+  color: var(--sf-ui-accent-text);
   font-family: "Star Wars FFG Rajdhani", sans-serif;
+  font-weight: 600;
   letter-spacing: 0.025em;
 }
 

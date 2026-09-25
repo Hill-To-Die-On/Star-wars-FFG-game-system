@@ -44,6 +44,11 @@ import {
   getReference,
   importPublishedLibrary,
 } from "./reference-browser.mjs";
+import {
+  integrationApi,
+  openIntegrationImport,
+  processIntegrationHandoff,
+} from "./integration-api.mjs";
 class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openReferenceBrowser();
@@ -77,6 +82,12 @@ class AdversariesMenu extends foundry.applications.api.ApplicationV2 {
 class ConsoleMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openConsole();
+    return this;
+  }
+}
+class IntegrationMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    openIntegrationImport();
     return this;
   }
 }
@@ -346,6 +357,14 @@ Hooks.once("init", () => {
     type: ConsoleMenu,
     restricted: false,
   });
+  game.settings.registerMenu(SYSTEM_ID, "integrationMenu", {
+    name: "External tools & community rules",
+    label: "Import character or rules",
+    hint: "Review a versioned interchange package from a character builder or community-rules site.",
+    icon: "fas fa-plug",
+    type: IntegrationMenu,
+    restricted: false,
+  });
   game.settings.registerMenu(SYSTEM_ID, "adversariesMenu", {
     name: "SW Adversaries",
     label: "Import adversaries",
@@ -371,6 +390,7 @@ Hooks.once("init", () => {
     getReference,
     importPublishedLibrary,
     searchGMSourceNotes,
+    integration: integrationApi,
   });
 });
 Hooks.once("diceSoNiceReady", (dice3d) =>
@@ -414,6 +434,7 @@ Hooks.once("ready", () => {
   refreshGMNotes().catch((error) =>
     ui.notifications.error(`GM source notes: ${error.message}`),
   );
+  processIntegrationHandoff();
   Hooks.callAll("starWarsFFGReady", game.system.api);
   console.info("Star Wars FFG | Narrative toolkit ready");
 });

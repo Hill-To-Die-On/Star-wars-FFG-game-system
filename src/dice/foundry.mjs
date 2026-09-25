@@ -101,10 +101,12 @@ export function rollCard(
 ) {
   const dice = roll.dice
     .flatMap((term) =>
-      term.results.map(
-        (r) =>
-          `<span style="background:${DICE[term.options.starWarsDie].color}" title="${DICE[term.options.starWarsDie].label}: ${faceLabel(DICE[term.options.starWarsDie].faces[r.result - 1])}">${term.getResultLabel(r)}</span>`,
-      ),
+      term.results.map((r) => {
+        const key = term.options.starWarsDie,
+          die = DICE[key],
+          label = `${die.label}: ${faceLabel(die.faces[r.result - 1])}`;
+        return `<span class="sf-die-result sf-die-${key}" data-die="${key}" title="${label}">${term.getResultLabel(r)}</span>`;
+      }),
     )
     .join("");
   const forceOnly =
