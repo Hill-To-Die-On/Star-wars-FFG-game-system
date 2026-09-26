@@ -83,8 +83,27 @@ test("signature ability references are native attachable tree placeholders", () 
   assert.deepEqual(ability.system.incomplete, ["tree"]);
   validateBundle(bundle);
 });
+test("known creator-database identity typos use their printed names", () => {
+  const bundle = convertDatabase({
+      signature_abilities: [
+        {
+          ID: 30,
+          signature_abilities: "Unmatched Devistation",
+          book: "Edge of The Empire - No Disintegrations",
+          page: 41,
+        },
+      ],
+    }),
+    ability = bundle.documents.Item[0];
+  assert.equal(ability.name, "Unmatched Devastation");
+  assert.equal(
+    ability.system.metadata.signature_abilities,
+    "Unmatched Devistation",
+  );
+});
 test("creation follows the chosen line and prevents mismatched free specializations", () => {
   const species = {
+    id: "species-example",
     type: "species",
     name: "Example",
     system: {
@@ -103,6 +122,7 @@ test("creation follows the chosen line and prevents mismatched free specializati
     },
   };
   const career = {
+    id: "career-explorer",
     type: "career",
     name: "Explorer",
     system: {
@@ -111,6 +131,7 @@ test("creation follows the chosen line and prevents mismatched free specializati
     },
   };
   const specialization = {
+    id: "specialization-example",
     type: "specialization",
     system: {
       career: "Explorer",
@@ -125,10 +146,29 @@ test("creation follows the chosen line and prevents mismatched free specializati
     line: "edge",
     careerRanks: career.system.careerSkills,
     specializationRanks: ["athletics", "cool"],
+    partySize: 4,
+    resourceChoices: ["xp-5", "credits-1000"],
+    startingEquipment: [
+      {
+        id: "starting-kit",
+        name: "Starting kit",
+        price: 700,
+        quantity: 1,
+        restricted: false,
+      },
+    ],
   });
   assert.equal(plan.skills.athletics.rank, 2);
+  assert.equal(plan.creation.speciesId, "species-example");
+  assert.equal(plan.creation.careerId, "career-explorer");
+  assert.equal(plan.creation.specializationId, "specialization-example");
   assert.equal(plan.wounds.max, 12);
   assert.equal(plan.forceRating, 0);
+  assert.deepEqual(plan.xp, { total: 105, available: 105 });
+  assert.equal(plan.credits, 800);
+  assert.equal(plan.obligation.value, 20);
+  assert.equal(plan.creation.startingResources.cost, 700);
+  assert.equal(plan.creation.pocketMoneyPending, true);
   assert.equal(
     Object.hasOwn(plan, "theme"),
     false,
@@ -141,8 +181,10 @@ test("creation follows the chosen line and prevents mismatched free specializati
     line: "force",
     careerRanks: ["athletics", "cool", "survival"],
     specializationRanks: ["athletics", "cool"],
+    resourceChoices: ["morality-light"],
   });
   assert.equal(force.forceRating, 1);
+  assert.equal(force.morality.value, 71);
   assert.throws(() =>
     creationPlan({
       species,

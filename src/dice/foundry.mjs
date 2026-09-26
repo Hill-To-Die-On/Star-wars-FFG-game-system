@@ -9,6 +9,9 @@ import {
 import { SYSTEM_ID, SYSTEM_PATH } from "../config.mjs";
 import { escapeHTML } from "../mechanics.mjs";
 import { registerDiceCompatibility } from "./compatibility.mjs";
+const VERSIONED_FACE_SUFFIX = Object.freeze({ ability: "v2", difficulty: "v3" });
+const faceTexture = (key, face) =>
+  `${SYSTEM_PATH}/assets/dice/${key}-${face}${VERSIONED_FACE_SUFFIX[key] ? `-${VERSIONED_FACE_SUFFIX[key]}` : ""}.png`;
 export function registerDice() {
   for (const [key, config] of Object.entries(DICE)) {
     const cls = class extends foundry.dice.terms.Die {
@@ -29,7 +32,7 @@ export function registerDice() {
         );
       }
       getResultLabel(result) {
-        return `<img class="sf-die-face" src="${SYSTEM_PATH}/assets/dice/${key}-${result.result}.png" alt="${faceLabel(config.faces[result.result - 1])}">`;
+        return `<img class="sf-die-face" src="${faceTexture(key, result.result)}" alt="${faceLabel(config.faces[result.result - 1])}">`;
       }
     };
     Object.defineProperty(cls, "name", {
@@ -69,9 +72,7 @@ export async function registerDiceSoNice(dice3d) {
     dice3d.addDicePreset(
       {
         type: `d${die.term}`,
-        labels: die.faces.map(
-          (_, i) => `${SYSTEM_PATH}/assets/dice/${key}-${i + 1}.png`,
-        ),
+        labels: die.faces.map((_, i) => faceTexture(key, i + 1)),
         system: SYSTEM_ID,
         colorset,
       },

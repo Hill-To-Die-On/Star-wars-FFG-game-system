@@ -98,6 +98,11 @@ export function signatureAbilityStatus(actor, ability) {
     eligibleCareers: Array.from(ability.system?.eligibleCareers ?? []),
     category: String(ability.system?.abilityCategory ?? ""),
     verified: ability.system?.tree?.verified === true,
+    verification: ability.system?.tree?.verification ?? {
+      structure: ability.system?.tree?.verified ? "validated" : "missing",
+      source: "pending",
+      checked: [],
+    },
     linkedSpecializationId:
       link.specialization?.id ?? ability.system?.linkedSpecializationId ?? "",
     linkedSpecialization: link.specialization?.name ?? "",

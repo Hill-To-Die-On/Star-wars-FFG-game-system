@@ -1,5 +1,9 @@
 import { CHARACTERISTICS, SKILLS } from "./config.mjs";
 import { RULE_LINES } from "./rules.mjs";
+import {
+  buildStartingLoadout,
+  creationResourcePlan,
+} from "./creation-resources.mjs";
 export function creationPlan({
   species,
   career,
@@ -7,6 +11,11 @@ export function creationPlan({
   line,
   careerRanks = [],
   specializationRanks = [],
+  partySize = 4,
+  resourceChoices = [],
+  ageStartingResource = "lambda",
+  startingEquipment = [],
+  allowRestricted = false,
 }) {
   const rule = RULE_LINES[line];
   if (
@@ -38,7 +47,20 @@ export function creationPlan({
     specialization.system.careerSkills,
     rule.freeSpecializationRanks,
   );
-  const data = species.system.metadata;
+  const resources = creationResourcePlan({
+      line,
+      partySize,
+      choices: resourceChoices,
+      ageStartingResource,
+    }),
+    loadout = buildStartingLoadout({
+      options: startingEquipment,
+      selections: startingEquipment.map(({ id, quantity }) => ({ id, quantity })),
+      cashBudget: resources.cashBudget,
+      gearGrant: resources.gearGrant,
+      allowRestricted,
+    }),
+    data = species.system.metadata;
   const stat = (key) => {
     const value = Number(data[key]);
     if (
@@ -79,18 +101,48 @@ export function creationPlan({
     characteristics,
     skills,
     soak: characteristics.brawn,
-    xp: { total: stat("XP"), available: stat("XP") },
+    credits: loadout.credits,
+    xp: {
+      total: stat("XP") + resources.xpBonus,
+      available: stat("XP") + resources.xpBonus,
+    },
     wounds: { value: 0, max: stat("Wound_Base") + characteristics.brawn },
     strain: { value: 0, max: stat("Strain_Base") + characteristics.willpower },
     forceRating: line === "force" ? 1 : 0,
+    ...(resources.story.mechanic === "obligation"
+      ? { obligation: { value: resources.story.value, label: "" } }
+      : {}),
+    ...(resources.story.mechanic === "duty"
+      ? { duty: { value: resources.story.value, label: "", contribution: 0 } }
+      : {}),
+    ...(resources.story.mechanic === "morality"
+      ? {
+          morality: {
+            value: resources.story.value,
+            conflict: 0,
+            strength: "",
+            weakness: "",
+          },
+        }
+      : {}),
     creation: {
       applied: true,
+      speciesId: String(species.id ?? species._id ?? ""),
+      careerId: String(career.id ?? career._id ?? ""),
+      specializationId: String(
+        specialization.id ?? specialization._id ?? "",
+      ),
       species: species.system.source,
       career: career.system.source,
       specialization: specialization.system.source,
       careerRanks,
       specializationRanks,
       speciesAbilitiesPending: true,
+      startingResources: {
+        ...resources,
+        ...loadout,
+      },
+      pocketMoneyPending: true,
     },
     incomplete: [
       "Verify species abilities and any exceptional creation rules in the source book.",

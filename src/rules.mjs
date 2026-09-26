@@ -50,6 +50,9 @@ export const DEFAULT_CAMPAIGN = {
   bookMode: "all",
   includeUnreferenced: false,
   beginnerMode: false,
+  adventureStarted: false,
+  partySize: 4,
+  ageStartingResource: "lambda",
 };
 export function validateCampaign(value) {
   if (
@@ -58,6 +61,12 @@ export function validateCampaign(value) {
     value.lines.some((id) => !RULE_LINES[id])
   )
     throw new Error("Select at least one supported rule line.");
+  const partySize = Number(value.partySize ?? 4),
+    ageStartingResource = String(value.ageStartingResource ?? "lambda");
+  if (!Number.isInteger(partySize) || partySize < 2 || partySize > 100)
+    throw new Error("Starting party size must be a whole number from 2 to 100.");
+  if (!["lambda", "y-wings", "base"].includes(ageStartingResource))
+    throw new Error("Choose a supported Age of Rebellion starting resource.");
   return {
     lines: [...new Set(value.lines)],
     obligation: !!value.obligation,
@@ -74,6 +83,9 @@ export function validateCampaign(value) {
     bookMode: bookFilterMode(value),
     includeUnreferenced: value.includeUnreferenced === true,
     beginnerMode: !!value.beginnerMode,
+    adventureStarted: !!value.adventureStarted,
+    partySize,
+    ageStartingResource,
   };
 }
 export function campaignGuidance(campaign) {
@@ -83,6 +95,7 @@ export function campaignGuidance(campaign) {
     `Track separately: ${[c.obligation && "Obligation", c.duty && "Duty", c.morality && "Morality and Conflict"].filter(Boolean).join(", ") || "none"}.`,
     "Use the same narrative dice pool and shared Destiny pool for the party. A sheet theme does not change mechanics.",
     "Use each character's creation line for career skills, starting ranks and Force rating. Do not grant a second starting package when adding a rule line.",
+    `Starting party size: ${c.partySize}. Age of Rebellion group resource: ${c.ageStartingResource}.`,
     "Obligation, Duty and Morality are independent resources. Resolve their session triggers separately; do not convert one score into another or stack extra starting XP from multiple creation packages.",
     "Advancement spends XP, not character levels. Follow the purchased specialization's connected talent graph. Unranked duplicate talents may be traversed after being acquired elsewhere; ranked entries are separate purchases.",
     "Characteristic increases normally cost ten times the new rating and are restricted to creation. Later increases need an applicable talent such as Dedication; read its reference before applying it.",
@@ -90,6 +103,9 @@ export function campaignGuidance(campaign) {
     c.beginnerMode
       ? "Beginner mode: follow the active adventure's staged rules. Do not assume the beginner folio is the full core specialization tree; transition explicitly to the core rules. Only introduce Obligation, Duty, Morality, talents or other core subsystems when the active adventure or GM calls for them; enabling a line does not insert those rules into its beginner tutorial."
       : "Core mode: beginner encounters can be used, but their teaching shortcuts do not replace core character creation or advancement.",
+    c.adventureStarted
+      ? "Adventure state: play has started; completed character origins are locked. Add later specializations through XP advancement rather than replacing the starting species or career."
+      : "Adventure state: setup. Completed characters will be locked when the GM starts play.",
     `Book filter: ${c.bookMode === "all" ? "All reference books" : c.books.length ? c.books.join("; ") : "No books selected"}. ${c.bookMode === "owned" ? `Entries without a book reference are ${c.includeUnreferenced ? "included" : "excluded"}.` : ""}`,
   ].join("\n");
 }

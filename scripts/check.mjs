@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import Handlebars from "handlebars";
 import { DICE } from "../src/dice/core.mjs";
+import { validateVehicleData } from "../src/vehicle-data.mjs";
 async function walk(dir) {
   const result = [];
   for (const entry of await readdir(dir, { withFileTypes: true }))
@@ -31,6 +32,9 @@ for (const version of [1, 2])
   JSON.parse(
     await readFile(`docs/schemas/integration-v${version}.schema.json`, "utf8"),
   );
+validateVehicleData(
+  JSON.parse(await readFile("data/vehicle-stats.json", "utf8")),
+);
 if (manifest.version !== pkg.version)
   throw new Error("Manifest and package versions differ");
 for (const path of [
@@ -53,10 +57,20 @@ if (
   );
 for (const [key, die] of Object.entries(DICE))
   for (let i = 1; i <= die.faces.length; i++) {
-    const png = await readFile(`assets/dice/${key}-${i}.png`);
-    if (png.readUInt32BE(16) !== 256 || png.readUInt32BE(20) !== 256)
-      throw new Error("Dice face must be 256 × 256");
+    const names = [
+      `assets/dice/${key}-${i}.png`,
+      ...(key === "ability"
+        ? [`assets/dice/${key}-${i}-v2.png`]
+        : key === "difficulty"
+          ? [`assets/dice/${key}-${i}-v3.png`]
+          : []),
+    ];
+    for (const name of names) {
+      const png = await readFile(name);
+      if (png.readUInt32BE(16) !== 256 || png.readUInt32BE(20) !== 256)
+        throw new Error("Dice face must be 256 × 256");
+    }
   }
 console.log(
-  "Syntax, templates, manifest, integration schemas, versions, NASA backdrop provenance and all 64 dice assets passed.",
+  "Syntax, templates, manifest, integration schemas, versions, public vehicle data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
 );

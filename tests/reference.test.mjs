@@ -66,6 +66,17 @@ test("published creator database retains every table and row with usable referen
   }
 });
 
+test("reference search exposes corrected printed identities without rewriting source rows", () => {
+  const result = findReferences(index, DEFAULT_CAMPAIGN, {
+      query: "Unmatched Devastation",
+    }),
+    ability = result.records.find(
+      (row) => row.category === "signature_abilities",
+    );
+  assert.equal(ability.name, "Unmatched Devastation");
+  assert.equal(ability.fields.signature_abilities, "Unmatched Devistation");
+});
+
 test("owned books distinguishes an empty selection from all books and migrates old settings", () => {
   const none = { ...DEFAULT_CAMPAIGN, bookMode: "owned", books: [] };
   assert.equal(findReferences(index, none).total, 0);
