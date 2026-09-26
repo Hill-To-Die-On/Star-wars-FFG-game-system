@@ -20,6 +20,7 @@ for (const name of [
   "data/reference-database.json",
   "data/reference-library.json",
   "data/advancement-trees.json",
+  "data/vehicle-stats.json",
   "data/source-verification.json",
   "data/source-requests.json",
 ])

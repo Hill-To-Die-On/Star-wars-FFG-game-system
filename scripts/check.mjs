@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import Handlebars from "handlebars";
 import { DICE } from "../src/dice/core.mjs";
+import { validateVehicleData } from "../src/vehicle-data.mjs";
 async function walk(dir) {
   const result = [];
   for (const entry of await readdir(dir, { withFileTypes: true }))
@@ -31,6 +32,9 @@ for (const version of [1, 2])
   JSON.parse(
     await readFile(`docs/schemas/integration-v${version}.schema.json`, "utf8"),
   );
+validateVehicleData(
+  JSON.parse(await readFile("data/vehicle-stats.json", "utf8")),
+);
 if (manifest.version !== pkg.version)
   throw new Error("Manifest and package versions differ");
 for (const path of [
@@ -68,5 +72,5 @@ for (const [key, die] of Object.entries(DICE))
     }
   }
 console.log(
-  "Syntax, templates, manifest, integration schemas, versions, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
+  "Syntax, templates, manifest, integration schemas, versions, public vehicle data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
 );

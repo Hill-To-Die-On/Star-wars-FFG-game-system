@@ -2,7 +2,9 @@
 
 Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.
 
-135 specialization references; 135 structurally validated specialization graphs; 162 vehicles with matching structured statistics; 298 private motivation guidance matches.
+135 specialization references; 135 structurally validated specialization graphs; 312 vehicles with complete evidence-backed numeric profiles; 298 private motivation guidance matches.
+
+The remaining 87 vehicle profiles are recorded separately in [vehicle source coverage](vehicle-source-coverage.md), including the two conflicting structured profiles and the one held printed page that provides only partial statistics.
 
 A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. 0 connector-only checks and 143 full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.
 

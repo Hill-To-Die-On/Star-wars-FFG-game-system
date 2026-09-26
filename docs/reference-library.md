@@ -8,9 +8,17 @@ The GM's **Owned books** menu offers 45 titles. Choose **All books**, or **Only 
 
 The filter applies to the catalogue and its search/detail API for every connected user, character creation choices, item drops and future public compendium imports. Existing characters and previously imported compendium documents are preserved when the filter changes. The GM can use ordinary Foundry permissions to control those compendiums.
 
-**Populate compendiums** imports all references allowed by the owned-book settings, regardless of the current search/category filter. It also merges `data/advancement-trees.json` into matching specialization and signature items. Repeated imports preserve existing documents and add missing structured enrichment without replacing user-authored guidance. With all books enabled, this creates 4,495 Items, 399 vehicle references and 1,701 journals. Source data absent from both public datasets remains marked as incomplete.
+**Populate compendiums** imports all references allowed by the owned-book settings, regardless of the current search/category filter. It merges `data/advancement-trees.json` into matching specialization and signature items and `data/vehicle-stats.json` into matching vehicle Actors. Repeated imports preserve existing documents and add missing structured enrichment. A vehicle is upgraded only while all seven profile fields are still marked incomplete and retain their untouched zero placeholders, so play data and user edits are not overwritten. With all books enabled, this creates 4,495 Items, 399 vehicle references and 1,701 journals. Source data absent from the public overlays remains marked as incomplete.
 
 The public advancement file contains 135 specialization graphs and 36 of 38 signature graphs: 3,024 nodes with positions, links, XP costs, activation labels, source references and allowlisted declarative effects. It contains no summaries, descriptions, artwork or local paths. Structural validation means the graph is internally usable; `data/source-verification.json` separately records 143 full printed-chart comparisons and the 30 remaining pending comparisons.
+
+The public vehicle overlay supplies complete numeric profiles for 312 of the 399 native vehicle references. Every profile keeps its exact Actor identity and book/page reference, with evidence for an exact structured match, reviewed alias or held printed-page transcription. Descriptions, artwork, PDF/XML names and local paths are rejected. The remaining 87 records and the exact source pages needed to resolve them are listed in [vehicle source coverage](vehicle-source-coverage.md); the Foot Speeder remains incomplete because its held page contains only a partial profile.
+
+Maintainers can reproduce the overlay from compatible local XML datasets. An optional ignored `.local/vehicle-source-overrides.json` may hold numeric values transcribed from owned printed pages; the publisher refuses overrides outside `.local` and emits only the bounded public mechanics.
+
+```powershell
+npm run publish:vehicles -- "path/to/first/dataset" "path/to/second/dataset"
+```
 
 The optional local enrichment command adds player guidance, motivation guidance and further structured passive modifiers only to `.local/catalog.json`. Use `--include-private-talent-text` when the locally held dataset may be used for the current table. The public repository and release archive never contain that source wording. Importing the private file fills missing node guidance and effects while preserving user-authored specialization text and graph edits.
 
