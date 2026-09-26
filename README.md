@@ -56,7 +56,7 @@ The output is `.local/catalog.json`, deliberately excluded from Git and public r
 
 The supplied structured sources produced the copyright-bounded public graphs, while private imports can add locally held descriptive guidance. Two signature charts are absent: Peerless Interception and Unmatched Teamwork. Of 399 vehicles, 162 have matched structured statistics; the other 237 remain explicitly incomplete pending source checks. Missing specialization coverage identifies 24 chart pages across four books. The three Cyphers & Masks specializations and both Spy signature abilities have full printed-chart checks; four core-book graphs have connector-only checks.
 
-[Source coverage and photo requests](docs/source-coverage.md) distinguish missing PDFs, structurally validated trees and pending comparison with the books. Unknown vehicle statistics remain marked. Structurally valid graphs support XP paths while their separate printed-comparison label prevents them from being mistaken for fully checked source transcriptions.
+[Source coverage and photo requests](docs/source-coverage.md) distinguish missing PDFs, partial scans, structurally validated trees and pending comparison with the books. The release also includes the machine-readable `data/source-requests.json`, which records exact missing printed-page ranges without source text, artwork or private paths. Unknown vehicle statistics remain marked. Structurally valid graphs support XP paths while their separate printed-comparison label prevents them from being mistaken for fully checked source transcriptions.
 
 ## Director of Realms
 
