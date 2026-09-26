@@ -14,7 +14,7 @@
 - Complete the public GitHub repository health set with contribution, conduct, support, security, ownership, issue, pull-request, release-note and artifact-inventory metadata; add grouped npm and GitHub Actions updates through Dependabot.
 - Add a versioned public integration API for character and campaign builders, including backward-compatible version-one character/rule packages and version-two character, adversary, vehicle and Group Actor packages, declarative community rule packs, mixed bundles and registered connectors, with reviewed JSON, direct-link and origin-bound one-package browser handoffs.
 - Give rolled narrative dice their physical square, diamond and strongly faceted d12 silhouettes in chat, including compatibility styling for stored rolls.
-- Fit Ability and Difficulty glyphs inside Dice So Nice's triangular d8 safe area, stack paired Difficulty symbols like the physical dice, and use versioned face textures that refresh without breaking images in existing chat history.
+- Fit Ability and Difficulty glyphs inside Dice So Nice's triangular d8 safe area, stack paired Difficulty symbols like the physical dice, and use versioned face textures that refresh without breaking images in existing chat history; complete all-seven-die concurrent GM/player visual acceptance.
 - Raise muted, accent and active-control color pairs to WCAG 2.1 AA text contrast across all three sheet and Foundry interface themes.
 - Add an original print-inspired sheet treatment with a bundled paper texture, technical panel rules and three distinct color schemes.
 - Select sheet colors automatically from character creation rules or campaign rules while retaining client-wide and per-sheet manual overrides.
