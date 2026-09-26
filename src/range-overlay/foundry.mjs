@@ -99,6 +99,35 @@ function tokenSceneId(token) {
   );
 }
 
+function tokenElevation(token) {
+  const resolved = resolveToken(token),
+    elevation = Number(resolved?.document?.elevation ?? resolved?.elevation ?? 0);
+  return Number.isFinite(elevation) ? elevation : 0;
+}
+
+function lineOfSightResult(sourcePoint, targetPoint) {
+  const backend = globalThis.CONFIG?.Canvas?.polygonBackends?.sight;
+  if (typeof backend?.testCollision !== "function")
+    return { lineOfSight: "unavailable", lineOfSightBlocked: null };
+  try {
+    const collision = backend.testCollision(sourcePoint, targetPoint, {
+      mode: "any",
+      type: "sight",
+    });
+    if (collision && typeof collision.then === "function")
+      return { lineOfSight: "unavailable", lineOfSightBlocked: null };
+    const blocked = Array.isArray(collision)
+      ? collision.length > 0
+      : Boolean(collision);
+    return {
+      lineOfSight: blocked ? "blocked" : "clear",
+      lineOfSightBlocked: blocked,
+    };
+  } catch {
+    return { lineOfSight: "unavailable", lineOfSightBlocked: null };
+  }
+}
+
 export function measureTokenRange(
   sourceToken,
   targetToken,
@@ -129,22 +158,40 @@ export function measureTokenRange(
       reason: "This Theatre-of-the-Mind scene has not been calibrated.",
       scale: getRangeOverlaySceneState(scene).scale,
     };
-  const distancePx = Math.hypot(
+  const horizontalDistancePx = Math.hypot(
     targetPoint.x - sourcePoint.x,
     targetPoint.y - sourcePoint.y,
   );
-  const result = classifyRangeDistance(distancePx, profile);
-  const grid = sceneGrid(scene);
-  const sceneDistance = hasSceneScaleReference(grid)
-    ? (distancePx / grid.size) * grid.distance
-    : null;
+  const grid = sceneGrid(scene),
+    scaled = hasSceneScaleReference(grid),
+    horizontalSceneDistance = scaled
+      ? (horizontalDistancePx / grid.size) * grid.distance
+      : null,
+    elevationDifference = scaled
+      ? Math.abs(tokenElevation(target) - tokenElevation(source))
+      : null,
+    verticalDistancePx = scaled
+      ? (elevationDifference / grid.distance) * grid.size
+      : 0,
+    distancePx = Math.hypot(horizontalDistancePx, verticalDistancePx),
+    sceneDistance = scaled
+      ? Math.hypot(horizontalSceneDistance, elevationDifference)
+      : null,
+    result = classifyRangeDistance(distancePx, profile),
+    sight = lineOfSightResult(sourcePoint, targetPoint);
   const band = profile.bands.find((entry) => entry.id === result.band);
   return {
     available: true,
     ...result,
     label: band?.label ?? "Beyond Extreme",
+    horizontalDistancePx,
+    verticalDistancePx,
+    horizontalSceneDistance,
+    elevationDifference,
+    elevationApplied: scaled && elevationDifference > 0,
     sceneDistance,
     units: sceneDistance === null ? "" : grid.units,
+    ...sight,
     sourceTokenId: source?.id ?? source?.document?.id ?? "",
     targetTokenId: target?.id ?? target?.document?.id ?? "",
   };

@@ -359,7 +359,14 @@ export async function importIntegrationPackage(value, options = {}) {
   return result;
 }
 
-function reviewDescription(pkg, { origin } = {}) {
+function packageContainsRulePack(pkg) {
+  return (
+    pkg.kind === "rulePack" ||
+    (pkg.kind === "bundle" && pkg.payload.packages.some((entry) => entry.kind === "rulePack"))
+  );
+}
+
+function reviewDescription(pkg, { origin, options = {} } = {}) {
   const summary = integrationSummary(pkg),
     originText = origin
       ? `<p>Connection: <strong>${escapeHTML(origin)}</strong></p>`
@@ -369,22 +376,39 @@ function reviewDescription(pkg, { origin } = {}) {
         ? `${summary.items} embedded item${summary.items === 1 ? "" : "s"}`
         : summary.kind === "rulePack"
           ? `${summary.items} community rule${summary.items === 1 ? "" : "s"}`
-          : `${summary.packages.length} packages and ${summary.items} total items`;
-  return `<div class="sf-dialog"><p><strong>${escapeHTML(summary.label)}</strong></p><p>${escapeHTML(details)} from ${escapeHTML(summary.source)}.</p>${originText}<p>Foundry will validate the data and ignore Actor IDs, ownership, folders, scripts and third-party flags. Rule packs are stored in the Community rules compendium.</p></div>`;
+          : `${summary.packages.length} packages and ${summary.items} total items`,
+    hasRulePack = packageContainsRulePack(pkg),
+    replaceSelected = options.conflict === "replace",
+    conflictField = hasRulePack
+      ? `<label>Matching community rules<select name="integrationConflict"><option value="preserve"${replaceSelected ? "" : " selected"}>Keep current community rules</option><option value="replace"${replaceSelected ? " selected" : ""}>Replace matching community rules</option></select></label><p class="hint">Matching uses the publisher, rule-pack and rule keys. Replacement updates only matching imported rules; unrelated world content is left alone.</p>`
+      : "";
+  return `<div class="sf-dialog"><p><strong>${escapeHTML(summary.label)}</strong></p><p>${escapeHTML(details)} from ${escapeHTML(summary.source)}.</p>${originText}<p>Foundry will validate the data and ignore Actor IDs, ownership, folders, scripts and third-party flags. Rule packs are stored in the Community rules compendium.</p>${conflictField}</div>`;
 }
 
 export async function reviewIntegrationPackage(value, context = {}) {
-  const pkg = validateIntegrationPackage(value);
+  const pkg = validateIntegrationPackage(value),
+    hasRulePack = packageContainsRulePack(pkg);
   assertPackagePermissions(pkg);
-  const proceed = await foundry.applications.api.DialogV2.confirm({
+  const decision = await foundry.applications.api.DialogV2.confirm({
     window: { title: "Review external Star Wars FFG import" },
     content: reviewDescription(pkg, context),
-    yes: { label: "Import into this world" },
+    yes: {
+      label: "Import into this world",
+      callback: (_event, button) => ({
+        ...(hasRulePack
+          ? { conflict: button.form.elements.integrationConflict.value }
+          : {}),
+      }),
+    },
     no: { label: "Cancel" },
     rejectClose: false,
   });
-  if (!proceed) return null;
-  const result = await importIntegrationPackage(pkg, context.options);
+  if (!decision) return null;
+  const options = {
+      ...context.options,
+      ...(hasRulePack ? { conflict: decision.conflict } : {}),
+    },
+    result = await importIntegrationPackage(pkg, options);
   const summary = integrationSummary(pkg);
   ui.notifications.info(`${summary.label} imported from ${summary.source}.`);
   return result;

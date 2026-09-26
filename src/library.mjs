@@ -6,6 +6,7 @@ import {
   libraryPackName,
   libraryPackLabel,
 } from "./library-packs.mjs";
+import { VEHICLE_STAT_FIELDS } from "./vehicle-data.mjs";
 export { refreshLibraryLabels } from "./library-packs.mjs";
 export function mergeSpecializationEnrichment(existing, incoming) {
   if (
@@ -43,8 +44,52 @@ export function mergeSpecializationEnrichment(existing, incoming) {
       ...(!current.verified && incoming.system.tree.verified
         ? { verified: true }
         : {}),
+      ...(!current.verification && incoming.system.tree.verification
+        ? { verification: structuredClone(incoming.system.tree.verification) }
+        : {}),
     };
   return JSON.stringify(merged) === JSON.stringify(current) ? null : merged;
+}
+
+const emptyVehicleProfile = (system = {}) =>
+  Number(system.hullTrauma?.max ?? 0) === 0 &&
+  Number(system.systemStrain?.max ?? 0) === 0 &&
+  Number(system.armor ?? 0) === 0 &&
+  Number(system.silhouette ?? 0) === 0 &&
+  Number(system.speed?.max ?? 0) === 0 &&
+  Number(system.handling ?? 0) === 0 &&
+  ["fore", "aft", "port", "starboard"].every(
+    (side) => Number(system.shields?.[side] ?? 0) === 0,
+  );
+
+export function mergeVehicleEnrichment(existing, incoming) {
+  if (
+    existing?.type !== "vehicle" ||
+    incoming?.type !== "vehicle" ||
+    incoming.system?.incomplete?.some((entry) =>
+      VEHICLE_STAT_FIELDS.includes(entry),
+    ) ||
+    !VEHICLE_STAT_FIELDS.every((entry) =>
+      existing.system?.incomplete?.includes(entry),
+    ) ||
+    !emptyVehicleProfile(existing.system)
+  )
+    return null;
+  return {
+    "system.hullTrauma.max": incoming.system.hullTrauma.max,
+    "system.systemStrain.max": incoming.system.systemStrain.max,
+    "system.armor": incoming.system.armor,
+    "system.silhouette": incoming.system.silhouette,
+    "system.speed.max": incoming.system.speed.max,
+    "system.handling": incoming.system.handling,
+    "system.shields": structuredClone(incoming.system.shields),
+    "system.incomplete": Array.from(existing.system.incomplete).filter(
+      (entry) => !VEHICLE_STAT_FIELDS.includes(entry),
+    ),
+    "system.metadata.vehicleStatEvidence": structuredClone(
+      incoming.system.metadata?.vehicleStatEvidence ?? {},
+    ),
+  };
 }
 export function validateBundle(bundle) {
   // Version-one libraries keep the same schema across branding changes.
@@ -215,6 +260,21 @@ export async function importLibrary(bundle, onProgress = () => {}) {
         enriched = updates.length;
       }
       if (type === "Actor") {
+        const vehicleUpdates = [];
+        for (const incoming of documents.filter(
+          (doc) => doc.type === "vehicle" && !createdIds.has(doc._id),
+        )) {
+          const existing = await pack.getDocument(incoming._id),
+            existingObject = existing?.toObject?.() ?? existing,
+            update = mergeVehicleEnrichment(existingObject, incoming);
+          if (update) vehicleUpdates.push({ _id: incoming._id, ...update });
+        }
+        for (let i = 0; i < vehicleUpdates.length; i += 100)
+          await pack.documentClass.updateDocuments(
+            vehicleUpdates.slice(i, i + 100),
+            { pack: pack.collection, render: false },
+          );
+        enriched = vehicleUpdates.length;
         const links = documents
           .filter(
             (doc) =>
