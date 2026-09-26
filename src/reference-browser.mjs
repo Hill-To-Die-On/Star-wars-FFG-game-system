@@ -13,9 +13,10 @@ import {
   filterLibraryByBooks,
 } from "./reference-data.mjs";
 import { importWithProgress } from "./library.mjs";
+import { mergeAdvancementTrees } from "./advancement-data.mjs";
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } =
   foundry.applications.api;
-let indexPromise, libraryPromise;
+let indexPromise, libraryPromise, advancementPromise;
 const browsers = new Set();
 const campaign = () => game.settings.get(SYSTEM_ID, "campaign");
 async function loadJSON(name) {
@@ -44,13 +45,20 @@ export async function getReference(key) {
 }
 export async function importPublishedLibrary() {
   if (!game.user.isGM) throw new Error("Only the GM can populate compendiums.");
-  const source = await (libraryPromise ??= loadJSON("reference-library").catch(
-    (error) => {
-      libraryPromise = undefined;
-      throw error;
-    },
-  ));
-  const bundle = filterLibraryByBooks(source, campaign());
+  const [source, advancement] = await Promise.all([
+      (libraryPromise ??= loadJSON("reference-library").catch((error) => {
+        libraryPromise = undefined;
+        throw error;
+      })),
+      (advancementPromise ??= loadJSON("advancement-trees").catch((error) => {
+        advancementPromise = undefined;
+        throw error;
+      })),
+    ]),
+    bundle = mergeAdvancementTrees(
+      filterLibraryByBooks(source, campaign()),
+      advancement,
+    );
   if (!Object.values(bundle.documents).some((documents) => documents.length))
     throw new Error("No references match the owned-book selection.");
   return importWithProgress(bundle);

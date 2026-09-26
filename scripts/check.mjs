@@ -53,10 +53,20 @@ if (
   );
 for (const [key, die] of Object.entries(DICE))
   for (let i = 1; i <= die.faces.length; i++) {
-    const png = await readFile(`assets/dice/${key}-${i}.png`);
-    if (png.readUInt32BE(16) !== 256 || png.readUInt32BE(20) !== 256)
-      throw new Error("Dice face must be 256 × 256");
+    const names = [
+      `assets/dice/${key}-${i}.png`,
+      ...(key === "ability"
+        ? [`assets/dice/${key}-${i}-v2.png`]
+        : key === "difficulty"
+          ? [`assets/dice/${key}-${i}-v3.png`]
+          : []),
+    ];
+    for (const name of names) {
+      const png = await readFile(name);
+      if (png.readUInt32BE(16) !== 256 || png.readUInt32BE(20) !== 256)
+        throw new Error("Dice face must be 256 × 256");
+    }
   }
 console.log(
-  "Syntax, templates, manifest, integration schemas, versions, NASA backdrop provenance and all 64 dice assets passed.",
+  "Syntax, templates, manifest, integration schemas, versions, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
 );

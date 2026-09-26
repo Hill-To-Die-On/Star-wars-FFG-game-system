@@ -19,6 +19,8 @@ for (const name of [
   "THIRD_PARTY_NOTICES.md",
   "data/reference-database.json",
   "data/reference-library.json",
+  "data/advancement-trees.json",
+  "data/source-verification.json",
 ])
   files[name] = new Uint8Array(await readFile(name));
 for (const name of Object.keys(files))

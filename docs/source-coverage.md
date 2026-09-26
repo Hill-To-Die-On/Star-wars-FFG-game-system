@@ -2,19 +2,30 @@
 
 Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.
 
+The public `data/advancement-trees.json` contains these graph structures, costs, references and allowlisted declarative effects. Printed comparison is a separate evidence field: a usable structural graph is not presented as a fully checked transcription.
+
 135 specialization references; 135 structurally validated specialization graphs; 162 vehicles with matching structured statistics; 298 private motivation guidance matches.
 
-A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. Four connector discrepancies have been checked against held PDF charts; complete node-by-node comparisons remain pending.
+A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. 4 connector corrections and 5 full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.
+
+## Character-creation source verification
+
+The public implementation records structured values and page citations without copying the books' explanatory prose. The held core books were checked for the shared 500-credit baseline, party-size Obligation/Duty values, line-specific starting-benefit choices, the Age of Rebellion Base of Operations gear-only allowance and the final d100 pocket-money roll.
+
+| Rule line | Held source pages checked |
+|---|---|
+| Edge of the Empire | Core Rulebook pp. 40 and 97 |
+| Age of Rebellion | Core Rulebook pp. 46, 108 and 111 |
+| Force and Destiny | Core Rulebook pp. 49 and 107 |
+
+The source books remain required for their explanations, examples, exceptional species rules and any option not represented as reviewed structured data.
 
 ## Photo request register
 
-These source PDFs were not found by normalized book title. A full, straight-on image of each listed chart, with all four columns, five rows, connecting lines and page number visible, will let the chart be checked. Include adjacent creation/exception rules only where the chart references them. Structured graphs may already be available, as shown.
+These chart sources have neither a matched full PDF nor a recorded private-page comparison. A full, straight-on image of each chart, with all four columns, five rows, connecting lines and page number visible, will let the chart be checked. Include adjacent creation or exception rules only where the chart references them. Structured graphs may already be available, as shown.
 
 | Book | Printed page | Specialization | Graph |
 |---|---|---|---|
-| Age of Rebellion - Cyphers & Masks | 24 | Courier | imported; standalone chart PDF found |
-| Age of Rebellion - Cyphers & Masks | 26 | Interrogator | imported; standalone chart PDF found |
-| Age of Rebellion - Cyphers & Masks | 28 | Sleeper Agent | imported; standalone chart PDF found |
 | Age of Rebellion - Fully Operational | 24 | Droid Specialist | imported |
 | Age of Rebellion - Fully Operational | 26 | Sapper | imported |
 | Age of Rebellion - Fully Operational | 28 | Shipwright | imported |
@@ -42,7 +53,7 @@ These source PDFs were not found by normalized book title. A full, straight-on i
 
 ## Complete register
 
-| Specialization | Book | Page | PDF present | Graph | PDF comparison |
+| Specialization | Book | Page | Matched full PDF | Graph | PDF comparison |
 |---|---|---|---|---|---|
 | Agitator | Age of Rebellion - Core Book | 80 | Yes | imported | Pending |
 | Ambassador | Age of Rebellion - Core Book | 79 | Yes | imported | Connector correction checked |
@@ -64,9 +75,9 @@ These source PDFs were not found by normalized book title. A full, straight-on i
 | Slicer (Spy) | Age of Rebellion - Core Book | 99 | Yes | imported | Pending |
 | Squadron Leader | Age of Rebellion - Core Book | 74 | Yes | imported | Pending |
 | Tactician | Age of Rebellion - Core Book | 75 | Yes | imported | Pending |
-| Courier | Age of Rebellion - Cyphers & Masks | 24 | No | imported | Pending |
-| Interrogator | Age of Rebellion - Cyphers & Masks | 26 | No | imported | Pending |
-| Sleeper Agent | Age of Rebellion - Cyphers & Masks | 28 | No | imported | Pending |
+| Courier | Age of Rebellion - Cyphers & Masks | 24 | No | imported | Full chart checked |
+| Interrogator | Age of Rebellion - Cyphers & Masks | 26 | No | imported | Full chart checked |
+| Sleeper Agent | Age of Rebellion - Cyphers & Masks | 28 | No | imported | Full chart checked |
 | Advocate | Age of Rebellion - Desperate Allies | 26 | Yes | imported | Pending |
 | Analyst | Age of Rebellion - Desperate Allies | 28 | Yes | imported | Pending |
 | Propagandist | Age of Rebellion - Desperate Allies | 30 | Yes | imported | Pending |
@@ -184,46 +195,46 @@ These source PDFs were not found by normalized book title. A full, straight-on i
 
 38 signature-ability references; 36 structurally validated graphs. The base ability remains locked until the character owns a matching bottom-row talent in the linked career specialization.
 
-| Signature ability | Career | Book | Page | Graph | Missing private guidance |
-|---|---|---|---|---|---|
-| Counterespionage | Spy | Age of Rebellion - Cyphers & Masks | 34 | imported | 7 |
-| Unmatched Tradecraft | Spy | Age of Rebellion - Cyphers & Masks | 35 | imported | 8 |
-| Diplomatic Solution | Diplomat | Age of Rebellion - Desperate Allies | 39 | imported | 0 |
-| Unmatched Insight | Diplomat | Age of Rebellion - Desperate Allies | 41 | imported | 0 |
-| The Bigger They Are… | Soldier | Age of Rebellion - Forged In Battle | 38 | imported | 0 |
-| Unmatched Courage | Soldier | Age of Rebellion - Forged In Battle | 39 | imported | 0 |
-| The Harder They Fall | Engineer | Age of Rebellion - Fully Operational | 34 | imported | 0 |
-| Unmatched Ingenuity | Engineer | Age of Rebellion - Fully Operational | 35 | imported | 0 |
-| Rousing Oratory | Commander | Age of Rebellion - Lead By Example | 38 | imported | 0 |
-| Unmatched Authority | Commander | Age of Rebellion - Lead By Example | 40 | imported | 0 |
-| This One Is Mine | Ace | Age of Rebellion - Stay On Target | 36 | imported | 0 |
-| Unmatched Survivability | Ace | Age of Rebellion - Stay On Target | 36 | imported | 0 |
-| Peerless Interception | Jedi | Collapse of the Republic | 47 | missing | 0 |
-| Unmatched Teamwork | Clone Soldier | Collapse of the Republic | 46 | missing | 0 |
-| Last One Standing | Hired Gun | Edge of The Empire - Dangerous Covenants | 36 | imported | 0 |
-| Unmatched Protection | Hired Gun | Edge of The Empire - Dangerous Covenants | 37 | imported | 0 |
-| Sudden Discovery | Explorer | Edge of The Empire - Enter The Unknown | 34 | imported | 0 |
-| Unmatched Mobility | Explorer | Edge of The Empire - Enter The Unknown | 35 | imported | 0 |
-| Narrow Escape | Smuggler | Edge of The Empire - Fly Casual | 37 | imported | 0 |
-| Unmatched Fortune | Smuggler | Edge of The Empire - Fly Casual | 39 | imported | 0 |
-| Always Get My Mark | Bounty Hunter | Edge of The Empire - No Disintegrations | 39 | imported | 0 |
-| Unmatched Devistation | Bounty Hunter | Edge of The Empire - No Disintegrations | 41 | imported | 0 |
-| Inventive Creation | Technician | Edge of The Empire - Special Modifications | 39 | imported | 0 |
-| Unmatched Calibration | Technician | Edge of The Empire - Special Modifications | 40 | imported | 0 |
-| Insightful Revelation | Colonist | Edge of the Empire - Far Horizons | 36 | imported | 0 |
-| Unmatched Expertise | Colonist | Edge of the Empire - Far Horizons | 37 | imported | 0 |
-| Much to Learn | Consular | Force & Destiny - Disciples of Harmony | 32 | imported | 0 |
-| Unmatched Negotiation | Consular | Force & Destiny - Disciples of Harmony | 33 | imported | 0 |
-| My City | Sentinel | Force & Destiny - Endless Vigil | 34 | imported | 0 |
-| Unmatched Vigilance | Sentinel | Force & Destiny - Endless Vigil | 35 | imported | 0 |
-| Fated Duel | Guardian | Force & Destiny - Keeping The Peace | 35 | imported | 0 |
-| Unmatched Heroism | Guardian | Force & Destiny - Keeping The Peace | 37 | imported | 0 |
-| Deadly Reputation | Warrior | Force & Destiny - Knights of Fate | 34 | imported | 6 |
-| Unmatched Ferocity | Warrior | Force & Destiny - Knights of Fate | 35 | imported | 7 |
-| Unexpected Demise | Seeker | Force & Destiny - Savage Spirits | 34 | imported | 0 |
-| Unmatched Pursuit | Seeker | Force & Destiny - Savage Spirits | 35 | imported | 0 |
-| Prophecy | Mystic | Force & Destiny - Unlimited Power | 35 | imported | 4 |
-| Unmatched Destiny | Mystic | Force & Destiny - Unlimited Power | 36 | imported | 6 |
+| Signature ability | Career | Book | Page | Graph | Printed comparison | Missing private guidance |
+|---|---|---|---|---|---|---|
+| Counterespionage | Spy | Age of Rebellion - Cyphers & Masks | 34 | imported | Full chart checked | 0 |
+| Unmatched Tradecraft | Spy | Age of Rebellion - Cyphers & Masks | 35 | imported | Full chart checked | 0 |
+| Diplomatic Solution | Diplomat | Age of Rebellion - Desperate Allies | 39 | imported | Pending | 0 |
+| Unmatched Insight | Diplomat | Age of Rebellion - Desperate Allies | 41 | imported | Pending | 0 |
+| The Bigger They Are… | Soldier | Age of Rebellion - Forged In Battle | 38 | imported | Pending | 0 |
+| Unmatched Courage | Soldier | Age of Rebellion - Forged In Battle | 39 | imported | Pending | 0 |
+| The Harder They Fall | Engineer | Age of Rebellion - Fully Operational | 34 | imported | Pending | 0 |
+| Unmatched Ingenuity | Engineer | Age of Rebellion - Fully Operational | 35 | imported | Pending | 0 |
+| Rousing Oratory | Commander | Age of Rebellion - Lead By Example | 38 | imported | Pending | 0 |
+| Unmatched Authority | Commander | Age of Rebellion - Lead By Example | 40 | imported | Pending | 0 |
+| This One Is Mine | Ace | Age of Rebellion - Stay On Target | 36 | imported | Pending | 0 |
+| Unmatched Survivability | Ace | Age of Rebellion - Stay On Target | 36 | imported | Pending | 0 |
+| Peerless Interception | Jedi | Collapse of the Republic | 47 | missing | Pending | 0 |
+| Unmatched Teamwork | Clone Soldier | Collapse of the Republic | 46 | missing | Pending | 0 |
+| Last One Standing | Hired Gun | Edge of The Empire - Dangerous Covenants | 36 | imported | Pending | 0 |
+| Unmatched Protection | Hired Gun | Edge of The Empire - Dangerous Covenants | 37 | imported | Pending | 0 |
+| Sudden Discovery | Explorer | Edge of The Empire - Enter The Unknown | 34 | imported | Pending | 0 |
+| Unmatched Mobility | Explorer | Edge of The Empire - Enter The Unknown | 35 | imported | Pending | 0 |
+| Narrow Escape | Smuggler | Edge of The Empire - Fly Casual | 37 | imported | Pending | 0 |
+| Unmatched Fortune | Smuggler | Edge of The Empire - Fly Casual | 39 | imported | Pending | 0 |
+| Always Get My Mark | Bounty Hunter | Edge of The Empire - No Disintegrations | 39 | imported | Pending | 0 |
+| Unmatched Devistation | Bounty Hunter | Edge of The Empire - No Disintegrations | 41 | imported | Pending | 0 |
+| Inventive Creation | Technician | Edge of The Empire - Special Modifications | 39 | imported | Pending | 0 |
+| Unmatched Calibration | Technician | Edge of The Empire - Special Modifications | 40 | imported | Pending | 0 |
+| Insightful Revelation | Colonist | Edge of the Empire - Far Horizons | 36 | imported | Pending | 0 |
+| Unmatched Expertise | Colonist | Edge of the Empire - Far Horizons | 37 | imported | Pending | 0 |
+| Much to Learn | Consular | Force & Destiny - Disciples of Harmony | 32 | imported | Pending | 0 |
+| Unmatched Negotiation | Consular | Force & Destiny - Disciples of Harmony | 33 | imported | Pending | 0 |
+| My City | Sentinel | Force & Destiny - Endless Vigil | 34 | imported | Pending | 0 |
+| Unmatched Vigilance | Sentinel | Force & Destiny - Endless Vigil | 35 | imported | Pending | 0 |
+| Fated Duel | Guardian | Force & Destiny - Keeping The Peace | 35 | imported | Pending | 0 |
+| Unmatched Heroism | Guardian | Force & Destiny - Keeping The Peace | 37 | imported | Pending | 0 |
+| Deadly Reputation | Warrior | Force & Destiny - Knights of Fate | 34 | imported | Pending | 5 |
+| Unmatched Ferocity | Warrior | Force & Destiny - Knights of Fate | 35 | imported | Pending | 6 |
+| Unexpected Demise | Seeker | Force & Destiny - Savage Spirits | 34 | imported | Pending | 0 |
+| Unmatched Pursuit | Seeker | Force & Destiny - Savage Spirits | 35 | imported | Pending | 0 |
+| Prophecy | Mystic | Force & Destiny - Unlimited Power | 35 | imported | Pending | 4 |
+| Unmatched Destiny | Mystic | Force & Destiny - Unlimited Power | 36 | imported | Pending | 5 |
 
 ## Signature chart photo requests
 

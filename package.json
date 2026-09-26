@@ -14,6 +14,7 @@
     "build": "node scripts/build.mjs",
     "import:database": "node scripts/import-database.mjs",
     "publish:database": "node scripts/publish-database.mjs",
+    "publish:advancement": "node scripts/publish-advancement-trees.mjs",
     "import:swa": "node scripts/fetch-swa.mjs"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@
 
 This register defines the public repository artifacts, their owners, and the GitHub-hosted settings that support the `dev` → `staging` → `main` delivery path. Review it when the build, release process, dependency ecosystems, branch policy, or public content boundary changes.
 
-Last verified: **2026-09-25**.
+Last verified: **2026-09-26**.
 
 ## Repository health and governance
 
@@ -42,7 +42,7 @@ Dependabot is configured in paired entries per ecosystem. An entry without `targ
 | `system.json` | Foundry manifest and latest-release installer URL |
 | `contents.json` | Reviewable inventory of paths inside the ZIP |
 
-The ZIP is assembled from the positive allow-list in `scripts/build.mjs`. It includes runtime source, templates, styles, localizations, original/attributed assets, public documentation, notices, and the two authorized reference JSON files. It excludes PDFs, scans, SQL/database backups, `.local` imports, environment files, tests, previews, and private campaign/source material.
+The ZIP is assembled from the positive allow-list in `scripts/build.mjs`. It includes runtime source, templates, styles, localizations, original/attributed assets, public documentation, notices, the two authorized reference JSON files, the copyright-bounded advancement graphs, and their verification register. It excludes PDFs, scans, SQL/database backups, `.local` imports, environment files, tests, previews, and private campaign/source material.
 
 Published tags and releases are retained as historical delivery artifacts. Current releases use semantic tags such as `v0.2.1` and the three asset names above.
 

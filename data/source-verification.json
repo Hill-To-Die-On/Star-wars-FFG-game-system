@@ -1,0 +1,87 @@
+{
+  "format": "star-wars-ffg-source-verification",
+  "version": 1,
+  "checks": [
+    {
+      "kind": "specialization",
+      "name": "Courier",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "24",
+      "evidencePage": "25",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Interrogator",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "26",
+      "evidencePage": "27",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Sleeper Agent",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "28",
+      "evidencePage": "29",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Counterespionage",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "34",
+      "evidencePage": "34",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Tradecraft",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "35",
+      "evidencePage": "35",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Ambassador",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "79",
+      "evidencePage": "79",
+      "level": "connectors",
+      "checked": ["connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Scoundrel",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "84",
+      "evidencePage": "84",
+      "level": "connectors",
+      "checked": ["connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Protector",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "76",
+      "evidencePage": "76",
+      "level": "connectors",
+      "checked": ["connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Sharpshooter",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "93",
+      "evidencePage": "93",
+      "level": "connectors",
+      "checked": ["connectors"]
+    }
+  ]
+}

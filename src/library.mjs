@@ -43,6 +43,9 @@ export function mergeSpecializationEnrichment(existing, incoming) {
       ...(!current.verified && incoming.system.tree.verified
         ? { verified: true }
         : {}),
+      ...(!current.verification && incoming.system.tree.verification
+        ? { verification: structuredClone(incoming.system.tree.verification) }
+        : {}),
     };
   return JSON.stringify(merged) === JSON.stringify(current) ? null : merged;
 }
