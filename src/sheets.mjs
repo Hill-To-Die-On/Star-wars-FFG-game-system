@@ -154,6 +154,9 @@ const targetContext = (key, meleeOverride, sourceActor) => {
     rangeMode: measured?.profileMode ?? "",
     sceneDistance: measured?.sceneDistance ?? null,
     sceneUnits: measured?.units ?? "",
+    elevationDifference: measured?.elevationDifference ?? null,
+    elevationApplied: measured?.elevationApplied === true,
+    lineOfSight: measured?.lineOfSight ?? "unavailable",
     extraTargets: Math.max(0, targets.length - 1),
   };
 };
@@ -333,8 +336,17 @@ function automaticContextHTML(context) {
   const measuredRange = context.target.rangeSource === "overlay"
       ? ` · ${context.target.rangeBand === "beyond" ? "Beyond Extreme" : `${titleCase(context.target.rangeBand)} range`} (${context.target.rangeMode === "map" ? "map scale" : "ToM calibration"})`
       : "",
+    elevation = context.target.elevationApplied
+      ? ` · ${context.target.elevationDifference} ${escapeHTML(context.target.sceneUnits)} vertical separation included`
+      : "",
+    sight =
+      context.target.lineOfSight === "blocked"
+        ? " · line of sight blocked"
+        : context.target.lineOfSight === "clear"
+          ? " · line of sight clear"
+          : "",
     target = context.target.name
-    ? `<strong>${escapeHTML(context.target.name)}</strong><span>${context.target.defense} ${context.melee ? "melee" : "ranged"} defence · Adversary ${context.target.adversary}${measuredRange}${context.target.extraTargets ? ` · ${context.target.extraTargets} other target${context.target.extraTargets === 1 ? "" : "s"} ignored` : ""}</span>`
+    ? `<strong>${escapeHTML(context.target.name)}</strong><span>${context.target.defense} ${context.melee ? "melee" : "ranged"} defence · Adversary ${context.target.adversary}${measuredRange}${elevation}${sight}${context.target.extraTargets ? ` · ${context.target.extraTargets} other target${context.target.extraTargets === 1 ? "" : "s"} ignored` : ""}</span>`
     : "<strong>No target selected</strong><span>Select a token to add its defence and Adversary upgrades automatically.</span>";
   return `<div class="sf-auto-context">
     <i class="fa-solid fa-crosshairs" aria-hidden="true"></i>
@@ -412,8 +424,8 @@ function attachPoolBuilder(dialog, context) {
           Number(button.dataset.manualDifficulty) === pool.difficulty,
       );
   };
-  const automatic = () =>
-    automaticCheckPool({
+  const automatic = () => {
+    const result = automaticCheckPool({
       characteristic: context.characteristicValue,
       rank: context.rank,
       skill: context.skillKey,
@@ -431,6 +443,19 @@ function attachPoolBuilder(dialog, context) {
       melee: context.melee,
       talentRules: context.talentRules,
     });
+    if (
+      context.combat &&
+      !context.melee &&
+      context.target.lineOfSight === "blocked"
+    )
+      return {
+        ...result,
+        error:
+          result.error ||
+          "The selected target is behind a sight-blocking wall. Switch to Manual only after a GM ruling.",
+      };
+    return result;
+  };
   const renderAutomatic = () => {
     const result = automatic();
     writePool(result.pool);

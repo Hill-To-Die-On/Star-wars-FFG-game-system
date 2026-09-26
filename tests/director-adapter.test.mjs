@@ -74,6 +74,10 @@ test("Director rules knowledge fails closed when no source evidence exists", () 
       directorAdapter.getNativeCheckRules().guidance,
       /request an explicit GM ruling/,
     );
+    assert.match(
+      directorAdapter.getNativeCheckRules().guidance,
+      /lineOfSightBlocked/,
+    );
     const evidence = directorAdapter.getRuleEvidence(
       "a rule that is intentionally absent from the private library",
     );
