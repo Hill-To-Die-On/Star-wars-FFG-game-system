@@ -55,3 +55,5 @@ Both the resident 12B local model and one installed 4B fallback were declined by
 GitHub Actions did not start the first public repository workflow because the account was locked by a billing issue. Local test and build results are separate from hosted CI, which remains unverified.
 
 The repository's AtlasMind local-CI contract also passed from a clean staging copy in the `node:24-bookworm` Linux container: locked dependency installation and `npm run check` both completed successfully with zero audit vulnerabilities.
+
+The three open GitHub Actions Dependabot updates were reviewed together. PRs #8–#10 each change one action from v4 to v7. Their replacement in PR #16 pins the official v7 commit for checkout, Node setup, and artifact upload; the workflow continues to use standard pull-request checkout, Node 24 with npm caching, and the default archived multi-file artifact mode. The complete local matrix passes, but the bot PRs remain open until the replacement reaches `dev` because the billing lock prevents a hosted runner check.
