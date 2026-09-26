@@ -17,9 +17,9 @@ const integration = game.system.api.integration;
 console.table(integration.getCapabilities());
 ```
 
-Version 1 remains supported unchanged for player characters, community rule packs and bundles containing both. Version 2 adds reviewed Actor packages for characters, minions, rivals, nemeses, vehicles and groups; its bundles can combine those Actors with version-two rule packs. Both versions support JSON files, compact URL-fragment handoffs and an origin-bound `postMessage` handoff.
+Version 1 remains supported unchanged for player characters, community rule packs and bundles containing both. Version 2 adds reviewed Actor packages for characters, minions, rivals, nemeses, vehicles and groups; its bundles can combine those Actors with version-two rule packs. Version 3 adds GM-reviewed authored actor groups whose stable source nodes, map roles, positions and directed relationships survive alongside the created Actors. All versions support JSON files, compact URL-fragment handoffs and an origin-bound `postMessage` handoff.
 
-The returned `schema` path points to the latest bundled [version 2 JSON Schema](schemas/integration-v2.schema.json), while `schemas[1]` and `schemas[2]` expose both contracts. Sites can use them for editor hints and preflight validation. The runtime validator remains authoritative for size limits, actor-specific fields and detailed talent-tree rules.
+The returned `schema` path points to the latest bundled [version 3 JSON Schema](schemas/integration-v3.schema.json), while `schemas[1]`, `schemas[2]` and `schemas[3]` expose every contract. Sites can use them for editor hints and preflight validation. The runtime validator remains authoritative for referential integrity, size limits, actor-specific fields and detailed talent-tree rules.
 
 ## Version 2 Actor package
 
@@ -33,7 +33,7 @@ Version 2 uses `kind: "actor"` and accepts every native system Actor type: `char
   "source": {
     "id": "sw-rpg.info",
     "name": "SW-RPG.info",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "url": "https://sw-rpg.info/"
   },
   "payload": {
@@ -58,6 +58,14 @@ Version 2 uses `kind: "actor"` and accepts every native system Actor type: `char
 ```
 
 Player-character Actors retain the ordinary Actor-create permission and are owned by their non-GM importer. Importing an adversary, vehicle or group is GM-only. Every Actor import creates a new document; version 2 does not silently update an existing Actor.
+
+## Version 3 authored actor group
+
+Version 3 uses `kind: "actorGroup"` and is GM-only. Its `actors` array contains allow-listed native Actor payloads. Stable actor references connect those payloads to authored `nodes`; each node retains its name, semantic role, canvas position and one or more Actor references. A roster can therefore create several Foundry Actors while remaining one exact relationship endpoint.
+
+Relationships use stable node IDs and one of the allow-listed directed kinds: `commands`, `reports-to`, `employs`, `protects`, `pursues`, `allied-with`, `rivals`, `related-to`, `member-of` or `located-at`. The optional creator label remains separate from the kind. Runtime validation rejects dangling references, reused Actor references, self-links, duplicate IDs and unknown fields before any Actor is created.
+
+The importer creates the Actors as one batch and stores system-owned provenance sufficient to reconstruct each node's incident relationships. It then emits one `starWarsFFGIntegrationImported` result with the stable-reference-to-Foundry-Actor mapping. Director of Realms consumes this result as explicit authored context; it does not convert structural links into invented trust, fear or hostility scores. See [ADR 0002](adr/0002-authored-actor-group-interchange.md).
 
 ## Interchange envelope
 
@@ -294,9 +302,10 @@ Hooks.once("starWarsFFGReady", (api) => {
 | `getCapabilities()` | Discover formats, transports, document types and limits |
 | `validatePackage(data)` | Validate and return a normalized defensive copy |
 | `summarizePackage(data)` | Produce safe review metadata |
-| `importPackage(data, options)` | Import a character, rule pack or bundle |
+| `importPackage(data, options)` | Import any supported package kind |
 | `importCharacter(data, options)` | Create one player character |
 | `importActor(data, options)` | Create one version 2 character, adversary, vehicle or group |
+| `importActorGroup(data, options)` | GM-only batch import of a version 3 authored Actor group |
 | `exportCharacter(actorOrUuid, options)` | Export an observable player character |
 | `exportActor(actorOrUuid, options)` | Export any observable native Actor as version 2 |
 | `importRulePack(data, options)` | GM-only community Item import |

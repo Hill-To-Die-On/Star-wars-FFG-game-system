@@ -6,14 +6,17 @@ import {
 import { validateTree } from "./advancement.mjs";
 
 export const INTEGRATION_FORMAT = "star-wars-ffg-interchange";
-export const INTEGRATION_VERSION = 2;
-export const INTEGRATION_VERSIONS = Object.freeze([1, 2]);
+export const INTEGRATION_VERSION = 3;
+export const INTEGRATION_VERSIONS = Object.freeze([1, 2, 3]);
 export const MAX_PACKAGE_BYTES = 2 * 1024 * 1024;
 export const MAX_HANDOFF_BYTES = 192 * 1024;
+export const MAX_ACTOR_GROUP_ACTORS = 200;
+export const MAX_ACTOR_GROUP_RELATIONSHIPS = 1000;
 
 const PACKAGE_KINDS = Object.freeze({
   1: ["character", "rulePack", "bundle"],
   2: ["actor", "rulePack", "bundle"],
+  3: ["actorGroup"],
 });
 const ACTOR_TYPES = Object.freeze([
   "character",
@@ -23,6 +26,30 @@ const ACTOR_TYPES = Object.freeze([
   "vehicle",
   "group",
 ]);
+const ACTOR_GROUP_ROLES = Object.freeze([
+  "player-character",
+  "ally",
+  "neutral",
+  "enemy-minion",
+  "enemy-rival",
+  "enemy-nemesis",
+  "organisation",
+  "vehicle",
+  "location",
+]);
+const ACTOR_GROUP_RELATIONSHIP_KINDS = Object.freeze([
+  "commands",
+  "reports-to",
+  "employs",
+  "protects",
+  "pursues",
+  "allied-with",
+  "rivals",
+  "related-to",
+  "member-of",
+  "located-at",
+]);
+const EXTERNAL_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}$/;
 const ACTOR_SYSTEM_FIELDS = new Set([
   "theme",
   "line",
@@ -689,6 +716,98 @@ function normalizeRulePack(payload, path) {
   };
 }
 
+function externalId(value, path) {
+  return stringAt(value, path, { min: 1, max: 200, pattern: EXTERNAL_ID_PATTERN });
+}
+
+function normalizeActorGroup(payload, path) {
+  allowedFields(payload, new Set(["id", "name", "actors", "nodes", "relationships"]), path);
+  if (!Array.isArray(payload.actors) || !payload.actors.length || payload.actors.length > MAX_ACTOR_GROUP_ACTORS)
+    fail(`${path}.actors`, `must contain 1-${MAX_ACTOR_GROUP_ACTORS} actors`);
+  if (!Array.isArray(payload.nodes) || !payload.nodes.length || payload.nodes.length > MAX_ACTOR_GROUP_ACTORS)
+    fail(`${path}.nodes`, `must contain 1-${MAX_ACTOR_GROUP_ACTORS} nodes`);
+  if (!Array.isArray(payload.relationships) || payload.relationships.length > MAX_ACTOR_GROUP_RELATIONSHIPS)
+    fail(`${path}.relationships`, `must contain no more than ${MAX_ACTOR_GROUP_RELATIONSHIPS} relationships`);
+
+  const actorIds = new Set();
+  const actors = payload.actors.map((entry, index) => {
+    const entryPath = `${path}.actors[${index}]`;
+    allowedFields(entry, new Set(["id", "actor"]), entryPath);
+    const id = externalId(entry.id, `${entryPath}.id`);
+    if (actorIds.has(id)) fail(`${entryPath}.id`, "duplicate actor reference");
+    actorIds.add(id);
+    return { id, actor: normalizeActor(entry.actor, `${entryPath}.actor`) };
+  });
+
+  const nodeIds = new Set();
+  const assignedActors = new Set();
+  const nodes = payload.nodes.map((node, index) => {
+    const nodePath = `${path}.nodes[${index}]`;
+    allowedFields(node, new Set(["id", "name", "role", "position", "actorRefs"]), nodePath);
+    const id = externalId(node.id, `${nodePath}.id`);
+    if (nodeIds.has(id)) fail(`${nodePath}.id`, "duplicate node id");
+    nodeIds.add(id);
+    const role = stringAt(node.role, `${nodePath}.role`, { min: 1, max: 40 });
+    if (!ACTOR_GROUP_ROLES.includes(role)) fail(`${nodePath}.role`, "unsupported actor-group role");
+    allowedFields(node.position, new Set(["x", "y"]), `${nodePath}.position`);
+    const position = {
+      x: integerAt(node.position.x, `${nodePath}.position.x`, 0, 100000),
+      y: integerAt(node.position.y, `${nodePath}.position.y`, 0, 100000),
+    };
+    if (!Array.isArray(node.actorRefs) || !node.actorRefs.length || node.actorRefs.length > 50)
+      fail(`${nodePath}.actorRefs`, "must contain 1-50 actor references");
+    const actorRefs = node.actorRefs.map((value, actorIndex) => {
+      const actorPath = `${nodePath}.actorRefs[${actorIndex}]`;
+      const actorId = externalId(value, actorPath);
+      if (!actorIds.has(actorId)) fail(actorPath, "refers to an unknown actor");
+      if (assignedActors.has(actorId)) fail(actorPath, "each actor reference must belong to exactly one node");
+      assignedActors.add(actorId);
+      return actorId;
+    });
+    return {
+      id,
+      name: stringAt(node.name, `${nodePath}.name`, { min: 1, max: 160 }),
+      role,
+      position,
+      actorRefs,
+    };
+  });
+  if (assignedActors.size !== actorIds.size)
+    fail(`${path}.actors`, "each actor reference must belong to exactly one node");
+
+  const relationshipIds = new Set();
+  const relationships = payload.relationships.map((relationship, index) => {
+    const relationshipPath = `${path}.relationships[${index}]`;
+    allowedFields(relationship, new Set(["id", "fromNodeId", "toNodeId", "kind", "label"]), relationshipPath);
+    const id = externalId(relationship.id, `${relationshipPath}.id`);
+    if (relationshipIds.has(id)) fail(`${relationshipPath}.id`, "duplicate relationship id");
+    relationshipIds.add(id);
+    const fromNodeId = externalId(relationship.fromNodeId, `${relationshipPath}.fromNodeId`);
+    const toNodeId = externalId(relationship.toNodeId, `${relationshipPath}.toNodeId`);
+    if (!nodeIds.has(fromNodeId)) fail(`${relationshipPath}.fromNodeId`, "refers to an unknown node");
+    if (!nodeIds.has(toNodeId)) fail(`${relationshipPath}.toNodeId`, "refers to an unknown node");
+    if (fromNodeId === toNodeId) fail(relationshipPath, "self-relationships are not supported");
+    const kind = stringAt(relationship.kind, `${relationshipPath}.kind`, { min: 1, max: 40 });
+    if (!ACTOR_GROUP_RELATIONSHIP_KINDS.includes(kind))
+      fail(`${relationshipPath}.kind`, "unsupported relationship kind");
+    return {
+      id,
+      fromNodeId,
+      toNodeId,
+      kind,
+      label: stringAt(relationship.label, `${relationshipPath}.label`, { max: 120 }),
+    };
+  });
+
+  return {
+    id: externalId(payload.id, `${path}.id`),
+    name: stringAt(payload.name, `${path}.name`, { min: 1, max: 160 }),
+    actors,
+    nodes,
+    relationships,
+  };
+}
+
 function normalizePackage(value, path = "package", allowBundle = true) {
   allowedFields(value, new Set(["format", "version", "kind", "source", "payload"]), path);
   if (value.format !== INTEGRATION_FORMAT)
@@ -701,6 +820,7 @@ function normalizePackage(value, path = "package", allowBundle = true) {
   let payload;
   if (value.kind === "character") payload = normalizeCharacter(value.payload, `${path}.payload`);
   else if (value.kind === "actor") payload = normalizeActor(value.payload, `${path}.payload`);
+  else if (value.kind === "actorGroup") payload = normalizeActorGroup(value.payload, `${path}.payload`);
   else if (value.kind === "rulePack")
     payload = normalizeRulePack(value.payload, `${path}.payload`);
   else {
@@ -738,12 +858,13 @@ export function integrationCapabilities() {
   return {
     format: INTEGRATION_FORMAT,
     versions: [...INTEGRATION_VERSIONS],
-    schema: "systems/star-wars-ffg/docs/schemas/integration-v2.schema.json",
+    schema: "systems/star-wars-ffg/docs/schemas/integration-v3.schema.json",
     schemas: {
       1: "systems/star-wars-ffg/docs/schemas/integration-v1.schema.json",
       2: "systems/star-wars-ffg/docs/schemas/integration-v2.schema.json",
+      3: "systems/star-wars-ffg/docs/schemas/integration-v3.schema.json",
     },
-    imports: ["character", "actor", "rulePack", "bundle"],
+    imports: ["character", "actor", "actorGroup", "rulePack", "bundle"],
     exports: ["character", "actor"],
     transports: ["json-file", "url-fragment", "post-message"],
     actorTypes: [...ACTOR_TYPES],
@@ -754,6 +875,8 @@ export function integrationCapabilities() {
       characterItems: 250,
       rulePackRules: 500,
       bundlePackages: 20,
+      actorGroupActors: MAX_ACTOR_GROUP_ACTORS,
+      actorGroupRelationships: MAX_ACTOR_GROUP_RELATIONSHIPS,
     },
   };
 }
@@ -784,6 +907,16 @@ export function integrationSummary(value) {
       source: pkg.source.name,
       entries: pkg.payload.rules.length,
       items: pkg.payload.rules.length,
+    };
+  if (pkg.kind === "actorGroup")
+    return {
+      kind: pkg.kind,
+      label: pkg.payload.name,
+      source: pkg.source.name,
+      entries: pkg.payload.actors.length,
+      items: pkg.payload.actors.reduce((total, entry) => total + entry.actor.items.length, 0),
+      actors: pkg.payload.actors.length,
+      relationships: pkg.payload.relationships.length,
     };
   const summaries = pkg.payload.packages.map(integrationSummary);
   return {

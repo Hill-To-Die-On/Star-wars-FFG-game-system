@@ -27,7 +27,7 @@ for (const file of await walk("templates"))
   Handlebars.precompile(await readFile(file, "utf8"));
 const manifest = JSON.parse(await readFile("system.json", "utf8"));
 const pkg = JSON.parse(await readFile("package.json", "utf8"));
-for (const version of [1, 2])
+for (const version of [1, 2, 3])
   JSON.parse(
     await readFile(`docs/schemas/integration-v${version}.schema.json`, "utf8"),
   );
