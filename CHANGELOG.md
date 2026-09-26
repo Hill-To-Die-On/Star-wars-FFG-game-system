@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Complete live public API version-two acceptance and add a reviewed preserve-or-replace choice for matching community rules, defaulting to preservation.
 - Complete starting-resource selection for all three rule lines: party-size Obligation/Duty, Edge and Age benefit combinations, Force Morality choices, the Age Base gear allowance, owned-book-filtered equipment purchasing, retained-credit validation and the one-time d100 pocket-money roll.
 - Add a player-visible, idempotent artwork-credit Journal with the NASA source record and named artist attribution; preserve it after creation and repeat the credit in the README.
 - Publish copyright-bounded structured advancement data for all 135 specializations and 38 signature abilities: 171 usable graphs and 3,024 nodes with costs, topology, references and declarative effects, while excluding source prose, artwork and private paths. Distinguish structural validation from five full printed-chart checks, four connector checks and pending comparisons.
