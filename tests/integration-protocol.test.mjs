@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   INTEGRATION_FORMAT,
   createConnectorRegistry,
@@ -382,14 +383,12 @@ test("version 3 actor groups preserve stable graph identity and exact authored t
 });
 
 test("version 3 actor groups accept the complete authored relationship vocabulary", () => {
-  for (const kind of [
-    "owns", "pilots", "crews", "aboard", "docked-at", "based-at", "assigned-to", "transports", "guards", "guarded-by",
-    "loyal-to", "owes-duty-to", "paid-by", "enslaved-by", "leads", "serves", "employed-by", "controls", "controlled-by", "enslaves",
-    "protected-by", "pursued-by", "opposes", "competes-with",
-    "trusts", "distrusts", "fears", "respects", "loves", "hates",
-    "parent-of", "child-of", "sibling-of", "partner-of", "mentor-of", "student-of",
-    "owes-debt-to", "creditor-of", "blackmails", "blackmailed-by", "informant-for", "spies-on", "betrayed", "betrayed-by", "knows-secret-of",
-  ]) {
+  const kinds = integrationCapabilities().actorGroupRelationshipKinds;
+  assert.equal(kinds.length, 131);
+  for (const kind of ["borrows", "stolen-by", "stolen-from", "commandeers", "piloted-by", "berths", "refuels-at", "patrolled-by"]) {
+    assert.ok(kinds.includes(kind));
+  }
+  for (const kind of kinds) {
     const pkg = actorGroupPackage();
     pkg.payload.relationships[0].kind = kind;
     assert.equal(validateIntegrationPackage(pkg).payload.relationships[0].kind, kind);
@@ -564,4 +563,15 @@ test("capability discovery publishes explicit limits and supported document type
   assert.equal(capabilities.limits.characterItems, 250);
   assert.equal(capabilities.limits.actorGroupActors, 200);
   assert.equal(capabilities.limits.actorGroupRelationships, 1000);
+  assert.equal(capabilities.actorGroupRelationshipKinds.length, 131);
+  assert.ok(capabilities.actorGroupRelationshipKinds.includes("stolen-by"));
+  assert.ok(capabilities.actorGroupRelationshipKinds.includes("repaired-by"));
+});
+
+test("actor-group relationship capabilities stay aligned with the public v3 schema", () => {
+  const schema = JSON.parse(readFileSync(new URL("../docs/schemas/integration-v3.schema.json", import.meta.url), "utf8"));
+  assert.deepEqual(
+    schema.$defs.relationship.properties.kind.enum,
+    integrationCapabilities().actorGroupRelationshipKinds,
+  );
 });
