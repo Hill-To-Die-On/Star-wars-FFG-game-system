@@ -2,7 +2,7 @@
 
 This register defines the public repository artifacts, their owners, and the GitHub-hosted settings that support the `dev` → `staging` → `main` delivery path. Review it when the build, release process, dependency ecosystems, branch policy, or public content boundary changes.
 
-Last verified: **2026-09-25**.
+Last verified: **2026-09-26**.
 
 ## Repository health and governance
 
@@ -23,7 +23,7 @@ Last verified: **2026-09-25**.
 
 | Artifact | Location | Purpose |
 | --- | --- | --- |
-| System validation | `.github/workflows/ci.yml` | Tests, checks, builds, and uploads the three build outputs |
+| System validation | `.github/workflows/ci.yml` | Tests, checks, builds, and uploads the three build outputs with immutable v7 checkout, Node setup, and artifact action commits |
 | Reviewed local CI controller | `.github/workflows/atlasmind-reviewed-pr-local-ci.yml` | Runs the AtlasMind command contract against an approved immutable PR SHA |
 | Local CI contract | `.atlasmind/local-ci.json` and `.atlasmind/local-ci-runner.mjs` | Declares and executes the trusted local validation commands |
 | Dependency maintenance | `.github/dependabot.yml` | Monitors npm and GitHub Actions; routine PRs target `dev`, security PRs target `main` |
@@ -31,6 +31,8 @@ Last verified: **2026-09-25**.
 | Package manifests | `package.json` and `package-lock.json` | Locked Node.js development and build dependencies |
 
 Dependabot is configured in paired entries per ecosystem. An entry without `target-branch` customizes security updates on the default branch and sets its routine version limit to zero. A second entry targets routine version updates at `dev`. Minor and patch updates are grouped; major updates remain individually reviewable.
+
+The validation workflow pins reviewed GitHub Action commits rather than mutable tags. The current pins resolve to `actions/checkout@v7`, `actions/setup-node@v7`, and `actions/upload-artifact@v7`; the latter two run on Node.js 24, matching the project's supported CI runtime. Dependabot remains responsible for proposing later immutable revisions.
 
 ## Build and release artifacts
 
@@ -42,7 +44,7 @@ Dependabot is configured in paired entries per ecosystem. An entry without `targ
 | `system.json` | Foundry manifest and latest-release installer URL |
 | `contents.json` | Reviewable inventory of paths inside the ZIP |
 
-The ZIP is assembled from the positive allow-list in `scripts/build.mjs`. It includes runtime source, templates, styles, localizations, original/attributed assets, public documentation, notices, and the two authorized reference JSON files. It excludes PDFs, scans, SQL/database backups, `.local` imports, environment files, tests, previews, and private campaign/source material.
+The ZIP is assembled from the positive allow-list in `scripts/build.mjs`. It includes runtime source, templates, styles, localizations, original/attributed assets, public documentation, notices, the two authorized reference JSON files, the copyright-bounded advancement graphs, and their verification register. It excludes PDFs, scans, SQL/database backups, `.local` imports, environment files, tests, previews, and private campaign/source material.
 
 Published tags and releases are retained as historical delivery artifacts. Current releases use semantic tags such as `v0.2.1` and the three asset names above.
 

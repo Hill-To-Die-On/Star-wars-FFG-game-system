@@ -1,0 +1,1865 @@
+{
+  "format": "star-wars-ffg-source-verification",
+  "version": 1,
+  "checks": [
+    {
+      "kind": "specialization",
+      "name": "Courier",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "24",
+      "evidencePage": "25",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Interrogator",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "26",
+      "evidencePage": "27",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Sleeper Agent",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "28",
+      "evidencePage": "29",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Counterespionage",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "34",
+      "evidencePage": "34",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Tradecraft",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "referencePage": "35",
+      "evidencePage": "35",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Assassin",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "59",
+      "evidencePage": "1",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Gadgeteer",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "60",
+      "evidencePage": "2",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Survivalist",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "61",
+      "evidencePage": "3",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Doctor",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "65",
+      "evidencePage": "4",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Politico",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "66",
+      "evidencePage": "5",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Scholar",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "67",
+      "evidencePage": "6",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Entrepreneur",
+      "book": "Edge of the Empire - Far Horizons",
+      "referencePage": "26",
+      "evidencePage": "7",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Marshal",
+      "book": "Edge of the Empire - Far Horizons",
+      "referencePage": "28",
+      "evidencePage": "8",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Performer",
+      "book": "Edge of the Empire - Far Horizons",
+      "referencePage": "30",
+      "evidencePage": "9",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Fringer",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "71",
+      "evidencePage": "12",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Scout (Explorer)",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "72",
+      "evidencePage": "13",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Trader",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "73",
+      "evidencePage": "14",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Archaeologist",
+      "book": "Edge of The Empire - Enter The Unknown",
+      "referencePage": "24",
+      "evidencePage": "15",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Big-Game Hunter",
+      "book": "Edge of The Empire - Enter The Unknown",
+      "referencePage": "26",
+      "evidencePage": "16",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Driver (Explorer)",
+      "book": "Edge of The Empire - Enter The Unknown",
+      "referencePage": "28",
+      "evidencePage": "17",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Bodyguard",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "77",
+      "evidencePage": "20",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Marauder",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "78",
+      "evidencePage": "21",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Mercenary Soldier",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "79",
+      "evidencePage": "22",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Enforcer",
+      "book": "Edge of The Empire - Dangerous Covenants",
+      "referencePage": "26",
+      "evidencePage": "23",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Demolitionist",
+      "book": "Edge of The Empire - Dangerous Covenants",
+      "referencePage": "28",
+      "evidencePage": "24",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Heavy (Hired Gun)",
+      "book": "Edge of The Empire - Dangerous Covenants",
+      "referencePage": "30",
+      "evidencePage": "25",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Pilot (Smuggler)",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "83",
+      "evidencePage": "28",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Scoundrel",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "84",
+      "evidencePage": "29",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Thief",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "85",
+      "evidencePage": "30",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Charmer",
+      "book": "Edge of The Empire - Fly Casual",
+      "referencePage": "26",
+      "evidencePage": "31",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Gambler",
+      "book": "Edge of The Empire - Fly Casual",
+      "referencePage": "28",
+      "evidencePage": "32",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Gunslinger",
+      "book": "Edge of The Empire - Fly Casual",
+      "referencePage": "30",
+      "evidencePage": "33",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Mechanic (Technician)",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "89",
+      "evidencePage": "36",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Outlaw Tech",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "90",
+      "evidencePage": "37",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Slicer (Technician)",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "91",
+      "evidencePage": "38",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Driver (Ace)",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "67",
+      "evidencePage": "39",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Gunner",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "68",
+      "evidencePage": "40",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Pilot (Ace)",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "69",
+      "evidencePage": "41",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Beast Rider",
+      "book": "Age of Rebellion - Stay On Target",
+      "referencePage": "26",
+      "evidencePage": "42",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Hotshot",
+      "book": "Age of Rebellion - Stay On Target",
+      "referencePage": "28",
+      "evidencePage": "43",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Rigger",
+      "book": "Age of Rebellion - Stay On Target",
+      "referencePage": "30",
+      "evidencePage": "44",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Commodore",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "73",
+      "evidencePage": "47",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Squadron Leader",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "74",
+      "evidencePage": "48",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Tactician",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "75",
+      "evidencePage": "49",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Figurehead",
+      "book": "Age of Rebellion - Lead By Example",
+      "referencePage": "28",
+      "evidencePage": "50",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Instructor",
+      "book": "Age of Rebellion - Lead By Example",
+      "referencePage": "30",
+      "evidencePage": "51",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Strategist",
+      "book": "Age of Rebellion - Lead By Example",
+      "referencePage": "32",
+      "evidencePage": "52",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Ambassador",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "79",
+      "evidencePage": "54",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Agitator",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "80",
+      "evidencePage": "55",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Quartermaster",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "81",
+      "evidencePage": "56",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Advocate",
+      "book": "Age of Rebellion - Desperate Allies",
+      "referencePage": "26",
+      "evidencePage": "57",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Analyst",
+      "book": "Age of Rebellion - Desperate Allies",
+      "referencePage": "28",
+      "evidencePage": "58",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Propagandist",
+      "book": "Age of Rebellion - Desperate Allies",
+      "referencePage": "30",
+      "evidencePage": "59",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Mechanic (Engineer)",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "85",
+      "evidencePage": "62",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Saboteur",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "86",
+      "evidencePage": "63",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Scientist",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "87",
+      "evidencePage": "64",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Commando",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "91",
+      "evidencePage": "65",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Medic",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "92",
+      "evidencePage": "66",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Sharpshooter",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "93",
+      "evidencePage": "67",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Infiltrator",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "97",
+      "evidencePage": "68",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Scout (Spy)",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "98",
+      "evidencePage": "69",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Slicer (Spy)",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "99",
+      "evidencePage": "70",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Healer",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "69",
+      "evidencePage": "71",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Niman Disciple",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "70",
+      "evidencePage": "72",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Sage",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "71",
+      "evidencePage": "73",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Peacekeeper",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "75",
+      "evidencePage": "74",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Protector",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "76",
+      "evidencePage": "75",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Soresu Defender",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "77",
+      "evidencePage": "76",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Armorer",
+      "book": "Force & Destiny - Keeping The Peace",
+      "referencePage": "24",
+      "evidencePage": "77",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Warden",
+      "book": "Force & Destiny - Keeping The Peace",
+      "referencePage": "28",
+      "evidencePage": "78",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Warleader",
+      "book": "Force & Destiny - Keeping The Peace",
+      "referencePage": "28",
+      "evidencePage": "79",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Advisor",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "81",
+      "evidencePage": "81",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Makashi Duelist",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "82",
+      "evidencePage": "82",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Seer",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "83",
+      "evidencePage": "83",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Ataru Striker",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "87",
+      "evidencePage": "84",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Hunter",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "88",
+      "evidencePage": "85",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Pathfinder",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "89",
+      "evidencePage": "86",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Artisan",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "93",
+      "evidencePage": "87",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Shadow",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "94",
+      "evidencePage": "88",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Shien Expert",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "95",
+      "evidencePage": "89",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Aggressor",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "99",
+      "evidencePage": "90",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Shii-Cho Knight",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "100",
+      "evidencePage": "91",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Starfighter Ace",
+      "book": "Force & Destiny - Core Book",
+      "referencePage": "101",
+      "evidencePage": "92",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Recruit",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "100",
+      "evidencePage": "93",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Force Sensitive Exile",
+      "book": "Edge of The Empire - Core Book",
+      "referencePage": "276",
+      "evidencePage": "94",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Force Sensitive Emergent",
+      "book": "Age of Rebellion - Core Book",
+      "referencePage": "292",
+      "evidencePage": "95",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Heavy (Soldier)",
+      "book": "Age of Rebellion - Forged In Battle",
+      "referencePage": "28",
+      "evidencePage": "30",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Trailblazer",
+      "book": "Age of Rebellion - Forged In Battle",
+      "referencePage": "30",
+      "evidencePage": "32",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Vanguard",
+      "book": "Age of Rebellion - Forged In Battle",
+      "referencePage": "32",
+      "evidencePage": "34",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Force Adherent",
+      "book": "Dawn of Rebellion",
+      "referencePage": "98",
+      "evidencePage": "98",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Imperial Academy Cadet",
+      "book": "Dawn of Rebellion",
+      "referencePage": "100",
+      "evidencePage": "100",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Padawan Survivor",
+      "book": "Dawn of Rebellion",
+      "referencePage": "102",
+      "evidencePage": "102",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Pirate",
+      "book": "Dawn of Rebellion",
+      "referencePage": "104",
+      "evidencePage": "104",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Retired Clone Trooper",
+      "book": "Dawn of Rebellion",
+      "referencePage": "106",
+      "evidencePage": "106",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Ship Captain",
+      "book": "Dawn of Rebellion",
+      "referencePage": "108",
+      "evidencePage": "108",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Martial Artist",
+      "book": "Edge of The Empire - No Disintegrations",
+      "referencePage": "28",
+      "evidencePage": "33",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Operator",
+      "book": "Edge of The Empire - No Disintegrations",
+      "referencePage": "30",
+      "evidencePage": "35",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Skip Tracer",
+      "book": "Edge of The Empire - No Disintegrations",
+      "referencePage": "32",
+      "evidencePage": "37",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Cyber Tech",
+      "book": "Edge of The Empire - Special Modifications",
+      "referencePage": "28",
+      "evidencePage": "33",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Droid Tech",
+      "book": "Edge of The Empire - Special Modifications",
+      "referencePage": "30",
+      "evidencePage": "35",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Modder",
+      "book": "Edge of The Empire - Special Modifications",
+      "referencePage": "32",
+      "evidencePage": "37",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Arbiter",
+      "book": "Force & Destiny - Disciples of Harmony",
+      "referencePage": "22",
+      "evidencePage": "17",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Ascetic",
+      "book": "Force & Destiny - Disciples of Harmony",
+      "referencePage": "24",
+      "evidencePage": "19",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Teacher",
+      "book": "Force & Destiny - Disciples of Harmony",
+      "referencePage": "26",
+      "evidencePage": "21",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Investigator",
+      "book": "Force & Destiny - Endless Vigil",
+      "referencePage": "24",
+      "evidencePage": "28",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Racer",
+      "book": "Force & Destiny - Endless Vigil",
+      "referencePage": "26",
+      "evidencePage": "30",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Sentry",
+      "book": "Force & Destiny - Endless Vigil",
+      "referencePage": "28",
+      "evidencePage": "32",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Colossus",
+      "book": "Force & Destiny - Knights of Fate",
+      "referencePage": "24",
+      "evidencePage": "27",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Juyo Beserker",
+      "book": "Force & Destiny - Knights of Fate",
+      "referencePage": "26",
+      "evidencePage": "29",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Steel Hand Adept",
+      "book": "Force & Destiny - Knights of Fate",
+      "referencePage": "28",
+      "evidencePage": "31",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Executioner",
+      "book": "Force & Destiny - Savage Spirits",
+      "referencePage": "24",
+      "evidencePage": "28",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Hermit",
+      "book": "Force & Destiny - Savage Spirits",
+      "referencePage": "26",
+      "evidencePage": "30",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Navigator",
+      "book": "Force & Destiny - Savage Spirits",
+      "referencePage": "28",
+      "evidencePage": "32",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Insightful Revelation",
+      "book": "Edge of the Empire - Far Horizons",
+      "referencePage": "36",
+      "evidencePage": "10",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Expertise",
+      "book": "Edge of the Empire - Far Horizons",
+      "referencePage": "37",
+      "evidencePage": "11",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Sudden Discovery",
+      "book": "Edge of The Empire - Enter The Unknown",
+      "referencePage": "34",
+      "evidencePage": "18",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Mobility",
+      "book": "Edge of The Empire - Enter The Unknown",
+      "referencePage": "35",
+      "evidencePage": "19",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Last One Standing",
+      "book": "Edge of The Empire - Dangerous Covenants",
+      "referencePage": "36",
+      "evidencePage": "26",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Protection",
+      "book": "Edge of The Empire - Dangerous Covenants",
+      "referencePage": "37",
+      "evidencePage": "27",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Narrow Escape",
+      "book": "Edge of The Empire - Fly Casual",
+      "referencePage": "37",
+      "evidencePage": "34",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Fortune",
+      "book": "Edge of The Empire - Fly Casual",
+      "referencePage": "39",
+      "evidencePage": "35",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "This One Is Mine",
+      "book": "Age of Rebellion - Stay On Target",
+      "referencePage": "36",
+      "evidencePage": "45",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Survivability",
+      "book": "Age of Rebellion - Stay On Target",
+      "referencePage": "36",
+      "evidencePage": "46",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Rousing Oratory",
+      "book": "Age of Rebellion - Lead By Example",
+      "referencePage": "38",
+      "evidencePage": "53",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Authority",
+      "book": "Age of Rebellion - Lead By Example",
+      "referencePage": "40",
+      "evidencePage": "53",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Diplomatic Solution",
+      "book": "Age of Rebellion - Desperate Allies",
+      "referencePage": "39",
+      "evidencePage": "60",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Insight",
+      "book": "Age of Rebellion - Desperate Allies",
+      "referencePage": "41",
+      "evidencePage": "61",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Fated Duel",
+      "book": "Force & Destiny - Keeping The Peace",
+      "referencePage": "35",
+      "evidencePage": "80",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Heroism",
+      "book": "Force & Destiny - Keeping The Peace",
+      "referencePage": "37",
+      "evidencePage": "80",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "The Bigger They Are…",
+      "book": "Age of Rebellion - Forged In Battle",
+      "referencePage": "38",
+      "evidencePage": "39",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Courage",
+      "book": "Age of Rebellion - Forged In Battle",
+      "referencePage": "39",
+      "evidencePage": "40",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Always Get My Mark",
+      "book": "Edge of The Empire - No Disintegrations",
+      "referencePage": "39",
+      "evidencePage": "43",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Devastation",
+      "book": "Edge of The Empire - No Disintegrations",
+      "referencePage": "41",
+      "evidencePage": "45",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Inventive Creation",
+      "book": "Edge of The Empire - Special Modifications",
+      "referencePage": "39",
+      "evidencePage": "43",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Calibration",
+      "book": "Edge of The Empire - Special Modifications",
+      "referencePage": "40",
+      "evidencePage": "44",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Much to Learn",
+      "book": "Force & Destiny - Disciples of Harmony",
+      "referencePage": "32",
+      "evidencePage": "26",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Negotiation",
+      "book": "Force & Destiny - Disciples of Harmony",
+      "referencePage": "33",
+      "evidencePage": "27",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "My City",
+      "book": "Force & Destiny - Endless Vigil",
+      "referencePage": "34",
+      "evidencePage": "37",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Vigilance",
+      "book": "Force & Destiny - Endless Vigil",
+      "referencePage": "35",
+      "evidencePage": "38",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Deadly Reputation",
+      "book": "Force & Destiny - Knights of Fate",
+      "referencePage": "34",
+      "evidencePage": "36",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Ferocity",
+      "book": "Force & Destiny - Knights of Fate",
+      "referencePage": "35",
+      "evidencePage": "37",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unexpected Demise",
+      "book": "Force & Destiny - Savage Spirits",
+      "referencePage": "34",
+      "evidencePage": "37",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Pursuit",
+      "book": "Force & Destiny - Savage Spirits",
+      "referencePage": "35",
+      "evidencePage": "38",
+      "level": "full-chart",
+      "checked": [
+        "node names",
+        "costs",
+        "connectors"
+      ]
+    }
+  ]
+}

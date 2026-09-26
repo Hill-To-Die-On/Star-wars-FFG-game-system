@@ -12,10 +12,10 @@ const scene = ({ grid, state }) => ({
   getFlag: () => state,
 });
 
-const token = (id, x, y) => ({
+const token = (id, x, y, elevation = 0) => ({
   id,
   center: { x, y },
-  document: { id, parent: { id: "scene-test" } },
+  document: { id, elevation, parent: { id: "scene-test" } },
 });
 
 test("Foundry range service returns one machine-readable band for sheets and DoR", () => {
@@ -63,6 +63,62 @@ test("Foundry range service fails closed on an uncalibrated ToM scene", () => {
   assert.equal(result.available, false);
   assert.equal(result.scale, "planetary");
   assert.match(result.reason, /not been calibrated/i);
+});
+
+test("scaled maps include token elevation and report sight-wall collisions", () => {
+  const map = scene({
+    grid: { type: 1, size: 100, distance: 1, units: "m" },
+    state: { scale: "personal", calibrations: {} },
+  });
+  globalThis.CONFIG = {
+    Canvas: {
+      polygonBackends: {
+        sight: {
+          testCollision(origin, destination, options) {
+            assert.deepEqual(origin, { x: 0, y: 0 });
+            assert.deepEqual(destination, { x: 300, y: 400 });
+            assert.equal(options.mode, "any");
+            assert.equal(options.type, "sight");
+            return true;
+          },
+        },
+      },
+    },
+  };
+  try {
+    const result = measureTokenRange(
+      token("source", 0, 0, 0),
+      token("target", 300, 400, 12),
+      { scene: map },
+    );
+
+    assert.equal(result.horizontalSceneDistance, 5);
+    assert.equal(result.elevationDifference, 12);
+    assert.equal(result.sceneDistance, 13);
+    assert.equal(result.distancePx, 1300);
+    assert.equal(result.elevationApplied, true);
+    assert.equal(result.band, "medium");
+    assert.equal(result.lineOfSight, "blocked");
+    assert.equal(result.lineOfSightBlocked, true);
+  } finally {
+    delete globalThis.CONFIG;
+  }
+});
+
+test("range service reports unavailable sight checks without inventing a result", () => {
+  delete globalThis.CONFIG;
+  const map = scene({
+    grid: { type: 1, size: 100, distance: 1, units: "m" },
+    state: { scale: "personal", calibrations: {} },
+  });
+  const result = measureTokenRange(
+    token("source", 0, 0),
+    token("target", 300, 0),
+    { scene: map },
+  );
+
+  assert.equal(result.lineOfSight, "unavailable");
+  assert.equal(result.lineOfSightBlocked, null);
 });
 
 test("range control keeps the token layer active without reopening Token Controls", () => {

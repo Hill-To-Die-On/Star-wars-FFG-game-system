@@ -1,0 +1,38 @@
+{
+  "format": "star-wars-ffg-source-requests",
+  "version": 1,
+  "captureGuidance": [
+    "Capture each complete page straight-on with all four page edges visible.",
+    "Keep printed page numbers, tables, diagrams and connecting lines in frame.",
+    "Use even light and enough resolution for small statistics and dice symbols to remain legible."
+  ],
+  "partialSources": [
+    {
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "status": "partial-scan",
+      "evidenceSets": [
+        {
+          "kind": "image-only scan",
+          "assetPages": 50,
+          "printedPageRanges": ["7-9", "12-35", "70-89"]
+        },
+        {
+          "kind": "text-layer excerpt",
+          "assetPages": 6,
+          "printedPageRanges": ["90-95"]
+        }
+      ],
+      "heldPrintedPageRanges": ["7-9", "12-35", "70-95"],
+      "requestedPrintedPageRanges": ["10-11", "36-69"],
+      "databasePages": {
+        "allies_and_adversaries": [49, 50, 51, 52, 53, 54, 55],
+        "armour": [42],
+        "attachments": [56, 58, 59, 60],
+        "equipment": [42, 43, 44, 45, 46, 47, 48],
+        "vehicles": [53, 61],
+        "vehicle_attachments": [62, 63],
+        "weapons": [39, 40]
+      }
+    }
+  ]
+}

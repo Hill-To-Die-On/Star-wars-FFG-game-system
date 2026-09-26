@@ -25,6 +25,7 @@ import {
   resolveInterfaceTheme,
 } from "./rules.mjs";
 import { directorAdapter, actorContext } from "./director-adapter.mjs";
+import { ensureArtworkCreditsJournal } from "./artwork-credits.mjs";
 import { importLibrary, refreshLibraryLabels } from "./library.mjs";
 import { convertSwa } from "./swa-import.mjs";
 import { convertSwaSource } from "./swa-source.mjs";
@@ -53,6 +54,7 @@ import {
   rangeOverlayApi,
   registerRangeOverlay,
 } from "./range-overlay/foundry.mjs";
+import { configureXpTransactions } from "./xp-transactions.mjs";
 class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openReferenceBrowser();
@@ -323,9 +325,9 @@ Hooks.once("init", () => {
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "campaignMenu", {
-    name: "Campaign rulebooks",
-    label: "Choose rules & sources",
-    hint: "Blend the three lines and their independent story mechanics.",
+    name: "Campaign rules & adventure state",
+    label: "Choose campaign rules",
+    hint: "Enable one or more rule lines, combine their story mechanics, and lock completed character origins when play begins.",
     icon: "fas fa-book",
     type: CampaignMenu,
     restricted: true,
@@ -433,12 +435,23 @@ Hooks.on("renderActorDirectory", (_app, html) => {
   html.querySelector(".directory-footer")?.append(references);
 });
 Hooks.once("ready", () => {
+  configureXpTransactions({
+    socket: game.socket,
+    currentUser: () => game.user,
+    users: () => game.users,
+    getActor: (id) => game.actors.get(id),
+    execute: (actor, operation, args) =>
+      actor._executeXpTransaction(operation, args),
+  });
   applyInterfaceTheme();
   refreshLibraryLabels();
   refreshCompactChatDice();
   ui.compendium.render();
   refreshGMNotes().catch((error) =>
     ui.notifications.error(`GM source notes: ${error.message}`),
+  );
+  ensureArtworkCreditsJournal().catch((error) =>
+    ui.notifications.error(`Artwork credits: ${error.message}`),
   );
   processIntegrationHandoff();
   Hooks.callAll("starWarsFFGReady", game.system.api);

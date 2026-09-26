@@ -5,7 +5,11 @@ import { pathToFileURL } from "node:url";
 import { parseSqlDump } from "./sql-parser.mjs";
 import { skillKey, SYSTEM_ID } from "../src/config.mjs";
 import { escapeHTML } from "../src/mechanics.mjs";
-import { ROW_NAMES, referenceSource } from "../src/reference-data.mjs";
+import {
+  ROW_NAMES,
+  correctReferenceName,
+  referenceSource,
+} from "../src/reference-data.mjs";
 const nameColumns = {
   weapons: "Weapon",
   armour: "Armour",
@@ -60,7 +64,7 @@ export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
     bundle.report.tables[table] = rows.length;
     if (table.startsWith("dice_") || table === "dice_sides") continue;
     for (const [index, row] of rows.entries()) {
-      const name =
+      const sourceName =
         String(
           row[ROW_NAMES[table]] ??
             row[nameColumns[table]] ??
@@ -78,6 +82,7 @@ export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
             `${table} ${index + 1}`,
         ).trim() ||
         `${table.replaceAll("_", " ")} reference ${row.ID ?? index + 1}`;
+      const name = correctReferenceName(table, sourceName);
       const key = `${table}:${row.ID ?? index}:${index}`;
       // Signature abilities used to enter compendiums as generic references.
       // A native-id namespace lets existing worlds preserve those references

@@ -161,8 +161,19 @@ test("mixed campaigns retain three mechanics independently", () => {
   const c = validateCampaign(DEFAULT_CAMPAIGN);
   assert.equal(c.lines.length, 3);
   assert.ok(c.obligation && c.duty && c.morality);
+  assert.equal(c.adventureStarted, false);
+  assert.equal(c.partySize, 4);
+  assert.equal(c.ageStartingResource, "lambda");
   assert.match(campaignGuidance(c), /Do not grant a second starting package/);
+  assert.match(
+    campaignGuidance({ ...c, adventureStarted: true }),
+    /completed character origins are locked/i,
+  );
   assert.throws(() => validateCampaign({ lines: [] }));
+  assert.throws(() => validateCampaign({ ...DEFAULT_CAMPAIGN, partySize: 1 }));
+  assert.throws(() =>
+    validateCampaign({ ...DEFAULT_CAMPAIGN, ageStartingResource: "unknown" }),
+  );
 });
 test("automatic themes follow the actor line and campaign lead", () => {
   assert.equal(resolveSheetTheme("auto", "edge"), "frontier");

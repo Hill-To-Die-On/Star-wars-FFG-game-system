@@ -3,10 +3,11 @@
   "stages": [
     {
       "id": "stage-local",
-      "name": "Local",
+      "name": "Development",
       "kind": "local",
       "rank": 0,
-      "description": "Your own machine. Where you write and run code day to day. Data here is disposable — nothing your users see lives at this stage.",
+      "description": "The integration branch and local development environment. Feature branches merge here after review and local validation.",
+      "branchRef": "dev",
       "config": {},
       "hosting": {
         "provider": "localhost"
@@ -33,7 +34,7 @@
       "kind": "staging",
       "rank": 1,
       "description": "A production-like rehearsal environment. Changes land here first so they can be tested against realistic data and settings before any real users are affected.",
-      "branchRef": "main",
+      "branchRef": "staging",
       "config": {},
       "hosting": {},
       "data": {
@@ -60,7 +61,7 @@
       "rollbackPolicy": {
         "runbookRef": "project_memory/operations/delivery.md"
       },
-      "isProtected": false
+      "isProtected": true
     },
     {
       "id": "stage-production",
@@ -115,5 +116,5 @@
       "toStageId": "stage-production"
     }
   ],
-  "updatedAt": "2026-09-25T04:03:33.444Z"
+  "updatedAt": "2026-09-26T00:00:00.000Z"
 }
