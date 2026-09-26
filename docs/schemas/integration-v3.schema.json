@@ -86,7 +86,13 @@
             "rivals",
             "related-to",
             "member-of",
-            "located-at"
+            "located-at",
+            "owns",
+            "pilots",
+            "crews",
+            "aboard",
+            "docked-at",
+            "based-at"
           ]
         },
         "label": { "type": "string", "maxLength": 120 }

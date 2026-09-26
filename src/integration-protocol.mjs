@@ -48,6 +48,12 @@ const ACTOR_GROUP_RELATIONSHIP_KINDS = Object.freeze([
   "related-to",
   "member-of",
   "located-at",
+  "owns",
+  "pilots",
+  "crews",
+  "aboard",
+  "docked-at",
+  "based-at",
 ]);
 const EXTERNAL_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}$/;
 const ACTOR_SYSTEM_FIELDS = new Set([

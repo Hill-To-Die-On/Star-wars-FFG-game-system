@@ -381,6 +381,14 @@ test("version 3 actor groups preserve stable graph identity and exact authored t
   });
 });
 
+test("version 3 actor groups accept vehicle and home-base relationship kinds", () => {
+  for (const kind of ["owns", "pilots", "crews", "aboard", "docked-at", "based-at"]) {
+    const pkg = actorGroupPackage();
+    pkg.payload.relationships[0].kind = kind;
+    assert.equal(validateIntegrationPackage(pkg).payload.relationships[0].kind, kind);
+  }
+});
+
 test("actor groups reject dangling references and remain unavailable to older versions", () => {
   const missingActor = actorGroupPackage();
   missingActor.payload.nodes[0].actorRefs[0] = "missing";

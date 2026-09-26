@@ -18,6 +18,7 @@ Interchange version 3 adds a GM-only `actorGroup` package.
 - Every Actor is created in one reviewed Foundry batch. Its system-owned provenance flag contains enough incident graph data for a later Director of Realms installation to reconstruct the relationship map.
 - The completed import emits one `starWarsFFGIntegrationImported` hook with the external-to-Foundry Actor mapping and the normalized graph.
 - Relationship kinds and fields are allow-listed. Unknown fields, dangling references, actor reuse across nodes, self-links and non-GM imports fail closed.
+- Vehicle and home-base links remain explicit rather than being flattened into generic location text: ownership, pilot, crew, aboard, docking and base relationships retain their authored direction.
 - Director of Realms stores the authored nodes and edges separately from its quantitative `regards` readings. Its prompt context identifies these as explicit instructions and preserves direction and creator-written labels.
 
 ## Consequences
