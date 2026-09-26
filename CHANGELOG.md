@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a version-three, GM-reviewed actor-group interchange that preserves stable authored nodes, roster-to-node mappings, canvas roles/positions and exact directional relationships for Director of Realms without inventing affinity values.
+- Accept and advertise a 131-kind, sentence-directed actor-group vocabulary spanning authority, conflict, attitudes, family, leverage, intelligence, organisations, ownership history, vehicles, bases and logistics, including multiple facts between the same authored nodes.
 - Add a dedicated scene-control range overlay with labelled colour bands, single or retained multiple origins, map-scale measurement, persistent per-scene Theatre-of-the-Mind calibration, Personal/Battlefield/Ship scale selection, automatic sheet-pool range input and a shared public/Director of Realms measurement API.
 - Complete the public GitHub repository health set with contribution, conduct, support, security, ownership, issue, pull-request, release-note and artifact-inventory metadata; add grouped npm and GitHub Actions updates through Dependabot.
 - Add a versioned public integration API for character and campaign builders, including backward-compatible version-one character/rule packages and version-two character, adversary, vehicle and Group Actor packages, declarative community rule packs, mixed bundles and registered connectors, with reviewed JSON, direct-link and origin-bound one-package browser handoffs.

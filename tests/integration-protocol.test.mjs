@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   INTEGRATION_FORMAT,
   createConnectorRegistry,
@@ -221,6 +222,52 @@ function actorPackage(type = "vehicle") {
   };
 }
 
+function actorGroupPackage() {
+  const hero = actorPackage("character").payload,
+    hunter = actorPackage("rival").payload;
+  hero.name = "Ari Vale";
+  hunter.name = "Korda Vex";
+  return {
+    format: INTEGRATION_FORMAT,
+    version: 3,
+    kind: "actorGroup",
+    source: { ...source, id: "sw-rpg.info", name: "SW-RPG.info" },
+    payload: {
+      id: "chapter-one",
+      name: "Chapter One",
+      actors: [
+        { id: "hero", actor: hero },
+        { id: "hunter", actor: hunter },
+      ],
+      nodes: [
+        {
+          id: "hero-node",
+          name: "Ari Vale",
+          role: "player-character",
+          position: { x: 40, y: 75 },
+          actorRefs: ["hero"],
+        },
+        {
+          id: "hunter-node",
+          name: "Korda Vex",
+          role: "enemy-rival",
+          position: { x: 320, y: 75 },
+          actorRefs: ["hunter"],
+        },
+      ],
+      relationships: [
+        {
+          id: "bounty",
+          fromNodeId: "hunter-node",
+          toNodeId: "hero-node",
+          kind: "pursues",
+          label: "Holds the bounty warrant",
+        },
+      ],
+    },
+  };
+}
+
 test("character interchange validates, normalizes and round-trips through a handoff token", () => {
   const input = characterPackage(),
     validated = validateIntegrationPackage(input),
@@ -312,6 +359,60 @@ test("version 2 actors validate every supported Foundry actor type", () => {
   });
 });
 
+test("version 3 actor groups preserve stable graph identity and exact authored ties", () => {
+  const validated = validateIntegrationPackage(actorGroupPackage());
+  assert.equal(validated.version, 3);
+  assert.equal(validated.kind, "actorGroup");
+  assert.equal(validated.payload.nodes[1].actorRefs[0], "hunter");
+  assert.deepEqual(validated.payload.relationships[0], {
+    id: "bounty",
+    fromNodeId: "hunter-node",
+    toNodeId: "hero-node",
+    kind: "pursues",
+    label: "Holds the bounty warrant",
+  });
+  assert.deepEqual(integrationSummary(validated), {
+    kind: "actorGroup",
+    label: "Chapter One",
+    source: "SW-RPG.info",
+    entries: 2,
+    items: 2,
+    actors: 2,
+    relationships: 1,
+  });
+});
+
+test("version 3 actor groups accept the complete authored relationship vocabulary", () => {
+  const kinds = integrationCapabilities().actorGroupRelationshipKinds;
+  assert.equal(kinds.length, 131);
+  for (const kind of ["borrows", "stolen-by", "stolen-from", "commandeers", "piloted-by", "berths", "refuels-at", "patrolled-by"]) {
+    assert.ok(kinds.includes(kind));
+  }
+  for (const kind of kinds) {
+    const pkg = actorGroupPackage();
+    pkg.payload.relationships[0].kind = kind;
+    assert.equal(validateIntegrationPackage(pkg).payload.relationships[0].kind, kind);
+  }
+});
+
+test("actor groups reject dangling references and remain unavailable to older versions", () => {
+  const missingActor = actorGroupPackage();
+  missingActor.payload.nodes[0].actorRefs[0] = "missing";
+  assert.throws(() => validateIntegrationPackage(missingActor), /actorRefs\[0\].*unknown actor/i);
+
+  const missingNode = actorGroupPackage();
+  missingNode.payload.relationships[0].toNodeId = "missing";
+  assert.throws(() => validateIntegrationPackage(missingNode), /toNodeId.*unknown node/i);
+
+  const reusedActor = actorGroupPackage();
+  reusedActor.payload.nodes[1].actorRefs[0] = "hero";
+  assert.throws(() => validateIntegrationPackage(reusedActor), /actor reference.*exactly one node/i);
+
+  const legacy = actorGroupPackage();
+  legacy.version = 2;
+  assert.throws(() => validateIntegrationPackage(legacy), /kind: unsupported package kind/);
+});
+
 test("version boundaries remain explicit and adversary ranks do not widen player limits", () => {
   const legacyActor = actorPackage("vehicle");
   legacyActor.version = 1;
@@ -331,7 +432,7 @@ test("version boundaries remain explicit and adversary ranks do not widen player
 
 test("capability discovery advertises legacy and all-actor interchange without weakening v1", () => {
   const capabilities = integrationCapabilities();
-  assert.deepEqual(capabilities.versions, [1, 2]);
+  assert.deepEqual(capabilities.versions, [1, 2, 3]);
   assert.deepEqual(capabilities.actorTypes, [
     "character",
     "minion",
@@ -343,6 +444,8 @@ test("capability discovery advertises legacy and all-actor interchange without w
   assert.ok(capabilities.imports.includes("actor"));
   assert.match(capabilities.schemas[1], /integration-v1/);
   assert.match(capabilities.schemas[2], /integration-v2/);
+  assert.match(capabilities.schemas[3], /integration-v3/);
+  assert.ok(capabilities.imports.includes("actorGroup"));
   assert.equal(validateIntegrationPackage(characterPackage()).version, 1);
 });
 
@@ -452,10 +555,23 @@ test("connector registration is duplicate-safe and returns defensive copies", ()
 test("capability discovery publishes explicit limits and supported document types", () => {
   const capabilities = integrationCapabilities();
   assert.equal(capabilities.format, INTEGRATION_FORMAT);
-  assert.deepEqual(capabilities.versions, [1, 2]);
-  assert.match(capabilities.schema, /integration-v2\.schema\.json$/);
+  assert.deepEqual(capabilities.versions, [1, 2, 3]);
+  assert.match(capabilities.schema, /integration-v3\.schema\.json$/);
   assert.ok(capabilities.itemTypes.includes("specialization"));
   assert.ok(capabilities.actorTypes.includes("vehicle"));
   assert.ok(capabilities.transports.includes("post-message"));
   assert.equal(capabilities.limits.characterItems, 250);
+  assert.equal(capabilities.limits.actorGroupActors, 200);
+  assert.equal(capabilities.limits.actorGroupRelationships, 1000);
+  assert.equal(capabilities.actorGroupRelationshipKinds.length, 131);
+  assert.ok(capabilities.actorGroupRelationshipKinds.includes("stolen-by"));
+  assert.ok(capabilities.actorGroupRelationshipKinds.includes("repaired-by"));
+});
+
+test("actor-group relationship capabilities stay aligned with the public v3 schema", () => {
+  const schema = JSON.parse(readFileSync(new URL("../docs/schemas/integration-v3.schema.json", import.meta.url), "utf8"));
+  assert.deepEqual(
+    schema.$defs.relationship.properties.kind.enum,
+    integrationCapabilities().actorGroupRelationshipKinds,
+  );
 });

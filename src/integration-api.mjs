@@ -44,6 +44,8 @@ function assertPackagePermissions(pkg) {
   if (pkg.kind === "actor") assertActorImportPermission(pkg);
   if (pkg.kind === "rulePack" && !game.user.isGM)
     throw new Error("Only the GM can import community rule packs.");
+  if (pkg.kind === "actorGroup" && !game.user.isGM)
+    throw new Error("Only the GM can import actor groups.");
   if (pkg.kind === "bundle")
     for (const entry of pkg.payload.packages) assertPackagePermissions(entry);
 }
@@ -126,6 +128,75 @@ export async function importIntegrationActor(value, options = {}) {
     actorId: actor.id,
     actorUuid: actor.uuid,
     name: actor.name,
+  };
+  Hooks.callAll("starWarsFFGIntegrationImported", result, pkg);
+  return result;
+}
+
+export async function importIntegrationActorGroup(value, options = {}) {
+  const pkg = validateIntegrationPackage(value);
+  if (pkg.kind !== "actorGroup")
+    throw new Error("Choose a version 3 actor-group interchange package.");
+  if (!game.user.isGM) throw new Error("Only the GM can import actor groups.");
+
+  const nodeByActorRef = new Map();
+  for (const node of pkg.payload.nodes)
+    for (const actorRef of node.actorRefs) nodeByActorRef.set(actorRef, node);
+
+  const sources = pkg.payload.actors.map((entry) => {
+    const node = nodeByActorRef.get(entry.id);
+    const incidentRelationships = pkg.payload.relationships.filter(
+      (relationship) => relationship.fromNodeId === node.id || relationship.toNodeId === node.id,
+    );
+    return {
+      name: entry.actor.name,
+      type: entry.actor.type,
+      ...(entry.actor.img ? { img: entry.actor.img } : {}),
+      system: jsonClone(entry.actor.system),
+      items: entry.actor.items.map(embeddedItemSource),
+      flags: {
+        [SYSTEM_ID]: {
+          integration: provenance(pkg, {
+            actorGroup: {
+              schemaVersion: 1,
+              source: jsonClone(pkg.source),
+              group: { id: pkg.payload.id, name: pkg.payload.name },
+              actorRef: entry.id,
+              node: jsonClone(node),
+              relationships: jsonClone(incidentRelationships),
+            },
+          }),
+        },
+      },
+    };
+  });
+  const actors = await Actor.createDocuments(sources, {
+    renderSheet: options.renderSheet === true,
+    keepEmbeddedIds: true,
+  });
+  if (!Array.isArray(actors) || actors.length !== sources.length)
+    throw new Error("Foundry did not create every actor in the actor group.");
+
+  const actorEntries = actors.map((actor, index) => {
+    const actorRef = pkg.payload.actors[index].id;
+    const node = nodeByActorRef.get(actorRef);
+    return {
+      actorRef,
+      nodeId: node.id,
+      role: node.role,
+      actorType: actor.type,
+      actorId: actor.id,
+      actorUuid: actor.uuid,
+      name: actor.name,
+    };
+  });
+  const result = {
+    kind: "actorGroup",
+    groupId: pkg.payload.id,
+    groupName: pkg.payload.name,
+    actors: actorEntries,
+    nodes: jsonClone(pkg.payload.nodes),
+    relationships: jsonClone(pkg.payload.relationships),
   };
   Hooks.callAll("starWarsFFGIntegrationImported", result, pkg);
   return result;
@@ -349,6 +420,7 @@ export async function importIntegrationPackage(value, options = {}) {
   if (pkg.kind === "character")
     return importIntegrationCharacter(pkg, options);
   if (pkg.kind === "actor") return importIntegrationActor(pkg, options);
+  if (pkg.kind === "actorGroup") return importIntegrationActorGroup(pkg, options);
   if (pkg.kind === "rulePack")
     return importIntegrationRulePack(pkg, options);
   const results = [];
@@ -367,6 +439,8 @@ function reviewDescription(pkg, { origin } = {}) {
     details =
       summary.kind === "character" || summary.kind === "actor"
         ? `${summary.items} embedded item${summary.items === 1 ? "" : "s"}`
+        : summary.kind === "actorGroup"
+          ? `${summary.actors} actors, ${summary.relationships} authored relationships and ${summary.items} total items`
         : summary.kind === "rulePack"
           ? `${summary.items} community rule${summary.items === 1 ? "" : "s"}`
           : `${summary.packages.length} packages and ${summary.items} total items`;
@@ -569,6 +643,7 @@ export const integrationApi = Object.freeze({
   importPackage: importIntegrationPackage,
   importCharacter: importIntegrationCharacter,
   importActor: importIntegrationActor,
+  importActorGroup: importIntegrationActorGroup,
   importRulePack: importIntegrationRulePack,
   exportCharacter: exportIntegrationCharacter,
   exportActor: exportIntegrationActor,
