@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Record the exact held and missing printed-page ranges for the partial Cyphers & Masks source, including the equipment, adversary and vehicle block that still needs a private scan; publish only page-level request metadata.
 - Replace the three pending GitHub Actions v4-to-v7 updates with reviewed immutable v7 commit pins for checkout, Node setup and artifact upload.
 - Complete live public API version-two acceptance and add a reviewed preserve-or-replace choice for matching community rules, defaulting to preservation.
 - Complete starting-resource selection for all three rule lines: party-size Obligation/Duty, Edge and Age benefit combinations, Force Morality choices, the Age Base gear allowance, owned-book-filtered equipment purchasing, retained-credit validation and the one-time d100 pocket-money roll.

@@ -20,6 +20,34 @@ The public implementation records structured values and page citations without c
 
 The source books remain required for their explanations, examples, exceptional species rules and any option not represented as reviewed structured data.
 
+## Partial sourcebook scan requests
+
+These requests record exact page gaps without publishing source text, artwork or private file paths. A database page reference is an index entry, not proof that the complete printed statistics or rule exceptions have been reviewed.
+
+### Age of Rebellion - Cyphers & Masks partial-scan request
+
+Held evidence: 50-page image-only scan covering printed pages 7-9, 12-35, 70-89; 6-page text-layer excerpt covering printed pages 90-95.
+
+Please capture printed pages 10-11 and 36-69 as complete pages. The 36-69 block contains the indexed equipment, adversary and vehicle material and should be scanned even where a database row already supplies a name or summary value.
+
+| Indexed collection | Missing printed pages |
+|---|---|
+| `allies_and_adversaries` | 49, 50, 51, 52, 53, 54, 55 |
+| `armour` | 42 |
+| `attachments` | 56, 58, 59, 60 |
+| `equipment` | 42, 43, 44, 45, 46, 47, 48 |
+| `vehicles` | 53, 61 |
+| `vehicle_attachments` | 62, 63 |
+| `weapons` | 39, 40 |
+
+Capture requirements:
+
+- Capture each complete page straight-on with all four page edges visible.
+- Keep printed page numbers, tables, diagrams and connecting lines in frame.
+- Use even light and enough resolution for small statistics and dice symbols to remain legible.
+
+Keep the captured pages private; they are used to verify structured mechanics and citations, not shipped in the public system.
+
 ## Photo request register
 
 These chart sources have neither a matched full PDF nor a recorded private-page comparison. A full, straight-on image of each chart, with all four columns, five rows, connecting lines and page number visible, will let the chart be checked. Include adjacent creation or exception rules only where the chart references them. Structured graphs may already be available, as shown.

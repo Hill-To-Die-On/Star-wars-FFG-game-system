@@ -37,6 +37,12 @@ def main():
         help="Public metadata recording comparisons against privately held pages.",
     )
     parser.add_argument(
+        "--source-requests",
+        type=Path,
+        default=Path("data/source-requests.json"),
+        help="Public page-level request metadata for incomplete private sources.",
+    )
+    parser.add_argument(
         "--private-overrides",
         type=Path,
         default=Path(".local/sourcebook-overrides.json"),
@@ -59,6 +65,9 @@ def main():
     verification_data = json.loads(args.verification.read_text(encoding="utf-8"))
     if verification_data.get("format") != "star-wars-ffg-source-verification" or verification_data.get("version") != 1:
         raise ValueError("Unsupported source verification manifest")
+    source_requests = json.loads(args.source_requests.read_text(encoding="utf-8"))
+    if source_requests.get("format") != "star-wars-ffg-source-requests" or source_requests.get("version") != 1:
+        raise ValueError("Unsupported source request manifest")
     verification = {
         (entry["kind"], norm(entry["name"])): entry
         for entry in verification_data.get("checks", [])
@@ -385,7 +394,20 @@ def main():
     missing=[r for r in coverage if not r["pdf"] and not r["pdfCompared"]]
     full_comparisons=sum(r["comparison"]=="Full chart checked" for r in coverage)+sum(r["comparison"]=="Full chart checked" for r in signature_coverage)
     connector_corrections=sum(r["comparison"]=="Connector correction checked" for r in coverage)
-    lines=["# Advancement source coverage", "", "Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.", "", f"{len(coverage)} specialization references; {imported} structurally validated specialization graphs; {enriched} vehicles with matching structured statistics; {motivations_enriched} private motivation guidance matches.", "", f"A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. {connector_corrections} connector corrections and {full_comparisons} full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.", "", "## Photo request register", "", "These chart sources have neither a matched full PDF nor a recorded private-page comparison. A full, straight-on image of each chart, with all four columns, five rows, connecting lines and page number visible, will let the chart be checked. Include adjacent creation or exception rules only where the chart references them. Structured graphs may already be available, as shown.", "", "| Book | Printed page | Specialization | Graph |", "|---|---|---|---|"]
+    lines=["# Advancement source coverage", "", "Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.", "", f"{len(coverage)} specialization references; {imported} structurally validated specialization graphs; {enriched} vehicles with matching structured statistics; {motivations_enriched} private motivation guidance matches.", "", f"A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. {connector_corrections} connector corrections and {full_comparisons} full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.", "", "## Character-creation source verification", "", "The public implementation records structured values and page citations without copying the books' explanatory prose. The held core books were checked for the shared 500-credit baseline, party-size Obligation/Duty values, line-specific starting-benefit choices, the Age of Rebellion Base of Operations gear-only allowance and the final d100 pocket-money roll.", "", "| Rule line | Held source pages checked |", "|---|---|", "| Edge of the Empire | Core Rulebook pp. 40 and 97 |", "| Age of Rebellion | Core Rulebook pp. 46, 108 and 111 |", "| Force and Destiny | Core Rulebook pp. 49 and 107 |", "", "The source books remain required for their explanations, examples, exceptional species rules and any option not represented as reviewed structured data.", "", "## Partial sourcebook scan requests", "", "These requests record exact page gaps without publishing source text, artwork or private file paths. A database page reference is an index entry, not proof that the complete printed statistics or rule exceptions have been reviewed.", ""]
+    for source in source_requests.get("partialSources", []):
+        evidence = "; ".join(
+            f"{entry['assetPages']}-page {entry['kind']} covering printed pages {', '.join(entry['printedPageRanges'])}"
+            for entry in source.get("evidenceSets", [])
+        )
+        requested = source.get("requestedPrintedPageRanges", [])
+        requested_text = " and ".join(requested)
+        lines += [f"### {source['book']} partial-scan request", "", f"Held evidence: {evidence}.", "", f"Please capture printed pages {requested_text} as complete pages. The 36-69 block contains the indexed equipment, adversary and vehicle material and should be scanned even where a database row already supplies a name or summary value.", "", "| Indexed collection | Missing printed pages |", "|---|---|"]
+        lines += [f"| `{collection}` | {', '.join(str(page) for page in pages)} |" for collection, pages in source.get("databasePages", {}).items()]
+        lines += ["", "Capture requirements:", ""]
+        lines += [f"- {guidance}" for guidance in source_requests.get("captureGuidance", [])]
+        lines += ["", "Keep the captured pages private; they are used to verify structured mechanics and citations, not shipped in the public system.", ""]
+    lines += ["## Photo request register", "", "These chart sources have neither a matched full PDF nor a recorded private-page comparison. A full, straight-on image of each chart, with all four columns, five rows, connecting lines and page number visible, will let the chart be checked. Include adjacent creation or exception rules only where the chart references them. Structured graphs may already be available, as shown.", "", "| Book | Printed page | Specialization | Graph |", "|---|---|---|---|"]
     lines += [f"| {r['book']} | {r['page'] or 'Check index'} | {r['specialization']} | {r['graph']}{'; standalone chart PDF found' if r.get('standaloneChart') else ''} |" for r in missing]
     if not missing: lines.append("| None identified | | | |")
     lines += ["", "## Complete register", "", "| Specialization | Book | Page | Matched full PDF | Graph | PDF comparison |", "|---|---|---|---|---|---|"]

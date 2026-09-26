@@ -21,6 +21,7 @@ for (const name of [
   "data/reference-library.json",
   "data/advancement-trees.json",
   "data/source-verification.json",
+  "data/source-requests.json",
 ])
   files[name] = new Uint8Array(await readFile(name));
 for (const name of Object.keys(files))
