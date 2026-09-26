@@ -54,6 +54,7 @@ import {
   rangeOverlayApi,
   registerRangeOverlay,
 } from "./range-overlay/foundry.mjs";
+import { configureXpTransactions } from "./xp-transactions.mjs";
 class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openReferenceBrowser();
@@ -434,6 +435,14 @@ Hooks.on("renderActorDirectory", (_app, html) => {
   html.querySelector(".directory-footer")?.append(references);
 });
 Hooks.once("ready", () => {
+  configureXpTransactions({
+    socket: game.socket,
+    currentUser: () => game.user,
+    users: () => game.users,
+    getActor: (id) => game.actors.get(id),
+    execute: (actor, operation, args) =>
+      actor._executeXpTransaction(operation, args),
+  });
   applyInterfaceTheme();
   refreshLibraryLabels();
   refreshCompactChatDice();
