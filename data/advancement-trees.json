@@ -159,8 +159,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "43"
         },
         "source": {
           "book": "Edge of The Empire - No Disintegrations",
@@ -422,7 +427,7 @@
           },
           {
             "id": "r1c0",
-            "name": "DEADREPDURATION",
+            "name": "Duration",
             "key": "DEADREPDURATION",
             "ranked": false,
             "cost": 10,
@@ -430,11 +435,12 @@
             "col": 0,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r1c1",
-            "name": "DEADREPASSOCIATION",
+            "name": "Deadly by Association",
             "key": "DEADREPASSOCIATION",
             "ranked": false,
             "cost": 10,
@@ -442,11 +448,12 @@
             "col": 1,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r1c2",
-            "name": "DEADREPSETBACK",
+            "name": "Add Setback",
             "key": "DEADREPSETBACK",
             "ranked": false,
             "cost": 10,
@@ -454,11 +461,12 @@
             "col": 2,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r1c3",
-            "name": "DEADREPDURATION",
+            "name": "Duration",
             "key": "DEADREPDURATION",
             "ranked": false,
             "cost": 10,
@@ -466,11 +474,12 @@
             "col": 3,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r2c0",
-            "name": "DEADREPEFFECT",
+            "name": "Increase Effect",
             "key": "DEADREPEFFECT",
             "ranked": false,
             "cost": 15,
@@ -478,11 +487,12 @@
             "col": 0,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r2c1",
-            "name": "DEADREPSETBACK",
+            "name": "Add Setback",
             "key": "DEADREPSETBACK",
             "ranked": false,
             "cost": 15,
@@ -490,11 +500,12 @@
             "col": 1,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r2c2",
-            "name": "DEADREPDESTINY",
+            "name": "Destiny",
             "key": "DEADREPDESTINY",
             "ranked": false,
             "cost": 15,
@@ -502,11 +513,12 @@
             "col": 2,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r2c3",
-            "name": "DEADREPDURATION",
+            "name": "Increase Duration",
             "key": "DEADREPDURATION",
             "ranked": false,
             "cost": 15,
@@ -514,6 +526,7 @@
             "col": 3,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           }
         ],
@@ -554,8 +567,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "36"
         },
         "source": {
           "book": "Force & Destiny - Knights of Fate",
@@ -741,8 +759,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "60"
         },
         "source": {
           "book": "Age of Rebellion - Desperate Allies",
@@ -924,8 +947,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "80"
         },
         "source": {
           "book": "Force & Destiny - Keeping The Peace",
@@ -1111,8 +1139,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "10"
         },
         "source": {
           "book": "Edge of the Empire - Far Horizons",
@@ -1290,8 +1323,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "43"
         },
         "source": {
           "book": "Edge of The Empire - Special Modifications",
@@ -1469,8 +1507,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "26"
         },
         "source": {
           "book": "Edge of The Empire - Dangerous Covenants",
@@ -1648,8 +1691,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "26"
         },
         "source": {
           "book": "Force & Destiny - Disciples of Harmony",
@@ -1835,8 +1883,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "37"
         },
         "source": {
           "book": "Force & Destiny - Endless Vigil",
@@ -2014,8 +2067,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "34"
         },
         "source": {
           "book": "Edge of The Empire - Fly Casual",
@@ -2424,8 +2482,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "53"
         },
         "source": {
           "book": "Age of Rebellion - Lead By Example",
@@ -2603,8 +2666,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "18"
         },
         "source": {
           "book": "Edge of The Empire - Enter The Unknown",
@@ -2786,8 +2854,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "39"
         },
         "source": {
           "book": "Age of Rebellion - Forged In Battle",
@@ -3144,8 +3217,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "45"
         },
         "source": {
           "book": "Age of Rebellion - Stay On Target",
@@ -3331,8 +3409,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "37"
         },
         "source": {
           "book": "Force & Destiny - Savage Spirits",
@@ -3510,8 +3593,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "53"
         },
         "source": {
           "book": "Age of Rebellion - Lead By Example",
@@ -3685,8 +3773,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "44"
         },
         "source": {
           "book": "Edge of The Empire - Special Modifications",
@@ -3864,8 +3957,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "40"
         },
         "source": {
           "book": "Age of Rebellion - Forged In Battle",
@@ -4064,7 +4162,7 @@
     },
     {
       "_id": "933a5fa6f0a6a55d",
-      "name": "Unmatched Devistation",
+      "name": "Unmatched Devastation",
       "type": "signatureAbility",
       "source": {
         "book": "Edge of The Empire - No Disintegrations",
@@ -4222,8 +4320,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "45"
         },
         "source": {
           "book": "Edge of The Empire - No Disintegrations",
@@ -4397,8 +4500,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "11"
         },
         "source": {
           "book": "Edge of the Empire - Far Horizons",
@@ -4440,7 +4548,7 @@
           },
           {
             "id": "r1c0",
-            "name": "UNMATCHEDFERSTRAIN",
+            "name": "Reduce Strain",
             "key": "UNMATCHEDFERSTRAIN",
             "ranked": false,
             "cost": 10,
@@ -4448,11 +4556,12 @@
             "col": 0,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r1c1",
-            "name": "UNMATCHEDFERBRAWL",
+            "name": "Change Skill (Brawl)",
             "key": "UNMATCHEDFERBRAWL",
             "ranked": false,
             "cost": 10,
@@ -4460,11 +4569,12 @@
             "col": 1,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r1c2",
-            "name": "UNMATCHEDFERLIGHTSABER",
+            "name": "Change Skill (Lightsaber)",
             "key": "UNMATCHEDFERLIGHTSABER",
             "ranked": false,
             "cost": 10,
@@ -4472,11 +4582,12 @@
             "col": 2,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r1c3",
-            "name": "UNMATCHEDFERSTRAIN",
+            "name": "Reduce Strain",
             "key": "UNMATCHEDFERSTRAIN",
             "ranked": false,
             "cost": 10,
@@ -4484,11 +4595,12 @@
             "col": 3,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r2c0",
-            "name": "UNMATCHEDFERDESTINY",
+            "name": "Destiny",
             "key": "UNMATCHEDFERDESTINY",
             "ranked": false,
             "cost": 15,
@@ -4496,11 +4608,12 @@
             "col": 0,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r2c1",
-            "name": "UNMATCHEDFERTARGET",
+            "name": "Change Target",
             "key": "UNMATCHEDFERTARGET",
             "ranked": false,
             "cost": 15,
@@ -4508,11 +4621,12 @@
             "col": 1,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r2c2",
-            "name": "UNMATCHEDFERCONFLICT",
+            "name": "Reduce Conflict",
             "key": "UNMATCHEDFERCONFLICT",
             "ranked": false,
             "cost": 15,
@@ -4520,11 +4634,12 @@
             "col": 2,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           },
           {
             "id": "r2c3",
-            "name": "UNMATCHEDFERSTRAIN",
+            "name": "Reduce Strain",
             "key": "UNMATCHEDFERSTRAIN",
             "ranked": false,
             "cost": 15,
@@ -4532,6 +4647,7 @@
             "col": 3,
             "span": 1,
             "entry": false,
+            "activation": "Incidental",
             "effects": []
           }
         ],
@@ -4576,8 +4692,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "37"
         },
         "source": {
           "book": "Force & Destiny - Knights of Fate",
@@ -4755,8 +4876,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "35"
         },
         "source": {
           "book": "Edge of The Empire - Fly Casual",
@@ -4934,8 +5060,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "80"
         },
         "source": {
           "book": "Force & Destiny - Keeping The Peace",
@@ -5292,8 +5423,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "61"
         },
         "source": {
           "book": "Age of Rebellion - Desperate Allies",
@@ -5475,8 +5611,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "19"
         },
         "source": {
           "book": "Edge of The Empire - Enter The Unknown",
@@ -5650,8 +5791,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "27"
         },
         "source": {
           "book": "Force & Destiny - Disciples of Harmony",
@@ -5829,8 +5975,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "27"
         },
         "source": {
           "book": "Edge of The Empire - Dangerous Covenants",
@@ -6012,8 +6163,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "38"
         },
         "source": {
           "book": "Force & Destiny - Savage Spirits",
@@ -6195,8 +6351,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "46"
         },
         "source": {
           "book": "Age of Rebellion - Stay On Target",
@@ -6598,8 +6759,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "38"
         },
         "source": {
           "book": "Force & Destiny - Endless Vigil",
@@ -7066,8 +7232,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "81"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -7513,8 +7684,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "57"
         },
         "source": {
           "book": "Age of Rebellion - Desperate Allies",
@@ -7933,8 +8109,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "90"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -8403,8 +8584,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "55"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -9210,11 +9396,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "connectors-only",
+          "source": "full-chart",
           "checked": [
+            "node names",
+            "costs",
             "connectors"
           ],
-          "evidencePage": "79"
+          "evidencePage": "54"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -9613,8 +9801,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "58"
         },
         "source": {
           "book": "Age of Rebellion - Desperate Allies",
@@ -10080,8 +10273,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "17"
         },
         "source": {
           "book": "Force & Destiny - Disciples of Harmony",
@@ -10910,8 +11108,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "15"
         },
         "source": {
           "book": "Edge of The Empire - Enter The Unknown",
@@ -11342,8 +11545,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "77"
         },
         "source": {
           "book": "Force & Destiny - Keeping The Peace",
@@ -11729,8 +11937,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "87"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -12159,8 +12372,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "19"
         },
         "source": {
           "book": "Force & Destiny - Disciples of Harmony",
@@ -12581,8 +12799,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "1"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -12973,8 +13196,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "84"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -13359,8 +13587,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "42"
         },
         "source": {
           "book": "Age of Rebellion - Stay On Target",
@@ -13771,8 +14004,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "16"
         },
         "source": {
           "book": "Edge of The Empire - Enter The Unknown",
@@ -14153,8 +14391,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "20"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -14582,8 +14825,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "31"
         },
         "source": {
           "book": "Edge of The Empire - Fly Casual",
@@ -17067,8 +17315,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "27"
         },
         "source": {
           "book": "Force & Destiny - Knights of Fate",
@@ -17514,8 +17767,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "65"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -17966,8 +18224,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "47"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -18719,8 +18982,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "33"
         },
         "source": {
           "book": "Edge of The Empire - Special Modifications",
@@ -19559,8 +19827,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "24"
         },
         "source": {
           "book": "Edge of The Empire - Dangerous Covenants",
@@ -19941,8 +20214,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "4"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -20366,8 +20644,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "39"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -20791,8 +21074,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "17"
         },
         "source": {
           "book": "Edge of The Empire - Enter The Unknown",
@@ -21569,8 +21857,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "35"
         },
         "source": {
           "book": "Edge of The Empire - Special Modifications",
@@ -21967,8 +22260,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "23"
         },
         "source": {
           "book": "Edge of The Empire - Dangerous Covenants",
@@ -22354,8 +22652,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "7"
         },
         "source": {
           "book": "Edge of the Empire - Far Horizons",
@@ -22736,8 +23039,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "28"
         },
         "source": {
           "book": "Force & Destiny - Savage Spirits",
@@ -23177,8 +23485,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "50"
         },
         "source": {
           "book": "Age of Rebellion - Lead By Example",
@@ -23555,8 +23868,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "98"
         },
         "source": {
           "book": "Dawn of Rebellion",
@@ -23992,8 +24310,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "95"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -24487,8 +24810,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "94"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -25313,10 +25641,6 @@
           ],
           [
             "r2c2",
-            "r2c3"
-          ],
-          [
-            "r2c2",
             "r3c2"
           ],
           [
@@ -25355,8 +25679,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "12"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -25738,8 +26067,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "2"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -26139,8 +26473,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "32"
         },
         "source": {
           "book": "Edge of The Empire - Fly Casual",
@@ -26983,8 +27322,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "40"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -27358,8 +27702,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "33"
         },
         "source": {
           "book": "Edge of The Empire - Fly Casual",
@@ -27736,8 +28085,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "71"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -28109,8 +28463,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "25"
         },
         "source": {
           "book": "Edge of The Empire - Dangerous Covenants",
@@ -28482,8 +28841,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "30"
         },
         "source": {
           "book": "Age of Rebellion - Forged In Battle",
@@ -28950,8 +29314,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "30"
         },
         "source": {
           "book": "Force & Destiny - Savage Spirits",
@@ -29347,8 +29716,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "43"
         },
         "source": {
           "book": "Age of Rebellion - Stay On Target",
@@ -29787,8 +30161,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "85"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -30200,8 +30579,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "100"
         },
         "source": {
           "book": "Dawn of Rebellion",
@@ -30570,8 +30954,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "68"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -31036,8 +31425,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "51"
         },
         "source": {
           "book": "Age of Rebellion - Lead By Example",
@@ -31899,8 +32293,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "28"
         },
         "source": {
           "book": "Force & Destiny - Endless Vigil",
@@ -32251,8 +32650,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "29"
         },
         "source": {
           "book": "Force & Destiny - Knights of Fate",
@@ -33432,8 +33836,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "82"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -33836,8 +34245,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "21"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -34226,8 +34640,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "8"
         },
         "source": {
           "book": "Edge of the Empire - Far Horizons",
@@ -34653,8 +35072,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "33"
         },
         "source": {
           "book": "Edge of The Empire - No Disintegrations",
@@ -35454,8 +35878,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "62"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -35872,8 +36301,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "36"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -36239,8 +36673,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "66"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -36635,8 +37074,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "22"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -37024,8 +37468,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "37"
         },
         "source": {
           "book": "Edge of The Empire - Special Modifications",
@@ -37460,8 +37909,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "32"
         },
         "source": {
           "book": "Force & Destiny - Savage Spirits",
@@ -38263,8 +38717,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "72"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -38709,8 +39168,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "35"
         },
         "source": {
           "book": "Edge of The Empire - No Disintegrations",
@@ -39097,8 +39561,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "37"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -39893,8 +40362,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "102"
         },
         "source": {
           "book": "Dawn of Rebellion",
@@ -40332,8 +40806,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "86"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -40778,8 +41257,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "74"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -41180,8 +41664,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "9"
         },
         "source": {
           "book": "Edge of the Empire - Far Horizons",
@@ -41617,8 +42106,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "41"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -42054,8 +42548,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "28"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -42503,8 +43002,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "104"
         },
         "source": {
           "book": "Dawn of Rebellion",
@@ -42950,8 +43454,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "5"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -43011,14 +43520,14 @@
           },
           {
             "id": "r0c2",
-            "name": "Inside Knowledge",
+            "name": "In the Know",
             "key": "INKNOW",
-            "ranked": false,
+            "ranked": true,
             "cost": 5,
             "row": 0,
             "col": 2,
             "entry": true,
-            "activation": "Action",
+            "activation": "Passive",
             "effects": []
           },
           {
@@ -43035,14 +43544,14 @@
           },
           {
             "id": "r1c0",
-            "name": "Inside Knowledge",
+            "name": "In the Know",
             "key": "INKNOW",
-            "ranked": false,
+            "ranked": true,
             "cost": 10,
             "row": 1,
             "col": 0,
             "entry": false,
-            "activation": "Action",
+            "activation": "Passive",
             "effects": []
           },
           {
@@ -43236,14 +43745,14 @@
           },
           {
             "id": "r4c3",
-            "name": "Inside Knowledge",
+            "name": "In the Know",
             "key": "INKNOW",
-            "ranked": false,
+            "ranked": true,
             "cost": 25,
             "row": 4,
             "col": 3,
             "entry": false,
-            "activation": "Action",
+            "activation": "Passive",
             "effects": []
           }
         ],
@@ -43336,8 +43845,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "59"
         },
         "source": {
           "book": "Age of Rebellion - Desperate Allies",
@@ -44126,11 +44640,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "connectors-only",
+          "source": "full-chart",
           "checked": [
+            "node names",
+            "costs",
             "connectors"
           ],
-          "evidencePage": "76"
+          "evidencePage": "75"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -44517,8 +45033,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "56"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -44968,8 +45489,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "30"
         },
         "source": {
           "book": "Force & Destiny - Endless Vigil",
@@ -45364,8 +45890,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "93"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -46626,8 +47157,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "106"
         },
         "source": {
           "book": "Dawn of Rebellion",
@@ -47007,8 +47543,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "44"
         },
         "source": {
           "book": "Age of Rebellion - Stay On Target",
@@ -47377,8 +47918,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "63"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -47801,8 +48347,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "73"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -48946,8 +49497,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "6"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -49308,8 +49864,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "64"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -49706,6 +50267,10 @@
             "r3c2"
           ],
           [
+            "r3c1",
+            "r4c1"
+          ],
+          [
             "r3c2",
             "r4c2"
           ],
@@ -49729,11 +50294,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "connectors-only",
+          "source": "full-chart",
           "checked": [
+            "node names",
+            "costs",
             "connectors"
           ],
-          "evidencePage": "84"
+          "evidencePage": "29"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -50145,8 +50712,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "13"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -50558,8 +51130,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "69"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -50997,8 +51574,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "83"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -51844,8 +52426,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "32"
         },
         "source": {
           "book": "Force & Destiny - Endless Vigil",
@@ -52628,8 +53215,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "88"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -52995,11 +53587,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "connectors-only",
+          "source": "full-chart",
           "checked": [
+            "node names",
+            "costs",
             "connectors"
           ],
-          "evidencePage": "93"
+          "evidencePage": "67"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -53404,8 +53998,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "89"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -53803,8 +54402,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "91"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -54232,8 +54836,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "108"
         },
         "source": {
           "book": "Dawn of Rebellion",
@@ -55004,8 +55613,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "37"
         },
         "source": {
           "book": "Edge of The Empire - No Disintegrations",
@@ -55824,8 +56438,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "70"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -56211,8 +56830,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "38"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -56594,8 +57218,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "76"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -56970,8 +57599,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "48"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -57404,8 +58038,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "92"
         },
         "source": {
           "book": "Force & Destiny - Core Book",
@@ -57819,8 +58458,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "31"
         },
         "source": {
           "book": "Force & Destiny - Knights of Fate",
@@ -58250,8 +58894,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "52"
         },
         "source": {
           "book": "Age of Rebellion - Lead By Example",
@@ -58670,8 +59319,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "3"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -59064,8 +59718,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "49"
         },
         "source": {
           "book": "Age of Rebellion - Core Book",
@@ -59463,8 +60122,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "21"
         },
         "source": {
           "book": "Force & Destiny - Disciples of Harmony",
@@ -59900,8 +60564,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "30"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -60275,8 +60944,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "14"
         },
         "source": {
           "book": "Edge of The Empire - Core Book",
@@ -60677,8 +61351,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "32"
         },
         "source": {
           "book": "Age of Rebellion - Forged In Battle",
@@ -61093,8 +61772,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "34"
         },
         "source": {
           "book": "Age of Rebellion - Forged In Battle",
@@ -61486,8 +62170,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "78"
         },
         "source": {
           "book": "Force & Destiny - Keeping The Peace",
@@ -61892,8 +62581,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "79"
         },
         "source": {
           "book": "Force & Destiny - Keeping The Peace",
@@ -61915,9 +62609,9 @@
     "specializations": 135,
     "signatureAbilities": 38,
     "structuralGraphs": 171,
-    "fullChartCompared": 5,
-    "connectorCompared": 4,
-    "pendingComparison": 164,
+    "fullChartCompared": 143,
+    "connectorCompared": 0,
+    "pendingComparison": 30,
     "missingGraphs": 2,
     "nodes": 3024
   }

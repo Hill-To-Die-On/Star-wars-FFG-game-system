@@ -170,8 +170,9 @@ test("committed advancement catalogue is complete and copyright bounded", async 
       missingGraphs: 2,
     },
   );
-  assert.equal(data.report.fullChartCompared, 5);
-  assert.equal(data.report.connectorCompared, 4);
+  assert.equal(data.report.fullChartCompared, 143);
+  assert.equal(data.report.connectorCompared, 0);
+  assert.equal(data.report.pendingComparison, 30);
   assert.equal(data.report.nodes, 3024);
   assert.doesNotMatch(JSON.stringify(data), /"(?:summary|description|metadata)"\s*:/i);
   assert.doesNotMatch(JSON.stringify(data), /[A-Z]:[\\/]|\.pdf\b/i);
@@ -183,5 +184,70 @@ test("committed advancement catalogue is complete and copyright bounded", async 
   assert.equal(
     advancement.filter((item) => item.system.tree?.verified).length,
     171,
+  );
+
+  const specialization = (name) =>
+      data.items.find(
+        (item) => item.type === "specialization" && item.name === name,
+      ),
+    signatureAbility = (name) =>
+      data.items.find(
+        (item) => item.type === "signatureAbility" && item.name === name,
+      ),
+    hasEdge = (item, left, right) =>
+      item.tree.edges.some(
+        (edge) => edge.includes(left) && edge.includes(right),
+      ),
+    propagandist = specialization("Propagandist");
+  assert.deepEqual(
+    propagandist.tree.nodes
+      .filter((entry) => entry.key === "INKNOW")
+      .map(({ name, ranked, activation }) => ({ name, ranked, activation })),
+    Array.from({ length: 3 }, () => ({
+      name: "In the Know",
+      ranked: true,
+      activation: "Passive",
+    })),
+  );
+  assert.equal(
+    hasEdge(specialization("Fringer"), "r2c2", "r2c3"),
+    false,
+  );
+  assert.equal(
+    hasEdge(specialization("Scoundrel"), "r3c1", "r4c1"),
+    true,
+  );
+  assert.ok(signatureAbility("Unmatched Devastation"));
+  assert.deepEqual(
+    signatureAbility("Deadly Reputation").tree.nodes.map(
+      ({ id, name }) => [id, name],
+    ),
+    [
+      ["r0c0", "Deadly Reputation Base Ability"],
+      ["r1c0", "Duration"],
+      ["r1c1", "Deadly by Association"],
+      ["r1c2", "Add Setback"],
+      ["r1c3", "Duration"],
+      ["r2c0", "Increase Effect"],
+      ["r2c1", "Add Setback"],
+      ["r2c2", "Destiny"],
+      ["r2c3", "Increase Duration"],
+    ],
+  );
+  assert.deepEqual(
+    signatureAbility("Unmatched Ferocity").tree.nodes.map(
+      ({ id, name }) => [id, name],
+    ),
+    [
+      ["r0c0", "Unmatched Ferocity Base Ability"],
+      ["r1c0", "Reduce Strain"],
+      ["r1c1", "Change Skill (Brawl)"],
+      ["r1c2", "Change Skill (Lightsaber)"],
+      ["r1c3", "Reduce Strain"],
+      ["r2c0", "Destiny"],
+      ["r2c1", "Change Target"],
+      ["r2c2", "Reduce Conflict"],
+      ["r2c3", "Reduce Strain"],
+    ],
   );
 });

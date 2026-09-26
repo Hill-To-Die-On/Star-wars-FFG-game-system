@@ -83,6 +83,24 @@ test("signature ability references are native attachable tree placeholders", () 
   assert.deepEqual(ability.system.incomplete, ["tree"]);
   validateBundle(bundle);
 });
+test("known creator-database identity typos use their printed names", () => {
+  const bundle = convertDatabase({
+      signature_abilities: [
+        {
+          ID: 30,
+          signature_abilities: "Unmatched Devistation",
+          book: "Edge of The Empire - No Disintegrations",
+          page: 41,
+        },
+      ],
+    }),
+    ability = bundle.documents.Item[0];
+  assert.equal(ability.name, "Unmatched Devastation");
+  assert.equal(
+    ability.system.metadata.signature_abilities,
+    "Unmatched Devistation",
+  );
+});
 test("creation follows the chosen line and prevents mismatched free specializations", () => {
   const species = {
     id: "species-example",
