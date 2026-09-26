@@ -6,7 +6,10 @@
     <label class="sf-theme-select">Sheet theme<select name="system.theme">{{selectOptions themes selected=system.theme}}</select>
 </label>
     <div class="sf-identity">
+<div class="sf-portrait-frame">
 <img src="{{actor.img}}" alt="{{actor.name}}" data-action="editImage" data-edit="img">
+<span class="sf-portrait-marks" aria-hidden="true"></span>
+</div>
 <div>
 <span class="sf-eyebrow">{{theme.line}} / {{actor.type}}</span>
 <input class="sf-name" name="name" value="{{actor.name}}" aria-label="Name">
@@ -17,12 +20,36 @@
 {{#if isVehicle}}<label>Model<input name="system.model" value="{{system.model}}">
 </label>
 <label>Manufacturer<input name="system.manufacturer" value="{{system.manufacturer}}">
-</label>{{else}}<label>Species<input name="system.species" value="{{system.species}}">
+</label>{{else}}{{#if isCharacter}}<div class="sf-origin-picker" data-origin-picker="species" data-current="{{system.species}}">
+<span class="sf-origin-label">Species{{#if originsLocked}} <i class="fa-solid fa-lock" aria-hidden="true"></i>{{/if}}</span>
+<div class="sf-origin-control">
+{{#if originEditable}}<input type="search" value="{{system.species}}" placeholder="Choose species…" autocomplete="off" role="combobox" aria-label="Species" aria-autocomplete="list" aria-expanded="false" data-origin-search>
+<button type="button" class="sf-origin-toggle" data-origin-toggle aria-label="Show species choices" aria-expanded="false"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>{{else}}<input type="text" value="{{system.species}}" aria-label="Species" readonly>{{/if}}
+</div>
+{{#if originEditable}}<div class="sf-origin-menu" role="listbox" aria-label="Species choices" data-origin-menu hidden>
+{{#each speciesOptions}}<button type="button" role="option" aria-selected="{{selected}}" data-action="selectOrigin" data-kind="species" data-document-id="{{id}}"><strong>{{name}}</strong><small>{{#if source.book}}{{source.book}}{{else}}Unreferenced source{{/if}}{{#if source.page}} · p. {{source.page}}{{/if}}</small></button>{{/each}}
+<p data-origin-empty hidden>No valid species matches that search.</p>
+</div>{{/if}}
+<small class="sf-origin-help">{{originHelp}}</small>
+</div>
+<div class="sf-origin-picker" data-origin-picker="career" data-current="{{system.career}}">
+<span class="sf-origin-label">Career{{#if originsLocked}} <i class="fa-solid fa-lock" aria-hidden="true"></i>{{/if}}</span>
+<div class="sf-origin-control">
+{{#if originEditable}}<input type="search" value="{{system.career}}" placeholder="Choose career…" autocomplete="off" role="combobox" aria-label="Career" aria-autocomplete="list" aria-expanded="false" data-origin-search>
+<button type="button" class="sf-origin-toggle" data-origin-toggle aria-label="Show career choices" aria-expanded="false"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>{{else}}<input type="text" value="{{system.career}}" aria-label="Career" readonly>{{/if}}
+</div>
+{{#if originEditable}}<div class="sf-origin-menu" role="listbox" aria-label="Career choices" data-origin-menu hidden>
+{{#each careerOptions}}<button type="button" role="option" aria-selected="{{selected}}" data-action="selectOrigin" data-kind="career" data-document-id="{{id}}"><strong>{{name}}</strong><small>{{#if source.book}}{{source.book}}{{else}}Unreferenced source{{/if}}{{#if source.page}} · p. {{source.page}}{{/if}}</small></button>{{/each}}
+<p data-origin-empty hidden>No valid career matches that search.</p>
+</div>{{/if}}
+<small class="sf-origin-help">{{originHelp}}</small>
+</div>
+<div class="sf-origin-rules"><span>Campaign rules</span><strong>{{campaignRulesLabel}}</strong><small>Chosen by the GM for this adventure.</small></div>
+{{else}}<label>Species<input name="system.species" value="{{system.species}}">
 </label>
 <label>Career<input name="system.career" value="{{system.career}}">
 </label>
-<label>Creation rules<select name="system.line">{{selectOptions lines selected=system.line}}</select>
-</label>{{/if}}
+<div class="sf-origin-rules"><span>Campaign rules</span><strong>{{campaignRulesLabel}}</strong><small>Chosen by the GM for this adventure.</small></div>{{/if}}{{/if}}
 </div>
   </header>
   <nav class="sf-tabs" aria-label="Character sections">
@@ -40,7 +67,7 @@
       {{#unless isVehicle}}<section class="sf-characteristics" aria-label="Characteristics">
 {{#each characteristics}}<label>
 <span>{{label}}</span>
-<input name="system.characteristics.{{key}}" type="number" value="{{value}}" min="0" max="7">
+<input name="system.characteristics.{{key}}" type="number" value="{{value}}" min="0" max="7" {{#if ../characteristicsLocked}}readonly{{/if}}>
 {{#if ../creation}}<button type="button" data-action="buyCharacteristic" data-characteristic="{{key}}" title="Purchase next characteristic rating with XP">+ XP</button>{{/if}}
 </label>{{/each}}
 </section>{{/unless}}
@@ -83,8 +110,8 @@
 </label>
 <label>Committed dice<input type="number" min="0" name="system.committedForce" value="{{system.committedForce}}">
 </label>
-<label>Credits<input type="number" min="0" name="system.credits" value="{{system.credits}}">
-</label>{{/if}}
+<div class="sf-credit-field"><label>Credits<input type="number" min="0" name="system.credits" value="{{system.credits}}">
+</label>{{#if pocketMoneyPending}}<button type="button" data-action="finishStartingFunds"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i> Finish starting funds</button><small>Roll d100 after the starting loadout is final.</small>{{/if}}</div>{{/if}}
 </div>
 {{#unless isVehicle}}<div class="sf-button-row">
 <button type="button" data-action="force">Roll Force</button>
@@ -172,7 +199,7 @@
 <i class="fa-solid fa-dice sf-compact-roll-cue" aria-hidden="true"></i>
 </button>
 <select class="sf-skill-characteristic" name="{{path}}.characteristic" aria-label="{{label}} characteristic" title="{{characteristicLabel}}">{{selectOptions characteristicShortOptions selected=characteristic}}</select>
-<span class="sf-paper-checks"><label class="sf-paper-check" title="Career skill"><input type="checkbox" name="{{path}}.career" {{checked career}} aria-label="{{label}} career skill"><span>C</span></label>
+<span class="sf-paper-checks"><label class="sf-paper-check" title="Career skill"><input type="checkbox" name="{{path}}.career" {{checked career}} aria-label="{{label}} career skill" {{#if careerLocked}}disabled{{/if}}><span>C</span></label>
 {{#if showGroup}}<label class="sf-paper-check" title="Minion group skill"><input type="checkbox" name="{{path}}.group" {{checked group}} aria-label="{{label}} minion group skill"><span>G</span></label>{{/if}}</span>
 <input class="sf-skill-rank" type="number" name="{{path}}.rank" min="0" max="{{cap}}" value="{{rank}}" aria-label="{{label}} rank">
 {{/if}}
@@ -208,18 +235,14 @@
 </label>
 <label>Total earned XP<input type="number" min="0" name="system.xp.total" value="{{system.xp.total}}">
 </label>
-<label>Phase<select name="system.phase">
-<option value="creation" {{#if creation}}selected{{/if}}>Character creation</option>
-<option value="play" {{#unless creation}}selected{{/unless}}>Campaign play</option>
-</select>
-</label>
+<div class="sf-phase-status"><span>Advancement phase</span><strong>{{#if creation}}Character creation{{else}}Campaign play{{/if}}</strong><small>{{#if originsLocked}}Starting species and career locked{{else}}The GM starts campaign play from Campaign rulebooks{{/if}}</small></div>
 </div>
-<button type="button" data-action="createCharacter">Choose starting species & career</button>
-<p class="sf-hint">Purchase connected talents with available XP. Each imported node shows its player guidance. Structured passive effects marked Auto feed the dice pool; situational and active effects remain explicit choices.</p>
+{{#if isCharacter}}{{#unless originsLocked}}<button type="button" data-action="createCharacter" {{#unless originSelectionReady}}disabled title="Choose a valid species and career in the sheet header first"{{/unless}}>Complete starting choices</button>{{/unless}}{{/if}}
+<p class="sf-hint">Purchase connected talents with available XP. Structured passive effects marked Auto feed the dice pool; use the cited book for every node whose wording is not supplied by a private library.</p>
 </section>
 {{#each advancementTrees}}<section class="sf-panel">
 <h2>{{#if signature}}Signature ability · {{/if}}{{name}}</h2>
-<p class="sf-hint">{{source.book}} · p. {{source.page}} · {{#if verified}}Structured graph imported{{else}}Awaiting source chart verification{{/if}}
+<p class="sf-hint">{{source.book}} · p. {{source.page}} · {{#if verified}}Structured graph imported{{else}}No structured graph available{{/if}} · {{sourceVerificationLabel}}
 {{#if signature}} · Linked to {{#if linkSpecialization}}{{linkSpecialization}}{{else}}no specialization{{/if}} · {{#if linkUnlocked}}Base ability unlocked{{else}}Learn a marked bottom-row talent to unlock the base ability{{/if}}{{/if}}
 </p>
 {{#if nodes.length}}<div class="sf-tree" style="height:{{treeHeight}}px">

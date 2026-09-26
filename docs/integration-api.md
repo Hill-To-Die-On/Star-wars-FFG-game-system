@@ -196,6 +196,8 @@ await game.system.api.integration.importRulePack(rulePack, {
 
 Use `replace` only after an explicit user choice. Talent-tree automation is limited to the declarative effect types already supported by the system. Macro bodies, callbacks, arbitrary Active Effects and unknown fields are rejected. A publisher must have permission to distribute every description and asset in its package.
 
+The Foundry review dialog applies the same policy to file, direct-link and connected-site imports. A rule pack or bundle defaults to **Keep current community rules** and offers **Replace matching community rules** as an explicit choice. Matching uses the publisher, rule-pack and rule keys, updates the existing Item in place and leaves unrelated world content untouched.
+
 ### Bundle
 
 A bundle contains 1–20 complete character or rule-pack envelopes in `payload.packages`. Bundles cannot contain other bundles. Permission checks run for the full bundle before its first document is written.

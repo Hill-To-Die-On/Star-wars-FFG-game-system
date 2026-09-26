@@ -2,15 +2,30 @@
 
 ## Unreleased
 
-- Add a dedicated scene-control range overlay with labelled colour bands, single or retained multiple origins, map-scale measurement, persistent per-scene Theatre-of-the-Mind calibration, Personal/Battlefield/Ship scale selection, automatic sheet-pool range input and a shared public/Director of Realms measurement API.
+## 0.3.0 — 2026-09-26
+
+- Publish a copyright-bounded vehicle-stat overlay that raises complete coverage from 162 to 312 of 399 native vehicles, upgrades only untouched placeholder Actors, records exact evidence for every match and lists all 87 unresolved book/page profiles without guessing missing values.
+- Record the exact held and missing printed-page ranges for the partial Cyphers & Masks source, including the equipment, adversary and vehicle block that still needs a private scan; publish only page-level request metadata.
+- Replace the three pending GitHub Actions v4-to-v7 updates with reviewed immutable v7 commit pins for checkout, Node setup and artifact upload.
+- Complete live public API version-two acceptance and add a reviewed preserve-or-replace choice for matching community rules, defaulting to preservation.
+- Complete starting-resource selection for all three rule lines: party-size Obligation/Duty, Edge and Age benefit combinations, Force Morality choices, the Age Base gear allowance, owned-book-filtered equipment purchasing, retained-credit validation and the one-time d100 pocket-money roll.
+- Add a player-visible, idempotent artwork-credit Journal with the NASA source record and named artist attribution; preserve it after creation and repeat the credit in the README.
+- Publish copyright-bounded structured advancement data for all 135 specializations and 38 signature abilities: 171 usable graphs and 3,024 nodes with costs, topology, references and declarative effects, while excluding source prose, artwork and private paths. Distinguish structural validation from 143 full printed-chart comparisons and 30 pending comparisons.
+- Preserve native Star Wars narrative rolls for Director of Realms as exact actor, skill, pool, success/failure, advantage/threat, Triumph/Despair and Force-pip facts; reject contradictory flags and exclude chat rule notes from trusted mechanics.
+- Move one-or-many ruleset selection into GM campaign settings with all three enabled by default; add database-only fuzzy Species and Career pickers, automatic base-stat/career-skill population, source-derived creation rules and immutable origins after finalisation or campaign start.
+- Add evidence-required Director of Realms guidance and rule lookup: structured mechanics remain the only automatic authority, while missing or unreviewed source material stops for an explicit GM ruling.
+- Add private sourcebook OCR preparation, forced replacement of unreliable embedded text and public comparison metadata. Fully compare 111 specialization charts and 32 signature-ability charts, correct four specialization connectors, replace two signature placeholder key sets with printed mechanical names and fix the legacy Unmatched Devastation spelling while keeping private prose and page images out of releases.
+- Add a dedicated scene-control range overlay with labelled colour bands, single or retained multiple origins, map-scale measurement, persistent per-scene Theatre-of-the-Mind calibration, Personal/Battlefield/Ship scale selection, three-dimensional scaled-map elevation, Foundry sight-wall checks, automatic sheet-pool range input and a shared public/Director of Realms measurement API. Block automatic ranged rolls through a sight wall while preserving the prefilled Manual pool for a GM ruling.
 - Complete the public GitHub repository health set with contribution, conduct, support, security, ownership, issue, pull-request, release-note and artifact-inventory metadata; add grouped npm and GitHub Actions updates through Dependabot.
 - Add a versioned public integration API for character and campaign builders, including backward-compatible version-one character/rule packages and version-two character, adversary, vehicle and Group Actor packages, declarative community rule packs, mixed bundles and registered connectors, with reviewed JSON, direct-link and origin-bound one-package browser handoffs.
 - Give rolled narrative dice their physical square, diamond and strongly faceted d12 silhouettes in chat, including compatibility styling for stored rolls.
+- Fit Ability and Difficulty glyphs inside Dice So Nice's triangular d8 safe area, stack paired Difficulty symbols like the physical dice, and use versioned face textures that refresh without breaking images in existing chat history; complete all-seven-die concurrent GM/player visual acceptance.
 - Raise muted, accent and active-control color pairs to WCAG 2.1 AA text contrast across all three sheet and Foundry interface themes.
 - Add an original print-inspired sheet treatment with a bundled paper texture, technical panel rules and three distinct color schemes.
 - Select sheet colors automatically from character creation rules or campaign rules while retaining client-wide and per-sheet manual overrides.
 - Add an optional themed Foundry interface with a losslessly bundled public-domain NASA artist's concept of Saturn beyond Enceladus's geysers and retained provenance, locally bundled Rajdhani typography, custom navigation and pause icons, chat cards, combat tracker, windows, journals and handouts, plus the sidebar, scene controls, player list and hotbar. Retain automatic, manual and Foundry-default modes.
 - Keep unlimited custom-skill rows aligned by revealing edit and delete controls inside the name cell on hover or keyboard focus.
+- Correct AtlasMind's canonical delivery model to `dev` → protected `staging` → protected `main` and add the missing readiness roadmap SSOT.
 
 ## 0.2.1 — 2026-09-24
 
