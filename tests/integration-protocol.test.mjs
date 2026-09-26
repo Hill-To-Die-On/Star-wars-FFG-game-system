@@ -381,8 +381,15 @@ test("version 3 actor groups preserve stable graph identity and exact authored t
   });
 });
 
-test("version 3 actor groups accept vehicle and home-base relationship kinds", () => {
-  for (const kind of ["owns", "pilots", "crews", "aboard", "docked-at", "based-at"]) {
+test("version 3 actor groups accept the complete authored relationship vocabulary", () => {
+  for (const kind of [
+    "owns", "pilots", "crews", "aboard", "docked-at", "based-at", "assigned-to", "transports", "guards", "guarded-by",
+    "loyal-to", "owes-duty-to", "paid-by", "enslaved-by", "leads", "serves", "employed-by", "controls", "controlled-by", "enslaves",
+    "protected-by", "pursued-by", "opposes", "competes-with",
+    "trusts", "distrusts", "fears", "respects", "loves", "hates",
+    "parent-of", "child-of", "sibling-of", "partner-of", "mentor-of", "student-of",
+    "owes-debt-to", "creditor-of", "blackmails", "blackmailed-by", "informant-for", "spies-on", "betrayed", "betrayed-by", "knows-secret-of",
+  ]) {
     const pkg = actorGroupPackage();
     pkg.payload.relationships[0].kind = kind;
     assert.equal(validateIntegrationPackage(pkg).payload.relationships[0].kind, kind);

@@ -5,7 +5,7 @@
 
 ## Context
 
-SW-RPG.info can organise characters, adversaries, ships, organisations and locations into nested adventure groups and draw directional relationships between them. Importing only the individual Actors destroys that authored structure. Expanding a roster node directly into pairwise Actor relationships is also incorrect: a gang represented by several Foundry Actors is still one authored relationship endpoint, and its minions must not silently inherit a boss's role.
+SW-RPG.info can organise characters, adversaries, ships, organisations and locations into nested adventure groups and draw directional relationships between them. Each arrow is a sentence from its source through its kind to its target. Its allow-listed vocabulary spans authority, allegiance, conflict, attitude, family, leverage, intelligence, ownership and operations, and several independently authored facts may connect the same pair in either direction. Importing only the individual Actors destroys that authored structure. Expanding a roster node directly into pairwise Actor relationships is also incorrect: a gang represented by several Foundry Actors is still one authored relationship endpoint, and its minions must not silently inherit a boss's role.
 
 Director of Realms already distinguishes explicit authored facts from inferred or observed relationships. The interchange must preserve that distinction and must not invent numeric trust, fear, loyalty or hostility values from a structural label.
 
