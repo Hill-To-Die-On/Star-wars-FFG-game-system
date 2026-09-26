@@ -1,6 +1,6 @@
 {
   "name": "star-wars-ffg-system",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "An independent Foundry VTT system for the three FFG Star Wars roleplaying lines.",

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.0 — 2026-09-26
+
 - Publish a copyright-bounded vehicle-stat overlay that raises complete coverage from 162 to 312 of 399 native vehicles, upgrades only untouched placeholder Actors, records exact evidence for every match and lists all 87 unresolved book/page profiles without guessing missing values.
 - Record the exact held and missing printed-page ranges for the partial Cyphers & Masks source, including the equipment, adversary and vehicle block that still needs a private scan; publish only page-level request metadata.
 - Replace the three pending GitHub Actions v4-to-v7 updates with reviewed immutable v7 commit pins for checkout, Node setup and artifact upload.
