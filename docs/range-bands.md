@@ -1,6 +1,6 @@
 # Range bands
 
-The system adds a **Star Wars FFG · Range bands** group to Foundry's left scene controls. The overlay is a table aid for narrative distance. It does not replace line-of-sight, elevation, weapon qualities, movement rules or a GM decision.
+The system adds a **Star Wars FFG · Range bands** group to Foundry's left scene controls. The overlay is a table aid for narrative distance. It does not replace weapon qualities, movement rules or a GM decision.
 
 ## Use at the table
 
@@ -30,6 +30,6 @@ game.system.api.range.measureTokenRange(source, target);
 game.system.api.directorOfRealms.getCombatRange(source, target);
 ```
 
-The result reports availability, canonical scale, band, map or Theatre-of-the-Mind mode, pixel distance, and map distance/units when present. An uncalibrated gridless scene fails closed instead of guessing a band. A target outside the displayed Extreme boundary reports `beyond`, which prevents an automatic attack pool until the table changes the range or makes a manual ruling.
+The result reports availability, canonical scale, band, map or Theatre-of-the-Mind mode, pixel distance, map distance/units, vertical separation and wall line of sight when those Foundry scene references are available. An uncalibrated gridless scene fails closed instead of guessing a band. A target outside the displayed Extreme boundary reports `beyond`, which prevents an automatic attack pool until the table changes the range or makes a manual ruling. A sight-blocking wall also stops an automatic ranged roll; Manual mode remains available for a GM-approved exception.
 
-Measurements are two-dimensional and center-to-center. Token size, vertical separation, obstructions and terrain do not change the computed band.
+Measurements are center-to-center. Scaled maps combine horizontal map distance with token elevation as a three-dimensional distance before selecting a band. Gridless Theatre-of-the-Mind calibration remains two-dimensional because it has no reliable unit scale. Foundry sight walls are reported as clear or blocked; terrain, token size and cover still require table adjudication.

@@ -16,6 +16,76 @@ import {
   getSceneRangeProfile,
   measureTokenRange,
 } from "./range-overlay/foundry.mjs";
+export const RULE_KNOWLEDGE_POLICY = Object.freeze({
+  id: "evidence-required-v1",
+  automaticAuthority: "structured-system-data",
+  referenceAuthority: "reviewed-private-source-with-book-and-page",
+  missingRuleAction: "stop-and-request-gm-ruling",
+  guidance:
+    "Apply only structured system results automatically. Private source text and OCR are reference evidence, not executable rules, and must retain their book and page. If reviewed evidence is unavailable, state that the rule is unavailable and request an explicit GM ruling. Never infer mechanics from Genesys, another Star Wars rule line, a similarly named ability or general model knowledge.",
+});
+const knowledgeBoundaryStat = () => ({
+  label: "Rules evidence boundary",
+  value: RULE_KNOWLEDGE_POLICY.guidance,
+});
+const OUTCOME_KEYS = Object.freeze([
+    "success",
+    "failure",
+    "advantage",
+    "threat",
+    "triumph",
+    "despair",
+    "light",
+    "dark",
+  ]),
+  POOL_KEYS = Object.freeze([
+    "boost",
+    "ability",
+    "proficiency",
+    "setback",
+    "difficulty",
+    "challenge",
+    "force",
+  ]);
+function safeInteger(value, { signed = false, maximum = 1000 } = {}) {
+  if (!Number.isSafeInteger(value)) return null;
+  if (Math.abs(value) > maximum || (!signed && value < 0)) return null;
+  return value;
+}
+function safeFlavor(value) {
+  return Array.from(String(value ?? "").replace(/<[^>]*>/g, " "))
+    .map((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127 || "<>[]{}:".includes(character)
+        ? " "
+        : character;
+    })
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+}
+function safePool(value) {
+  if (value === undefined) return undefined;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const pool = {};
+  for (const key of POOL_KEYS) {
+    if (!(key in value)) continue;
+    const count = safeInteger(value[key], { maximum: 40 });
+    if (count === null) return null;
+    pool[key] = count;
+  }
+  return Object.keys(pool).length ? pool : undefined;
+}
+function exactSkillFromFlavor(flavor) {
+  const normalized = String(flavor ?? "").toLocaleLowerCase("en");
+  return Object.values(SKILLS).find(({ label }) => {
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(?:^|[^a-z])${escaped}(?:$|[^a-z])`, "i").test(
+      normalized,
+    );
+  })?.label;
+}
 export function actorContext(actor) {
   const s = actor.system;
   const campaign =
@@ -127,6 +197,11 @@ export function actorContext(actor) {
         name: item.name,
         source: item.system.source,
         verified: item.system.tree?.verified === true,
+        verification: item.system.tree?.verification ?? {
+          structure: item.system.tree?.verified ? "validated" : "missing",
+          source: "pending",
+          checked: [],
+        },
         available: item.system.tree?.verified
           ? availableTalents(
               item.system.tree,
@@ -248,6 +323,7 @@ export const directorAdapter = {
           label: "Campaign rules",
           value: campaignGuidance(game.settings.get(SYSTEM_ID, "campaign")),
         },
+        knowledgeBoundaryStat(),
       ];
     }
     if (actor.type === "vehicle")
@@ -273,12 +349,13 @@ export const directorAdapter = {
           value: JSON.stringify(actorContext(actor).equipmentAndAbilities),
         },
         ...privateNotes,
+        knowledgeBoundaryStat(),
       ];
     const context = actorContext(actor),
       paths = context
       .specializations.map(
         (tree) =>
-          `${tree.name} (${tree.source.book}, p. ${tree.source.page}): ${tree.verified ? tree.available.map((n) => `${n.name} ${n.cost} XP${n.affordable ? "" : " (not affordable)"}`).join("; ") : "chart unavailable"}`,
+          `${tree.name} (${tree.source.book}, p. ${tree.source.page}; source check ${tree.verification.source}): ${tree.verified ? tree.available.map((n) => `${n.name} ${n.cost} XP${n.affordable ? "" : " (not affordable)"}`).join("; ") : "chart unavailable"}`,
       )
       .join("\n");
     const signaturePaths = context.signatureAbilities
@@ -362,6 +439,7 @@ export const directorAdapter = {
         label: "Campaign rules",
         value: campaignGuidance(game.settings.get(SYSTEM_ID, "campaign")),
       },
+      knowledgeBoundaryStat(),
     ];
   },
   getRecapStats(actor) {
@@ -373,7 +451,106 @@ export const directorAdapter = {
       targetSemantics: "successes",
       defaultTarget: 1,
       guidance:
-        "Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target.",
+        `Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. On scaled maps it includes token elevation; when lineOfSightBlocked is true, do not automate a ranged roll unless the GM explicitly overrides it through Manual mode. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target. ${RULE_KNOWLEDGE_POLICY.guidance}`,
+    };
+  },
+  readNativeCheckRoll(message) {
+    const native = message?.flags?.[SYSTEM_ID],
+      outcome =
+        native?.outcome ?? message?.rolls?.[0]?.options?.starWars?.outcome;
+    if (!outcome || typeof outcome !== "object" || Array.isArray(outcome))
+      return null;
+    const counts = Object.fromEntries(
+      OUTCOME_KEYS.map((key) => [
+        key,
+        outcome[key] === undefined ? 0 : safeInteger(outcome[key]),
+      ]),
+    );
+    if (OUTCOME_KEYS.some((key) => counts[key] === null)) return null;
+    const expectedNetSuccess = counts.success - counts.failure,
+      expectedNetAdvantage = counts.advantage - counts.threat,
+      suppliedNetSuccess = outcome.netSuccess,
+      suppliedNetAdvantage = outcome.netAdvantage,
+      parsedNetSuccess = safeInteger(suppliedNetSuccess, { signed: true }),
+      parsedNetAdvantage = safeInteger(suppliedNetAdvantage, {
+        signed: true,
+      });
+    if (
+      (suppliedNetSuccess !== undefined && parsedNetSuccess === null) ||
+      (suppliedNetAdvantage !== undefined && parsedNetAdvantage === null)
+    )
+      return null;
+    const netSuccess = parsedNetSuccess ?? expectedNetSuccess,
+      netAdvantage = parsedNetAdvantage ?? expectedNetAdvantage;
+    if (
+      typeof outcome.passed !== "boolean" ||
+      outcome.passed !== (netSuccess > 0) ||
+      netSuccess !== expectedNetSuccess ||
+      netAdvantage !== expectedNetAdvantage
+    )
+      return null;
+    const suppliedPool =
+        native?.pool ?? message?.rolls?.[0]?.options?.starWars?.pool,
+      pool = safePool(suppliedPool);
+    if (suppliedPool !== undefined && pool === null) return null;
+    const flavor = safeFlavor(message?.flavor);
+    return {
+      flavor,
+      skill: exactSkillFromFlavor(flavor),
+      total: netSuccess,
+      final: true,
+      summary:
+        `${outcome.passed ? "SUCCESS" : "FAILURE"} (net success ${netSuccess}); ` +
+        `${counts.advantage} advantage; ${counts.threat} threat; ` +
+        `${counts.triumph} Triumph; ${counts.despair} Despair; ` +
+        `${counts.light} light; ${counts.dark} dark`,
+      facts: {
+        netSuccess,
+        netAdvantage,
+        ...counts,
+        passed: outcome.passed,
+        ...(pool ? { pool } : {}),
+      },
+    };
+  },
+  readNativeRollActorId(message) {
+    const actorUuid = String(
+      message?.flags?.[SYSTEM_ID]?.actorUuid ?? "",
+    ).trim();
+    if (actorUuid.startsWith("Actor."))
+      return actorUuid.slice("Actor.".length) || null;
+    return String(message?.speaker?.actor ?? "").trim() || null;
+  },
+  isNativeSystemMessage(message) {
+    return Boolean(
+      message?.flags?.[SYSTEM_ID]?.outcome ||
+        message?.flags?.[SYSTEM_ID]?.initiativeOutcome ||
+        message?.rolls?.[0]?.options?.starWars?.outcome,
+    );
+  },
+  getRulesKnowledgePolicy() {
+    return { ...RULE_KNOWLEDGE_POLICY };
+  },
+  getRuleEvidence(query, limit = 10) {
+    const normalizedQuery = String(query ?? "").trim();
+    if (normalizedQuery.length < 3)
+      return {
+        query: normalizedQuery,
+        status: "unavailable",
+        automatic: false,
+        instruction:
+          "Give a specific rule, item or ability name. Do not infer a mechanic from an empty or ambiguous search.",
+        matches: [],
+      };
+    const matches = searchGMSourceNotes(normalizedQuery, limit);
+    return {
+      query: normalizedQuery,
+      status: matches.length ? "gm-review-required" : "unavailable",
+      automatic: false,
+      instruction: matches.length
+        ? "Review the cited private source before applying a mechanic. OCR and reference prose are not executable rules."
+        : "No source evidence is available. Do not infer a mechanic; request an explicit GM ruling.",
+      matches,
     };
   },
   getCheckTalentRules(actor, skill, options = {}) {

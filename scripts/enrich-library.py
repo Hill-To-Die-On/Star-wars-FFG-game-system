@@ -30,9 +30,67 @@ def main():
     parser.add_argument("pdf_root", type=Path)
     parser.add_argument("--catalog", type=Path, default=Path(".local/catalog.json"))
     parser.add_argument("--include-private-talent-text", action="store_true")
+    parser.add_argument(
+        "--verification",
+        type=Path,
+        default=Path("data/source-verification.json"),
+        help="Public metadata recording comparisons against privately held pages.",
+    )
+    parser.add_argument(
+        "--source-requests",
+        type=Path,
+        default=Path("data/source-requests.json"),
+        help="Public page-level request metadata for incomplete private sources.",
+    )
+    parser.add_argument(
+        "--private-overrides",
+        type=Path,
+        default=Path(".local/sourcebook-overrides.json"),
+        help="Ignored local summaries and structured effects derived from held books.",
+    )
     args = parser.parse_args()
     if ".local" not in args.catalog.parts:
         raise ValueError("The catalog must be in an ignored .local directory")
+    if ".local" not in args.private_overrides.parts:
+        raise ValueError("Private sourcebook overrides must stay below .local")
+    private_override_data = {}
+    if args.private_overrides.exists():
+        private_override_data = json.loads(args.private_overrides.read_text(encoding="utf-8"))
+        if private_override_data.get("format") != "star-wars-ffg-private-source-overrides" or private_override_data.get("version") != 1:
+            raise ValueError("Unsupported private sourcebook override file")
+        signature_overrides = {
+            norm(name): nodes
+            for name, nodes in private_override_data.get("signatureAbilities", {}).items()
+        }
+        specialization_overrides = {
+            norm(name): nodes
+            for name, nodes in private_override_data.get("specializations", {}).items()
+        }
+    else:
+        signature_overrides = {}
+        specialization_overrides = {}
+    verification_data = json.loads(args.verification.read_text(encoding="utf-8"))
+    if verification_data.get("format") != "star-wars-ffg-source-verification" or verification_data.get("version") != 1:
+        raise ValueError("Unsupported source verification manifest")
+    source_requests = json.loads(args.source_requests.read_text(encoding="utf-8"))
+    if source_requests.get("format") != "star-wars-ffg-source-requests" or source_requests.get("version") != 1:
+        raise ValueError("Unsupported source request manifest")
+    verification = {
+        (entry["kind"], norm(entry["name"])): entry
+        for entry in verification_data.get("checks", [])
+    }
+    used_verification = set()
+    def source_verification(kind, name, book, page):
+        key = (kind, norm(name))
+        entry = verification.get(key)
+        if not entry:
+            return None
+        expected_book = re.sub(r"^(?:eote|aor|fad)", "", book_key(entry["book"]))
+        actual_book = re.sub(r"^(?:eote|aor|fad)", "", book_key(book))
+        if expected_book != actual_book or str(entry["referencePage"]) != str(page):
+            raise ValueError(f"Source verification does not match {kind} {name}")
+        used_verification.add(key)
+        return entry
     bundle = json.loads(args.catalog.read_text(encoding="utf-8"))
     talents = {}
     for el in read_xml(args.dataset / "Talents.xml"):
@@ -148,8 +206,18 @@ def main():
             for col,k in enumerate(keys):
                 talent=talents.get(k.text)
                 if not talent: errors.append(f"Missing talent name: {k.text}"); talent={"name":k.text,"ranked":True}
-                node={"id":f"r{row_index}c{col}","name":talent["name"],"key":k.text,"ranked":talent["ranked"],"cost":int(text(row,"Cost","0")),"row":row_index,"col":col,"entry":row_index==0,"activation":talent.get("activation",""),"effects":copy.deepcopy(talent.get("effects",[]))}
-                if talent.get("summary"): node["summary"]=talent["summary"]
+                node_id=f"r{row_index}c{col}"
+                node={"id":node_id,"name":talent["name"],"key":k.text,"ranked":talent["ranked"],"cost":int(text(row,"Cost","0")),"row":row_index,"col":col,"entry":row_index==0,"activation":talent.get("activation",""),"effects":copy.deepcopy(talent.get("effects",[]))}
+                summary=talent.get("summary","")
+                # INKNOW is reused for two unrelated talents in the supplied
+                # dataset. The held Propagandist chart identifies this branch
+                # as the ranked passive In the Know talent.
+                if norm(name)==norm("Propagandist") and k.text=="INKNOW":
+                    node.update({"name":"In the Know","ranked":True,"activation":"Passive","effects":[]})
+                    summary=""
+                override=specialization_overrides.get(norm(name),{}).get(node_id,{})
+                if override.get("summary"): summary=str(override["summary"])
+                if summary: node["summary"]=summary
                 if talent.get("reference"): node["reference"]=copy.deepcopy(talent["reference"])
                 nodes.append(node)
             directions.append(ds)
@@ -161,14 +229,46 @@ def main():
                     if not(0<=rr<len(rows) and 0<=cc<4): errors.append("Out-of-bounds link"); continue
                     if text(directions[rr][cc],reverse)!="true": errors.append(f"Asymmetric link {r},{c} {direction}")
                     edges.add(tuple(sorted((f"r{r}c{c}",f"r{rr}c{cc}"))))
-        # Four one-sided dataset links were checked visually against the held charts.
-        # The three removed links have no printed connector. Sharpshooter has one.
-        compared={"Ambassador":("r3c2","r4c2"),"Scoundrel":("r3c1","r4c1"),"Protector":("r3c0","r4c0"),"Sharpshooter":None}
-        if name in compared:
-            if compared[name]: edges.discard(tuple(sorted(compared[name])))
+        # Dataset direction flags can be asymmetric. These source-checked
+        # overrides preserve only the connector shown on the held chart.
+        connector_overrides={
+            "Ambassador":{"remove":[("r3c2","r4c2")]},
+            "Fringer":{"remove":[("r2c2","r2c3")]},
+            "Protector":{"remove":[("r3c0","r4c0")]},
+            "Scoundrel":{"add":[("r3c1","r4c1")]},
+            "Sharpshooter":{},
+        }
+        if name in connector_overrides:
+            for edge in connector_overrides[name].get("remove",[]): edges.discard(tuple(sorted(edge)))
+            for edge in connector_overrides[name].get("add",[]): edges.add(tuple(sorted(edge)))
             errors=[e for e in errors if not e.startswith("Asymmetric link")]
         verified=len(nodes)==20 and len(rows)==5 and not errors
-        item["system"]["tree"]={"nodes":nodes,"edges":[list(e) for e in sorted(edges)],"verified":verified,"provenance":"Structured graph with PDF connector correction" if name in compared else "Private structured dataset; graph validated, PDF comparison pending","source":{"book":book,"page":page}}
+        check_targets=targets or [item]
+        printed_checks={}
+        for target in check_targets:
+            reference=target.get("system",{}).get("source",{})
+            printed_checks[norm(target["name"])]=source_verification(
+                "specialization",
+                target["name"],
+                reference.get("book") or book,
+                reference.get("page") or page,
+            )
+        printed_check=next((entry for entry in printed_checks.values() if entry),None)
+        comparison=(
+            "Full chart checked"
+            if printed_check and printed_check.get("level")=="full-chart"
+            else "Connector correction checked"
+            if printed_check or name in connector_overrides
+            else "Pending"
+        )
+        provenance=(
+            "Private structured dataset; printed chart compared for node names, costs and connectors"
+            if printed_check and printed_check.get("level")=="full-chart"
+            else "Structured graph with PDF connector correction"
+            if printed_check or name in connector_overrides
+            else "Private structured dataset; graph validated, PDF comparison pending"
+        )
+        item["system"]["tree"]={"nodes":nodes,"edges":[list(e) for e in sorted(edges)],"verified":verified,"provenance":provenance,"source":{"book":book,"page":page}}
         item["system"]["incomplete"]=[] if verified else errors or ["Missing graph"]
         keys=[k.text for k in el.findall("CareerSkills/Key")]
         item["system"]["careerSkills"]=[skill_ids[k] for k in keys if k in skill_ids]
@@ -181,13 +281,21 @@ def main():
             target_page=target["system"]["source"]["page"] or page
             matches=match_pdf(target_book)
             standalone=[p for p in pdfs if re.sub(r"^(?:eote|aor|fad)","",book_key(p.stem))==norm(name)]
-            coverage.append({"specialization":target["name"],"career":target["system"].get("career",""),"book":target_book,"page":target_page,"pdf":bool(matches),"pdfFile":matches[0].name if matches else "","standaloneChart":standalone[0].name if standalone else "","graph":"imported" if verified else "needs review","nodes":len(nodes),"links":len(edges),"issues":errors,"pdfCompared":name in compared})
+            target_check=printed_checks.get(norm(target["name"]))
+            target_comparison=(
+                "Full chart checked"
+                if target_check and target_check.get("level")=="full-chart"
+                else "Connector correction checked"
+                if target_check or name in connector_overrides
+                else "Pending"
+            )
+            coverage.append({"specialization":target["name"],"career":target["system"].get("career",""),"book":target_book,"page":target_page,"pdf":bool(matches),"pdfFile":matches[0].name if matches else "","standaloneChart":standalone[0].name if standalone else "","graph":"imported" if verified else "needs review","nodes":len(nodes),"links":len(edges),"issues":errors,"pdfCompared":target_comparison!="Pending","comparison":target_comparison})
             imported+=int(verified)
     for key,item in specs.items():
         if key in matched: continue
         ref=item["system"]["source"]
         matches=match_pdf(ref["book"])
-        coverage.append({"specialization":item["name"],"career":item["system"].get("career",""),"book":ref["book"],"page":ref["page"],"pdf":bool(matches),"pdfFile":matches[0].name if matches else "","graph":"missing","nodes":0,"links":0,"issues":["No structured chart found"],"pdfCompared":False})
+        coverage.append({"specialization":item["name"],"career":item["system"].get("career",""),"book":ref["book"],"page":ref["page"],"pdf":bool(matches),"pdfFile":matches[0].name if matches else "","graph":"missing","nodes":0,"links":0,"issues":["No structured chart found"],"pdfCompared":False,"comparison":"Pending"})
     # Signature abilities are separate trees attached to the bottom row of an
     # eligible career specialization. Exact guidance remains private while the
     # graph, costs, source references and link requirements are structured.
@@ -220,6 +328,9 @@ def main():
         "unmatcheddevastation":"unmatcheddevistation",
         "unmatchednegotiations":"unmatchednegotiation",
     }
+    signature_name_corrections={
+        "unmatcheddevistation":"Unmatched Devastation",
+    }
     signature_coverage=[]; signature_matched=set(); signature_imported=0
     signature_paths=sorted((args.dataset/"SigAbilities").glob("*.xml"),key=lambda path:(path.name.startswith("Umatched "),path.name))
     for path in signature_paths:
@@ -233,6 +344,10 @@ def main():
         if not item:
             item={"_id":hashlib.sha256(f"signatureAbility:{text(ability,'Key')}".encode()).hexdigest()[:16],"name":name,"type":"signatureAbility","img":"systems/star-wars-ffg/assets/item.svg","system":{"source":{"book":book,"page":page,"table":"signature-abilities-xml","id":text(ability,"Key")},"metadata":{},"description":"","eligibleCareers":[],"abilityCategory":"","matchingNodes":[],"linkedSpecializationId":""},"flags":{"star-wars-ffg":{"importKey":f"signatureAbility:{text(ability,'Key')}"}}}
             bundle["documents"]["Item"].append(item); signature_items[target_key]=item
+        elif target_key in signature_name_corrections:
+            # Prefer the printed structured-source spelling over a legacy
+            # database alias while retaining the existing stable document ID.
+            item["name"] = signature_name_corrections[target_key]
         signature_matched.add(target_key)
         system=item["system"]
         if not book: book=system.get("source",{}).get("book","")
@@ -265,13 +380,17 @@ def main():
                 for slot in range(col,col+span): row_slots[slot]=node_id
                 definition=signature_nodes.get(key)
                 node_name=text(definition,"Name") if definition is not None else (f"{name} Base Ability" if row_index==0 else key)
-                if definition is None: guidance_missing.append(key)
+                override=signature_overrides.get(norm(name),{}).get(node_id,{})
+                if override.get("name"): node_name=str(override["name"])
                 definition_sources=[*definition.findall("Source"),*definition.findall("Sources/Source")] if definition is not None else []
                 reference={"book":((definition_sources[0].text or "").strip() if definition_sources else book),"page":(definition_sources[0].get("Page","") if definition_sources else page)}
-                node={"id":node_id,"name":node_name,"key":key,"ranked":False,"cost":costs[col] if col<len(costs) else 0,"row":row_index,"col":col,"span":span,"entry":row_index==0 and col==0,"activation":"","effects":[],"reference":reference}
+                node={"id":node_id,"name":node_name,"key":key,"ranked":False,"cost":costs[col] if col<len(costs) else 0,"row":row_index,"col":col,"span":span,"entry":row_index==0 and col==0,"activation":str(override.get("activation","")),"effects":copy.deepcopy(override.get("effects",[])),"reference":reference}
+                summary=""
                 if args.include_private_talent_text:
-                    summary=text(definition,"Description") if definition is not None else (text(ability,"Description") if row_index==0 else "")
+                    summary=str(override.get("summary", "")) or (text(definition,"Description") if definition is not None else (text(ability,"Description") if row_index==0 else ""))
                     if summary: node["summary"]=summary
+                if definition is None and not summary:
+                    guidance_missing.append(key)
                 nodes.append(node)
                 col+=span
             slot_ids.append(row_slots); directions.append(ds)
@@ -284,19 +403,30 @@ def main():
                     a=slot_ids[row_index][col]; b=slot_ids[rr][cc]
                     if a!=b: edges.add(tuple(sorted((a,b))))
         verified=len(rows)==3 and len(nodes)==9 and len(matching)==4 and any(matching) and not errors
-        system["tree"]={"nodes":nodes,"edges":[list(edge) for edge in sorted(edges)],"verified":verified,"provenance":"Private structured signature-ability dataset; graph validation complete, printed chart comparison pending","source":{"book":book,"page":page}}
+        reference_book=system.get("source",{}).get("book") or book
+        reference_page=system.get("source",{}).get("page") or page
+        printed_check=source_verification(
+            "signatureAbility", item["name"], reference_book, reference_page
+        )
+        comparison="Full chart checked" if printed_check else "Pending"
+        provenance=(
+            "Private structured signature-ability dataset; printed chart compared for node names, costs and connectors"
+            if printed_check
+            else "Private structured signature-ability dataset; graph validation complete, printed chart comparison pending"
+        )
+        system["tree"]={"nodes":nodes,"edges":[list(edge) for edge in sorted(edges)],"verified":verified,"provenance":provenance,"source":{"book":reference_book,"page":reference_page}}
         incomplete=[]
         if not verified: incomplete.extend(errors or ["Signature ability graph needs review"])
         if guidance_missing: incomplete.append(f"Private guidance missing for {len(set(guidance_missing))} nodes")
         system["incomplete"]=incomplete
-        signature_coverage.append({"signatureAbility":item["name"],"career":", ".join(system.get("eligibleCareers",[])),"book":system.get("source",{}).get("book",book),"page":system.get("source",{}).get("page",page),"graph":"imported" if verified else "needs review","nodes":len(nodes),"links":len(edges),"guidanceMissing":len(set(guidance_missing)),"issues":errors})
+        signature_coverage.append({"signatureAbility":item["name"],"career":", ".join(system.get("eligibleCareers",[])),"book":system.get("source",{}).get("book",book),"page":system.get("source",{}).get("page",page),"graph":"imported" if verified else "needs review","nodes":len(nodes),"links":len(edges),"guidanceMissing":len(set(guidance_missing)),"issues":errors,"comparison":comparison})
         signature_imported+=int(verified)
     for key,item in signature_items.items():
         if key in signature_matched: continue
         system=item["system"]
         system["tree"]={"nodes":[],"edges":[],"verified":False}
         system["incomplete"]=["No structured signature ability chart found"]
-        signature_coverage.append({"signatureAbility":item["name"],"career":", ".join(system.get("eligibleCareers",[])),"book":system.get("source",{}).get("book",""),"page":system.get("source",{}).get("page",""),"graph":"missing","nodes":0,"links":0,"guidanceMissing":0,"issues":["No structured chart found"]})
+        signature_coverage.append({"signatureAbility":item["name"],"career":", ".join(system.get("eligibleCareers",[])),"book":system.get("source",{}).get("book",""),"page":system.get("source",{}).get("page",""),"graph":"missing","nodes":0,"links":0,"guidanceMissing":0,"issues":["No structured chart found"],"comparison":"Pending"})
     # Fill vehicle statistics only on an exact normalized name match.
     vehicles={norm(text(read_xml(p),"Name")):p for p in (args.dataset/"Vehicles").glob("*.xml")}
     enriched=0
@@ -312,22 +442,40 @@ def main():
         system["metadata"]["statProvenance"]="Private structured dataset; compare with printed source"
         enriched+=1
     coverage.sort(key=lambda row:(row["book"],row["specialization"]))
+    unused_verification=sorted(set(verification)-used_verification)
+    if unused_verification:
+        raise ValueError(f"Unused source verification entries: {unused_verification}")
     args.catalog.write_text(json.dumps(bundle,ensure_ascii=False,indent=2),encoding="utf-8")
     signature_coverage.sort(key=lambda row:(row["book"],row["signatureAbility"]))
     report={"charts":coverage,"graphsImported":imported,"signatureAbilities":signature_coverage,"signatureGraphsImported":signature_imported,"motivationsEnriched":motivations_enriched,"vehiclesEnriched":enriched,"pdfsInventoried":len(pdfs)}
     Path(".local/source-coverage.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
     Path("docs").mkdir(exist_ok=True)
-    missing=[r for r in coverage if not r["pdf"]]
-    lines=["# Advancement source coverage", "", "Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.", "", f"{len(coverage)} specialization references; {imported} structurally validated specialization graphs; {enriched} vehicles with matching structured statistics; {motivations_enriched} private motivation guidance matches.", "", "A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. Four connector discrepancies have been checked against held PDF charts; complete node-by-node comparisons remain pending.", "", "## Photo request register", "", "These source PDFs were not found by normalized book title. A full, straight-on image of each listed chart, with all four columns, five rows, connecting lines and page number visible, will let the chart be checked. Include adjacent creation/exception rules only where the chart references them. Structured graphs may already be available, as shown.", "", "| Book | Printed page | Specialization | Graph |", "|---|---|---|---|"]
+    missing=[r for r in coverage if not r["pdf"] and not r["pdfCompared"]]
+    full_comparisons=sum(r["comparison"]=="Full chart checked" for r in coverage)+sum(r["comparison"]=="Full chart checked" for r in signature_coverage)
+    connector_corrections=sum(r["comparison"]=="Connector correction checked" for r in coverage)
+    lines=["# Advancement source coverage", "", "Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.", "", f"{len(coverage)} specialization references; {imported} structurally validated specialization graphs; {enriched} vehicles with matching structured statistics; {motivations_enriched} private motivation guidance matches.", "", f"A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. {connector_corrections} connector-only checks and {full_comparisons} full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.", "", "## Character-creation source verification", "", "The public implementation records structured values and page citations without copying the books' explanatory prose. The held core books were checked for the shared 500-credit baseline, party-size Obligation/Duty values, line-specific starting-benefit choices, the Age of Rebellion Base of Operations gear-only allowance and the final d100 pocket-money roll.", "", "| Rule line | Held source pages checked |", "|---|---|", "| Edge of the Empire | Core Rulebook pp. 40 and 97 |", "| Age of Rebellion | Core Rulebook pp. 46, 108 and 111 |", "| Force and Destiny | Core Rulebook pp. 49 and 107 |", "", "The source books remain required for their explanations, examples, exceptional species rules and any option not represented as reviewed structured data.", "", "## Partial sourcebook scan requests", "", "These requests record exact page gaps without publishing source text, artwork or private file paths. A database page reference is an index entry, not proof that the complete printed statistics or rule exceptions have been reviewed.", ""]
+    for source in source_requests.get("partialSources", []):
+        evidence = "; ".join(
+            f"{entry['assetPages']}-page {entry['kind']} covering printed pages {', '.join(entry['printedPageRanges'])}"
+            for entry in source.get("evidenceSets", [])
+        )
+        requested = source.get("requestedPrintedPageRanges", [])
+        requested_text = " and ".join(requested)
+        lines += [f"### {source['book']} partial-scan request", "", f"Held evidence: {evidence}.", "", f"Please capture printed pages {requested_text} as complete pages. The 36-69 block contains the indexed equipment, adversary and vehicle material and should be scanned even where a database row already supplies a name or summary value.", "", "| Indexed collection | Missing printed pages |", "|---|---|"]
+        lines += [f"| `{collection}` | {', '.join(str(page) for page in pages)} |" for collection, pages in source.get("databasePages", {}).items()]
+        lines += ["", "Capture requirements:", ""]
+        lines += [f"- {guidance}" for guidance in source_requests.get("captureGuidance", [])]
+        lines += ["", "Keep the captured pages private; they are used to verify structured mechanics and citations, not shipped in the public system.", ""]
+    lines += ["## Photo request register", "", "These chart sources have neither a matched full PDF nor a recorded private-page comparison. A full, straight-on image of each chart, with all four columns, five rows, connecting lines and page number visible, will let the chart be checked. Include adjacent creation or exception rules only where the chart references them. Structured graphs may already be available, as shown.", "", "| Book | Printed page | Specialization | Graph |", "|---|---|---|---|"]
     lines += [f"| {r['book']} | {r['page'] or 'Check index'} | {r['specialization']} | {r['graph']}{'; standalone chart PDF found' if r.get('standaloneChart') else ''} |" for r in missing]
     if not missing: lines.append("| None identified | | | |")
-    lines += ["", "## Complete register", "", "| Specialization | Book | Page | PDF present | Graph | PDF comparison |", "|---|---|---|---|---|---|"]
-    lines += [f"| {r['specialization']} | {r['book']} | {r['page']} | {'Yes' if r['pdf'] else 'No'} | {r['graph']} | {'Connector correction checked' if r['pdfCompared'] else 'Pending'} |" for r in coverage]
-    missing_signatures=[row for row in signature_coverage if row["graph"]=="missing"]
-    lines += ["", "## Signature abilities", "", f"{len(signature_coverage)} signature-ability references; {signature_imported} structurally validated graphs. The base ability remains locked until the character owns a matching bottom-row talent in the linked career specialization.", "", "| Signature ability | Career | Book | Page | Graph | Missing private guidance |", "|---|---|---|---|---|---|"]
-    lines += [f"| {row['signatureAbility']} | {row['career']} | {row['book']} | {row['page']} | {row['graph']} | {row['guidanceMissing']} |" for row in signature_coverage]
-    lines += ["", "## Signature chart photo requests", ""]
-    lines += [f"- {row['signatureAbility']} — {row['book']}, p. {row['page'] or 'check index'}" for row in missing_signatures] or ["- None identified."]
+    lines += ["", "## Complete register", "", "| Specialization | Book | Page | Matched full PDF | Graph | PDF comparison |", "|---|---|---|---|---|---|"]
+    lines += [f"| {r['specialization']} | {r['book']} | {r['page']} | {'Yes' if r['pdf'] else 'No'} | {r['graph']} | {r['comparison']} |" for r in coverage]
+    missing_signatures=[row for row in signature_coverage if row["comparison"]=="Pending"]
+    lines += ["", "## Signature abilities", "", f"{len(signature_coverage)} signature-ability references; {signature_imported} structurally validated graphs. The base ability remains locked until the character owns a matching bottom-row talent in the linked career specialization.", "", "| Signature ability | Career | Book | Page | Graph | Printed comparison | Missing private guidance |", "|---|---|---|---|---|---|---|"]
+    lines += [f"| {row['signatureAbility']} | {row['career']} | {row['book']} | {row['page']} | {row['graph']} | {row['comparison']} | {row['guidanceMissing']} |" for row in signature_coverage]
+    lines += ["", "## Signature chart photo requests", "", "These signature charts have no recorded full printed comparison. A structured graph may already be available, but a complete, straight-on page image is still needed to verify node names, costs and connectors.", "", "| Signature ability | Book | Printed page | Graph |", "|---|---|---|---|"]
+    lines += [f"| {row['signatureAbility']} | {row['book']} | {row['page'] or 'Check index'} | {row['graph']} |" for row in missing_signatures] or ["| None identified | | | |"]
     lines += ["", "## Coverage limits", "", "The register covers the supplied databases, not a verified complete publication bibliography. A present PDF can still have missing or unreadable pages. Expansion crafting, mass combat, squadron and Force-power exceptions need their own reference validation; no blanket claim of complete rules automation is made.", ""]
     Path("docs/source-coverage.md").write_text("\n".join(lines),encoding="utf-8")
     print(json.dumps({"graphsImported":imported,"charts":len(coverage),"missingPDFs":len(missing),"signatureGraphsImported":signature_imported,"signatureAbilities":len(signature_coverage),"missingSignatureGraphs":[row["signatureAbility"] for row in signature_coverage if row["graph"]=="missing"],"motivationsEnriched":motivations_enriched,"vehiclesEnriched":enriched,"unresolvedGraphs":[r["specialization"] for r in coverage if r["graph"]!="imported"]},indent=2))

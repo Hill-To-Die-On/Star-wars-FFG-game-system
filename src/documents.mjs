@@ -34,6 +34,7 @@ import {
   signatureAttachmentCandidates,
   validateSignatureAttachment,
 } from "./signature-abilities.mjs";
+import { requestXpTransaction } from "./xp-transactions.mjs";
 export class StarWarsActor extends Actor {
   assertOwner() {
     if (!this.isOwner) throw new Error("Owner permission is required.");
@@ -194,6 +195,15 @@ export class StarWarsActor extends Actor {
   }
   async buyTalent(itemId, nodeId, { characteristic } = {}) {
     this.assertOwner();
+    return requestXpTransaction(
+      this,
+      "buyTalent",
+      { itemId, nodeId, characteristic },
+      () => this._buyTalentNow(itemId, nodeId, { characteristic }),
+    );
+  }
+  async _buyTalentNow(itemId, nodeId, { characteristic } = {}) {
+    this.assertOwner();
     const item = this.items.get(itemId);
     if (!item?.system.tree?.verified)
       throw new Error(
@@ -276,6 +286,12 @@ export class StarWarsActor extends Actor {
   }
   async buySkill(key) {
     this.assertOwner();
+    return requestXpTransaction(this, "buySkill", { key }, () =>
+      this._buySkillNow(key),
+    );
+  }
+  async _buySkillNow(key) {
+    this.assertOwner();
     const definition = this.skillDefinition(key),
       skill = definition?.state;
     if (!skill) throw new Error("Unknown skill.");
@@ -303,6 +319,7 @@ export class StarWarsActor extends Actor {
       updates["system.customSkills"] = customSkills;
     } else updates[`system.skills.${definition.key}.rank`] = purchase.rank;
     await this.update(updates);
+    return purchase;
   }
   async createCustomSkill(data) {
     this.assertOwner();
@@ -358,6 +375,12 @@ export class StarWarsActor extends Actor {
   }
   async buyCharacteristic(key) {
     this.assertOwner();
+    return requestXpTransaction(this, "buyCharacteristic", { key }, () =>
+      this._buyCharacteristicNow(key),
+    );
+  }
+  async _buyCharacteristicNow(key) {
+    this.assertOwner();
     const purchase = characteristicPurchase(
       this.system.characteristics[key],
       this.system.xp.available,
@@ -382,6 +405,7 @@ export class StarWarsActor extends Actor {
     if (key === "willpower")
       updates["system.strain.max"] = this.system.strain.max + 1;
     await this.update(updates);
+    return purchase;
   }
   specializationPrice(item) {
     const current = this.items.filter((i) => i.type === "specialization");
@@ -405,6 +429,15 @@ export class StarWarsActor extends Actor {
     );
   }
   async acquireSpecialization(item) {
+    this.assertOwner();
+    return requestXpTransaction(
+      this,
+      "acquireSpecialization",
+      { itemUuid: String(item?.uuid ?? "") },
+      () => this._acquireSpecializationNow(item),
+    );
+  }
+  async _acquireSpecializationNow(item) {
     this.assertOwner();
     const cost = this.specializationPrice(item);
     if (cost > this.system.xp.available)
@@ -433,6 +466,28 @@ export class StarWarsActor extends Actor {
       updates["system.forceRating"] = item.system.grantedForceRating;
     await this.update(updates);
     return { cost, itemId: copy._id };
+  }
+  async _executeXpTransaction(operation, args) {
+    switch (operation) {
+      case "buyTalent":
+        return this._buyTalentNow(args.itemId, args.nodeId, {
+          characteristic: args.characteristic,
+        });
+      case "buySkill":
+        return this._buySkillNow(args.key);
+      case "buyCharacteristic":
+        return this._buyCharacteristicNow(args.key);
+      case "acquireSpecialization": {
+        if (!args.itemUuid)
+          throw new Error("The specialization source is no longer available.");
+        const item = await fromUuid(args.itemUuid);
+        if (!item || item.documentName !== "Item" || item.type !== "specialization")
+          throw new Error("Choose a valid specialization from the library.");
+        return this._acquireSpecializationNow(item);
+      }
+      default:
+        throw new Error("Unsupported XP transaction.");
+    }
   }
   signatureAttachmentCandidates(item) {
     return signatureAttachmentCandidates(this, item);

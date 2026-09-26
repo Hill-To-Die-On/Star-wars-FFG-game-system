@@ -1,6 +1,6 @@
 {
   "name": "star-wars-ffg-system",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "An independent Foundry VTT system for the three FFG Star Wars roleplaying lines.",
@@ -14,6 +14,8 @@
     "build": "node scripts/build.mjs",
     "import:database": "node scripts/import-database.mjs",
     "publish:database": "node scripts/publish-database.mjs",
+    "publish:advancement": "node scripts/publish-advancement-trees.mjs",
+    "publish:vehicles": "python scripts/publish-vehicle-stats.py",
     "import:swa": "node scripts/fetch-swa.mjs"
   },
   "devDependencies": {
