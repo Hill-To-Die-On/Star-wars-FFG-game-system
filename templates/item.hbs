@@ -53,7 +53,7 @@
             /></label></div>{{/if}}<label>Personal notes<textarea
           name="system.description"
           rows="5"
-        >{{system.description}}</textarea></label></section><section
+        >{{system.description}}</textarea></label>{{#if summary}}<p class="sf-hint">{{summary}} Summary from recorded fields; consult the book for descriptions and effects.</p>{{/if}}</section><section
       class="sf-panel"
     ><h2>Look it up</h2><div class="sf-form-grid"><label>Book<input
             name="system.source.book"

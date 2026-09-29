@@ -34,6 +34,25 @@ test("characters have one action, one free manoeuvre and a two-manoeuvre cap", (
   assert.throws(() => apply(a, "maneuver", { payment: "strain" }), /limit/i);
 });
 
+test("book-verified additional limbs grant a second free manoeuvre without increasing the cap", () => {
+  const harch = actor("character", {
+    species: "Harch",
+    creation: { species: { book: "Collapse of the Republic", page: "14" } },
+  });
+  const budget = turnBudget(harch);
+  assert.equal(budget.limits.freeManeuvers, 2);
+  assert.equal(budget.limits.maneuverLimit, 2);
+  assert.match(budget.reasons.join(" "), /Harch.*p\. 15/);
+  assert.equal(apply(harch, "maneuver").freeRemaining, 1);
+  assert.equal(apply(harch, "maneuver").freeRemaining, 0);
+  assert.throws(() => apply(harch, "maneuver"), /limit/i);
+  const unverified = actor("character", {
+    species: "Harch",
+    creation: { species: { book: "Homebrew", page: "14" } },
+  });
+  assert.equal(turnBudget(unverified).limits.freeManeuvers, 1);
+});
+
 test("trading an action supplies the second manoeuvre without strain", () => {
   const a = actor(); apply(a, "maneuver");
   const b = apply(a, "maneuver", { payment: "action" });

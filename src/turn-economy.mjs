@@ -1,5 +1,6 @@
 import { SYSTEM_ID } from "./config.mjs";
 import { learnedTalentRules, validateTalentNodeRules } from "./talent-rules.mjs";
+import { speciesTurnBonuses } from "./species-abilities.mjs";
 
 export const TURN_DEFAULTS = Object.freeze({ actions: 1, freeManeuvers: 1, maneuverLimit: 2, strainCost: 2 });
 export const TURN_LABELS = Object.freeze({ actions: "Actions", freeManeuvers: "Free manoeuvres", maneuverLimit: "Manoeuvre limit", strainCost: "Extra manoeuvre cost" });
@@ -74,6 +75,11 @@ export function turnBudget(actor, { key = "freeplay" } = {}) {
       limits[effect.target] += count;
       reasons.push(`${rule.name}: ${count > 0 ? "+" : ""}${count} ${TURN_LABELS[effect.target].toLowerCase()}`);
     }
+  }
+  if (actor?.type === "character") {
+    const species = speciesTurnBonuses(actor.system?.species, actor.system?.creation?.species);
+    limits.freeManeuvers += species.freeManeuvers;
+    reasons.push(...species.reasons);
   }
   for (const field of Object.keys(limits)) limits[field] = Math.max(0, Math.min(10, limits[field]));
   if (vehicle) limits.actions = 0;

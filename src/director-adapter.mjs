@@ -1,5 +1,5 @@
 import { SYSTEM_ID, SKILLS, CHARACTERISTICS } from "./config.mjs";
-import { campaignGuidance, DEFAULT_CAMPAIGN } from "./rules.mjs";
+import { bookFilterMode, campaignGuidance, DEFAULT_CAMPAIGN } from "./rules.mjs";
 import { availableTalents } from "./advancement.mjs";
 import { minionState } from "./mechanics.mjs";
 import { getGMSourceNotes, searchGMSourceNotes } from "./gm-notes.mjs";
@@ -21,6 +21,9 @@ import { readTurnBudget } from "./turn-economy-foundry.mjs";
 import { homebrewIdentityState } from "./homebrew-identities.mjs";
 import { crewContext } from "./vehicle-crew-foundry.mjs";
 import { groupStateForActor } from "./minion-groups.mjs";
+import { speciesAbilityEntry } from "./species-abilities.mjs";
+import { selectBookPlayGuidance, seedReferencePage } from "./book-play-guidance.mjs";
+import { selectOwnedBookArt } from "./book-art-catalogue.mjs";
 export const RULE_KNOWLEDGE_POLICY = Object.freeze({
   id: "evidence-required-v1",
   automaticAuthority: "structured-system-data",
@@ -179,6 +182,21 @@ export function actorContext(actor) {
     forceRating: effectiveTraits?.forceRating ?? s.forceRating,
     xp: s.xp,
     creation: s.creation,
+    speciesAbilities: actor.type === "character" ? (() => {
+      const reviewed = speciesAbilityEntry(s.species, s.creation?.species);
+      return reviewed ? {
+        status: "book-verified",
+        source: reviewed.source,
+        startingSkillRanks: reviewed.startingSkillRanks,
+        selectedSkillRank: s.creation?.speciesSkillChoice ?? "",
+        abilities: reviewed.abilities,
+        remainingReview: s.creation?.speciesAbilitiesPending === true,
+      } : {
+        status: "source-review-needed",
+        source: s.creation?.species ?? {},
+        remainingReview: s.creation?.speciesAbilitiesPending === true,
+      };
+    })() : undefined,
     phase: s.phase,
     minionGroup: actor.type === "minion" ? (()=>{
       const state=groupStateForActor(actor);return state?{remaining:state.remaining,defeated:state.defeated,rank:state.rank,
@@ -545,6 +563,45 @@ export const directorAdapter = {
   },
   getRulesKnowledgePolicy() {
     return { ...RULE_KNOWLEDGE_POLICY };
+  },
+  getBookPlayGuidance(options = {}) {
+    if (!globalThis.game?.user?.isGM)
+      throw new Error("Only the GM can access book play guidance.");
+    const campaign = game.settings.get(SYSTEM_ID, "campaign") ?? DEFAULT_CAMPAIGN;
+    const entries = selectBookPlayGuidance(campaign, options);
+    return {
+      status: entries.length ? "reviewed-guidance" : "unavailable",
+      automatic: false,
+      instruction: "Use these source-linked prompts for GM preparation and reward review. They do not award XP, choose encounters or apply game state.",
+      entries,
+    };
+  },
+  getOwnedBookSelection() {
+    if (!globalThis.game?.user?.isGM)
+      throw new Error("Only the GM can access owned-book selection through Director of Realms.");
+    const campaign = game.settings.get(SYSTEM_ID, "campaign") ?? DEFAULT_CAMPAIGN;
+    return {
+      mode: bookFilterMode(campaign),
+      books: [...(campaign.books ?? [])],
+    };
+  },
+  getBookArtCandidates(catalogue, options = {}) {
+    if (!globalThis.game?.user?.isGM)
+      throw new Error("Only the GM can access private book-art candidates through Director of Realms.");
+    const campaign = game.settings.get(SYSTEM_ID, "campaign") ?? DEFAULT_CAMPAIGN;
+    return selectOwnedBookArt(catalogue, campaign, options);
+  },
+  async getAdventureSeeds({ query = "", book = "", page = 0, pageSize = 20 } = {}) {
+    if (!globalThis.game?.user?.isGM)
+      throw new Error("Only the GM can access adventure seeds through Director of Realms.");
+    const result = await game.system.api.searchReferences({
+      query,
+      book,
+      page,
+      pageSize,
+      category: "adventure_seeds",
+    });
+    return seedReferencePage(result);
   },
   getRuleEvidence(query, limit = 10) {
     const normalizedQuery = String(query ?? "").trim();

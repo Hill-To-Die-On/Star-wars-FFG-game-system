@@ -36920,7 +36920,7 @@
       },
       {
         "_id": "1d34ee2413169a6e",
-        "name": "Communication",
+        "name": "Communications",
         "flags": {
           "star-wars-ffg": {
             "importKey": "duty:52:51"
@@ -36940,7 +36940,7 @@
             "Career": "Spy",
             "d100_Low": 1,
             "d100_High": 8,
-            "Duty_Type": "Communication",
+            "Duty_Type": "Communications",
             "Book": "Age of Rebellion - Cyphers & Masks",
             "Page": 17
           },
@@ -37200,7 +37200,7 @@
       },
       {
         "_id": "8b4513a26a5bce88",
-        "name": "Psycological Warfare",
+        "name": "Psychological Warfare",
         "flags": {
           "star-wars-ffg": {
             "importKey": "duty:60:59"
@@ -37220,7 +37220,7 @@
             "Career": "Spy",
             "d100_Low": 65,
             "d100_High": 72,
-            "Duty_Type": "Psycological Warfare",
+            "Duty_Type": "Psychological Warfare",
             "Book": "Age of Rebellion - Cyphers & Masks",
             "Page": 17
           },
@@ -116659,7 +116659,7 @@
             "Wound_Base": "11",
             "Strain_Base": "8",
             "XP": "90",
-            "Special": "Breathe underwater, Brawl +1, Survival +1 OR Perception -1, Darkness +1, Perception -1",
+            "Special": "Breathe underwater; Brawl +1; Survival or Perception +1; remove 1 darkness Setback; add 1 Perception Setback in bright light",
             "Book": "Edge of The Empire - Dangerous Covenants",
             "Page": "19"
           },

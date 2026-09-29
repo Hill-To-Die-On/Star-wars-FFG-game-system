@@ -23,6 +23,8 @@ test("Director of Realms receives every custom skill with its effective rank", (
       items: { contents: [] },
       system: {
         customSkills,
+        species: "Umbaran",
+        creation: { species: { book: "Rise of the Seperatists", page: "15" }, speciesAbilitiesPending: true },
         skills: {},
         source: {},
         incomplete: [],
@@ -60,6 +62,9 @@ test("Director of Realms receives every custom skill with its effective rank", (
   assert.equal(typeof directorAdapter.getRangeProfile, "function");
   assert.equal(context.motivation, "Relationship: Protect the crew");
   assert.equal(context.motivations[0].description.includes("loyalties"), true);
+  assert.equal(context.speciesAbilities.status, "book-verified");
+  assert.equal(context.speciesAbilities.source.page, "16");
+  assert.equal(context.speciesAbilities.remainingReview, true);
 });
 
 test("Director rules knowledge fails closed when no source evidence exists", () => {

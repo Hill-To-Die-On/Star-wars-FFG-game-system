@@ -5,6 +5,10 @@ import Handlebars from "handlebars";
 import { DICE } from "../src/dice/core.mjs";
 import { validateVehicleData } from "../src/vehicle-data.mjs";
 import { validateVehicleLoadouts } from "../src/vehicle-loadout-data.mjs";
+import { validateRollTables } from "../src/roll-tables.mjs";
+import { validateSpeciesAbilityRegistry } from "../src/species-abilities.mjs";
+import { validateBookPlayGuidance } from "../src/book-play-guidance.mjs";
+import { normalizeBookTitle } from "../src/rules.mjs";
 async function walk(dir) {
   const result = [];
   for (const entry of await readdir(dir, { withFileTypes: true }))
@@ -37,6 +41,27 @@ validateVehicleData(
   JSON.parse(await readFile("data/vehicle-stats.json", "utf8")),
 );
 validateVehicleLoadouts(JSON.parse(await readFile("data/vehicle-loadouts.json", "utf8")));
+const referenceDatabase = JSON.parse(await readFile("data/reference-database.json", "utf8"));
+validateRollTables(
+  JSON.parse(await readFile("data/roll-tables.json", "utf8")),
+  referenceDatabase.tables.books,
+);
+const speciesRegistry = validateSpeciesAbilityRegistry(
+  JSON.parse(await readFile("data/species-abilities.json", "utf8")),
+);
+const speciesRows = referenceDatabase.tables.species;
+for (const entry of speciesRegistry.entries)
+  if (!speciesRows.some((row) => row.Playable === "TRUE" && row.Species === entry.species &&
+    normalizeBookTitle(row.Book) === normalizeBookTitle(entry.source.book) &&
+    String(row.Page) === String(entry.source.cataloguePage)))
+    throw new Error(`Species ability source is absent from the public catalogue: ${entry.species}.`);
+const playGuidance = validateBookPlayGuidance(
+  JSON.parse(await readFile("data/book-play-guidance.json", "utf8")),
+);
+const registeredBooks = new Set(referenceDatabase.tables.books.map((row) => normalizeBookTitle(row.books)));
+for (const entry of playGuidance.entries)
+  if (!registeredBooks.has(normalizeBookTitle(entry.source.book)))
+    throw new Error(`Book play guidance source is absent from the public catalogue: ${entry.id}.`);
 if (manifest.version !== pkg.version)
   throw new Error("Manifest and package versions differ");
 for (const path of [
@@ -74,5 +99,5 @@ for (const [key, die] of Object.entries(DICE))
     }
   }
 console.log(
-  "Syntax, templates, manifest, integration schemas, versions, public vehicle data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
+  "Syntax, templates, manifest, integration schemas, versions, public vehicle, species and book-play data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
 );

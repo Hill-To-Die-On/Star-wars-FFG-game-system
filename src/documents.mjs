@@ -37,6 +37,7 @@ import {
 } from "./signature-abilities.mjs";
 import { requestXpTransaction } from "./xp-transactions.mjs";
 import { assignedCrewCheck, vehicleForActor } from "./vehicle-crew-foundry.mjs";
+import { speciesCheckBonuses } from "./species-abilities.mjs";
 export class StarWarsActor extends Actor {
   assertOwner() {
     if (!this.isOwner) throw new Error("Owner permission is required.");
@@ -124,21 +125,30 @@ export class StarWarsActor extends Actor {
       definition.state.characteristic || definition.characteristic;
     const { selectedTalents = [], label, turnCost = "action", ...rollOptions } = options,
       rules = this.talentRulesForCheck(definition.key, { selectedTalents }),
+      species = this.type === "character"
+        ? speciesCheckBonuses(this.system.species, this.system.creation?.species, definition.key)
+        : { boost: 0, advantage: 0, reasons: [] },
+      effectiveOptions = species.boost
+        ? { ...rollOptions, boost: Number(rollOptions.boost ?? 0) + species.boost }
+        : rollOptions,
       pool = applyTalentPool(
         skillPool(
           this.system.characteristics[characteristic],
           this.skillRank(definition.key),
-          rollOptions,
+          effectiveOptions,
         ),
         rules,
       );
     return rollPool(pool, {
       label: label ?? `${this.name} · ${definition.label}`,
       actor: this,
-      ...rollOptions,
+      ...effectiveOptions,
       turnCost,
-      automaticResults: rules.automaticResults,
-      ruleNotes: rules.reasons,
+      automaticResults: {
+        ...rules.automaticResults,
+        advantage: (rules.automaticResults?.advantage ?? 0) + species.advantage,
+      },
+      ruleNotes: [...rules.reasons, ...species.reasons],
     });
   }
   async rollForce(options = {}) {

@@ -1,6 +1,7 @@
 import { CHARACTERISTICS, SKILLS } from "./config.mjs";
 import { bookAllowed, RULE_LINES } from "./rules.mjs";
 import { databaseIdentityReset, SPECIES_SOURCE_REVIEW } from "./homebrew-identities.mjs";
+import { referenceSummary } from "./reference-summaries.mjs";
 
 const SPECIES_STATS = [
   ...Object.values(CHARACTERISTICS),
@@ -15,6 +16,7 @@ export const ORIGIN_INDEX_FIELDS = [
   "system.metadata.Force_Sensitive",
   "system.metadata.Gain_Force_Rating",
   "system.metadata.Playable",
+  "system.metadata.Special",
   ...SPECIES_STATS.map((key) => `system.metadata.${key}`),
   "system.source.book",
   "system.source.page",
@@ -83,7 +85,12 @@ export function availableOriginOptions(entries, campaign) {
   const choices = (kind) =>
     source
       .filter((entry) => originEntryAllowed(entry, kind, campaign))
-      .map(optionFromEntry)
+      .map((entry) => ({
+        ...optionFromEntry(entry),
+        ...(kind === "species"
+          ? { summary: referenceSummary("species", entry.system?.metadata) }
+          : {}),
+      }))
       .sort(
         (a, b) =>
           a.name.localeCompare(b.name) ||

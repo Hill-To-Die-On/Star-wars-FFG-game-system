@@ -1453,6 +1453,23 @@ body[data-star-wars-theme] #pause figcaption {
   justify-content: space-between;
   margin-top: 12px;
 }
+.sf-roll-tables .sf-catalogue-filters {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.sf-roll-tables .sf-catalogue-results td:first-child {
+  width: 110px;
+  white-space: nowrap;
+}
+.sf-roll-result {
+  padding: 12px;
+  background: var(--sf-wash);
+  border-left: 3px solid var(--sf-accent);
+  font-weight: 600;
+}
+.sf-roll-source-note {
+  color: var(--sf-muted);
+  font-size: 12px;
+}
 .sf-owned-books-content {
   padding: 24px;
   display: flex;
@@ -2899,6 +2916,17 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-vehicle-systems dt { font-size: .8em; text-transform: uppercase; opacity: .8; }
 .sf-vehicle-systems dd { margin: 3px 0 0; font-weight: 600; }
 .sf-creation-entry { display:flex; flex-direction:column; gap:6px; padding:14px 20px; margin:10px 20px; border:1px solid var(--sf-accent, #786649); border-radius:8px; background:#f2eddf; color:#22323c; }
+.sf-species-abilities { margin:10px 20px; padding:12px 16px; border:1px solid var(--sf-accent, #786649); border-radius:8px; background:#f4f0e5; color:#22323c; }
+.sf-species-abilities > strong { display:block; }
+.sf-species-abilities > small { display:block; margin-top:3px; }
+.sf-species-abilities p { margin:6px 0; }
+.sf-species-abilities ul { margin:6px 0; padding-left:22px; }
+.sf-species-abilities li + li { margin-top:4px; }
+.sf-species-abilities li small { margin-left:4px; font-style:italic; }
+.sf-catalogue-species-abilities { margin:10px 0; padding:10px 12px; border:1px solid var(--sf-accent, #786649); border-radius:8px; }
+.sf-catalogue-species-abilities > small { display:block; }
+.sf-catalogue-species-abilities p { margin:6px 0; }
+.sf-catalogue-species-abilities ul { margin:6px 0; padding-left:22px; }
 .sf-creation-entry .sf-button-row { display:flex; gap:10px; }
 .sf-creation-dialog .window-content, .sf-minion-dialog .window-content { overflow:hidden; min-height:0; padding:12px; }
 .sf-creation-dialog .dialog-form, .sf-minion-dialog .dialog-form { display:flex; flex-direction:column; height:100%; min-height:0; }
@@ -2941,3 +2969,8 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-arc-picker-help nav { display:flex; gap:8px; }
 .sf-arc-picker-help button { color:#fff5d5; background:#244751; border:1px solid #9bbdc6; padding:6px 10px; font:inherit; }
 .sf-arc-picker-help button[hidden] { display:none; }
+.sf-career-story { margin: 14px 0; padding: 12px 16px; border: 1px solid var(--sf-accent, #786649); border-radius: 8px; }
+.sf-career-story ul { margin: 8px 0 0; padding-left: 24px; }
+.sf-career-story li + li { margin-top: 5px; }
+.sf-reference-summary { margin: 12px 0; line-height: 1.5; }
+.sf-reference-summary small { display: block; opacity: .8; }

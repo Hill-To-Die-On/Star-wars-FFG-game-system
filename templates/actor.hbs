@@ -52,7 +52,7 @@
 <button type="button" class="sf-origin-toggle" data-origin-toggle aria-label="Show species choices" aria-expanded="false"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>{{else}}<input type="text" value="{{system.species}}" aria-label="Species" readonly>{{/if}}
 </div>
 {{#if originEditable}}<div class="sf-origin-menu" role="listbox" aria-label="Species choices" data-origin-menu hidden>
-{{#each speciesOptions}}<button type="button" role="option" aria-selected="{{selected}}" data-action="selectOrigin" data-kind="species" data-document-id="{{id}}"><strong>{{name}}</strong><small>{{#if source.book}}{{source.book}}{{else}}Unreferenced source{{/if}}{{#if source.page}} · p. {{source.page}}{{/if}}</small></button>{{/each}}
+{{#each speciesOptions}}<button type="button" role="option" aria-selected="{{selected}}" data-action="selectOrigin" data-kind="species" data-document-id="{{id}}"><strong>{{name}}</strong><small>{{summary}}</small><small>{{#if source.book}}{{source.book}}{{else}}Unreferenced source{{/if}}{{#if source.page}} · p. {{source.page}}{{/if}}</small></button>{{/each}}
 <p data-origin-empty hidden>No valid species matches that search.</p>
 {{#if homebrewAllowed}}<button type="button" role="option" data-action="selectHomebrewIdentity" data-homebrew-choice hidden>Use homebrew species</button>{{/if}}
 </div>{{/if}}
@@ -84,6 +84,20 @@
 <p>{{#if homebrew.pending}}Current stats are retained for manual setup. The GM must review characteristics, skills, abilities and resources before completing setup.{{else}}The GM has reviewed the entered setup. Use these recorded values; custom names do not grant additional rules.{{/if}}</p>
 {{#if canReviewHomebrew}}<button type="button" data-action="reviewHomebrewIdentity">Finish homebrew setup · GM</button>{{/if}}
 </aside>{{/if}}
+  {{#if speciesAbilityView}}<aside class="sf-species-abilities" aria-label="Species abilities">
+    <strong>Species abilities · {{#if speciesAbilityView.verified}}book verified{{else}}source review needed{{/if}}</strong>
+    {{#if speciesAbilityView.verified}}
+      <small>{{speciesAbilityView.source.book}}, p. {{speciesAbilityView.source.page}} (ability page)</small>
+      {{#if speciesAbilityView.startingSkills.length}}<p>Starting skill ranks: {{#each speciesAbilityView.startingSkills}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}. {{#if speciesAbilityView.startingSkillsApplied}}Applied by character creation.{{else}}{{#if speciesAbilityView.startingSkillsPendingCreation}}Character creation will apply these ranks.{{else}}Check these ranks on this existing character.{{/if}}{{/if}}</p>{{/if}}
+      {{#if speciesAbilityView.choiceSkill}}<p>Starting skill choice: {{speciesAbilityView.choiceSkill}}. {{#unless speciesAbilityView.startingSkillsApplied}}{{#if speciesAbilityView.startingSkillsPendingCreation}}Character creation will ask for the choice.{{else}}Check this rank on this existing character.{{/if}}{{/unless}}</p>{{/if}}
+      <ul>{{#each speciesAbilityView.abilities}}<li><strong>{{name}}</strong>: {{summary}} <small>{{applicationLabel}}</small></li>{{/each}}</ul>
+      {{#if speciesAbilityView.pending}}<small>Review the abilities marked “Apply when relevant” before finishing creation.</small>{{/if}}
+    {{else}}
+      <p>The catalogue's species ability shorthand has not been checked against the book. Review the source before applying its effects.</p>
+      {{#if speciesAbilityView.shorthand}}<small>Catalogue shorthand: {{speciesAbilityView.shorthand}}</small>{{/if}}
+      {{#if speciesAbilityView.source.book}}<small>{{speciesAbilityView.source.book}}{{#if speciesAbilityView.source.page}}, p. {{speciesAbilityView.source.page}}{{/if}}</small>{{/if}}
+    {{/if}}
+  </aside>{{/if}}
   {{{turnPanel}}}
   {{{minionPanel}}}
   {{#if isCharacter}}{{#unless originsLocked}}{{#unless homebrew.active}}<aside class="sf-creation-entry"><strong>Create this character</strong><span>Choose every option, or start with a few questions.</span><div class="sf-button-row"><button type="button" data-action="createCharacter" data-mode="manual">Manual creation</button><button type="button" data-action="createCharacter" data-mode="guided">Guide me</button></div></aside>{{/unless}}{{/unless}}{{/if}}
@@ -317,7 +331,7 @@
 </section>{{/if}}
     {{#if story}}<section class="sf-panel">
 <h2>Logbook</h2>
-{{#if isVehicle}}<label>Notes<textarea name="system.notes" rows="15">{{system.notes}}</textarea>
+{{#if isVehicle}}{{#if vehicleSummary}}<p class="sf-hint">{{vehicleSummary}} Summary from recorded fields; consult the book for descriptions and effects.</p>{{/if}}<label>Notes<textarea name="system.notes" rows="15">{{system.notes}}</textarea>
 </label>{{else}}<div class="sf-section-heading"><h3>Motivations</h3><button type="button" data-action="addMotivation" title="Add a motivation"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add</button></div>
 <p class="sf-hint">Add as many active or dormant motivations as the character needs. Director of Realms receives their category, guidance and source reference.</p>
 <div class="sf-motivation-list">
@@ -330,6 +344,7 @@
 </div>
 <label>Freeform motivation summary<input name="system.motivation" value="{{system.motivation}}">
 </label>
+{{#if isCharacter}}{{#if speciesSummary}}<p class="sf-hint">{{speciesSummary}} Summary from recorded fields; consult the species source for full creation rules.</p>{{/if}}{{#if speciesStoryPrompts.length}}<div class="sf-career-story"><div class="sf-section-heading"><h3>Species background prompts</h3>{{#if editable}}<button type="button" data-action="addBackgroundPrompts" data-kind="species">Add to biography</button>{{/if}}</div><p class="sf-hint">Original writing prompts for {{system.species}}. They are optional story ideas, not sourcebook rules.</p><ul>{{#each speciesStoryPrompts}}<li>{{this}}</li>{{/each}}</ul></div>{{/if}}{{#if careerStoryPrompts.length}}<div class="sf-career-story"><div class="sf-section-heading"><h3>Career background prompts</h3>{{#if editable}}<button type="button" data-action="addBackgroundPrompts" data-kind="career">Add to biography</button>{{/if}}</div><p class="sf-hint">Original writing prompts for {{system.career}}. They are optional story ideas, not sourcebook rules.</p><ul>{{#each careerStoryPrompts}}<li>{{this}}</li>{{/each}}</ul></div>{{/if}}{{/if}}
 <label>Biography & notes<textarea name="system.biography" rows="12">{{system.biography}}</textarea>
 </label>
 <div class="sf-form-grid">

@@ -65,6 +65,7 @@ test("origin choices use enabled campaign lines and omit database placeholders",
     campaign,
   );
   assert.deepEqual(choices.species.map((entry) => entry.name), ["Human"]);
+  assert.match(choices.species[0].summary, /Brawn 2.*starting XP 110/);
   assert.deepEqual(choices.career.map((entry) => entry.name), ["Explorer"]);
 });
 
