@@ -5,6 +5,9 @@ import { bookAllowed } from './rules.mjs';
 
 export const SYMBOLS = Object.freeze(['advantage','threat','triumph','despair']);
 export const snapshotValues = value => typeof value==='string'?JSON.parse(value):value;
+/** Review includes derived results: unchanged wounds do not imply unchanged soak or threshold. */
+export const reviewSnapshot = plan => ({version:1,before:plan.before,after:plan.after,
+  calculation:plan.calculation??null,source:plan.source,warning:plan.warning??null,downtime:plan.downtime??null});
 export const getPath = (object,path) => path.split('.').reduce((value,key)=>value?.[key],object);
 const copy=value=>structuredClone(value);
 function integer(value,label,min=0,max=1000000) {
