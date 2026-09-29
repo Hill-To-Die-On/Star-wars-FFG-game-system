@@ -1,5 +1,13 @@
 # Release readiness evidence — 2026-09-29
 
+## Combined production-hardening candidate
+
+Four isolated workstreams are integrated in `codex/production-integration`: authenticated GM session authority, rules guidance/diagnostics, keyboard/lifecycle improvements and packaged recovery. The combined Windows suite passes 468 tests, all three browser fixtures and a 300-file audited build. Native fresh installation, upgrades from released 0.2.1/0.3.0 and separate restores pass with no optional modules; full details and remaining limits are in [production readiness](production-readiness.md), [transaction authority](security-authority.md) and [backup/recovery](backup-recovery.md).
+
+This is an unreleased review candidate. It does not promote protected branches or replace the published 0.3.0 package. The records below describe the earlier release-hardening baseline; hosted and local evidence for subsequent candidate heads must be checked separately.
+
+## Earlier release-hardening baseline
+
 This worktree starts at PR #20 commit `108d432d0e2eca758a17f19e9babd1ce09e47f58`. It adds a reproducible archive audit and expands the AtlasMind local command contract to install, test, check, build and audit.
 
 ## Verified
@@ -13,7 +21,7 @@ This worktree starts at PR #20 commit `108d432d0e2eca758a17f19e9babd1ce09e47f58`
 
 ## Open release gates
 
-The feature branches must be integrated before a final clean Foundry install, upgrade from 0.2.1 and protected promotion are claimed. No new public release or promotion was performed for this branch.
+The production-hardening lanes are now combined and the synthetic install/upgrade/restore matrix has passed. Actual-campaign restoration, final release version/archive acceptance and protected promotion remain open. No new public release or promotion was performed.
 
 GitHub currently reports zero registered runners for this repository. Local Docker evidence is distinct from a hosted AtlasMind run. The reviewed dispatcher also requires `github.actor == github.repository_owner`; the owner is an organization, so the human maintainer cannot satisfy that equality. This authorization policy was left unchanged after automatic approval review rejected a broader maintainer gate.
 

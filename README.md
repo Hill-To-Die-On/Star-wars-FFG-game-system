@@ -18,7 +18,7 @@ Use this manifest in Foundry's **Install System → Manifest URL**:
 https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json
 ```
 
-Create a world using **Star Wars FFG**. Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
+Create a world using **Star Wars FFG**. For the unreleased candidate, the GM selects **Settings sidebar → Transaction authority** for one browser tab and repeats that selection after reload or handover. Other GM tabs can view without processing changes; see [transaction authority and recovery](docs/security-authority.md). Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
 
 The compact seven-die tray beside the chat bar supports quick ad-hoc pools and follows Foundry's public, GM, blind and self chat buttons. Each player can hide it under **Configure Settings → Star Wars FFG → Compact dice tray by chat**.
 

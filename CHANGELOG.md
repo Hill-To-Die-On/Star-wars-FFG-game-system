@@ -36,6 +36,7 @@
 - Keep the characteristic/rank base dice explanation separate from talent changes; preserve cited structured modifier contributions and source references in check results.
 
 - Keep vehicle facing independent of movement direction and provide clockwise/counterclockwise token controls. Improve token-art resolution and frame placement, and keep names, elevation labels, turn controls and targeting cards from covering one another.
+- Route XP, turn and crew changes through authenticated native requests with durable receipts, complete synthetic actor identities, queued permission rechecks and explicit GM-browser selection. Fence late completions and retain interrupted work for GM review. Keep routine protocol cards out of play chat.
 - Protect tabletop mechanical requests with authenticated authorship, unchanged-payload checks and replay guards. Spending approvals check the proposer's blind/whisper visibility, and initiative choices follow the actual turn order.
 - Serialize actor changes across tabletop effects, XP purchases, turn spending and crew operations. Preserve dotted snapshot paths through Foundry document transport so previews and undo use the correct saved values.
 - Reject DoR targeted checks before rolling when sight is blocked, unknown or requires a GM ruling. Bind the rolled actor and assigned-crew lookup to the measured source token.
@@ -50,6 +51,8 @@
 - Add usage and acceptance guides for creation, minions, crew, turn indicators, flight, shadows and tabletop tools; update the README, contribution instructions, range/DoR guides and canonical roadmap. Record native multi-client acceptance separately from browser fixtures and provider-dependent campaign testing.
 
 ### Remaining limitations
+
+- GM transaction selection must be repeated after reload or handover. Simultaneous deliberate GM takeovers are not atomic, and receipt storage remains unbounded pending safe compaction and long-campaign load testing.
 
 - Reviewed narrative-option tables are not bundled. Critical/condition records do not apply every rules modifier; remaining weapon qualities, equipment rewards and automated story/downtime effects still require source-backed work or an explicit GM ruling.
 - Full DoR beginner and mixed-rule campaigns, cinematic interpretation, image derivatives and Surveyor acceptance remain open. Native roll facts and private artwork catalogue review have been verified separately; those checks do not establish a completed AI-led campaign.

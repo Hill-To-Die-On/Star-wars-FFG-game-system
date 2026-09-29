@@ -5,11 +5,12 @@ This guide is for a normal human-GM game. Director of Realms is optional. Keep t
 ## Prepare a world
 
 1. Install the system from the release manifest and create a world using Star Wars FFG. Start with no optional modules; add Dice So Nice after basic sheets and chat work.
-2. Open Configure Settings → Star Wars FFG → Campaign rules & adventure state. Enable the intended rule lines and choose the story mechanics separately. All three rule lines are enabled by default; adding a line does not grant another starting package.
-3. Open Owned books and select the sources available to the table. The Reference catalogue searches the bundled database without a private import. Populate compendiums only when native world references are wanted.
-4. Choose the sheet/interface theme, compact dice tray and turn-management policy. A theme is cosmetic. Decide whether players can add/reset turn allowances or whether those changes are GM/automatic only.
-5. Give each player ownership of their character and access to the intended scene. Verify the scene from a separate player login. Do not assume a GM-visible map or token is visible to players.
-6. Open Help & rules coverage for supported workflows and learned-effect details. For a private source library, export the GM source key before clearing browser storage or moving to another browser.
+2. Open the Settings sidebar and select Transaction authority for this GM browser. Confirm that previous transaction tabs have stopped. Repeat after reloading or handing over to another GM; other GM tabs can view without processing changes. [Authority and interrupted-request recovery](security-authority.md)
+3. Open Configure Settings → Star Wars FFG → Campaign rules & adventure state. Enable the intended rule lines and choose the story mechanics separately. All three rule lines are enabled by default; adding a line does not grant another starting package.
+4. Open Owned books and select the sources available to the table. The Reference catalogue searches the bundled database without a private import. Populate compendiums only when native world references are wanted.
+5. Choose the sheet/interface theme, compact dice tray and turn-management policy. A theme is cosmetic. Decide whether players can add/reset turn allowances or whether those changes are GM/automatic only.
+6. Give each player ownership of their character and access to the intended scene. Verify the scene from a separate player login. Do not assume a GM-visible map or token is visible to players.
+7. Open Help & rules coverage for supported workflows and learned-effect details. For a private source library, export the GM source key before clearing browser storage or moving to another browser.
 
 ## Create the party
 

@@ -10,6 +10,12 @@ The Help & rules coverage window exposes implemented/assisted/manual workflows a
 
 Remaining mechanics include unencoded critical/condition modifiers, all weapon-quality activations, cross-scale adjudication, source-backed narrative option tables, equipment rewards and automatic downtime/story triggers. Those require an explicit GM decision and must not be represented as complete automation.
 
+## Transaction authority
+
+System-mediated XP, turn, crew and tabletop changes use a deliberately selected GM browser. Other GM tabs are viewers until explicitly selected. Re-select after reload, inspect uncertain work before retrying, and stop the old tab before handover. [Authority and recovery](security-authority.md) documents the operational boundary.
+
+Production gates still include full-server/in-flight-write interruption testing, safe durable receipt compaction and long-campaign load measurements. The retained receipt map grows with play and is rewritten on state changes. Simultaneous deliberate trusted-GM selections are not a server-atomic lock; this must remain explicit.
+
 ## Privacy and recovery
 
 Diagnostics are deliberately allowlisted: Foundry/system versions, the Dice So Nice and DoR integration states, and counts of actors/scenes/messages. They exclude names, world identifiers, settings, content, provider URLs, logs and credentials. Downloading is an explicit local action; there is no telemetry or automatic upload.
@@ -42,3 +48,11 @@ Validate the actual archive and detached manifest, assign a consistent release v
 ## Guidance validation — 2026-09-29
 
 The guidance lane passed 433 unit tests, TypeScript/syntax/template/data checks, a 293-file build and archive audit. The isolated browser fixture verifies keyboard search, status selection, hidden-actor exclusion, escaped actor names, diagnostic download and a 560-pixel viewport. Removing the observer permission check makes both permission/revocation tests fail; the guard was restored and both passed. This is fixture evidence, not native Foundry help-window acceptance or a full campaign.
+
+## Combined hardening evidence — 2026-09-29
+
+The four parallel lanes are combined in `codex/production-integration`. The integrated run passed 468 unit tests, all three browser suites, syntax/type/template/data checks and a 300-file archive audit. The browser suites are fixtures; native UI acceptance of Help, the four selectors and the arc keyboard alternatives remains pending explicit approval for the separate isolated runtime.
+
+The combined native package passed fresh installation, released 0.2.1 and 0.3.0 upgrades, and separate backup restores on Foundry 14.368 with no modules. All candidate scenarios selected the GM transaction browser through its real menu, repeated selection after reload, preserved captured documents and completed damage/undo with no page errors. The exact archive and scenario evidence are retained privately by the recovery harness; no private world data is published.
+
+The dependency advisory check reported zero known vulnerabilities for the locked dependencies with TLS verification enabled. This is a point-in-time advisory result, not a security certification. Prepared-content provenance, actual-campaign backup restore, native screen-reader/long-session acceptance, DoR campaigns and protected release promotion remain distinct gates.
