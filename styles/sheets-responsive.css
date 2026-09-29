@@ -1,0 +1,68 @@
+/* Adapt to the sheet window, not the monitor. No resize polling or document changes. */
+.sf-actor-sheet {
+  container: sf-sheet / inline-size;
+  min-width:min(360px,calc(100vw - 16px));
+  min-height:260px;
+  max-width:calc(100vw - 16px);
+  max-height:calc(100dvh - 16px);
+}
+.sf-actor-sheet .window-content { min-height:0;overflow:auto; }
+.sf-actor-sheet .sf-identity > div:last-child { min-width:0;flex:1; }
+.sf-actor-sheet .sf-tabs { flex-wrap:wrap; }
+.sf-actor-sheet .sf-panel:has(> .sf-tree) { overflow-x:auto; }
+.sf-actor-sheet .sf-tree { min-width:560px; }
+@container sf-sheet (max-width:900px) {
+  .sf-actor-sheet .sf-header { padding:12px 16px; }
+  .sf-actor-sheet .sf-wordmark { font-size:15px;letter-spacing:.14em; }
+  .sf-actor-sheet .sf-wordmark small, .sf-actor-sheet .sf-identity p { display:none; }
+  .sf-actor-sheet .sf-theme-select { top:10px;right:16px; }
+  .sf-actor-sheet .sf-identity { margin:10px 0;gap:12px; }
+  .sf-actor-sheet .sf-portrait-frame { width:56px;height:56px;flex-basis:56px; }
+  .sf-actor-sheet .sf-portrait-frame > img { width:52px;height:52px;padding:2px; }
+  .sf-actor-sheet .sf-header .sf-name { font-size:24px;height:34px;min-height:30px; }
+  .sf-actor-sheet .sf-header-meta { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
+  .sf-actor-sheet :is(.sf-origin-picker,.sf-origin-rules) { min-width:0; }
+  .sf-actor-sheet .sf-origin-rules { grid-column:1 / -1;display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+  .sf-actor-sheet .sf-origin-rules strong { min-height:24px;margin:0;padding:3px 6px; }
+  .sf-actor-sheet .sf-origin-rules small { margin:0;min-height:0; }
+  .sf-actor-sheet .sf-content { padding:10px 12px; }
+  .sf-actor-sheet .sf-panel { padding:12px;margin-bottom:10px; }
+  .sf-actor-sheet .sf-panel h2 { margin-bottom:8px; }
+  .sf-actor-sheet .sf-two-col { gap:10px;grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .sf-actor-sheet .sf-characteristics { gap:6px;margin-bottom:10px; }
+  .sf-actor-sheet .sf-characteristics label { padding:6px 2px; }
+  .sf-actor-sheet .sf-characteristics input { width:44px!important;height:44px!important;min-height:44px!important;font-size:24px!important; }
+  .sf-actor-sheet .sf-characteristics label > span { font-size:10px;letter-spacing:0;padding-inline:2px; }
+  .sf-actor-sheet .sf-tabs { gap:2px;padding:0 8px; }
+  .sf-actor-sheet .sf-tabs button { padding:6px 9px;font-size:11px;min-height:30px;letter-spacing:.025em; }
+  .sf-actor-sheet .sf-skill-sheet { grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
+  .sf-actor-sheet .sf-section-heading { flex-wrap:wrap;gap:6px; }
+  .sf-actor-sheet :is(.sf-creation-entry,.sf-turn-panel) { padding:8px 12px;margin:8px 12px; }
+  .sf-actor-sheet .sf-form-grid { gap:8px; }
+}
+@container sf-sheet (max-width:640px) {
+  .sf-actor-sheet .sf-theme-select { position:static;justify-content:flex-end;margin:2px 0; }
+  .sf-actor-sheet .sf-theme-select select { width:auto;max-width:155px;margin:0;min-height:26px; }
+  .sf-actor-sheet .sf-wordmark { display:none; }
+  .sf-actor-sheet .sf-origin-help, .sf-actor-sheet .sf-origin-rules small { display:none; }
+  .sf-actor-sheet .sf-shell[data-section="skills"] .sf-theme-select { display:none; }
+  .sf-actor-sheet .sf-shell[data-section="skills"] .sf-identity { margin:0; }
+  .sf-actor-sheet .sf-orbit { font-size:18px; }
+  .sf-actor-sheet .sf-header .sf-name { font-size:22px;width:100%; }
+  .sf-actor-sheet .sf-eyebrow { font-size:9px;letter-spacing:.06em; }
+  .sf-actor-sheet .sf-characteristics { grid-template-columns:repeat(6,minmax(0,1fr)); }
+  .sf-actor-sheet .sf-two-col { grid-template-columns:minmax(0,1fr);gap:0; }
+  .sf-actor-sheet .sf-skill-sheet { grid-template-columns:minmax(0,1fr); }
+  .sf-actor-sheet .sf-skill-roll-compact > strong { font-size:12px; }
+  .sf-actor-sheet .sf-skill-compact-row { min-height:29px; }
+  .sf-actor-sheet .sf-skill-roll-compact { min-height:28px; }
+  .sf-actor-sheet .sf-skills-panel .sf-skill-group h3 { font-size:11px; }
+  .sf-actor-sheet .sf-button-row { flex-wrap:wrap; }
+  .sf-actor-sheet .sf-item-row { grid-template-columns:28px minmax(0,1fr) auto auto auto;gap:5px; }
+  .sf-actor-sheet .sf-item-row :is(button,small) { overflow-wrap:anywhere;white-space:normal; }
+  .sf-actor-sheet .sf-form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+@container sf-sheet (max-width:480px) {
+  .sf-actor-sheet .sf-characteristics { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}

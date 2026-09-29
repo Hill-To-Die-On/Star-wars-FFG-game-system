@@ -1,3 +1,6 @@
+import { registerWelcomeBackdrop } from "./welcome-backdrop.mjs";
+import { registerOnboarding, onboardingApi } from "./onboarding-foundry.mjs";
+import { registerWindowPresentation, refreshWindowPresentation } from "./window-presentation.mjs";
 import { registerSupportTools, supportApi } from "./support-foundry.mjs";
 import { SYSTEM_ID, THEMES, ITEM_TYPES } from "./config.mjs";
 import { registerTabletopWorkflows, tabletopApi } from "./tabletop-foundry.mjs";
@@ -132,6 +135,7 @@ export function applyInterfaceTheme() {
   const theme = resolveInterfaceTheme(selection, campaign.lines);
   if (theme) document.body.dataset.starWarsTheme = theme;
   else delete document.body.dataset.starWarsTheme;
+  refreshWindowPresentation();
 }
 function refreshThemedSheets() {
   for (const actor of game.actors ?? [])
@@ -333,6 +337,9 @@ Hooks.once("init", () => {
   registerMinionGroups();
   registerTabletopWorkflows();
   registerSupportTools();
+  registerWelcomeBackdrop();
+  registerOnboarding();
+  registerWindowPresentation();
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
     name: "GM source key",
     label: "Backup or restore key",
@@ -427,6 +434,7 @@ Hooks.once("init", () => {
     crew: crewApi,
     tabletop: tabletopApi,
     support: supportApi,
+    onboarding: onboardingApi,
     turns: Object.freeze({ read:readTurnBudget, perform:performTurnCommand, rotateToken }),
     actorIcons: Object.freeze({
       describe: actorIconDescriptor,

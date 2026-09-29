@@ -1,0 +1,1 @@
+Unofficial, independent and free. Keep the books available. [Releases](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases) · [Issues](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/issues)
