@@ -16,7 +16,7 @@
   ],
   "esmodules": ["src/main.mjs"],
   "socket": true,
-  "styles": ["styles/star-wars.css", "styles/star-wars-interface.css"],
+  "styles": ["styles/star-wars.css", "styles/star-wars-interface.css", "styles/tabletop.css"],
   "languages": [
     {
       "lang": "en",

@@ -1,5 +1,5 @@
 import { SYSTEM_ID } from "./config.mjs";
-import { ActorTransactionQueue, canSpendXp, selectXpAuthority } from "./xp-transactions.mjs";
+import { actorMutationQueue, canSpendXp, selectXpAuthority } from "./xp-transactions.mjs";
 
 const CHANNEL = `system.${SYSTEM_ID}`, REQUEST = "turn-request", RESULT = "turn-result";
 const commands = new Set(["action","maneuver","buyManeuver","tradeManeuver","grant","activate","undo","reset"]);
@@ -11,7 +11,7 @@ const validate = (command, options) => {
 
 /** Single active owner/GM commits spending; UUIDs preserve unlinked-token identity. */
 export class TurnTransactionCoordinator {
-  #queue = new ActorTransactionQueue();
+  #queue = actorMutationQueue;
   #pending = new Map();
   #completed = new Map();
   #listener;
