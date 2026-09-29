@@ -2,7 +2,7 @@
 
 The native adapter is published at `game.system.api.directorOfRealms` during system initialization. The installed Director of Realms registry must consult this provider before its generic fallback. A system-specific adapter must not translate narrative dice into d20 rules.
 
-A companion correction is published for review as Director of Realms 0.10.1162 in [PR #452](https://github.com/Hill-To-Die-On/Director-Of-Realms/pull/452). It restores the current registry bridge, preserves all native narrative result axes, grounds narration in visible documents and committed resource changes, filters hidden tokens, requires source-authorized combat and aligns the DeepSeek V4 request policy. The isolated DoR branch passed its full suite, types, lint, system boundary and production build. A separate Foundry 14.368 data path then confirmed the exact 0.10.1162 runtime, exposed adapter and a real Nara Vex Negotiation roll with 2 net success and 4 uncancelled Advantage. The follow-up narration failed closed when concurrent Foundry load reached p95 200 ms, so this is live adapter evidence rather than a completed AI-GM turn. The active Foundry installation used by another test session was not replaced. This system release alone does not install an unmerged DoR branch.
+The companion correction in Director of Realms [PR #452](https://github.com/Hill-To-Die-On/Director-Of-Realms/pull/452) has merged. It restores the registry bridge, preserves native narrative result axes, grounds narration in visible documents and committed resource changes, filters hidden tokens and requires source-authorized combat. Current isolated validation uses DoR 0.10.1219 built from verified source `f28cb4a`; see the [acceptance record](dor-acceptance.md) for artifact hashes, completed checks and remaining campaign gates. A version label alone is insufficient: an installed snapshot labelled 0.10.1232 lacked Campaign Studio and returned an older narration timeout. This system does not install or replace DoR.
 
 ## Private adventure intake
 
@@ -37,7 +37,23 @@ python scripts/prepare-adventure.py "path/to/scanned-adventure.pdf" --ocr
 python scripts/prepare-adventure.py "path/to/sourcebook.pdf" --kind sourcebook --force-ocr
 ```
 
-Import the generated `.local/adventures/<name>/<name>.md` in Campaign Studio's source library. All three prepared bundles were imported into the isolated world. Source passages remain unreviewed: OCR can misread custom dice symbols, tables and unusual layouts. Compare encounter pools and statistics with the PDF before play. This text workflow does not import maps or handout artwork.
+Import the generated `.local/adventures/<name>/<name>.md` in Campaign Studio's source library. All three prepared bundles were imported in the earlier isolated acceptance world. Source passages remain unreviewed: OCR can misread custom dice symbols, tables and unusual layouts. Compare encounter pools and statistics with the PDF before play. This text preparation does not retain artwork: use DoR's native PDF intake for image extraction.
+
+## Private artwork catalogue
+
+DoR's current PDF intake saves text and queues image extraction in the background. It records image categories, source/page provenance and review status inside the private world. The queue pauses under Foundry rendering pressure and resumes when it recovers. In current-build acceptance, a held PDF produced 25 candidates; 23 initially needed GM review. One approval persisted after reopening the catalogue.
+
+Use Studio's Media task to review extracted images and request Remaster, Upscale or Label-free variants. The original remains available. An operational image provider and a reviewed derivative are still needed before an image can be accepted for players. Extraction and visible controls do not prove that an AI removed every spoiler. Live remastering and Surveyor placement of walls, lights, windows, doors, traps and zones remain separate acceptance gates.
+
+## Targeted check safety
+
+For automated token targeting, call `executeCheck(actor, skill, {sourceToken, targetToken, rangeOptions, ...rollOptions})`. The adapter recomputes the range immediately before rolling. It rejects an unavailable measurement, blocked sight, unknown sight, or `requiresGmRuling`, even if another field says the line is clear. `rangeOptions` supplies the same scene, weapon, firing arc and defence zone accepted by `getCombatRange`.
+
+The source token must belong to the rolled actor, matched by full actor UUID so distinct unlinked tokens cannot borrow one another's path. For a vehicle, pass its vehicle actor and token; the existing vehicle skill workflow resolves assigned crew, with `crewTokenId` retained when explicitly chosen. The adapter binds `vehicleToken` to that measured source even when several linked copies exist. Crew permissions and role eligibility remain the responsibility of the existing crew workflow.
+
+`getCombatRange` preserves the engine's level IDs, vertical relation, `sightBasis` and `sightReason`, and adds `automaticRangedCheckAllowed` plus `automationReason`. That permission concerns the measured path only; it does not validate a weapon, skill, range limit, ammunition or the final pool. A precomputed range or permission flag cannot authorize `executeCheck`. The range engine is queried again.
+
+Untargeted skill checks continue through the ordinary actor roll path. Direct `actor.rollSkill` calls and the GM's Manual pool remain explicit adjudication tools and do not automatically acquire targeting context. `executeAttack` still refuses unrestricted attack automation. Integrations must use the guarded token-aware entry point for targeted checks; the prose guidance alone is not an execution boundary.
 
 ## Rules evidence boundary
 

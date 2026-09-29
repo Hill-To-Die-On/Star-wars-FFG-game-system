@@ -1,5 +1,15 @@
 # Validation
 
+## 2026-09-29 isolated Director of Realms integration
+
+The native adapter now refuses targeted execution for blocked, unknown or unverified paths, including `requiresGmRuling` with otherwise clear sight. It binds the measured source to the rolled actor's full identity, and binds a vehicle's assigned-crew lookup to that vehicle instance. Unsupported weapon, arc and spending decisions still use the established explicit GM workflow.
+
+Red-first regressions and all **374 Node tests** pass, including seven adapter tests. Syntax/template/data checks and the **274-file package build** pass. A separate reproducible DoR **0.10.1219** production build from `f28cb4a` passed eight focused suites / 25 tests with one worker; its full suite was not run.
+
+In isolated Foundry **14.368**, GM and two player clients parsed one genuine roll identically: Negotiation, 4 net successes, 1 Advantage, pool 2 Ability / 2 Proficiency / 1 Difficulty. DoR's model-manager prompt received the exact facts, actor and skill. The final adapter was separately reloaded and checked with native token documents and instrumented execution boundaries, with unsafe paths and unrelated actors rejected and a clear positive control accepted. Both checks had zero JavaScript page errors.
+
+DoR Studio also extracted 25 candidates from a held PDF, queued 23 for review and persisted one GM approval after reopening. Images and campaign evidence stayed in the private world. Derivative image generation and Surveyor acceptance remain open because no configured image endpoint answered. Narration was refused during the frame-pressure recovery hold; a read-only foreground observation subsequently recovered to green at 40 seconds. No compatible already-loaded narrative provider was available under the current configuration, so no actual inference followed and all four full campaign scenarios remain open. See [the exact build hashes, native checks and remaining acceptance](dor-acceptance.md). Shared Foundry and concurrent model workloads were not modified.
+
 ## 2026-09-29 altitude shadows across levels and actors
 
 Elevated artwork now casts onto visible native level planes and lower actor artwork. Each receiving actor uses its elevation plus native token depth; a shared alpha mask clips the shadow to its portrait. Default logarithmic height scaling increases offset and feathering with diminishing growth, while keeping stored elevation and combat measurements unchanged. Scene controls expose lighting, scaling and level-surface overrides, and clients can disable the feature.
