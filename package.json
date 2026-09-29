@@ -13,13 +13,13 @@
     "check": "node scripts/check.mjs",
     "audit:icons": "node scripts/audit-actor-icons.mjs",
     "build": "node scripts/build.mjs",
+    "audit:release": "node scripts/audit-release.mjs",
     "import:database": "node scripts/import-database.mjs",
     "publish:database": "node scripts/publish-database.mjs",
     "publish:advancement": "node scripts/publish-advancement-trees.mjs",
     "publish:vehicles": "python scripts/publish-vehicle-stats.py",
     "publish:loadouts": "python scripts/publish-vehicle-loadouts.py",
-    "import:swa": "node scripts/fetch-swa.mjs",
-    "audit:release": "node scripts/audit-release.mjs"
+    "import:swa": "node scripts/fetch-swa.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
