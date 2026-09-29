@@ -13,6 +13,25 @@ const person = (id="a", type="character") => ({id,uuid:`Scene.one.Token.${id}`,a
   actor:{id,type,system:{groupSize:1,wounds:{value:0,max:5}},canUserModify:u=>u.id==="owner"}});
 const embark = (p,v,seat="crew") => {const u=boardingUpdate(p,v,[],{user:owner,seat});p.flags[SYSTEM_ID]={aboard:u[`flags.${SYSTEM_ID}.aboard`]};return p;};
 
+test("native level travel carries the same occupants and disembarks at the vehicle's current level",()=>{
+  const v=ship(),p=person();v.level="ground";p.level="ground";p.elevation=v.elevation;
+  const boarding=boardingUpdate(p,v,[],{user:owner});
+  assert.equal(boarding.level,"ground");p.flags[SYSTEM_ID]={aboard:boarding[CREW_FLAG_FOR_TEST]};
+  v.level="sky";v.elevation=80;
+  assert.deepEqual(attachedPosition(p,v),{x:650,y:850,elevation:80,level:"sky"});
+  const leaving=departureUpdate(p,v,{user:owner});
+  assert.equal(leaving.level,"sky");assert.equal(leaving.elevation,80);assert.equal(p.id,"a");
+});
+const CREW_FLAG_FOR_TEST=`flags.${SYSTEM_ID}.aboard`;
+
+test("dragging across the screen cannot board a vehicle on another level or altitude",()=>{
+  const v=ship(),p=person();v.level="sky";p.level="ground";
+  assert.deepEqual(boardingTargets(p,{destination:{x:600,y:700}},[v],{user:owner}),[]);
+  assert.throws(()=>boardingUpdate(p,v,[],{user:owner}),/level|altitude/);
+  p.level="sky";assert.deepEqual(boardingTargets(p,{destination:{x:600,y:700}},[v],{user:owner}),[]);
+  assert.deepEqual(boardingTargets(p,{destination:{x:600,y:700,elevation:20}},[v],{user:owner}),[v]);
+});
+
 test("boarding uses the committed destination while Foundry is still animating the original document",()=>{
   const v=ship(),p=person();
   assert.deepEqual(boardingTargets(p,{destination:{x:600,y:700}},[v],{user:owner}),[v]);

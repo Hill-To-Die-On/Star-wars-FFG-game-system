@@ -81,6 +81,10 @@ export function activeCombatForActor(actor) {
   return combats.find(combat => combat.started && Array.from(combat.combatants ?? []).some(c => {
     if(c.actor?.uuid === actor.uuid)return true;
     const scene=c.token?.parent ?? combat.scene;
+    if(actor.type === "vehicle") {
+      const vehicles=new Set(Array.from(scene?.tokens ?? []).filter(t=>t.actor?.uuid===actor.uuid).map(t=>t.id));
+      if(Array.from(scene?.tokens ?? []).some(t=>t.actor?.uuid===c.actor?.uuid && vehicles.has(aboard(t)?.vehicleId)))return true;
+    }
     return c.tokenId && Array.from(scene?.tokens ?? []).some(t=>t.actor?.uuid===actor.uuid && aboard(t)?.vehicleId===c.tokenId);
   })) ?? null;
 }

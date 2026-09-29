@@ -18,12 +18,14 @@ const scene = ({ grid, state }) => ({
   id: "scene-test",
   grid,
   getFlag: () => state,
+  levels: [{id:"ground",elevation:{bottom:-Infinity,top:Infinity}}],
+  testSurfaceCollision: () => null,
 });
 
 const token = (id, x, y, elevation = 0) => ({
   id,
   center: { x, y },
-  document: { id, elevation, parent: { id: "scene-test" } },
+  document: { id, elevation, level:"ground", parent: { id: "scene-test" } },
 });
 
 test("embarked crew cannot obstruct their vehicle's targeting line even in the GM view",()=>{
@@ -218,8 +220,8 @@ test("scaled maps include token elevation and report sight-wall collisions", () 
       polygonBackends: {
         sight: {
           testCollision(origin, destination, options) {
-            assert.deepEqual(origin, { x: 0, y: 0 });
-            assert.deepEqual(destination, { x: 300, y: 400 });
+            assert.deepEqual(origin, { x: 0, y: 0, elevation:0 });
+            assert.deepEqual(destination, { x: 300, y: 400, elevation:12 });
             assert.equal(options.mode, "closest");
             assert.equal(options.type, "sight");
             return { x: 150, y: 200 };
@@ -374,7 +376,7 @@ test("attack trace preview uses equipped weapon, target opposition and range", (
     { ability: 1, proficiency: 2, difficulty: 0, challenge: 1, setback: 1 },
   );
   assert.match(preview.poolLabel, /2 Proficiency/i);
-  assert.equal(preview.error, "");
+  assert.match(preview.error, /Sight collision checks are unavailable/);
 });
 
 test("vehicle attack trace asks for a gunner rather than inventing a pool", () => {
@@ -563,7 +565,7 @@ test("combat range assistant enables and restores a client's overlay", async () 
   assert.equal(values.get("rangeOverlayVisible"), false);
 });
 
-test("range overlay registers combat lifecycle automation and camera reflow", () => {
+test("range overlay registers combat lifecycle automation and camera reflow", async () => {
   const settings = new Map();
   const hooks = new Map();
   globalThis.game = {
@@ -597,6 +599,36 @@ test("range overlay registers combat lifecycle automation and camera reflow", ()
   assert.equal(typeof hooks.get("refreshToken"), "function");
   assert.equal(typeof hooks.get("refreshTile"), "function");
   assert.equal(typeof hooks.get("updateTile"), "function");
+  for(const name of ["Wall","Region","RegionBehavior","Level"])for(const action of ["create","update","delete"])
+    assert.equal(typeof hooks.get(`${action}${name}`),"function");
+
+  const map=scene({grid:{type:1,size:100,distance:1,units:"m"},state:{scale:"personal"}});
+  const original={id:"slot",actor:{type:"character"},token:token("original",0,0)};
+  const claimed={id:"claimant",actor:{type:"character"},token:token("claimant",100,0)};
+  let current=original;
+  const combat={id:"claim-follow",scene:map,started:true,turn:0,turns:[original],getClaimedCombatant:()=>current};
+  game.user={isGM:true};game.settings.get=()=>undefined;game.settings.set=async()=>{};
+  globalThis.canvas={scene:map,tokens:{controlled:[],get:()=>null}};
+  const session=await beginCombatRangeAssistant(combat);
+  assert.deepEqual(session.autoOriginIds,["original"]);
+  current=claimed;
+  assert.equal(typeof hooks.get("updateCombat"),"function");
+  hooks.get("updateCombat")(combat,{flags:{"star-wars-ffg":{slotClaims:[]}}});
+  assert.deepEqual(session.autoOriginIds,["claimant"],"a claim of the current slot follows immediately");
+  current=original;
+  hooks.get("updateCombat")(combat,{"flags.star-wars-ffg.slotClaims":[]});
+  assert.deepEqual(session.autoOriginIds,["original"],"flattened claim updates are recognized");
+  const previousDocument=globalThis.document,badges=[];
+  try {
+    current=claimed;game.combat=combat;game.user.targets=new Set([claimed.token]);
+    game.settings.get=(_system,key)=>key==="rangeOverlayVisible"?true:undefined;
+    canvas.tokens.get=id=>id==="original"?original.token:claimed.token;
+    globalThis.document={createElement:()=>({})};
+    const row={dataset:{combatantId:"slot"},querySelector:()=>null,append:badge=>badges.push(badge)};
+    hooks.get("renderCombatTracker")(null,{querySelectorAll:selector=>selector==="[data-combatant-id]"?[row]:[]});
+    assert.equal(badges.length,1,"range badges use the slot claimant's token");
+  } finally {globalThis.document=previousDocument;}
+  await endCombatRangeAssistant(combat);
 });
 
 
@@ -613,7 +645,7 @@ test("the nearest rotated corner changes the shared band, personal difficulty an
     const result=measureTokenRange(source,target,{scene:map});
     assert.equal(result.band,"short");
     assert.ok(Math.abs(result.sceneDistance-(Math.hypot(1000-700/Math.sqrt(2),300/Math.sqrt(2))-50)/100)<1e-8);
-    assert.deepEqual(ray,{source:result.sourceEdge,target:result.targetEdge});
+    assert.deepEqual(ray,{source:{...result.sourceEdge,elevation:0},target:{...result.targetEdge,elevation:0}});
     const { automaticCheckPool }=await import("../src/dice/builder.mjs");
     const options={characteristic:3,rank:2,skill:"rangedLight",rangeBand:result.band,weaponRange:"long"};
     assert.equal(automaticCheckPool(options).pool.difficulty,1);

@@ -2941,3 +2941,9 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-arc-picker-help nav { display:flex; gap:8px; }
 .sf-arc-picker-help button { color:#fff5d5; background:#244751; border:1px solid #9bbdc6; padding:6px 10px; font:inherit; }
 .sf-arc-picker-help button[hidden] { display:none; }
+.sf-flight-dialog .sf-dialog { padding:16px 20px; color:#23313a; }
+.sf-flight-dialog .sf-dialog p { margin:0 0 16px; line-height:1.5; }
+.sf-flight-dialog .sf-dialog label { display:grid; gap:6px; margin:0 0 16px; font-weight:600; }
+.sf-flight-dialog .sf-dialog input,.sf-flight-dialog .sf-dialog select { background:#f9f5e9; color:#23313a; border:1px solid #6f7776; padding:6px 10px; min-height:36px; }
+.sf-flight-dialog .sf-dialog input:focus,.sf-flight-dialog .sf-dialog select:focus { outline:2px solid #317c83; outline-offset:2px; }
+.sf-flight-dialog .form-footer { padding:0 20px 16px; }

@@ -34,24 +34,18 @@ export class StarWarsCombat extends Combat {
       await this.update({ turn: 0 });
     return this;
   }
-  /** GM explicitly assigns a side's initiative slot; round participation is persisted. */
+  /** Slot order stays stable; the claimant supplies the active actor/token. */
+  getClaimedCombatant(slotId) {
+    const slot = this.combatants.get(slotId);
+    const claim = (this.getFlag(SYSTEM_ID, "slotClaims") ?? []).find(c => c.round === this.round && c.slotId === slotId);
+    return claim ? this.combatants.find(c => c.actor?.uuid === claim.actorUuid) ?? slot : slot;
+  }
+  get combatant() {
+    const slot = super.combatant;
+    return slot ? this.getClaimedCombatant(slot.id) : slot;
+  }
   async claimSlot(combatantId, actor, tokenId = null) {
-    if (!game.user.isGM) throw new Error("The GM assigns initiative slots.");
-    const slot = this.combatants.get(combatantId),
-      side = actor.hasPlayerOwner ? "pc" : "npc";
-    if (!slot || slot.getFlag(SYSTEM_ID, "slotSide") !== side)
-      throw new Error("The actor must match the side of the slot.");
-    const claims = this.getFlag(SYSTEM_ID, "claims") ?? [];
-    if (claims.some((c) => c.round === this.round && c.actorId === actor.id))
-      throw new Error("This actor has already used a slot this round.");
-    await this.update({
-      combatants: [
-        { _id: combatantId, actorId: actor.id, tokenId, name: actor.name },
-      ],
-      [`flags.${SYSTEM_ID}.claims`]: [
-        ...claims.filter((c) => c.round === this.round),
-        { round: this.round, actorId: actor.id, slot: combatantId },
-      ],
-    });
+    const { requestTabletop } = await import("./tabletop-foundry.mjs");
+    return requestTabletop("claim", {combatUuid:this.uuid,slotId:combatantId,actorUuid:actor.uuid,round:this.round});
   }
 }

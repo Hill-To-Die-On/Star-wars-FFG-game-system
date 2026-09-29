@@ -27,9 +27,11 @@ Node.js 24 or later is required.
 
 ```sh
 npm ci
+npm run typecheck
 npm test
 npm run check
 npm run build
+npm run audit:release
 ```
 
 `npm run build` creates `dist/star-wars-ffg.zip`, `dist/system.json`, and `dist/contents.json`. The `dist` directory is ignored and should not be committed. The build uses a positive allow-list so private local imports do not enter a release.
