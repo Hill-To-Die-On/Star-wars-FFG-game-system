@@ -31,7 +31,7 @@ Private notes, keys, licensed PDFs, logs and world databases must never be attac
 
 ## Repeatable checks
 
-`npm run test:browser` runs the repository's `tests/*-ui.mjs` fixtures sequentially with a two-minute bound per fixture. It writes JSON, logs and screenshots under `test-results/browser`. CI installs Chromium and uploads these artifacts on success or failure. These are real-browser fixtures, not native Foundry acceptance.
+`npm run test:browser` runs the repository's `tests/*-ui.mjs` fixtures sequentially with a two-minute bound per fixture. A timeout stops that fixture's owned process tree, including its browser descendants; it never kills processes by name. It writes JSON, logs and screenshots under `test-results/browser`, including any timeout or cleanup failure. CI installs Chromium and uploads these artifacts on success or failure. These are real-browser fixtures, not native Foundry acceptance.
 
 The opt-in native harness requires a locally licensed Foundry installation, its private license file and package ZIPs. Build/audit the candidate first, then run:
 
