@@ -34,10 +34,17 @@ try {
  await page.waitForFunction(()=>game.messages.some(m=>m.flags?.['star-wars-ffg']?.tabletopRequest?.command==='claim'));
  await page.evaluate(()=>{game.user=fixture.gm;const msg=game.messages.find(m=>m.flags?.['star-wars-ffg']?.tabletopRequest?.command==='claim');Hooks.callAll('createChatMessage',msg,{},msg.author.id);});await page.waitForFunction(()=>game.combat.flags['star-wars-ffg'].slotClaims?.length===1);
  await page.evaluate(()=>{void fixture.openSessionWrapUp();});await page.locator('[name="actor-hero"]').check();await page.locator('[name="xp"]').fill('5');await page.locator('[name="credits"]').fill('100');await page.locator('[name="downtime"]').fill('Repaired and resupplied at port.');await source();await page.getByRole('button',{name:'Preview awards'}).click();await page.getByRole('button',{name:'Award reviewed changes'}).click();await page.waitForFunction(()=>fixture.hero.system.xp.available===10);
+ const hooksBeforeDashboard=await page.evaluate(()=>fixture.hookCount());
  await page.evaluate(()=>{void fixture.openVehicleDashboard(fixture.ship);});await page.getByRole('heading',{name:'Vehicle combat · Test Freighter'}).waitFor();assert.equal(await page.getByRole('button',{name:'Build assigned gunner pool'}).isDisabled(),true);
+ await page.locator('.sf-vehicle-dashboard [data-sf-turn="maneuver"]').first().click();
+ await page.waitForFunction(()=>fixture.ship.flags['star-wars-ffg']?.turnEconomy?.rounds?.some(r=>r.entries.length===1));
+ await page.locator('.sf-vehicle-dashboard [data-sf-turn="maneuver"].spent').waitFor({timeout:2000});
+ await page.evaluate(()=>fixture.ship.update({'system.hullTrauma.value':4}));
+ await page.waitForFunction(()=>document.querySelector('.sf-vehicle-dashboard')?.textContent.includes('Hull 4/20'),{},{timeout:2000});
  await page.getByRole('button',{name:'Refresh',exact:true}).click();
  await page.getByRole('heading',{name:'Vehicle combat · Test Freighter'}).waitFor();assert.equal(await page.locator('.application').count(),1,'refresh replaces the dashboard instead of nesting windows');
  await mkdir('.local/tabletop',{recursive:true});await page.screenshot({path:'.local/tabletop/vehicle-dashboard-fixture.png',fullPage:true});
  assert.deepEqual(await page.evaluate(()=>[fixture.hero.system.wounds.value,fixture.hero.system.xp.available,fixture.hero.system.xp.total,fixture.hero.system.credits,fixture.message.flags['star-wars-ffg'].spending.length,game.combat.flags['star-wars-ffg'].slotClaims.length]),[2,10,25,150,1,1]);
+ await page.getByRole('button',{name:'Close',exact:true}).click();assert.equal(await page.evaluate(()=>fixture.hookCount()),hooksBeforeDashboard,'closing the dashboard must detach its document hooks');
  assert.deepEqual(errors,[]);console.log('Browser fixture passed: damage preview/apply/undo, narrative spending, player claim through GM authority, session awards, and unplaced-vehicle fail-closed controls. Live Foundry acceptance remains separate.');
 } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}

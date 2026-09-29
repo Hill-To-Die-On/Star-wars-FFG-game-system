@@ -8,6 +8,7 @@ import { vehicleForActor, crewCheckDialog } from './vehicle-crew-foundry.mjs';
 import { readTurnBudget, turnIndicatorHTML, bindTurnControls } from './turn-economy-foundry.mjs';
 import { bookAllowed } from './rules.mjs';
 import { weaponArcProfile } from './range-overlay/arcs.mjs';
+import { watchVehicleDashboard } from './tabletop-dashboard.mjs';
 import { createMessageProvenance, verifyMessageProvenance } from './tabletop-provenance.mjs';
 
 const flag=(document,key)=>document?.flags?.[SYSTEM_ID]?.[key];
@@ -152,11 +153,10 @@ export async function openInitiativeSlots(combat=game.combat) {
 }
 
 function dashboardTurnHTML(actor) {const budget=readTurnBudget(actor);return `<div class="sf-turn-panel sf-tabletop-turn-compact"><small>${esc(budget.roundLabel)}</small>${turnIndicatorHTML(budget,{compact:true})}</div>`;}
-export async function openVehicleDashboard(actor) {
-  if(actor?.type!=='vehicle'||!canSpendXp(actor,game.user))throw new Error('Choose an owned vehicle.');
+function vehicleDashboardContent(actor) {
   const vehicle=vehicleForActor(actor),rows=vehicle?crewRoster(vehicle,vehicle.parent.tokens,{visibleOnly:true,user:game.user}):[],s=actor.system;
   const weapons=Array.from(actor.items??[]).filter(i=>i.type==='weapon');
-  const result=await foundry.applications.api.DialogV2.wait({...dialogDefaults,position:{width:800,height:850},window:{...dialogDefaults.window,title:`Vehicle combat · ${actor.name}`},content:`<div class="sf-tabletop-body sf-vehicle-dashboard">
+  return {vehicle,rows,html:`<div class="sf-tabletop-body sf-vehicle-dashboard">
     <p>Speed ${s.speed.value}/${s.speed.max} · Handling ${s.handling} · Armour ${s.armor} · Silhouette ${s.silhouette}</p>
     <p>Hull ${s.hullTrauma.value}/${s.hullTrauma.max} · System strain ${s.systemStrain.value}/${s.systemStrain.max}</p>
     <div class="sf-tabletop-grid">${Object.entries(s.shields).map(([zone,n])=>`<span><strong>${esc(zone)}</strong> ${n}</span>`).join('')}</div>
@@ -166,9 +166,27 @@ export async function openVehicleDashboard(actor) {
     <h3>Weapons and targeting</h3>${weapons.map(w=>`<article><strong>${esc(w.name)}</strong><p>Damage ${esc(w.system.damage)} · Critical ${w.system.critical} · ${esc(w.system.range)} · ${esc(weaponArcProfile(w).error || [...weaponArcProfile(w).arcs,weaponArcProfile(w).vertical].filter(Boolean).join(' / '))}</p><button type="button" data-weapon="${esc(w.id)}" ${vehicle?'':'disabled'}>Build assigned gunner pool</button></article>`).join('')||'<p>No verified weapons installed.</p>'}
     <p>Select the vehicle and target a token on the canvas to use its firing arcs, shields and measured attack trajectory.</p>
     <div class="sf-tabletop-grid"><button type="button" data-dashboard="target" ${vehicle?'':'disabled'}>Targeted attack and arcs</button><button type="button" data-dashboard="crew" ${vehicle?'':'disabled'}>Manage crew</button><button type="button" data-dashboard="history">Change history</button>${game.user.isGM?'<button type="button" data-dashboard="state">Adjust speed / shields</button><button type="button" data-dashboard="resolve">Damage / recovery</button>':''}</div>
-    </div>`,buttons:[{action:'refresh',label:'Refresh',callback:()=> 'refresh'},{action:'close',label:'Close'}],render:(_e,app)=>{
-      const panels=app.element.querySelectorAll('.sf-turn-panel');if(panels[0])bindTurnControls(panels[0],actor);rows.forEach((r,i)=>panels[i+1]&&bindTurnControls(panels[i+1],r.actor));
-      app.element.addEventListener('click',event=>{const b=event.target.closest('[data-duty],[data-weapon],[data-dashboard]');if(!b)return;void handle(async()=>{
+    </div>`};
+}
+export async function openVehicleDashboard(actor) {
+  if(actor?.type!=='vehicle'||!canSpendXp(actor,game.user))throw new Error('Choose an owned vehicle.');
+  let state=vehicleDashboardContent(actor),cleanup=()=>{},result;
+  try {
+    result=await foundry.applications.api.DialogV2.wait({...dialogDefaults,position:{width:800,height:850},window:{...dialogDefaults.window,title:`Vehicle combat · ${actor.name}`},content:state.html,
+    buttons:[{action:'refresh',label:'Refresh',callback:()=> 'refresh'},{action:'close',label:'Close'}],render:(_e,app)=>{
+      cleanup();
+      const root=app.element;
+      const paint=()=>{
+        if(!canSpendXp(actor,game.user)){void app.close();return;}
+        state=vehicleDashboardContent(actor);
+        const container=root.querySelector('.dialog-content'),scroll=container.scrollTop;
+        container.innerHTML=state.html;container.scrollTop=scroll;
+        const panels=root.querySelectorAll('.sf-turn-panel');if(panels[0])bindTurnControls(panels[0],actor);
+        state.rows.forEach((row,i)=>panels[i+1]&&bindTurnControls(panels[i+1],row.actor));
+      };
+      paint();
+      const onClick=event=>{const b=event.target.closest('[data-duty],[data-weapon],[data-dashboard]');if(!b)return;void handle(async()=>{
+        const {vehicle}=state,s=actor.system;
         if(b.dataset.duty)return crewCheckDialog(vehicle,b.dataset.duty);
         if(b.dataset.weapon)return crewCheckDialog(vehicle,'gunnery',actor.items.get(b.dataset.weapon));
         if(b.dataset.dashboard==='history')return openWorkflowHistory(actor);
@@ -180,8 +198,12 @@ export async function openVehicleDashboard(actor) {
           const request={kind:'vehicle-state',speed:Number(form.speed),shields:Object.fromEntries(Object.keys(s.shields).map(z=>[z,Number(form[z])])),source:sourceFrom(form),note:'Reviewed speed / shields adjustment'};
           const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});if(await confirmPlan(actor,plan))await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:plan.before});
         }
-      });});
+      });};
+      root.addEventListener('click',onClick);
+      const stop=watchVehicleDashboard({hooks:Hooks,actorUuids:()=>new Set([actor.uuid,...state.rows.map(row=>row.actor?.uuid)]),sceneId:()=>state.vehicle?.parent?.id,refresh:paint});
+      cleanup=()=>{stop();root.removeEventListener('click',onClick);};
     }});
+  } finally {cleanup();}
   if(result==='refresh')return openVehicleDashboard(actor);
 }
 
