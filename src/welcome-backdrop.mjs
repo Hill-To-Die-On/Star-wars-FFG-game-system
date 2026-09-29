@@ -16,6 +16,6 @@ export function registerWelcomeBackdrop() {
   Hooks.on('preCreateScene',scene=>{
     if(!game.user.isGM)return;
     const patch=welcomeSceneBackdrop(scene.toObject(),{theme:document.body.dataset.starWarsTheme,sceneCount:game.scenes.size});
-    if(patch)scene.updateSource(patch);
+    if(patch)scene.updateSource(patch,{recursive:false});
   });
 }
