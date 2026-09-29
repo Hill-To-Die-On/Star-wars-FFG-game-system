@@ -1,6 +1,6 @@
 {
   "name": "star-wars-ffg-system",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "An independent Foundry VTT system for the three FFG Star Wars roleplaying lines.",
@@ -22,7 +22,8 @@
     "publish:vehicles": "python scripts/publish-vehicle-stats.py",
     "publish:loadouts": "python scripts/publish-vehicle-loadouts.py",
     "import:swa": "node scripts/fetch-swa.mjs",
-    "typecheck": "tsc --project tsconfig.json"
+    "typecheck": "tsc --project tsconfig.json",
+    "version:set": "node scripts/set-version.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

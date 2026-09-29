@@ -42,6 +42,18 @@ The browser command builds the current package first so packaged tests cannot us
 
 Follow the testing protocols in `AGENTS.md`. Add focused assertions for changed logic, then run the full test, check, and build commands before requesting review. A passing automated check does not replace Foundry runtime verification for sheets, settings, migrations, multi-client behaviour, Dice So Nice rendering, or Director of Realms integration.
 
+## Candidate and release versions
+
+Git commits identify changes; they do not increment the Foundry package version. When starting a new candidate after a release, or preparing a separately installable test build, set its version explicitly:
+
+```sh
+npm run version:set -- 0.4.1
+```
+
+Choose the intended next version for the change. This command synchronizes `package.json`, both root version fields in `package-lock.json`, `system.json` and its release download URL, and the first changelog section. It retains previous release notes and dependency versions, rejects backwards versions, and does not commit, tag, install or publish anything. Use three numeric parts: Foundry's version comparison does not support SemVer prerelease or build suffixes. Keep candidate status in the changelog as **Unreleased**.
+
+Both `npm run check` and `npm run build` reject mismatched version metadata. When publishing, replace **Unreleased** with the release date, run the normal validation and protected promotion flow, and publish the matching `v<version>` tag with the audited ZIP and manifest. Do not overwrite an existing release tag or imply that an unreleased download URL is already available. Code-only commits can share a candidate version while it is being developed; distinguish those revisions by their Git commit.
+
 ## Data and rules automation
 
 Public reference changes must retain creator authorization and the source book/page fields used to locate the corresponding print or PDF entry. Describe corrections in original words. Private specialization guidance, signature-ability guidance, adventure passages, and similar source text stay in local imports and must not enter Git history or release assets.

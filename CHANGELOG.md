@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — Unreleased
 
 ### Added
 
@@ -44,6 +44,8 @@
 - Reject DoR targeted checks before rolling when sight is blocked, unknown or requires a GM ruling. Bind the rolled actor and assigned-crew lookup to the measured source token.
 
 ### Development and documentation
+
+- Correct the accumulated unreleased gameplay and hardening candidate to 0.4.0. Add a single version-setting command and fail checks/builds when package, lockfile, Foundry manifest/download or changelog versions disagree; published 0.3.0 remains unchanged until release.
 
 - Add repeatable packaged installation, upgrade and backup/restore acceptance, with released 0.2.1 and 0.3.0 baselines and private evidence.
 - Run browser fixtures in hosted validation and stop their owned process trees after timeout; leave unrelated processes running.
