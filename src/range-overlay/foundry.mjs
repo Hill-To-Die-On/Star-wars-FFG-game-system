@@ -2146,7 +2146,8 @@ function renderCombatRangeBadges(_application, html) {
     const combatant = combatants.find(
       (entry) => String(entry.id) === String(row.dataset.combatantId),
     );
-    const target = targeted.get(combatantTokenId(combatant));
+    const actingCombatant = combat.getClaimedCombatant?.(combatant?.id) ?? combatant;
+    const target = targeted.get(combatantTokenId(actingCombatant));
     if (!target) continue;
     const result = measureTokenRange(source, target, { scene });
     if (!result.available) continue;
@@ -2424,6 +2425,13 @@ export function registerRangeOverlay() {
       (error) =>
         ui.notifications.error(`Combat range assistant: ${error.message}`),
     );
+  });
+  Hooks.on("updateCombat", (combat, changes) => {
+    const claimChange = Object.hasOwn(changes.flags?.[SYSTEM_ID] ?? {}, "slotClaims") ||
+      Object.hasOwn(changes, `flags.${SYSTEM_ID}.slotClaims`);
+    const session = combatSessions.get(combat.id);
+    if (claimChange && combat.started && session?.accepted)
+      followCombatTurn(combat, null, session);
   });
   Hooks.on("targetToken", handleTargetToken);
   Hooks.on("renderCombatTracker", renderCombatRangeBadges);

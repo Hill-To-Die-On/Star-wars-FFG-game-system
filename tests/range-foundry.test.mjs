@@ -565,7 +565,7 @@ test("combat range assistant enables and restores a client's overlay", async () 
   assert.equal(values.get("rangeOverlayVisible"), false);
 });
 
-test("range overlay registers combat lifecycle automation and camera reflow", () => {
+test("range overlay registers combat lifecycle automation and camera reflow", async () => {
   const settings = new Map();
   const hooks = new Map();
   globalThis.game = {
@@ -601,6 +601,34 @@ test("range overlay registers combat lifecycle automation and camera reflow", ()
   assert.equal(typeof hooks.get("updateTile"), "function");
   for(const name of ["Wall","Region","RegionBehavior","Level"])for(const action of ["create","update","delete"])
     assert.equal(typeof hooks.get(`${action}${name}`),"function");
+
+  const map=scene({grid:{type:1,size:100,distance:1,units:"m"},state:{scale:"personal"}});
+  const original={id:"slot",actor:{type:"character"},token:token("original",0,0)};
+  const claimed={id:"claimant",actor:{type:"character"},token:token("claimant",100,0)};
+  let current=original;
+  const combat={id:"claim-follow",scene:map,started:true,turn:0,turns:[original],getClaimedCombatant:()=>current};
+  game.user={isGM:true};game.settings.get=()=>undefined;game.settings.set=async()=>{};
+  globalThis.canvas={scene:map,tokens:{controlled:[],get:()=>null}};
+  const session=await beginCombatRangeAssistant(combat);
+  assert.deepEqual(session.autoOriginIds,["original"]);
+  current=claimed;
+  assert.equal(typeof hooks.get("updateCombat"),"function");
+  hooks.get("updateCombat")(combat,{flags:{"star-wars-ffg":{slotClaims:[]}}});
+  assert.deepEqual(session.autoOriginIds,["claimant"],"a claim of the current slot follows immediately");
+  current=original;
+  hooks.get("updateCombat")(combat,{"flags.star-wars-ffg.slotClaims":[]});
+  assert.deepEqual(session.autoOriginIds,["original"],"flattened claim updates are recognized");
+  const previousDocument=globalThis.document,badges=[];
+  try {
+    current=claimed;game.combat=combat;game.user.targets=new Set([claimed.token]);
+    game.settings.get=(_system,key)=>key==="rangeOverlayVisible"?true:undefined;
+    canvas.tokens.get=id=>id==="original"?original.token:claimed.token;
+    globalThis.document={createElement:()=>({})};
+    const row={dataset:{combatantId:"slot"},querySelector:()=>null,append:badge=>badges.push(badge)};
+    hooks.get("renderCombatTracker")(null,{querySelectorAll:selector=>selector==="[data-combatant-id]"?[row]:[]});
+    assert.equal(badges.length,1,"range badges use the slot claimant's token");
+  } finally {globalThis.document=previousDocument;}
+  await endCombatRangeAssistant(combat);
 });
 
 
