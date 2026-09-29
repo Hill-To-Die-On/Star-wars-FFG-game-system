@@ -1,3 +1,4 @@
+import {getDocumentTransactionBroker} from './document-transactions.mjs';
 import { SYSTEM_ID, SKILLS } from './config.mjs';
 import { escapeHTML as esc } from './mechanics.mjs';
 import { ActorTransactionQueue, canSpendXp } from './xp-transactions.mjs';
@@ -30,6 +31,7 @@ async function authenticatedRequester(message,key,creatorId,{requireActive=true}
     const receipt=await createMessageProvenance(message,key,creatorId,game.users);
     await provenanceQueue.run('receipts',async()=>{
       const receipts=game.settings.get(SYSTEM_ID,'tabletopProvenance')??{};
+      if(!getDocumentTransactionBroker().isAuthority())throw new Error('Transaction authority changed; select the active GM browser.');
       await game.settings.set(SYSTEM_ID,'tabletopProvenance',{...receipts,[message.id]:receipt});
     });
   }
@@ -59,7 +61,7 @@ function settleRequest(message) {
   clearTimeout(waiter.timer);pending.delete(message.id);result.ok?waiter.resolve(result.result):waiter.reject(new Error(result.error));
 }
 async function processRequest(message,creatorId) {
-  if(workflowAuthority(game.users)?.id!==game.user.id || flag(message,'tabletopResult') || processing.has(message.id))return;
+  if(!getDocumentTransactionBroker().isAuthority() || flag(message,'tabletopResult') || processing.has(message.id))return;
   const storedRequest=flag(message,'tabletopRequest');if(!storedRequest)return;
   const request=structuredClone(storedRequest);
   processing.add(message.id);
@@ -67,6 +69,7 @@ async function processRequest(message,creatorId) {
     let result;
     try {result={ok:true,result:await service.execute(request.command,request.args,await authenticatedRequester(message,'tabletopRequest',creatorId),request.operationId)};}
     catch(error){result={ok:false,error:error.message};}
+    if(!getDocumentTransactionBroker().isAuthority())return;
     await message.update({[`flags.${SYSTEM_ID}.tabletopResult`]:result,
       content:`<p>${esc(request.command)} · ${result.ok?'Confirmed':esc(result.error)}</p>`});
   } finally {processing.delete(message.id);}
@@ -240,11 +243,12 @@ export function registerTabletopWorkflows() {
   // TODO: preload narrative options only after their rule sources are reviewed.
   game.settings.register(SYSTEM_ID,'narrativeSpendingOptions',{scope:'world',config:false,type:Array,default:[]});
   Hooks.once('ready',()=>{
-    service=new TabletopWorkflowService({resolve:uuid=>fromUuid(uuid),campaign,verifyProposal:message=>authenticatedRequester(message,'spendingProposal',undefined,{requireActive:false})});
+    service=new TabletopWorkflowService({assertAuthority:()=>{if(!getDocumentTransactionBroker().isAuthority())throw new Error('Transaction authority changed; inspect the request before retrying.');},resolve:uuid=>fromUuid(uuid),campaign,verifyProposal:message=>authenticatedRequester(message,'spendingProposal',undefined,{requireActive:false})});
     for(const message of game.messages??[])if(flag(message,'tabletopRequest')&&!flag(message,'tabletopResult'))void handle(()=>processRequest(message));
   });
+  Hooks.on('starWarsAuthoritySelected',()=>{for(const message of game.messages??[])if(flag(message,'tabletopRequest')&&!flag(message,'tabletopResult'))void handle(()=>processRequest(message));});
   Hooks.on('createChatMessage',(message,_options,creatorId)=>{
-    if(!service || workflowAuthority(game.users)?.id!==game.user.id)return;
+    if(!service || !getDocumentTransactionBroker().isAuthority())return;
     if(flag(message,'tabletopRequest'))void handle(()=>processRequest(message,creatorId));
     if(flag(message,'spendingProposal'))void handle(async()=>{await authenticatedRequester(message,'spendingProposal',creatorId);await message.update({[`flags.${SYSTEM_ID}.proposalReady`]:true});});
   });
