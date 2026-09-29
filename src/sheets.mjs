@@ -495,7 +495,7 @@ function attachPoolBuilder(dialog, context) {
     const result = automatic();
     writePool(result.pool);
     const reasons = [
-      `${context.characteristicLabel} ${context.characteristicValue} + ${context.skillLabel} rank ${context.rank}: ${result.pool.ability} ability, ${result.pool.proficiency} proficiency`,
+      `${context.characteristicLabel} ${context.characteristicValue} + ${context.skillLabel} rank ${context.rank}: ${result.basePool.ability} ability, ${result.basePool.proficiency} proficiency`,
       ...result.reasons.slice(1),
     ];
     root.querySelector("[data-auto-reasons]").innerHTML = reasons

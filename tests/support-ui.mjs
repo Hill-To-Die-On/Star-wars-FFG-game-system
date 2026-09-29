@@ -53,6 +53,9 @@ try{
  const artifacts=process.env.TEST_ARTIFACTS_DIR || ".local/support";
  await mkdir(artifacts,{recursive:true});
  await page.screenshot({path:resolve(artifacts,"help-coverage.png")});
+ await page.setViewportSize({width:1040,height:900});
+ await page.getByRole("heading",{name:"Learned talent and signature effects",exact:true}).scrollIntoViewIfNeeded();
+ await page.screenshot({path:resolve(artifacts,"learned-effects.png")});
  assert.deepEqual(errors,[]);
  console.log("Support browser fixture passed: actor privacy, keyboard search, status filtering, diagnostic download, escaped content and narrow layout. Native Foundry remains a separate acceptance gate.");
 }finally{await browser?.close();await new Promise(r=>server.close(r));}

@@ -27,6 +27,8 @@
 
 ### Fixed
 
+- Keep the characteristic/rank base dice explanation separate from talent changes; preserve cited structured modifier contributions and source references in check results.
+
 - Keep vehicle facing independent of movement direction and provide clockwise/counterclockwise token controls. Improve token-art resolution and frame placement, and keep names, elevation labels, turn controls and targeting cards from covering one another.
 - Protect tabletop mechanical requests with authenticated authorship, unchanged-payload checks and replay guards. Spending approvals check the proposer's blind/whisper visibility, and initiative choices follow the actual turn order.
 - Serialize actor changes across tabletop effects, XP purchases, turn spending and crew operations. Preserve dotted snapshot paths through Foundry document transport so previews and undo use the correct saved values.

@@ -41,4 +41,4 @@ Validate the actual archive and detached manifest, assign a consistent release v
 
 ## Guidance validation — 2026-09-29
 
-The guidance lane passed 431 unit tests, TypeScript/syntax/template/data checks, a 293-file build and archive audit. The isolated browser fixture verifies keyboard search, status selection, hidden-actor exclusion, escaped actor names, diagnostic download and a 560-pixel viewport. Removing the observer permission check makes both permission/revocation tests fail; the guard was restored and both passed. This is fixture evidence, not native Foundry help-window acceptance or a full campaign.
+The guidance lane passed 433 unit tests, TypeScript/syntax/template/data checks, a 293-file build and archive audit. The isolated browser fixture verifies keyboard search, status selection, hidden-actor exclusion, escaped actor names, diagnostic download and a 560-pixel viewport. Removing the observer permission check makes both permission/revocation tests fail; the guard was restored and both passed. This is fixture evidence, not native Foundry help-window acceptance or a full campaign.

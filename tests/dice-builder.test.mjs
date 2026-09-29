@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  ROLL_DICE,
   adjustPool,
   setDifficulty,
   shiftUpgrade,
@@ -203,3 +204,15 @@ test("automatic pools include learned passive talent dice and fixed results", ()
   assert.equal(result.automaticResults.advantage, 1);
   assert.match(result.reasons.join(" "), /Command/);
 });
+
+test("pool explanations keep base dice separate from talent changes and retain structured contributions",()=>{
+ const talentRules={pool:{add:Object.fromEntries(ROLL_DICE.map(key=>[key,key==="ability"?1:0])),remove:Object.fromEntries(ROLL_DICE.map(key=>[key,0]))},reasons:["Example: +1 ability"],contributions:[{ruleId:"tree:example",source:{book:"Example",page:"8"},effect:{target:"ability",count:1}}]};
+ const result=automaticCheckPool({characteristic:3,rank:2,difficulty:2,combat:false,talentRules});
+ assert.equal(result.pool.ability,2);
+ assert.match(result.reasons[0],/1 ability, 2 proficiency/);
+ assert.equal(result.basePool.ability,1);
+ assert.equal(result.contributions[0].source.page,"8");
+ result.contributions[0].source.page="mutated";
+ assert.equal(talentRules.contributions[0].source.page,"8");
+});
+

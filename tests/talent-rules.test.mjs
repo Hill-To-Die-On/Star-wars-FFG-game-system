@@ -193,3 +193,19 @@ test("structured attribute effects update purchases and conditional armor traits
   base.items.contents[1].system.equipped = false;
   assert.equal(effectiveTalentTraits(base).soak, 4);
 });
+
+test("talent check contributions retain citations and distinguish selected effects from passive effects",()=>{
+ const check={key:"leadership",label:"Leadership",group:"General"};
+ const rules=talentRulesForCheck(actor,check);
+ assert.equal(rules.contributions.length,3);
+ assert.deepEqual(rules.contributions[0].source,{book:"Test",page:"1"});
+ assert.equal(rules.contributions[0].status,"automatic");
+ assert.equal(rules.contributions[0].verification,"structured-effect");
+ assert.match(rules.reasons[0],/Test.*1/);
+ assert.deepEqual(rules.decisions[0].source,{book:"Test",page:"1"});
+ const chosen=talentRulesForCheck(actor,check,{selectedTalents:["ACTIVE"]});
+ assert.equal(chosen.contributions.find(c=>c.ruleId==="spec:active").status,"selected");
+ chosen.contributions[0].source.page="changed";
+ assert.equal(actor.items.contents[0].system.source.page,"1");
+});
+
