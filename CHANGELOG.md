@@ -1,8 +1,14 @@
 # Changelog
 
-## 0.4.0 — Unreleased
+## 0.4.1 — Unreleased
 
 ### Added
+
+- Character and vehicle sheets adapt to their own resized width: compact identity/header spacing, wrapping tabs, three/two/one-column skills and readable narrow layouts with scrolling talent graphs.
+
+- First-launch welcome with a copyright reminder, GM-owned bookshelf, optional browser remembrance for future worlds, per-user skip state and a seven-step replayable Foundry interface tour.
+- Native settings grouped by setup, appearance, combat automation, play tools, private imports and help; consistent system styling for play dialogs and journals, with native configuration windows preserved.
+- A public GitHub wiki with installation, book ownership, interface, character, combat/vehicle, integration, troubleshooting, contribution and credit guides, clearly separating published and candidate behavior.
 
 - Add a resizable Help & rules coverage window with implementation limits, campaign-filtered learned talent/signature effects, source references, graph-verification distinctions and observer permission checks.
 - Add GM/player quick starts and an explicit local diagnostic export limited to versions, known integration states and document counts.

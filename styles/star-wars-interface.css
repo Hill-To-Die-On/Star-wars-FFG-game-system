@@ -449,7 +449,7 @@ body.system-star-wars-ffg #combat .sf-combat-range-badge.is-blocked {
 }
 
 body.system-star-wars-ffg[data-star-wars-theme]
-  .application:not(#director-widget):has(> .window-header) {
+  .application:not(#director-widget):not(.sf-native-settings):has(> .window-header) {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--sf-ui-signal) 52%, #071014);
   border-radius: 2px 11px 2px 11px;
@@ -460,7 +460,7 @@ body.system-star-wars-ffg[data-star-wars-theme]
 }
 
 body.system-star-wars-ffg[data-star-wars-theme]
-  .application:not(#director-widget)
+  .application:not(#director-widget):not(.sf-native-settings)
   > .window-header {
   min-height: 34px;
   color: var(--sf-ui-paper);
@@ -475,7 +475,7 @@ body.system-star-wars-ffg[data-star-wars-theme]
 }
 
 body.system-star-wars-ffg[data-star-wars-theme]
-  .application:not(#director-widget)
+  .application:not(#director-widget):not(.sf-native-settings)
   > .window-header
   .window-title {
   font-size: 15px;
@@ -485,7 +485,7 @@ body.system-star-wars-ffg[data-star-wars-theme]
 }
 
 body.system-star-wars-ffg[data-star-wars-theme]
-  .application:not(#director-widget)
+  .application:not(#director-widget):not(.sf-native-settings)
   > .window-header
   button:hover {
   color: var(--sf-ui-signal);
@@ -504,7 +504,7 @@ body.system-star-wars-ffg[data-star-wars-theme]
 
 body.system-star-wars-ffg[data-star-wars-theme]
   :is(.journal-sheet, .journal-entry-sheet)
-  :is(.journal-sidebar, .journal-entry-pages) {
+  .journal-sidebar {
   background: color-mix(in srgb, var(--sf-ui-dark) 94%, #071014);
   border-color: var(--sf-ui-accent);
 }
@@ -595,7 +595,7 @@ body.system-star-wars-ffg[data-star-wars-theme] #pause figcaption {
   text-transform: uppercase;
 }
 
-body.system-star-wars-ffg[data-star-wars-theme] :is(#sidebar, .application) {
+body.system-star-wars-ffg[data-star-wars-theme] :is(#sidebar, .application:not(.sf-native-settings)) {
   scrollbar-color: var(--sf-ui-accent) #07101499;
 }
 

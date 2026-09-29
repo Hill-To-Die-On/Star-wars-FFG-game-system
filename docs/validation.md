@@ -1,5 +1,9 @@
 # Validation
 
+## 2026-09-29 onboarding, settings and wiki
+
+The 0.4.1 candidate has pure-model and browser regressions for book persistence, explicit future-world reuse, storage denial, stale edits, player permission rejection, search preserving selection, narrow layout and native settings grouping without losing input listeners. Isolated Foundry 14.368 with no modules verifies the new-world core-tour handover, GM/player welcome separation, book and skip persistence after reload, six native settings groups, seven tour steps including a hidden-tray fallback, journal presentation and compact sheet resizing/skill-pool access. Private native results and screenshots stay under ignored `.local/onboarding-native/`. The public wiki has ten original guides plus navigation, with candidate features labelled. See [onboarding details](onboarding-settings.md).
+
 ## 2026-09-29 isolated Director of Realms integration
 
 The native adapter now refuses targeted execution for blocked, unknown or unverified paths, including `requiresGmRuling` with otherwise clear sight. It binds the measured source to the rolled actor's full identity, and binds a vehicle's assigned-crew lookup to that vehicle instance. Unsupported weapon, arc and spending decisions still use the established explicit GM workflow.
