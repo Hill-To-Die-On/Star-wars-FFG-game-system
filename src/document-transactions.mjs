@@ -1,3 +1,4 @@
+import {sha256Text,secureRandomId} from './browser-crypto.mjs';
 import {SYSTEM_ID} from './config.mjs';
 import {ActorTransactionQueue} from './transaction-queue.mjs';
 const REQUEST='authorityRequest',RESPONSE='authorityResponse',SETTING='authorityReceipts',SESSION='authoritySession';
@@ -7,8 +8,7 @@ const byId=(users,id)=>Array.from(users??[]).find(user=>user.id===id);
 const authorId=message=>message?.author?.id??message?.user?.id??message?.author??message?.user;
 export const documentAuthority=users=>Array.from(users??[]).filter(user=>user.active&&user.isGM).sort((a,b)=>String(a.id).localeCompare(String(b.id)))[0];
 export async function transactionDigest(value) {
- const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(value)));
- return Array.from(new Uint8Array(bytes),n=>n.toString(16).padStart(2,'0')).join('');
+ return sha256Text(JSON.stringify(value));
 }
 function validatePayload(request) {
  if(!request||!['xp','turn','crew'].includes(request.domain)||typeof request.id!=='string'||!request.id||request.id.length>128||typeof request.targetUuid!=='string'||request.targetUuid.length>512||!request.targetUuid)throw new Error('Invalid transaction identity.');
@@ -17,7 +17,7 @@ function validatePayload(request) {
 /** Authenticated document transport. Socket payloads are deliberately never consumed. */
 export class DocumentTransactionBroker {
  #handlers=new Map();#hooks=[];#pending=new Map();#jobs=new Map();#metadata=new ActorTransactionQueue();#execution=new ActorTransactionQueue();
- constructor(environment){Object.assign(this,environment);this.timeoutMs??=30000;this.randomId??=()=>crypto.randomUUID();this.sessionId??=crypto.randomUUID();this.onError??=error=>console.warn('Star Wars FFG | Transaction',error.message);}
+ constructor(environment){Object.assign(this,environment);this.timeoutMs??=30000;this.randomId??=()=>secureRandomId();this.sessionId??=secureRandomId();this.onError??=error=>console.warn('Star Wars FFG | Transaction',error.message);}
  authority(){return documentAuthority(this.users());}
  isAuthority(){const selected=this.readSession();return this.currentUser()?.id===this.authority()?.id&&selected?.userId===this.currentUser()?.id&&selected?.sessionId===this.sessionId;}
  async takeAuthority(note){
@@ -85,7 +85,7 @@ export class DocumentTransactionBroker {
    locks=await Promise.all(handler.lockKeys(target).map(transactionDigest));
    if(Object.entries(this.readReceipts()).some(([id,other])=>id!==key&&['running','review'].includes(other.status)&&other.locks?.some(lock=>locks.includes(lock))))throw new Error('A previous transaction for this actor or scene needs GM review before new changes.');
   } catch(error){await this.finish(key,{ok:false,error:error.message},'rejected');return;}
-  const executionId=crypto.randomUUID();
+  const executionId=secureRandomId();
   await this.#write(key,{status:'running',authorityId:this.currentUser().id,authoritySession:this.sessionId,executionId,locks});
   if(!this.isAuthority())return;
   try {
