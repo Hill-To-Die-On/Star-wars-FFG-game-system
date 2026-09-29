@@ -4,7 +4,7 @@
 > `improvement-plan.md`; this file holds the deadlines, estimates, branch names
 > and dependency links that a markdown checkbox cannot carry.
 
-Last updated: 2026-09-29T03:16:15.951Z
+Last updated: 2026-09-29T17:26:15.668Z
 
 Suggested links: on — AtlasMind proposes links, and nothing is applied until somebody accepts it
 
@@ -65,3 +65,4 @@ contradict a link drawn by hand, and it can never make the plan circular.
 | Names what it waits for | The item says “after”, “once”, “depends on”, “requires”, “needs” or “blocked by”, and the words that follow name another item. |
 | Same subject, earlier phase | Two items share at least two distinctive words, and one is foundation work for the other (security → architecture → delivery → feature → documentation). |
 | Earlier release, same subject | Two items share a distinctive word and sit on different declared release gates; the earlier release comes first. |
+

@@ -41,6 +41,12 @@ This is AtlasMind's canonical backlog for the Star Wars FFG Foundry system. Evid
 - [x] Publish copyright-bounded advancement graphs and verification metadata in the release archive, merge them into public compendium imports, and validate the complete 173-item catalogue. The current 126-test suite, release checks and 173-file build pass; printed comparisons remain tracked separately. <!-- rm:publish-advancement-graphs -->
 - [ ] Preserve complete native narrative-roll facts for Director of Realms. System-side focused tests pass on `codex/readiness-gaps`; the companion DoR 0.10.1162 implementation and full suite are in PR #452, with six focused suites / 49 tests rejecting malformed metadata and imitated roll headings. Isolated Foundry produced the exact native 2 success / 4 Advantage card, but the resource guard stopped the model before a narration prompt could consume it. Live merged-build narration and multi-client acceptance remain open. <!-- rm:preserve-native-roll-facts -->
 - [ ] Tighten the core implementation around the agreed stack: TypeScript, React, Vite, Node, C#. <!-- rm:tighten-the-core-implementat -->
+- [ ] Clarify the next highest-value user or business outcome.
+- [ ] Address the highest-risk security, reliability, or correctness gap first.
+- [ ] Capture or implement the next architectural decision that reduces future churn.
+- [ ] Add or update the tests needed to prove the next change safely.
+- [ ] Sequence the next milestone so delivery remains measurable.
+- [ ] Review the operational or third-party dependencies before scaling scope.
 <!-- atlasmind:roadmap-items:end -->
 
 ## Release Gates
