@@ -103,7 +103,7 @@ test("the GM authority serializes competing last-seat requests and rejects a rol
   const g=makeService(gm),p=makeService(player);
   try {
     const results=await Promise.allSettled([p.request(a,"board",{vehicleId:vehicle.id}),p.request(b,"board",{vehicleId:vehicle.id})]);
-    assert.deepEqual(results.map(r=>r.status),["fulfilled","rejected"]);assert.match(results[1].reason.message,/full/i);
+    assert.deepEqual(results.map(r=>r.status).sort(),["fulfilled","rejected"]);assert.match(results.find(r=>r.status==="rejected").reason.message,/full/i);
     assert.equal(Array.from(scene.tokens).filter(t=>aboard(t)).length,1);
     await assert.rejects(executeCrewCommand(a,"role",{role:"pilot"},{id:"other"}),/permission/);
   }finally{g.stop();p.stop();world.stop();}

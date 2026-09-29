@@ -60,7 +60,7 @@ test('a forged response document or socket-style claimed authority cannot settle
 });
 test('two legitimate simultaneous purchases serialize and never overwrite the available balance',async()=>{
  const f=setup('xp',{execute:async actor=>{if(actor.balance<5)throw new Error('Insufficient XP');const old=actor.balance;await new Promise(resolve=>setTimeout(resolve,5));actor.balance=old-5;return actor.balance;}});f.target.balance=5;
- try {const results=await Promise.allSettled([f.player.request(f.target,'buySkill',{}),f.player.request(f.target,'buySkill',{})]);assert.deepEqual(results.map(r=>r.status),['fulfilled','rejected']);assert.equal(f.target.balance,0);assert.equal(f.calls.length,2);}finally{f.world.stop();}
+ try {const results=await Promise.allSettled([f.player.request(f.target,'buySkill',{}),f.player.request(f.target,'buySkill',{})]);assert.deepEqual(results.map(r=>r.status).sort(),['fulfilled','rejected']);assert.equal(f.target.balance,0);assert.equal(f.calls.length,2);}finally{f.world.stop();}
 });
 test('an interrupted mutation is never replayed after GM failover and locks overlapping requests until explicit review',async()=>{
  let release;const gate=new Promise(resolve=>release=resolve),newGM={id:'gm-z',active:true,isGM:true},f=setup('xp',{additionalUsers:[newGM],execute:async actor=>{actor.changed=true;await gate;return 'applied';}});

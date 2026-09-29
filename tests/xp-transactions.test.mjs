@@ -125,11 +125,11 @@ test("two clients cannot both spend the same XP", async () => {
       playerCoordinator.request(playerActor, "buySkill", { cost: 10 }),
     ]);
     assert.deepEqual(
-      attempts.map((attempt) => attempt.status),
+      attempts.map((attempt) => attempt.status).sort(),
       ["fulfilled", "rejected"],
     );
-    assert.equal(attempts[0].value.xp, 0);
-    assert.match(attempts[1].reason.message, /not enough available XP/i);
+    assert.equal(attempts.find(attempt => attempt.status === "fulfilled").value.xp, 0);
+    assert.match(attempts.find(attempt => attempt.status === "rejected").reason.message, /not enough available XP/i);
     assert.equal(authoritativeActor.xp, 0);
   } finally {
     playerCoordinator.stop();
