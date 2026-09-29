@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add a resizable Help & rules coverage window with implementation limits, campaign-filtered learned talent/signature effects, source references, graph-verification distinctions and observer permission checks.
+- Add GM/player quick starts and an explicit local diagnostic export limited to versions, known integration states and document counts.
+
 - Manual and guided character creation with shared starting-resource and XP validation, plus a GM guide for editable, original enemy presets.
 - Deterministic SVG portraits and default tokens distinguished by role, species and vehicle family, with retained frames on custom portraits and vehicle footprints sized from silhouette estimates or exact dimensions through the scene scale.
 - Vehicle Crew & Passengers sheets, generated crew previews, drag-to-board workflows, compact roster badges, role assignments, selective disembarking and character-sheet shortcuts. Vehicle checks use the assigned crew's skills and talents.
