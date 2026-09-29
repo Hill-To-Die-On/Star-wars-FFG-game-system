@@ -1,9 +1,11 @@
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
-import { zipSync, strToU8 } from "fflate";
+import { zipSync } from "fflate";
+import { validateReleasePath } from "./release-policy.mjs";
 const files = {};
 async function collect(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const name = `${dir}/${entry.name}`;
+    if (entry.isSymbolicLink()) throw new Error("Symlinks cannot enter a release: " + name);
     if (entry.isDirectory()) await collect(name);
     else files[name] = new Uint8Array(await readFile(name));
   }
@@ -27,8 +29,7 @@ for (const name of [
 ])
   files[name] = new Uint8Array(await readFile(name));
 for (const name of Object.keys(files))
-  if (/(?:\.local|\.pdf$|\.sql$|\.xml$|\.env)/i.test(name))
-    throw new Error(`Forbidden release entry ${name}`);
+  validateReleasePath(name);
 await mkdir("dist", { recursive: true });
 await writeFile("dist/star-wars-ffg.zip", zipSync(files, { level: 9 }));
 await writeFile("dist/system.json", files["system.json"]);

@@ -13,6 +13,7 @@
     "check": "node scripts/check.mjs",
     "audit:icons": "node scripts/audit-actor-icons.mjs",
     "build": "node scripts/build.mjs",
+    "audit:release": "node scripts/audit-release.mjs",
     "import:database": "node scripts/import-database.mjs",
     "publish:database": "node scripts/publish-database.mjs",
     "publish:advancement": "node scripts/publish-advancement-trees.mjs",
