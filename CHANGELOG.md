@@ -29,6 +29,8 @@
 
 ### Fixed
 
+- Keep authenticated transactions, approval fingerprints and vehicle loadouts working on ordinary HTTP LAN clients using secure random IDs and an attributed local SHA-256 fallback; private source-note encryption retains its HTTPS requirement.
+
 - Preserve manually sized legacy vehicle tokens during upgrades; automatic resizing requires explicit opt-in.
 - Reject damage previews when reviewed inputs such as soak change before approval, even if the prior wound value is unchanged.
 - Remove stale sheet drop handlers, crew drag state and range-motion listeners on rerender, cancellation and teardown.

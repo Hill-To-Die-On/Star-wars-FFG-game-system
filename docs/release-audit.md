@@ -2,7 +2,7 @@
 
 ## Combined production-hardening candidate
 
-Four isolated workstreams are integrated in `codex/production-integration`: authenticated GM session authority, rules guidance/diagnostics, keyboard/lifecycle improvements and packaged recovery. The combined Windows suite passes 468 tests, all three browser fixtures and a 300-file audited build. Native fresh installation, upgrades from released 0.2.1/0.3.0 and separate restores pass with no optional modules; full details and remaining limits are in [production readiness](production-readiness.md), [transaction authority](security-authority.md) and [backup/recovery](backup-recovery.md).
+Four isolated workstreams are integrated in `codex/production-integration`: authenticated GM session authority, rules guidance/diagnostics, keyboard/lifecycle improvements and packaged recovery. The combined Windows suite passes 474 tests, all four browser fixtures and a 307-file audited build. Native fresh installation, upgrades from released 0.2.1/0.3.0 and separate restores pass with no optional modules; full details and remaining limits are in [production readiness](production-readiness.md), [transaction authority](security-authority.md) and [backup/recovery](backup-recovery.md).
 
 This is an unreleased review candidate. It does not promote protected branches or replace the published 0.3.0 package. The records below describe the earlier release-hardening baseline; hosted and local evidence for subsequent candidate heads must be checked separately.
 

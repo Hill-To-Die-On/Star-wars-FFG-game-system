@@ -51,8 +51,10 @@ The guidance lane passed 433 unit tests, TypeScript/syntax/template/data checks,
 
 ## Combined hardening evidence — 2026-09-29
 
-The four parallel lanes are combined in `codex/production-integration`. The integrated run passed 468 unit tests, all three browser suites, syntax/type/template/data checks and a 300-file archive audit. The browser suites are fixtures; native UI acceptance of Help, the four selectors and the arc keyboard alternatives remains pending explicit approval for the separate isolated runtime.
+The four parallel lanes are combined in `codex/production-integration`. The integrated run passed 474 unit tests, all four browser suites, syntax/type/template/data checks and a 307-file archive audit. The browser suites are fixtures; native UI acceptance of Help, the four selectors and the arc keyboard alternatives remains pending explicit approval for the separate isolated runtime.
 
 The combined native package passed fresh installation, released 0.2.1 and 0.3.0 upgrades, and separate backup restores on Foundry 14.368 with no modules. All candidate scenarios selected the GM transaction browser through its real menu, repeated selection after reload, preserved captured documents and completed damage/undo with no page errors. The exact archive and scenario evidence are retained privately by the recovery harness; no private world data is published.
+
+A packaged-browser test on a genuinely insecure HTTP origin verifies the crypto fallback, owner request/replay, altered-provenance rejection and idempotent vehicle loadouts. Vendored SHA-256 provenance, licence and manual update requirements are recorded in `THIRD_PARTY_NOTICES.md`; the npm advisory check does not cover that vendored copy.
 
 The dependency advisory check reported zero known vulnerabilities for the locked dependencies with TLS verification enabled. This is a point-in-time advisory result, not a security certification. Prepared-content provenance, actual-campaign backup restore, native screen-reader/long-session acceptance, DoR campaigns and protected release promotion remain distinct gates.
