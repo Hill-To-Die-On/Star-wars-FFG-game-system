@@ -23,7 +23,7 @@ A running marker is written before a resource callback executes. If execution is
 
 ## Verification
 
-- 442 system unit tests passed on this branch. Security contracts cover authenticated owner requests, rejected non-owner requests, complete synthetic UUIDs, altered payloads, repeated requests, concurrent owners, GM-session selection, stale completion and permission revocation while queued. Positive controls prevent vacuous rejection tests.
+- 448 system unit tests passed on this branch. Security contracts cover authenticated owner requests, rejected non-owner requests, complete synthetic UUIDs, altered payloads, repeated requests, concurrent owners, GM-session selection, stale completion and permission revocation while queued. Positive controls prevent vacuous rejection tests.
 - Five temporary mutations of requester authentication, replay checks, session selection completion fencing and response-publication fencing each caused the corresponding regression to fail; original source was restored. Tests were added red-first for the original transport boundary and three subsequent concurrency findings.
 - The browser fixture passed damage preview/apply/undo, narrative spending, initiative claims, session awards and dashboard updates with explicit GM selection.
 - Isolated Foundry 14.368, with no modules, passed native GM/two-player acceptance: synthetic actor XP isolated from its source and sibling, owned turn/crew changes, denied non-owner requests, protected receipt storage, native author handling, replay after GM reload, concurrent purchase, quiet chat and the review action. No page errors.
@@ -37,3 +37,9 @@ A running marker is written before a resource callback executes. If execution is
 - A surviving selection from a disconnected browser cannot prove liveness. Select the GM browser again after reload; an unhandled request reports a timeout with the Settings recovery path. Simultaneous deliberate selections by trusted GMs and mid-write forced takeover remain an operational limitation.
 - These controls do not prevent a user from making edits that Foundry itself already permits on owned documents, or a GM from changing system data. They govern system-mediated resource workflows. They do not add server-side atomicity to Foundry.
 - Native interruption during an in-flight server write and full-server crash recovery were not simulated in this security pass. Deterministic tests cover queued recovery and late completion fencing; restore and release testing is a separate verification lane.
+
+## Ordinary HTTP LAN clients
+
+Core transaction IDs use 128 bits from crypto.getRandomValues, which is available on HTTP LAN connections. When native Web Crypto hashing is absent, fingerprints use the same SHA-256 algorithm through the locally bundled, pinned MIT noble-hashes implementation. Existing receipts remain compatible across HTTP and HTTPS clients. The optional encrypted private-source feature still requires HTTPS or localhost.
+
+Six red-first compatibility tests cover SHA-256 reference vectors, block-padding boundaries, multiblock Unicode, secure IDs, workflow provenance, vehicle loadouts and authenticated replay. A browser test serves the actual release ZIP from a non-secure HTTP hostname and asserts that crypto.subtle and crypto.randomUUID are unavailable; owner requests, replay, altered-payload rejection and vehicle loadout idempotency pass with zero page errors. See THIRD_PARTY_NOTICES.md for the pinned library and manual upstream monitoring requirement.

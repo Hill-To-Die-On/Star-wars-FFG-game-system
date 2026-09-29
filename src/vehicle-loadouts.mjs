@@ -1,3 +1,4 @@
+import {secureRandomId} from './browser-crypto.mjs';
 import { SYSTEM_ID } from "./config.mjs";
 
 const dataOf = item => item?.toObject?.() ?? item;
@@ -49,7 +50,7 @@ export function planVehicleLoadout(entry, actor) {
 // active effects survive a model change. Repeat selection cannot duplicate guns.
 export async function applyVehicleLoadout(actor, entry) {
   const plan = planVehicleLoadout(entry, actor);
-  const batch = globalThis.crypto.randomUUID();
+  const batch = secureRandomId();
   const old = Array.from(actor.items ?? []).map(dataOf).filter(item => plan.remove.includes(idOf(item)));
   try {
     for (const item of plan.create) {

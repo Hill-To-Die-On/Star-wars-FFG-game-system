@@ -1,3 +1,4 @@
+import {sha256Text} from './browser-crypto.mjs';
 import { SYSTEM_ID } from './config.mjs';
 const userById=(users,id)=>users.get?.(id)??Array.from(users??[]).find(user=>user.id===id);
 export async function messageFingerprint(message,key) {
@@ -5,8 +6,7 @@ export async function messageFingerprint(message,key) {
   if(!payload || typeof payload!=='object')throw new Error('The workflow payload is missing.');
   const text=JSON.stringify({uuid:message.uuid,key,payload});
   if(text.length>100000)throw new Error('The workflow payload is too large.');
-  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('');
+  return sha256Text(text);
 }
 /** creatorId must be the server-supplied createChatMessage hook argument. */
 export async function createMessageProvenance(message,key,creatorId,users) {
