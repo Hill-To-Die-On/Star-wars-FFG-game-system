@@ -208,4 +208,3 @@ test("talent check contributions retain citations and distinguish selected effec
  chosen.contributions[0].source.page="changed";
  assert.equal(actor.items.contents[0].system.source.page,"1");
 });
-

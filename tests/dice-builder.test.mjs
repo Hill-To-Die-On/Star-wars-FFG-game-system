@@ -215,4 +215,3 @@ test("pool explanations keep base dice separate from talent changes and retain s
  result.contributions[0].source.page="mutated";
  assert.equal(talentRules.contributions[0].source.page,"8");
 });
-
