@@ -1,4 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
+import { readVersionMetadata, validateVersionMetadata } from "./version-metadata.mjs";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import Handlebars from "handlebars";
@@ -30,7 +31,7 @@ for (const file of [
 for (const file of await walk("templates"))
   Handlebars.precompile(await readFile(file, "utf8"));
 const manifest = JSON.parse(await readFile("system.json", "utf8"));
-const pkg = JSON.parse(await readFile("package.json", "utf8"));
+
 for (const version of [1, 2])
   JSON.parse(
     await readFile(`docs/schemas/integration-v${version}.schema.json`, "utf8"),
@@ -39,8 +40,7 @@ validateVehicleData(
   JSON.parse(await readFile("data/vehicle-stats.json", "utf8")),
 );
 validateVehicleLoadouts(JSON.parse(await readFile("data/vehicle-loadouts.json", "utf8")));
-if (manifest.version !== pkg.version)
-  throw new Error("Manifest and package versions differ");
+validateVersionMetadata(await readVersionMetadata());
 for (const path of [
   ...manifest.esmodules,
   ...manifest.styles,

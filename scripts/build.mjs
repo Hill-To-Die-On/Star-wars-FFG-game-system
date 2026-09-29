@@ -1,6 +1,8 @@
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import { zipSync } from "fflate";
 import { validateReleasePath } from "./release-policy.mjs";
+import { readVersionMetadata, validateVersionMetadata } from "./version-metadata.mjs";
+const version = validateVersionMetadata(await readVersionMetadata());
 const files = {};
 async function collect(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -38,5 +40,5 @@ await writeFile(
   JSON.stringify(Object.keys(files).sort(), null, 2),
 );
 console.log(
-  `Packaged ${Object.keys(files).length} public files, including the creator-authorized reference database; no PDFs or private adventure imports.`,
+  `Packaged Star Wars FFG ${version}: ${Object.keys(files).length} public files, including the creator-authorized reference database; no PDFs or private adventure imports.`,
 );

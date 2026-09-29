@@ -19,6 +19,8 @@ List the commands, manual checks, screenshots, or other evidence used to assess 
 
 State any migration, manifest, public API, Foundry version, module integration, or release-note impact. Write `None` when there is none.
 
+- [ ] Candidate/release version and changelog reviewed; use `npm run version:set -- <version>` when advancing the installable version.
+
 ## Content and licensing
 
 - [ ] The change contains no copied rulebook/adventure prose or official artwork, or the pull request identifies the licence and permission for every such asset.
