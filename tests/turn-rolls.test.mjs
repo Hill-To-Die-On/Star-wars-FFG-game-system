@@ -4,8 +4,10 @@ import { registerTurnEconomy, readTurnBudget, performTurnCommand, turnCostHTML }
 import { rollPool } from "../src/dice/foundry.mjs";
 
 test("Foundry roll and movement entry points commit the same actor ledger",async t=>{
-  const original=Object.fromEntries(["game","Hooks","foundry","ChatMessage","ui"].map(k=>[k,globalThis[k]]));
-  const hooks=new Map(), settings=new Map(), messages=[], warnings=[];
+  const original=Object.fromEntries(["game","Hooks","foundry","ChatMessage","ui","fromUuid"].map(k=>[k,globalThis[k]]));
+  const hooks=new Map(), settings=new Map(), messages=[], documents=new Map(), warnings=[];
+  const emit=(name,...args)=>{for(const fn of hooks.get(name)??[])fn(...args);};
+  const until=async test=>{for(let i=0;i<100;i++){if(test())return;await new Promise(resolve=>setTimeout(resolve,2));}throw new Error('Turn receipt did not settle');};
   const actor={id:"pc",uuid:"Actor.pc",type:"character",name:"Pilot",flags:{},items:[],
     system:{strain:{value:0,max:12}},canUserModify:u=>["owner","gm"].includes(u.id),
     update:async updates=>{for(const [path,value] of Object.entries(updates)) {
@@ -17,17 +19,19 @@ test("Foundry roll and movement entry points commit the same actor ledger",async
   const gm={id:"gm",isGM:true,active:true}, combat={id:"fight",started:true,round:1,combatants:[{actor}]};
   let failure=false,evaluations=0,advanceDuringRoll=false;
   globalThis.game={user:gm,users:[gm],combat,combats:[combat],actors:[],socket:{on(){},off(){}},
-    settings:{get:(_s,k)=>settings.get(k),register:(_s,k,d)=>settings.set(k,d.default)}};
-  globalThis.Hooks={on:(k,f)=>{const a=hooks.get(k)??[];a.push(f);hooks.set(k,a);},once:(k,f)=>globalThis.Hooks.on(k,f)};
+    settings:{get:(_s,k)=>settings.get(k),set:async(_s,k,v)=>{settings.set(k,v);emit("updateSetting",{});return v;},register:(_s,k,d)=>settings.set(k,d.default)}};
+  globalThis.Hooks={callAll:emit,on:(k,f)=>{const a=hooks.get(k)??[];a.push(f);hooks.set(k,a);return f;},off:(k,f)=>hooks.set(k,(hooks.get(k)??[]).filter(row=>row!==f)),once:(k,f)=>globalThis.Hooks.on(k,f)};
   globalThis.ui={notifications:{warn:m=>warnings.push(m)}};
   globalThis.foundry={dice:{Roll:class {
     constructor(formula) {this.formula=formula;this.options={};this.dice=[];}
     async evaluate(){evaluations++;if(failure) throw new Error("Evaluation failed");if(advanceDuringRoll) combat.round++;return this;}
   }}};
   globalThis.ChatMessage={getSpeaker:()=>({actor:actor.id}),applyRollMode:data=>data,
-    create:async data=>messages.push({data,actions:readTurnBudget(actor).actionsRemaining})};
+    create:async data=>{if(data.flags?.['star-wars-ffg']?.authorityRequest||data.flags?.['star-wars-ffg']?.authorityResponse){const id='receipt-'+documents.size,doc={...data,id,uuid:'ChatMessage.'+id,author:game.user};documents.set(doc.uuid,doc);emit('createChatMessage',doc,{},game.user.id);return doc;}return messages.push({data,actions:readTurnBudget(actor).actionsRemaining});}};
+  globalThis.fromUuid=async uuid=>uuid===actor.uuid?actor:documents.get(uuid);
   try {
     registerTurnEconomy();for(const f of hooks.get("ready")) f();
+    await (await import("../src/document-transactions.mjs")).getDocumentTransactionBroker().takeAuthority("Fixture explicitly selects this GM tab");
     await t.test("a completed check spends before publishing and rejects an exhausted action before evaluating",async()=>{
       assert.match(turnCostHTML(actor),/Incidental \/ already spent/);
       await rollPool({ability:1},{actor,turnCost:"action"});
@@ -60,19 +64,21 @@ test("Foundry roll and movement entry points commit the same actor ledger",async
       assert.equal(messages.length,before);
       assert.equal(readTurnBudget(actor).actionsRemaining,1);
       combat.round=1;
+      const {getDocumentTransactionBroker}=await import("../src/document-transactions.mjs");
+      for(const [key,row]of Object.entries(settings.get("authorityReceipts")??{}))if(row.status==="review")await getDocumentTransactionBroker().acknowledge(key,"No actor write occurred; round changed before execution");
     });
     await t.test("one committed drag spends once, replay is idempotent, and buying a light enables the next drag",async()=>{
       const doc={actor},move={id:"one",method:"dragging",origin:{x:0,y:0},destination:{x:100,y:0}};
       const before=hooks.get("preMoveToken")[0],after=hooks.get("moveToken")[0];
       assert.notEqual(before(doc,move,{}),false);
-      after(doc,move,{},gm);await new Promise(setImmediate);
+      after(doc,move,{},gm);await until(()=>readTurnBudget(actor).freeRemaining===0);
       assert.equal(readTurnBudget(actor).freeRemaining,0);
       after(doc,move,{},gm);await new Promise(setImmediate);
       assert.equal(readTurnBudget(actor).spent.maneuvers,1);
       assert.equal(before(doc,{...move,id:"two"},{}),false);
       await performTurnCommand(actor,"buyManeuver");assert.equal(actor.system.strain.value,2);
       assert.notEqual(before(doc,{...move,id:"two"},{}),false);
-      after(doc,{...move,id:"two"},{},gm);await new Promise(setImmediate);
+      after(doc,{...move,id:"two"},{},gm);await until(()=>readTurnBudget(actor).spent.maneuvers===2);
       assert.equal(readTurnBudget(actor).spent.maneuvers,2);
     });
     await t.test("round advance restores lights without removing strain and rewind restores spending",()=>{
@@ -94,7 +100,7 @@ test("Foundry roll and movement entry points commit the same actor ledger",async
       game.scenes=new Map([[scene.id,scene]]);combat.round=3;
       const before=hooks.get("preMoveToken")[0],after=hooks.get("moveToken")[0];
       const move={id:"shared-batch",method:"dragging",origin:{x:0,y:0},destination:{x:100,y:0}};
-      for(const doc of scene.tokens){assert.notEqual(before(doc,move,{}),false);after(doc,move,{},gm);await new Promise(setImmediate);}
+      for(const doc of scene.tokens){assert.notEqual(before(doc,move,{}),false);after(doc,move,{},gm);await until(()=>Object.values(settings.get("authorityReceipts")??{}).some(r=>r.id===`move:${doc.id}:${move.id}`&&r.status==="complete"));}
       assert.equal(readTurnBudget(actor).spent.maneuvers,1);
       assert.equal(before(scene.tokens[0],{...move,id:"again"},{}),false);
       actor.flags[sid].minionGroup.inactive=["b"];combat.round=4;

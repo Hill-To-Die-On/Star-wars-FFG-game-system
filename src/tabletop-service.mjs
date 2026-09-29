@@ -6,11 +6,12 @@ const clone=value=>structuredClone(value);
 export const workflowAuthority=users=>Array.from(users??[]).filter(u=>u.active&&u.isGM).sort((a,b)=>String(a.id).localeCompare(String(b.id)))[0];
 export class TabletopWorkflowService {
   #queue=new ActorTransactionQueue();
-  constructor({resolve,campaign=()=>({}),now=()=>new Date().toISOString(),verifyProposal}) {Object.assign(this,{resolve,campaign,now,verifyProposal});}
+  constructor({resolve,campaign=()=>({}),now=()=>new Date().toISOString(),verifyProposal,assertAuthority=()=>{}}) {Object.assign(this,{resolve,campaign,now,verifyProposal,assertAuthority});}
   execute(command,args,user,operationId) {
     return this.#queue.run('tabletop',()=>this.#execute(command,args,user,operationId));
   }
   async #execute(command,args,user,operationId) {
+    this.assertAuthority();
     if(!operationId || typeof operationId!=='string' || operationId.length>128)throw new Error('A valid operation identity is required.');
     if(!args || typeof args!=='object' || JSON.stringify(args).length>100000)throw new Error('Invalid workflow request.');
     if(!user?.active)throw new Error('The requester is no longer active.');
@@ -24,7 +25,7 @@ export class TabletopWorkflowService {
         return existing;
       }
       const plan=planSlotClaim(combat,actor,args,{user});plan.claim.operationId=operationId;
-      await combat.update({[`flags.${SYSTEM_ID}.slotClaims`]:plan.claims});return plan.claim;
+      this.assertAuthority();await combat.update({[`flags.${SYSTEM_ID}.slotClaims`]:plan.claims});return plan.claim;
     }
     if(!user.isGM)throw new Error('The GM must approve this mechanical change.');
     if(command==='effect'||command==='award') {
@@ -38,7 +39,7 @@ export class TabletopWorkflowService {
       if(!entry)throw new Error('The effect record no longer exists.');
       if(entry.undone)return entry;
       const changes=planUndo(actor,entry);entry.undone=true;entry.undoneBy=user.id;entry.undoneAt=this.now();
-      await actor.update({...changes,[`flags.${SYSTEM_ID}.workflowHistory`]:entries});return entry;
+      this.assertAuthority();await actor.update({...changes,[`flags.${SYSTEM_ID}.workflowHistory`]:entries});return entry;
       });
     }
     if(command==='spend'||command==='undo-spend') {
@@ -55,14 +56,14 @@ export class TabletopWorkflowService {
           if(!canProposeSpend(message,roller,requester))throw new Error('The proposer does not own the rolling actor.');
         }
         const entry={...planSpend(facts,entries,args.request,{campaign:this.campaign()}),id:operationId,userId:user.id,at:this.now(),...(args.proposalUuid?{proposalUuid:args.proposalUuid}:{})};
-        entries.push(entry);await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});return entry;
+        entries.push(entry);this.assertAuthority();await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});return entry;
       }
       const entry=entries.find(e=>e.id===args.entryId);if(!entry)throw new Error('The spending record no longer exists.');
       if(entry.undone)return entry;
       // Mechanical effects are separate, explicitly reviewed actor-ledger operations.
       // Undoing narrative spending never silently reverses an actor's later changes.
       entry.undone=true;entry.undoneAt=this.now();entry.undoneBy=user.id;
-      await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});return entry;
+      this.assertAuthority();await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});return entry;
     }
     throw new Error('Unsupported tabletop workflow.');
   }
@@ -79,7 +80,7 @@ export class TabletopWorkflowService {
     }
     // Foundry expands dotted keys inside flag objects. JSON snapshots preserve paths verbatim.
     const entry={...plan,before:JSON.stringify(plan.before),after:JSON.stringify(plan.after),id,userId:context.user.id,at:this.now(),requestFingerprint:fingerprint};
-    await actor.update({...plan.after,[`flags.${SYSTEM_ID}.workflowHistory`]:[...entries,entry]});return entry;
+    this.assertAuthority();await actor.update({...plan.after,[`flags.${SYSTEM_ID}.workflowHistory`]:[...entries,entry]});return entry;
   }
 }
 

@@ -460,7 +460,7 @@ Hooks.once("ready", () => {
     socket: game.socket,
     currentUser: () => game.user,
     users: () => game.users,
-    getActor: (id) => game.actors.get(id),
+    getActor: (uuid) => fromUuid(uuid),
     execute: (actor, operation, args) =>
       actor._executeXpTransaction(operation, args),
   });

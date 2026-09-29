@@ -1,3 +1,4 @@
+import {transactionWorld} from './fixtures/document-transactions.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rotateToken, turnIndicatorHTML, tokenIndicatorPosition, tokenLabelPosition, turnIndicatorObstacleBounds, shouldTrackMovement, mayManageTurns, authorizeTurnRequest } from "../src/turn-economy-foundry.mjs";
@@ -103,11 +104,12 @@ test("concurrent owners cannot spend the same action and unlinked UUIDs remain d
   const other={...actor,uuid:"Scene.one.Token.b.Actor.same"};
   const resolve=uuid=>[actor,other].find(a=>a.uuid===uuid);
   const execute=async a=>{if(!a.remaining) throw new Error("No action remaining"); a.remaining--;return a.remaining;};
-  const make=user=>new TurnTransactionCoordinator({socket,currentUser:()=>user,users:()=>users,getActor:resolve,execute}).start();
+  const world=transactionWorld(users);
+  const make=user=>new TurnTransactionCoordinator({transport:world.client(user).transport,currentUser:()=>user,users:()=>users,getActor:resolve,execute}).start();
   const g=make(gm),p=make(player);
   try {
     const results=await Promise.allSettled([p.request(actor,"action"),p.request(actor,"action")]);
     assert.deepEqual(results.map(r=>r.status),["fulfilled","rejected"]);
     assert.equal(await p.request(other,"action"),0);
-  } finally {p.stop();g.stop();}
+  } finally {p.stop();g.stop();world.stop();}
 });

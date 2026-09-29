@@ -1,3 +1,4 @@
+import {transactionWorld} from './fixtures/document-transactions.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {TabletopWorkflowService,workflowRequestAuthor,workflowAuthority,canProposeSpend} from '../src/tabletop-service.mjs';
@@ -49,19 +50,19 @@ test('two GM approvals of one proposal spend only once, and an altered proposal 
 });
 test('session awards share the purchase critical section and cannot overwrite a simultaneous talent cost',async()=>{
  const {XpTransactionCoordinator}=await import('../src/xp-transactions.mjs');
- const a=actor();a.system.xp={available:10,total:30};
+ const a=actor();a.system.xp={available:10,total:30};const world=transactionWorld([gm]);let started;const begun=new Promise(resolve=>started=resolve);
  const service=new TabletopWorkflowService({resolve:()=>a});
- const xp=new XpTransactionCoordinator({socket:{on(){},off(){}},currentUser:()=>gm,users:()=>[gm],getActor:()=>a,execute:async actor=>{const old=actor.system.xp.available;await new Promise(resolve=>setTimeout(resolve,15));assert.ok(old>=10);await actor.update({'system.xp.available':old-10});}});
- await Promise.all([xp.request(a,'buyTalent',{}),service.execute('award',{actorUuid:a.uuid,request:{xp:5,source}},gm,'award-concurrent')]);
- assert.equal(a.system.xp.available,5);assert.equal(a.system.xp.total,35);assert.equal(JSON.parse(a.flags[id].workflowHistory[0].before)['system.xp.available'],0);
+ const xp=new XpTransactionCoordinator({transport:world.client(gm).transport,currentUser:()=>gm,users:()=>[gm],getActor:()=>a,execute:async actor=>{started();const old=actor.system.xp.available;await new Promise(resolve=>setTimeout(resolve,15));assert.ok(old>=10);await actor.update({'system.xp.available':old-10});}});
+ await Promise.all([xp.request(a,'buyTalent',{}),begun.then(()=>service.execute('award',{actorUuid:a.uuid,request:{xp:5,source}},gm,'award-concurrent'))]);
+ assert.equal(a.system.xp.available,5);assert.equal(a.system.xp.total,35);assert.equal(JSON.parse(a.flags[id].workflowHistory[0].before)['system.xp.available'],0);world.stop();
 });
 test('recovery shares the turn critical section and cannot erase a concurrently bought manoeuvre strain cost',async()=>{
  const {TurnTransactionCoordinator}=await import('../src/turn-transactions.mjs');
- const a=actor();a.system.strain={value:3,max:10};
- const turn=new TurnTransactionCoordinator({socket:{on(){},off(){}},currentUser:()=>gm,users:()=>[gm],getActor:()=>a,execute:async actor=>{const old=actor.system.strain.value;await new Promise(resolve=>setTimeout(resolve,15));await actor.update({'system.strain.value':old+2});}});
+ const a=actor();a.system.strain={value:3,max:10};const world=transactionWorld([gm]);let started;const begun=new Promise(resolve=>started=resolve);
+ const turn=new TurnTransactionCoordinator({transport:world.client(gm).transport,currentUser:()=>gm,users:()=>[gm],getActor:()=>a,execute:async actor=>{started();const old=actor.system.strain.value;await new Promise(resolve=>setTimeout(resolve,15));await actor.update({'system.strain.value':old+2});}});
  const service=new TabletopWorkflowService({resolve:()=>a});
- await Promise.all([turn.request(a,'buyManeuver'),service.execute('effect',{actorUuid:a.uuid,request:{kind:'recover',resource:'strain',amount:1,source}},gm,'recovery-concurrent')]);
- assert.equal(a.system.strain.value,4);assert.equal(JSON.parse(a.flags[id].workflowHistory[0].before)['system.strain.value'],5);
+ await Promise.all([turn.request(a,'buyManeuver'),begun.then(()=>service.execute('effect',{actorUuid:a.uuid,request:{kind:'recover',resource:'strain',amount:1,source}},gm,'recovery-concurrent'))]);
+ assert.equal(a.system.strain.value,4);assert.equal(JSON.parse(a.flags[id].workflowHistory[0].before)['system.strain.value'],5);world.stop();
 });
 test('replayed claim IDs require current ownership and the same requester and payload',async()=>{
  const a=actor(),combat=doc({uuid:'Combat.replay',started:true,round:1,flags:{},combatants:[{id:'slot',actor:a,flags:{[id]:{slotSide:'pc'}}}]});
@@ -105,4 +106,18 @@ test('GM approval checks narrative visibility for the requester, including blind
   native.author=p;native.whisper=[gm.id];
   assert.equal(canProposeSpend(native,a,p),true,'non-blind author can read own GM whisper');
  } finally {globalThis.game=previousGame;}
+});
+
+// Positive and revocation checks exercise the real shared actor queue.
+test('tabletop writes honor the selected GM session after waiting for an actor resource lock',async()=>{
+ const {actorMutationQueue}=await import('../src/xp-transactions.mjs');
+ let release;const gate=new Promise(resolve=>release=resolve);let selected=true,writes=0;
+ const actor={uuid:'Actor.session-fence',type:'character',name:'Session fence QA',system:{xp:{available:5,total:5},credits:0},flags:{},update:async()=>{writes++;}};
+ const service=new TabletopWorkflowService({resolve:async()=>actor,assertAuthority:()=>{if(!selected)throw new Error('GM browser changed');}});
+ const block=actorMutationQueue.run(actor.uuid,()=>gate);
+ const request={xp:5,credits:0,note:'Award',source:{book:'Table ruling',page:'Session',verification:'gm-ruling'}};
+ const pending=service.execute('award',{actorUuid:actor.uuid,request},gm,'session-fence');
+ await new Promise(resolve=>setTimeout(resolve,5));selected=false;release();await block;
+ await assert.rejects(pending,/GM browser changed/);assert.equal(writes,0);
+ selected=true;await service.execute('award',{actorUuid:actor.uuid,request},gm,'session-fence-positive');assert.equal(writes,1);
 });
