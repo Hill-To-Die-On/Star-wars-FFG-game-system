@@ -3,9 +3,10 @@ import assert from "node:assert/strict";
 import { measureTokenRange, buildAttackTracePreview } from "../src/range-overlay/foundry.mjs";
 import { segmentEllipseIntersection } from "../src/range-overlay/core.mjs";
 
-const scene={id:"sight-scene",grid:{type:1,size:100,distance:1,units:"m"},getFlag:()=>({scale:"personal"})};
+const scene={id:"sight-scene",grid:{type:1,size:100,distance:1,units:"m"},getFlag:()=>({scale:"personal"}),
+ levels:[{id:"ground",elevation:{bottom:-Infinity,top:Infinity}}],testSurfaceCollision:()=>null};
 function token(id,x,y,w,h,type="character") {
- return {id,center:{x,y},w,h,visible:true,document:{id,parent:scene,rotation:0},actor:{id,type,name:id}};
+ return {id,center:{x,y},w,h,visible:true,document:{id,parent:scene,rotation:0,level:"ground",depth:20},actor:{id,type,name:id}};
 }
 function fixture(run) {
  const saved=Object.fromEntries(["canvas","game","CONFIG"].map(k=>[k,globalThis[k]]));

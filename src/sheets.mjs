@@ -165,6 +165,8 @@ const targetContext = (key, meleeOverride, sourceActor, sourceToken, weapon) => 
     elevationDifference: measured?.elevationDifference ?? null,
     elevationApplied: measured?.elevationApplied === true,
     lineOfSight: measured?.lineOfSight ?? "unavailable",
+    requiresGmRuling: measured?.requiresGmRuling === true,
+    sightReason: measured?.sightReason ?? "",
     arcError: measured?.arcError ?? "",
     firingArc: measured?.firingArc ?? "",
     partiallyObscured: measured?.partiallyObscured === true,
@@ -361,7 +363,9 @@ function automaticContextHTML(context) {
       ? ` · ${context.target.elevationDifference} ${escapeHTML(context.target.sceneUnits)} vertical separation included`
       : "",
     sight =
-      context.target.lineOfSight === "blocked"
+      context.target.requiresGmRuling
+        ? ` · ${escapeHTML(context.target.sightReason)}`
+        : context.target.lineOfSight === "blocked"
         ? " · line of sight blocked"
         : context.target.lineOfSight === "clear"
           ? ` · line of sight clear${context.target.partiallyObscured ? " (partly obscured; GM decides cover)" : ""}${context.target.firingArc ? ` · ${escapeHTML(context.target.firingArc)} firing arc` : ""}`
@@ -477,13 +481,13 @@ function attachPoolBuilder(dialog, context) {
     if (
       context.combat &&
       !context.melee &&
-      context.target.lineOfSight === "blocked"
+      (context.target.lineOfSight === "blocked" || context.target.requiresGmRuling)
     )
       return {
         ...result,
         error:
           result.error ||
-          "The selected target is behind a sight-blocking wall. Switch to Manual only after a GM ruling.",
+          context.target.sightReason || "The selected target is behind a sight-blocking wall. Switch to Manual only after a GM ruling.",
       };
     return result;
   };

@@ -69,7 +69,7 @@ Screenshots: [attacker selection](images/vehicle-arc-hover-live.png), [defensive
 
 The log review also identified an off-canvas crew visibility error during scene loading. A getter-only TokenDocument reproduced it; the display mask now operates only on an actual canvas token, preserving off-canvas documents and crew membership. Its regression and the existing on-canvas masking test both pass. A final live reload produced no new browser warnings or errors. During the completed arc interactions, the visible counter was 59–60 FPS; this was a bounded UI check, not a sustained performance benchmark.
 
-Limits: the outline search is bounded and can miss a very narrow unsampled gap; cover remains a GM decision. Ranking uses expected raw impact before armour, qualities, ammunition expenditure or optional symbol spends. Wall LoS is still two-dimensional; layered flight and height-aware cross-level obstruction checks are the next canonical roadmap item. A separate player client and full three-dimensional flight were not tested here.
+Limits of that earlier arc test: the outline search is bounded and can miss a very narrow unsampled gap; cover remains a GM decision. Ranking uses expected raw impact before armour, qualities, ammunition expenditure or optional symbol spends. That run used two-dimensional wall checks and did not test separate player clients. The later [layered-flight acceptance](layered-flight.md) adds native level walls/surfaces, crew transfers and independent GM/two-player verification; ambiguous geometry still requires a GM ruling.
 
 ## Creation, minion groups and nearest-footprint range (2026-09-28)
 

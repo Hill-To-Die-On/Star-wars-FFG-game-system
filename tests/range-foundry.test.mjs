@@ -18,12 +18,14 @@ const scene = ({ grid, state }) => ({
   id: "scene-test",
   grid,
   getFlag: () => state,
+  levels: [{id:"ground",elevation:{bottom:-Infinity,top:Infinity}}],
+  testSurfaceCollision: () => null,
 });
 
 const token = (id, x, y, elevation = 0) => ({
   id,
   center: { x, y },
-  document: { id, elevation, parent: { id: "scene-test" } },
+  document: { id, elevation, level:"ground", parent: { id: "scene-test" } },
 });
 
 test("embarked crew cannot obstruct their vehicle's targeting line even in the GM view",()=>{
@@ -218,8 +220,8 @@ test("scaled maps include token elevation and report sight-wall collisions", () 
       polygonBackends: {
         sight: {
           testCollision(origin, destination, options) {
-            assert.deepEqual(origin, { x: 0, y: 0 });
-            assert.deepEqual(destination, { x: 300, y: 400 });
+            assert.deepEqual(origin, { x: 0, y: 0, elevation:0 });
+            assert.deepEqual(destination, { x: 300, y: 400, elevation:12 });
             assert.equal(options.mode, "closest");
             assert.equal(options.type, "sight");
             return { x: 150, y: 200 };
@@ -374,7 +376,7 @@ test("attack trace preview uses equipped weapon, target opposition and range", (
     { ability: 1, proficiency: 2, difficulty: 0, challenge: 1, setback: 1 },
   );
   assert.match(preview.poolLabel, /2 Proficiency/i);
-  assert.equal(preview.error, "");
+  assert.match(preview.error, /Sight collision checks are unavailable/);
 });
 
 test("vehicle attack trace asks for a gunner rather than inventing a pool", () => {
@@ -597,6 +599,8 @@ test("range overlay registers combat lifecycle automation and camera reflow", ()
   assert.equal(typeof hooks.get("refreshToken"), "function");
   assert.equal(typeof hooks.get("refreshTile"), "function");
   assert.equal(typeof hooks.get("updateTile"), "function");
+  for(const name of ["Wall","Region","RegionBehavior","Level"])for(const action of ["create","update","delete"])
+    assert.equal(typeof hooks.get(`${action}${name}`),"function");
 });
 
 
@@ -613,7 +617,7 @@ test("the nearest rotated corner changes the shared band, personal difficulty an
     const result=measureTokenRange(source,target,{scene:map});
     assert.equal(result.band,"short");
     assert.ok(Math.abs(result.sceneDistance-(Math.hypot(1000-700/Math.sqrt(2),300/Math.sqrt(2))-50)/100)<1e-8);
-    assert.deepEqual(ray,{source:result.sourceEdge,target:result.targetEdge});
+    assert.deepEqual(ray,{source:{...result.sourceEdge,elevation:0},target:{...result.targetEdge,elevation:0}});
     const { automaticCheckPool }=await import("../src/dice/builder.mjs");
     const options={characteristic:3,rank:2,skill:"rangedLight",rangeBand:result.band,weaponRange:"long"};
     assert.equal(automaticCheckPool(options).pool.difficulty,1);
