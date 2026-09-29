@@ -1,7 +1,7 @@
 import { SYSTEM_ID, SKILLS } from './config.mjs';
 import { escapeHTML as esc } from './mechanics.mjs';
 import { ActorTransactionQueue, canSpendXp } from './xp-transactions.mjs';
-import { SYMBOLS, remainingSymbols, planActorEffect, planSessionAward, planSlotClaim, reviewedSource, snapshotValues } from './tabletop-workflows.mjs';
+import { SYMBOLS, remainingSymbols, planActorEffect, planSessionAward, planSlotClaim, reviewedSource, snapshotValues, reviewSnapshot } from './tabletop-workflows.mjs';
 import { TabletopWorkflowService, workflowAuthority, canProposeSpend } from './tabletop-service.mjs';
 import { crewRoster, CREW_ROLES } from './vehicle-crew.mjs';
 import { vehicleForActor, crewCheckDialog } from './vehicle-crew-foundry.mjs';
@@ -99,7 +99,7 @@ export async function openResolution(actor,{message,weapon}={}) {
   if(!form)return;
   const request={...form,amount:Number(form.amount),pierce:Number(form.pierce),breach:Number(form.breach),strain:form.strain==='on',ignoreSoak:form.ignoreSoak==='on',source:sourceFrom(form),entryId:uuid()};
   const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});
-  if(await confirmPlan(actor,plan)){await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:plan.before});ui.notifications.info(`Applied to ${actor.name}. Undo is available in Tabletop history.`);}
+  if(await confirmPlan(actor,plan)){await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});ui.notifications.info(`Applied to ${actor.name}. Undo is available in Tabletop history.`);}
 }
 export async function openWorkflowHistory(actor) {
   if(!canSpendXp(actor,game.user))throw new Error('Owner permission is required.');
@@ -196,7 +196,7 @@ export async function openVehicleDashboard(actor) {
         if(b.dataset.dashboard==='state') {
           const form=await prompt(`Vehicle state · ${actor.name}`,`${numeric('speed','Speed',s.speed.value,0,s.speed.max)}${Object.entries(s.shields).map(([z,n])=>numeric(z,`${z} shields`,n,0,4)).join('')}${sourceHTML()}`);if(!form)return;
           const request={kind:'vehicle-state',speed:Number(form.speed),shields:Object.fromEntries(Object.keys(s.shields).map(z=>[z,Number(form[z])])),source:sourceFrom(form),note:'Reviewed speed / shields adjustment'};
-          const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});if(await confirmPlan(actor,plan))await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:plan.before});
+          const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});if(await confirmPlan(actor,plan))await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});
         }
       });};
       root.addEventListener('click',onClick);
@@ -221,7 +221,7 @@ export async function openSessionWrapUp() {
   const plans=selected.map(actor=>({actor,plan:planSessionAward(actor,request,{user:game.user,campaign:c})}));
   if(!await foundry.applications.api.DialogV2.confirm({...dialogDefaults,window:{...dialogDefaults.window,title:'Review session awards'},content:`<div class="sf-tabletop-body">${plans.map(({actor,plan})=>`<h2>${esc(actor.name)}</h2>${reviewHTML(plan)}`).join('')}</div>`,yes:{label:'Award reviewed changes'}}))return;
   const completed=[];
-  try {for(const {actor,plan}of plans){await requestTabletop('award',{actorUuid:actor.uuid,request,expected:plan.before});completed.push(actor.name);}}
+  try {for(const {actor,plan}of plans){await requestTabletop('award',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});completed.push(actor.name);}}
   catch(error){throw new Error(`${error.message} Confirmed recipients: ${completed.join(', ')||'none'}. Review history before retrying; each recipient is committed independently.`);}
   ui.notifications.info(`Session awards saved for ${completed.length} characters. Their histories include the before/after values and downtime.`);
 }

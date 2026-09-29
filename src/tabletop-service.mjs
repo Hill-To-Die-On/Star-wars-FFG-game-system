@@ -1,6 +1,6 @@
 import { SYSTEM_ID } from './config.mjs';
 import { ActorTransactionQueue, actorMutationQueue, canSpendXp } from './xp-transactions.mjs';
-import { planActorEffect, planSessionAward, planSlotClaim, planSpend, planUndo, snapshotValues } from './tabletop-workflows.mjs';
+import { planActorEffect, planSessionAward, planSlotClaim, planSpend, planUndo, snapshotValues, reviewSnapshot } from './tabletop-workflows.mjs';
 const flag=(doc,key)=>doc.flags?.[SYSTEM_ID]?.[key];
 const clone=value=>structuredClone(value);
 export const workflowAuthority=users=>Array.from(users??[]).filter(u=>u.active&&u.isGM).sort((a,b)=>String(a.id).localeCompare(String(b.id)))[0];
@@ -71,7 +71,12 @@ export class TabletopWorkflowService {
     const fingerprint=JSON.stringify(request);
     if(prior){if(prior.userId!==context.user.id || prior.requestFingerprint!==fingerprint)throw new Error('The operation identity belongs to a different actor change.');return prior;}
     const plan=planner(actor,request,context);
-    if(expected && JSON.stringify(plan.before)!==JSON.stringify(snapshotValues(expected)))throw new Error('The actor changed after the preview. Review a fresh preview before applying.');
+    if(expected) {
+      const reviewed=snapshotValues(expected);
+      // Existing integrations may supply a before-only snapshot; new UI reviews carry full derived results.
+      const current=reviewed?.version===1?reviewSnapshot(plan):plan.before;
+      if(JSON.stringify(current)!==JSON.stringify(reviewed))throw new Error('The actor changed after the preview. Review a fresh preview before applying.');
+    }
     // Foundry expands dotted keys inside flag objects. JSON snapshots preserve paths verbatim.
     const entry={...plan,before:JSON.stringify(plan.before),after:JSON.stringify(plan.after),id,userId:context.user.id,at:this.now(),requestFingerprint:fingerprint};
     await actor.update({...plan.after,[`flags.${SYSTEM_ID}.workflowHistory`]:[...entries,entry]});return entry;

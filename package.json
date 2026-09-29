@@ -10,6 +10,8 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
+    "test:browser": "node scripts/browser-checks.mjs",
+    "test:recovery": "node scripts/foundry-recovery-acceptance.mjs",
     "check": "node scripts/check.mjs",
     "audit:icons": "node scripts/audit-actor-icons.mjs",
     "build": "node scripts/build.mjs",
