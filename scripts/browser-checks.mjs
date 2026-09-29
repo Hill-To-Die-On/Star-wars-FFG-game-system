@@ -4,6 +4,13 @@ import {resolve,basename} from 'node:path';
 import {runBoundedChild} from './bounded-child.mjs';
 const root=resolve(import.meta.dirname,'..'),output=resolve(root,'test-results/browser');
 await mkdir(output,{recursive:true});
+// Always test the current tracked runtime, never a missing or stale local ZIP.
+const built=await runBoundedChild(process.execPath,[resolve(root,'scripts/build.mjs')],{
+  cwd:root,env:process.env,timeout:120_000,maxBuffer:8*1024*1024,
+});
+await writeFile(resolve(output,'package-build.txt'),[built.stdout,built.stderr,built.error,built.cleanupFailure].filter(Boolean).join('\n'));
+if(built.status!==0||built.error||built.cleanupFailure)throw Error('Browser checks require a successful current package build; inspect test-results/browser/package-build.txt.');
+console.log('PASS current package build');
 const fixtures=(await readdir(resolve(root,'tests'))).filter(name=>name.endsWith('-ui.mjs')).sort();
 if(!fixtures.length)throw Error('No browser fixtures discovered.');
 const results=[];
