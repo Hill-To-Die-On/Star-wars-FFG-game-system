@@ -1,5 +1,5 @@
 import { SYSTEM_ID } from "./config.mjs";
-import { ActorTransactionQueue, canSpendXp, selectXpAuthority } from "./xp-transactions.mjs";
+import { ActorTransactionQueue, actorMutationQueue, canSpendXp, selectXpAuthority } from "./xp-transactions.mjs";
 const CHANNEL=`system.${SYSTEM_ID}`;
 const commands=new Set(["board","leave","role","split","generate","deploy"]);
 const actorOf=target=>target.actor??target;
@@ -17,6 +17,10 @@ export class CrewTransactionCoordinator {
     Object.assign(this,{socket,currentUser,users,getToken,execute,randomId});
     this.listener=m=>{void this.receive(m).catch(e=>console.error("Star Wars FFG | Crew",e));};
   }
+  executeActor(token,command,args,user) {
+    const actor=actorOf(token);
+    return actorMutationQueue.run(actor.uuid??actor.id,()=>this.execute(token,command,args,user));
+  }
   start(){this.socket.on(CHANNEL,this.listener);return this;}
   stop(){this.socket.off?.(CHANNEL,this.listener);for(const p of this.pending.values()){clearTimeout(p.timer);p.reject(new Error("Crew service stopped."));}this.pending.clear();}
   async request(token,command,args={}) {
@@ -24,7 +28,7 @@ export class CrewTransactionCoordinator {
     const user=this.currentUser(),authority=selectXpAuthority(actorOf(token),this.users());
     if(!canSpendXp(actorOf(token),user)) throw new Error("Owner permission is required.");
     if(!authority) throw new Error("No active owner or GM is available.");
-    if(authority.id===user.id) return this.queue.run(queueKey(token),()=>this.execute(token,command,args,user));
+    if(authority.id===user.id) return this.queue.run(queueKey(token),()=>this.executeActor(token,command,args,user));
     const requestId=this.randomId();
     return new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>{this.pending.delete(requestId);reject(new Error("Crew change was not confirmed. Check the roster before retrying."));},15000);
@@ -49,7 +53,7 @@ export class CrewTransactionCoordinator {
         try {
           if(!user?.active || !canSpendXp(actorOf(token),user))throw new Error("Owner permission is required.");
           validate(message.command,message.args);
-          return {ok:true,result:await this.execute(token,message.command,message.args,user)};
+          return {ok:true,result:await this.executeActor(token,message.command,message.args,user)};
         }catch(error){return {ok:false,error:error.message};}
       }));
       if(this.completed.size>500)this.completed.delete(this.completed.keys().next().value);

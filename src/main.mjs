@@ -1,4 +1,5 @@
 import { SYSTEM_ID, THEMES, ITEM_TYPES } from "./config.mjs";
+import { registerTabletopWorkflows, tabletopApi } from "./tabletop-foundry.mjs";
 import {
   CharacterData,
   AdversaryData,
@@ -329,6 +330,7 @@ Hooks.once("init", () => {
   registerTurnEconomy();
   registerVehicleCrew({openCheck:checkDialog});
   registerMinionGroups();
+  registerTabletopWorkflows();
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
     name: "GM source key",
     label: "Backup or restore key",
@@ -421,6 +423,7 @@ Hooks.once("init", () => {
     integration: integrationApi,
     range: rangeOverlayApi,
     crew: crewApi,
+    tabletop: tabletopApi,
     turns: Object.freeze({ read:readTurnBudget, perform:performTurnCommand, rotateToken }),
     actorIcons: Object.freeze({
       describe: actorIconDescriptor,

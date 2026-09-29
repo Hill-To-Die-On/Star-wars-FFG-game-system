@@ -56,6 +56,9 @@ export class ActorTransactionQueue {
   }
 }
 
+/** Shared by all authoritative actor-resource mutations in this client. */
+export const actorMutationQueue = new ActorTransactionQueue();
+
 function defaultRandomId() {
   if (globalThis.foundry?.utils?.randomID)
     return globalThis.foundry.utils.randomID(24);
@@ -79,7 +82,7 @@ function validateRequest(operation, args) {
 export class XpTransactionCoordinator {
   #listener;
   #pending = new Map();
-  #queue = new ActorTransactionQueue();
+  #queue = actorMutationQueue;
   #started = false;
 
   constructor({
@@ -201,7 +204,7 @@ export class XpTransactionCoordinator {
   }
 }
 
-const localQueue = new ActorTransactionQueue();
+const localQueue = actorMutationQueue;
 let coordinator;
 
 export function configureXpTransactions(options) {
