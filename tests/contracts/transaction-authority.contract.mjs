@@ -120,3 +120,25 @@ test('XP ownership is rechecked after waiting for the shared actor queue',async(
   const pending=f.player.request(f.target,'buySkill',{}),denial=assert.rejects(pending,/Owner permission/);await f.world.until(()=>Object.values(f.world.receipts).some(r=>r.status==='running'));owned=false;release();await blocked;await denial;assert.equal(f.calls.length,0);
  }finally{release();f.world.stop();}
 });
+
+test('late response creation cannot overwrite a review receipt after explicit GM return',async()=>{
+ let release;const gate=new Promise(resolve=>release=resolve),nextGM={id:'gm-z',active:true,isGM:true},f=setup('xp');f.world.users.push(nextGM);
+ const create=f.g.transport.createMessage;let responseStarted=false;f.g.transport.createMessage=async data=>{if(data.flags?.['star-wars-ffg']?.authorityResponse?.ok){responseStarted=true;await gate;}return create(data);};
+ try{
+  const pending=f.p.transport.request('xp',f.target.uuid,'buySkill',{},'late-response'),denial=assert.rejects(pending,/interrupted/);await f.world.until(()=>responseStarted);
+  f.g.user.active=false;const next=f.world.client(nextGM);f.make(next);await next.transport.takeAuthority('Previous session stopped; inspect interrupted state');await denial;
+  f.g.user.active=true;await f.g.transport.takeAuthority('Returning after reviewing other session status');release();await new Promise(resolve=>setTimeout(resolve,20));
+  const receipt=Object.values(f.world.receipts).find(r=>r.id==='late-response');assert.equal(receipt.status,'review');assert.equal(receipt.reviewedBy,undefined);assert.equal(f.calls.length,1);
+ }finally{release();f.world.stop();}
+});
+
+test('late interruption publication cannot replace a completed receipt after handover',async()=>{
+ let releaseWork,releaseReview;const work=new Promise(resolve=>releaseWork=resolve),review=new Promise(resolve=>releaseReview=resolve),nextGM={id:'gm-z',active:true,isGM:true},f=setup('xp',{execute:async()=>{await work;return 'applied';}});f.world.users.push(nextGM);
+ try{
+  const pending=f.p.transport.request('xp',f.target.uuid,'buySkill',{},'late-review');await f.world.until(()=>Object.values(f.world.receipts).some(r=>r.status==='running'));
+  f.g.user.active=false;const next=f.world.client(nextGM);let reviewStarted=false;const create=next.transport.createMessage;next.transport.createMessage=async data=>{if(data.flags?.['star-wars-ffg']?.authorityResponse?.ok===false){reviewStarted=true;await review;}return create(data);};f.make(next);const taking=next.transport.takeAuthority('Previous session stopped');await f.world.until(()=>reviewStarted);
+  f.g.user.active=true;await f.g.transport.takeAuthority('Explicit GM return');releaseWork();assert.equal(await pending,'applied');
+  f.g.user.active=false;await next.transport.takeAuthority('Explicit handover after completion');releaseReview();await taking;
+  const receipt=Object.values(f.world.receipts).find(r=>r.id==='late-review');assert.equal(receipt.status,'complete');assert.equal(f.calls.length,1);
+ }finally{releaseWork();releaseReview();f.world.stop();}
+});
