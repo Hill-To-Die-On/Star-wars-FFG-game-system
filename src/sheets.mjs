@@ -1,3 +1,4 @@
+import { bindOriginPicker } from "./ui/origin-picker.mjs";
 import {
   SYSTEM_ID,
   SYSTEM_PATH,
@@ -51,7 +52,6 @@ import {
 } from "./creation-resources.mjs";
 import {
   availableOriginOptions,
-  fuzzyOriginOptions,
   ORIGIN_INDEX_FIELDS,
   originChoiceLocked,
   originEntryAllowed,
@@ -1041,89 +1041,10 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
     bindTurnControls(this.element.querySelector(".sf-turn-panel"),this.actor);
     const crewPanel = this.element.querySelector(".sf-crew-panel");
     if (crewPanel) bindCrewControls(crewPanel,vehicleForActor(this.actor),this.actor);
-    for (const picker of this.element.querySelectorAll(
-      "[data-origin-picker]",
-    )) {
-      const kind = picker.dataset.originPicker,
-        input = picker.querySelector("[data-origin-search]"),
-        toggle = picker.querySelector("[data-origin-toggle]"),
-        menu = picker.querySelector("[data-origin-menu]"),
-        empty = picker.querySelector("[data-origin-empty]"),
-        custom = picker.querySelector("[data-homebrew-choice]"),
-        originOptions = context[`${kind}Options`] ?? [];
-      if (!input || !menu) continue;
-      const buttons = new Map(
-          Array.from(menu.querySelectorAll("[data-document-id]"), (button) => [
-            button.dataset.documentId,
-            button,
-          ]),
-        ),
-        setOpen = (open) => {
-          menu.hidden = !open;
-          input.setAttribute("aria-expanded", String(open));
-          toggle?.setAttribute("aria-expanded", String(open));
-        },
-        refresh = () => {
-          const query =
-              input.value === picker.dataset.current ? "" : input.value,
-            matches = fuzzyOriginOptions(originOptions, query, 32),
-            visible = new Set(matches.map((entry) => entry.id));
-          for (const [id, button] of buttons) button.hidden = !visible.has(id);
-          for (const entry of matches) {
-            const button = buttons.get(entry.id);
-            if (button) menu.insertBefore(button, empty);
-          }
-          if (empty) empty.hidden = matches.length > 0;
-          if (custom) {
-            const name = input.value.trim();
-            custom.hidden = !name || name === picker.dataset.current;
-            custom.textContent = `Use “${name}” as homebrew ${kind}`;
-          }
-        };
-      input.addEventListener("focus", () => {
-        input.select();
-        refresh();
-        setOpen(true);
-      });
-      input.addEventListener("input", () => {
-        refresh();
-        setOpen(true);
-      });
-      input.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          event.stopPropagation();
-          input.value = picker.dataset.current;
-          setOpen(false);
-          input.blur();
-        } else if (event.key === "ArrowDown") {
-          event.preventDefault();
-          menu.querySelector("[data-document-id]:not([hidden])")?.focus();
-        } else if (event.key === "Enter") {
-          event.preventDefault();
-          const match = menu.querySelector(
-            "[data-document-id]:not([hidden])",
-          );
-          if (match) {
-            match.click();
-          }
-        }
-      });
-      toggle?.addEventListener("click", () => {
-        refresh();
-        setOpen(menu.hidden);
-        if (!menu.hidden) input.focus();
-      });
-      for (const button of buttons.values())
-        button.addEventListener("mousedown", (event) =>
-          event.preventDefault(),
-        );
-      picker.addEventListener("focusout", (event) => {
-        if (picker.contains(event.relatedTarget)) return;
-        input.value = picker.dataset.current;
-        setOpen(false);
-      });
-    }
+    this._sfRenderEvents?.abort();
+    this._sfRenderEvents = new AbortController();
+    for (const picker of this.element.querySelectorAll("[data-origin-picker]"))
+      bindOriginPicker(picker, context[`${picker.dataset.originPicker}Options`] ?? []);
     if (this.activeTab === "skills") {
       requestAnimationFrame(() => {
         if (this.activeTab !== "skills" || !this.element?.isConnected) return;
@@ -1140,9 +1061,9 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       });
     }
     this.element.addEventListener("dragover", (event) =>
-      event.preventDefault(),
+      event.preventDefault(), {signal:this._sfRenderEvents.signal}
     );
-    this.element.addEventListener("drop", (event) => this.onDrop(event));
+    this.element.addEventListener("drop", (event) => this.onDrop(event), {signal:this._sfRenderEvents.signal});
   }
   async onDrop(event) {
     event.preventDefault();

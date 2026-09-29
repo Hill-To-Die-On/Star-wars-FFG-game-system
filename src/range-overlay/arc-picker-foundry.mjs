@@ -8,6 +8,7 @@ export function closeCanvasArcPicker({restore=true}={}) {
   const previous=active;active=null;
   previous.root.remove();previous.help.remove();
   globalThis.document?.removeEventListener("keydown",previous.keydown,true);
+  if(previous.focusOrigin?.isConnected)previous.focusOrigin.focus({preventScroll:true});
   if(restore)previous.controller.cancel();
 }
 
@@ -48,7 +49,7 @@ export function openCanvasArcPicker({source,target,selection,preview,commit,canc
   const document=globalThis.document;if(!document?.body)return null;
   const root=document.createElement("div"),help=document.createElement("section");
   root.className="sf-arc-picker";root.setAttribute("role","group");help.className="sf-arc-picker-help";
-  help.innerHTML=`<strong class="sf-arc-step"></strong><p class="sf-arc-instruction"></p><p class="sf-arc-feedback" role="status" aria-live="polite"></p><nav><button type="button" data-command="back">Back to attacker</button><button type="button" data-command="auto">Auto strongest</button><button type="button" data-command="cancel">Cancel · Esc</button></nav>`;
+  help.innerHTML=`<strong class="sf-arc-step"></strong><p class="sf-arc-instruction"></p><div class="sf-arc-accessible-choices" role="group" aria-label="Arc choices"></div><p class="sf-arc-feedback" role="status" aria-live="polite"></p><nav><button type="button" data-command="back">Back to attacker</button><button type="button" data-command="auto">Auto strongest</button><button type="button" data-command="cancel">Cancel · Esc</button></nav>`;
   const cleanup=()=>closeCanvasArcPicker({restore:false});
   const controller=new ArcSelection({sourceVehicle:source.actor?.type==="vehicle",targetVehicle:target.actor?.type==="vehicle",
     targetId:target.id,selection,preview,commit:value=>{cleanup();commit(value);},cancel:()=>{cleanup();cancel();}});
@@ -65,25 +66,28 @@ export function openCanvasArcPicker({source,target,selection,preview,commit,canc
     root.setAttribute("aria-label",`${attack?"Attacking arcs":"Defensive zones"} · ${token.name||token.actor?.name}`);
     help.querySelector(".sf-arc-step").textContent=`${attack?"2 · Choose firing arc":"3 · Choose defensive zone"} · ${token.name||token.actor?.name}`;
     help.querySelector(".sf-arc-instruction").textContent=attack
-      ? "Hover a ship section to preview. Click to lock its arc. Up / Down select recorded dorsal / ventral mounts."
-      : "Hover a hull face to preview its shields. Fore and Aft meet the front/rear corners; Port and Starboard cover the sides. Click to confirm.";
+      ? "Choose a button below or a ship section to select its arc. Up / Down select recorded dorsal / ventral mounts."
+      : "Choose a button below or a hull face to select its shields. Fore and Aft meet the front/rear corners; Port and Starboard cover the sides.";
     help.querySelector('[data-command="back"]').hidden=attack||!controller.sourceVehicle;
     help.querySelector('[data-command="auto"]').hidden=!controller.sourceVehicle;
     help.querySelector(".sf-arc-feedback").textContent="Hover a section, or focus it with Tab. Enter selects. Escape cancels.";
     root.innerHTML=ARC_SECTIONS.map(({key,label})=>`<button type="button" class="sf-arc-sector sf-arc-${key}" data-section="${key}" aria-label="${escapeHTML(`${attack?"Firing arc":"Defensive zone"}: ${label}`)}" ${!attack&&(key==="dorsal"||key==="ventral")?'disabled title="Four standard shield zones; Up / Down are weapon mounts"':""}><span>${label}</span></button>`).join("");
-    for(const button of root.querySelectorAll("[data-section]")) {
+    const choices=help.querySelector('.sf-arc-accessible-choices');
+    choices.innerHTML=ARC_SECTIONS.filter(({key})=>attack||!['dorsal','ventral'].includes(key)).map(({key,label})=>`<button type="button" data-section="${key}" aria-label="Choose ${attack?'firing arc':'defensive zone'}: ${label}">${label}</button>`).join('');
+    for(const button of [...root.querySelectorAll("[data-section]"),...choices.querySelectorAll('[data-section]')]) {
       const hover=()=>{
         const result=controller.hover(button.dataset.section);
-        for(const sibling of root.children)sibling.classList.toggle("sf-arc-hover",sibling===button);
+        for(const sibling of root.querySelectorAll('[data-section]'))sibling.classList.toggle("sf-arc-hover",sibling.dataset.section===button.dataset.section);
         button.classList.toggle("sf-arc-invalid",!result?.valid);feedback(result);
       };
       button.addEventListener("pointerenter",hover);button.addEventListener("focus",hover);
       button.addEventListener("click",event=>{event.stopPropagation();if(controller.select(button.dataset.section))render();else hover();});
     }
     repositionCanvasArcPicker();
+    choices.querySelector('button')?.focus({preventScroll:true});
   };
   const keydown=event=>{if(event.key==="Escape"){event.preventDefault();event.stopPropagation();closeCanvasArcPicker();}};
-  active={root,help,source,target,controller,keydown};
+  active={root,help,source,target,controller,keydown,focusOrigin:document.activeElement};
   for(const element of [root,help])for(const name of ["pointerdown","pointerup","dblclick"])element.addEventListener(name,event=>event.stopPropagation());
   help.querySelector('[data-command="back"]').addEventListener("click",()=>{controller.back();render();});
   help.querySelector('[data-command="auto"]').addEventListener("click",()=>{controller.auto();render();});
