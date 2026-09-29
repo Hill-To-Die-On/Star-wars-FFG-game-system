@@ -31,6 +31,7 @@
         "equipment": [42, 43, 44, 45, 46, 47, 48],
         "vehicles": [53, 61],
         "vehicle_attachments": [62, 63],
+        "vehicle_loadouts": [61],
         "weapons": [39, 40]
       }
     }

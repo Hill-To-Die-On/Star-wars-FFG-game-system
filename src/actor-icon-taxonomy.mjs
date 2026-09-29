@@ -1,0 +1,145 @@
+// Abstract visual families for the creator-authorized reference database.
+// These are deliberately broad pictograms, not copied likenesses or anatomical claims.
+
+export const CHARACTER_ARCHETYPE_LABELS = Object.freeze({
+  humanoid: "Humanoid",
+  armored: "Armoured / helmeted",
+  droid: "Droid / construct",
+  lekku: "Paired head-tails",
+  montral: "Montrals / head-tails",
+  horned: "Horned / antennaed",
+  furred: "Furred / shaggy",
+  feline: "Feline / pointed-ear",
+  longEared: "Long-eared",
+  aquatic: "Aquatic / amphibious",
+  tentacled: "Facial tentacles",
+  reptilian: "Reptilian",
+  snouted: "Snouted / tusked",
+  domed: "Domed cranium",
+  tall: "Tall cranium / long neck",
+  hammerhead: "Hammerhead",
+  hooded: "Hooded / small",
+  masked: "Mask / respirator",
+  insectoid: "Insectoid / arachnid",
+  avian: "Avian / beaked",
+  multiLimbed: "Multi-limbed",
+  hutt: "Serpentine / gastropod",
+  small: "Small humanoid",
+  unusual: "Unusual lifeform",
+});
+
+export const VEHICLE_ARCHETYPE_LABELS = Object.freeze({
+  fighter: "Starfighter / interceptor",
+  bomber: "Bomber / heavy fighter",
+  freighter: "Freighter / transport",
+  shuttle: "Shuttle / lander",
+  gunship: "Gunship / assault craft",
+  cruiser: "Cruiser / escort",
+  destroyer: "Destroyer / battleship",
+  carrier: "Carrier",
+  station: "Station / installation",
+  tank: "Tank / armoured vehicle",
+  walker: "Walker",
+  airspeeder: "Airspeeder / cloud car",
+  landspeeder: "Landspeeder / skiff",
+  bike: "Speeder / wheel bike",
+  podracer: "Podracer",
+  crawler: "Crawler / conveyex",
+  barge: "Barge / herd ship",
+  submarine: "Submersible",
+  drone: "Drone / droid vehicle",
+  industrial: "Loader / utility vehicle",
+});
+
+const groups = {
+  humanoid: [
+    "Arkanian", "Bakuran", "Berchestians", "Chevs", "Chiss", "Dathomirian",
+    "Dressellian", "Etti", "Evocii", "Human", "Human - Corellian", "Kurtzen",
+    "Lorrdian", "Mirialan", "Nightsister", "Pantoran", "Stokhli", "Umbaran",
+    "Weequay", "Zeltrons",
+  ],
+  armored: ["Clone", "Gank", "Human - Mandalorian", "Junker"],
+  droid: ["Droid"],
+  lekku: ["Twi'lek"],
+  montral: ["Chagrian", "Togruta"],
+  horned: [
+    "Balosar", "Bardotan", "Devaronian", "Dowutin", "Elomin", "Gotal",
+    "Iktotchi", "Kalleran", "Nightbrother", "Voss", "Zabrak",
+  ],
+  furred: [
+    "Bimm", "Bothan", "Caamasi", "Coway", "Drall", "Dulok", "Elom",
+    "Gigoran", "Gormak", "Iakaru", "Krantians", "Lasat", "Lutrillian",
+    "Mimbanite", "Shistavanen", "Talz", "Whiphid", "Wookie", "Xamster",
+    "Yahk-Tosh", "Yuzzum",
+  ],
+  feline: ["Cathar", "Kath", "Zygerrian"],
+  longEared: ["Chadra-Fan", "Gungan", "Hoojibs", "Lannik", "Rakata", "Toydarian"],
+  aquatic: [
+    "Anselmi", "Drabatans", "Herglic", "Karkarodon", "Mon Calamari",
+    "Selkath", "Tritonite",
+  ],
+  tentacled: ["Mikkian", "Nautolan", "Quarren", "Sith", "Tholothian"],
+  reptilian: [
+    "Arcona", "Barabel", "Clawdite", "Cosian", "Falleen", "Niktos - Green",
+    "Niktos - Mountain", "Niktos - Pale", "Niktos - Red", "Niktos - Southern",
+    "Pw'eck", "Saurin", "Sluissi", "Ssi-ruuk", "Trandoshan", "Vodran", "Vurk",
+    "Ysalamiri",
+  ],
+  snouted: [
+    "Aqualish - Aquala", "Aqualish - Quara", "Aqualish - Ualaq", "Chevin",
+    "Chubbits", "Gamorrean", "Gran", "Klatooinian", "Kubaz", "Nimbanel",
+    "Rodian", "Sullustans", "Ugnaughts", "Yarkora",
+  ],
+  domed: ["Bith", "Duros", "Neimodian", "Sakiyan", "Toong"],
+  tall: ["Anx", "Cerean", "Kaminoan", "Muun", "Pau'an", "Quermian"],
+  hammerhead: ["Ithorian"],
+  hooded: ["Ewok", "Jawa"],
+  masked: [
+    "Gand", "Givin", "Kaleesh", "Kel Dor", "Kyuzo", "Miraluka", "Polis Massan",
+    "Skakoans", "Tognath", "Tusken Raider",
+  ],
+  insectoid: [
+    "Geonosian", "Harch", "Melittos", "Mustafarian - Northern",
+    "Mustafarian - Southern", "Spider People", "Verpine", "X'Ting", "Xi Charrin",
+  ],
+  avian: ["Ishi Tib", "Sathari"],
+  multiLimbed: ["Besalisk", "Dug", "Xexto"],
+  hutt: ["Hutt", "Thisspiasian", "Vippits"],
+  small: ["Aleena", "Gossam", "Utai"],
+  unusual: [
+    "Any", "Arbrans", "Deaon", "Dogoya", "Father, the Son, and the Daughter",
+    "Gorph", "Hepsalum Tash", "Lumen", "Malvil-tree", "Ocsin", "Phydolon",
+    "Skandit", "Strak", "Yayax", "Zeesta", "Zisian",
+  ],
+};
+
+export const SPECIES_ARCHETYPE_BY_NAME = Object.freeze(
+  Object.fromEntries(
+    Object.entries(groups).flatMap(([archetype, names]) =>
+      names.map((name) => [name.toLocaleLowerCase("en-GB"), archetype]),
+    ),
+  ),
+);
+
+export const VEHICLE_ARCHETYPE_RULES = Object.freeze([
+  ["station", /station|installation|platform|space dock|battle station|mobile refinery/],
+  ["submarine", /submarine|submersible|aquaspeeder/],
+  ["walker", /walker|all terrain|\bat-(?:at|st|te|dp|rt|ap|act|aa|ce|dt|est|et|frc|hct|pt|rct)\b/],
+  ["tank", /tank|armou?red fighting vehicle|artillery/],
+  ["podracer", /podracer/],
+  ["bike", /speeder bike|swoop|wheel bike|foot speeder|personal speeder/],
+  ["airspeeder", /airspeeder|cloud car|aerial retreat|atmospheric patrol craft/],
+  ["landspeeder", /landspeeder|speeder truck|groundcar|repulsorsled|repulsor class|combat speeder|swamp speeder|air skiff|cargo skiff/],
+  ["crawler", /crawler|conveyex|railcrawler/],
+  ["industrial", /loader|lifter|civil engineering|tugboat/],
+  ["drone", /drone|droid fighter|droid gunship|droid starfighter|droid operated|self-propelled battle droid/],
+  ["barge", /barge|herd ship|floater/],
+  ["carrier", /carrier/],
+  ["destroyer", /destroyer|dreadnought|battleship|battlecruiser|planetary assault ship/],
+  ["cruiser", /cruiser|frigate|corvette|defen[cs]e vessel|patrol boat|sloop/],
+  ["bomber", /bomber|heavy fighter|assault starfighter/],
+  ["fighter", /starfighter|fighter|interceptor|star wing/],
+  ["gunship", /gunship|assault craft|assault ship|armed transport/],
+  ["shuttle", /shuttle|lander|landing ship|boarding vessel|orbital assault pod|escape pod/],
+  ["freighter", /freighter|transport|hauler|yacht|courier|starliner|scout ship|survey vessel|cargo|supply|starship|vessel|ship/],
+]);

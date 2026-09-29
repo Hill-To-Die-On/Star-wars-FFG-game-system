@@ -11,11 +11,13 @@
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "check": "node scripts/check.mjs",
+    "audit:icons": "node scripts/audit-actor-icons.mjs",
     "build": "node scripts/build.mjs",
     "import:database": "node scripts/import-database.mjs",
     "publish:database": "node scripts/publish-database.mjs",
     "publish:advancement": "node scripts/publish-advancement-trees.mjs",
     "publish:vehicles": "python scripts/publish-vehicle-stats.py",
+    "publish:loadouts": "python scripts/publish-vehicle-loadouts.py",
     "import:swa": "node scripts/fetch-swa.mjs"
   },
   "devDependencies": {

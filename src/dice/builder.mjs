@@ -40,6 +40,14 @@ const RANGE_RANK = Object.freeze({
 const MELEE_SKILLS = new Set(["brawl", "melee", "lightsaber"]);
 const RANGED_SKILLS = new Set(["rangedLight", "rangedHeavy", "gunnery"]);
 
+// Core vehicle combat, silhouette comparison table. Range limits reach, not difficulty.
+export function vehicleAttackDifficulty(attacker, target) {
+  if(!Number.isInteger(attacker) || !Number.isInteger(target) || attacker<0 || target<0)
+    throw new Error("Select a target with a recorded silhouette, or use Manual after a GM ruling.");
+  const difference=attacker-target;
+  return difference<=-2 ? 1 : difference<=1 ? 2 : Math.min(5,difference+1);
+}
+
 export function automaticCheckPool({
   characteristic,
   rank,
@@ -52,6 +60,11 @@ export function automaticCheckPool({
   combat: combatOverride,
   melee: meleeOverride,
   talentRules,
+  boost = 0,
+  setback = 0,
+  vehicleAttack = false,
+  attackerSilhouette,
+  targetSilhouette,
 } = {}) {
   const reasons = [],
     melee = meleeOverride ?? MELEE_SKILLS.has(skill),
@@ -61,6 +74,10 @@ export function automaticCheckPool({
     taskDifficulty = difficulty;
   if (combat) {
     taskDifficulty = melee ? 2 : RANGE_DIFFICULTY[rangeBand];
+    if(vehicleAttack) {
+      try {taskDifficulty=vehicleAttackDifficulty(attackerSilhouette,targetSilhouette);}
+      catch(cause){error=cause.message;taskDifficulty=2;}
+    }
     if (rangeBand === "beyond")
       error = "Target is beyond the configured Extreme range.";
     else if (!Number.isInteger(taskDifficulty))
@@ -73,7 +90,7 @@ export function automaticCheckPool({
       rangeIndex > weaponRangeIndex
     )
       error = `Target is beyond the weapon's ${weaponRange} range.`;
-    if (!error && rangeBand === "engaged") {
+    if (!error && rangeBand === "engaged" && !vehicleAttack) {
       if (skill === "rangedLight") taskDifficulty += 1;
       if (skill === "rangedHeavy") taskDifficulty += 2;
       if (skill === "gunnery")
@@ -82,7 +99,8 @@ export function automaticCheckPool({
   }
   const basePool = skillPool(characteristic, rank, {
       difficulty: Number.isInteger(taskDifficulty) ? taskDifficulty : 0,
-      setback: combat ? defense : 0,
+      boost,
+      setback: (combat ? defense : 0) + setback,
       upgradeDifficulty: combat ? adversary : 0,
     }),
     pool = talentRules ? applyTalentPool(basePool, talentRules) : basePool;
@@ -91,7 +109,7 @@ export function automaticCheckPool({
   );
   if (combat)
     reasons.push(
-      melee
+      vehicleAttack ? `Silhouette ${attackerSilhouette} against ${targetSilhouette}: difficulty ${taskDifficulty}; ${rangeBand} controls weapon reach` : melee
         ? `Melee check: difficulty ${taskDifficulty}`
         : `${rangeBand || "No"} range: difficulty ${taskDifficulty ?? 0}`,
     );
@@ -102,6 +120,8 @@ export function automaticCheckPool({
       `Target adversary rating: ${adversary} difficulty upgrade${adversary === 1 ? "" : "s"}`,
     );
   if (talentRules?.reasons?.length) reasons.push(...talentRules.reasons);
+  if (boost) reasons.push(`Vehicle / task modifier: ${boost} boost`);
+  if (setback) reasons.push(`Vehicle / task modifier: ${setback} setback`);
   return {
     pool,
     reasons,

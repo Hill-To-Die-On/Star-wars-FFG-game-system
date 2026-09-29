@@ -21,6 +21,7 @@ for (const name of [
   "data/reference-library.json",
   "data/advancement-trees.json",
   "data/vehicle-stats.json",
+  "data/vehicle-loadouts.json",
   "data/source-verification.json",
   "data/source-requests.json",
 ])

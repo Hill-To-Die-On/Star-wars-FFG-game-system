@@ -1,10 +1,19 @@
 import { CHARACTERISTICS, SKILLS, THEMES } from "./config.mjs";
+import { VEHICLE_ICON_ARCHETYPES } from "./actor-icons.mjs";
 const f = foundry.data.fields;
 const number = (initial = 0, max = 100000) =>
   new f.NumberField({
     required: true,
     nullable: false,
     integer: true,
+    min: 0,
+    max,
+    initial,
+  });
+const decimal = (initial = 0, max = 100000) =>
+  new f.NumberField({
+    required: true,
+    nullable: false,
     min: 0,
     max,
     initial,
@@ -17,6 +26,9 @@ const resource = (max = 10) =>
   new f.SchemaField({ value: number(), max: number(max) });
 const source = () =>
   new f.SchemaField({ book: text(), page: text(), table: text(), id: text() });
+const turnEconomy = () => new f.SchemaField({
+  actions:number(1,10), freeManeuvers:number(1,10), maneuverLimit:number(2,10), strainCost:number(2,10),
+});
 const customSkills = (rankMax = 5) =>
   new f.ArrayField(
     new f.SchemaField({
@@ -91,6 +103,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
         ),
       ),
       customSkills: customSkills(),
+      turnEconomy: turnEconomy(),
       wounds: resource(),
       strain: resource(),
       soak: number(2),
@@ -115,6 +128,7 @@ export class CharacterData extends foundry.abstract.TypeDataModel {
       criticals: new f.ArrayField(new f.ObjectField()),
       advancement: new f.ArrayField(new f.ObjectField()),
       creation: new f.ObjectField({ initial: {} }),
+      metadata: new f.ObjectField({ initial: {} }),
       source: source(),
       incomplete: list(),
     };
@@ -149,6 +163,7 @@ export class VehicleData extends foundry.abstract.TypeDataModel {
         choices: ["auto", ...Object.keys(THEMES)],
       }),
       hullTrauma: resource(20),
+      turnEconomy: turnEconomy(),
       systemStrain: resource(15),
       armor: number(1),
       silhouette: number(3, 20),
@@ -167,11 +182,33 @@ export class VehicleData extends foundry.abstract.TypeDataModel {
       }),
       model: text(),
       manufacturer: text(),
+      registration: text(),
       crew: text(),
       passengers: text(),
       hyperdrive: text(),
       cargo: text(),
       notes: text(),
+      footprint: new f.SchemaField({
+        mode: new f.StringField({
+          required: true,
+          nullable: false,
+          initial: "automatic",
+          choices: ["automatic", "manual"],
+        }),
+        hull: new f.StringField({
+          required: true,
+          nullable: false,
+          initial: "auto",
+          choices: [
+            "auto",
+            "capital",
+            "speeder",
+            ...Object.keys(VEHICLE_ICON_ARCHETYPES),
+          ],
+        }),
+        length: decimal(),
+        width: decimal(),
+      }),
       source: source(),
       incomplete: list(),
       metadata: new f.ObjectField({ initial: {} }),
@@ -235,6 +272,7 @@ export class ItemData extends foundry.abstract.TypeDataModel {
       rank: number(1, 100),
       ranked: bool(),
       activation: text(),
+      effects: new f.ArrayField(new f.ObjectField(), { initial: [] }),
       career: text(),
       careerSkills: list(),
       forceRating: number(0, 10),

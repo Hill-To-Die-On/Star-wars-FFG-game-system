@@ -13,11 +13,10 @@ import {
   filterLibraryByBooks,
 } from "./reference-data.mjs";
 import { importWithProgress } from "./library.mjs";
-import { mergeAdvancementTrees } from "./advancement-data.mjs";
-import { mergeVehicleStats } from "./vehicle-data.mjs";
+import { publishedLibrary } from "./published-library.mjs";
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } =
   foundry.applications.api;
-let indexPromise, libraryPromise, advancementPromise, vehiclePromise;
+let indexPromise;
 const browsers = new Set();
 const campaign = () => game.settings.get(SYSTEM_ID, "campaign");
 async function loadJSON(name) {
@@ -46,27 +45,7 @@ export async function getReference(key) {
 }
 export async function importPublishedLibrary() {
   if (!game.user.isGM) throw new Error("Only the GM can populate compendiums.");
-  const [source, advancement, vehicles] = await Promise.all([
-      (libraryPromise ??= loadJSON("reference-library").catch((error) => {
-        libraryPromise = undefined;
-        throw error;
-      })),
-      (advancementPromise ??= loadJSON("advancement-trees").catch((error) => {
-        advancementPromise = undefined;
-        throw error;
-      })),
-      (vehiclePromise ??= loadJSON("vehicle-stats").catch((error) => {
-        vehiclePromise = undefined;
-        throw error;
-      })),
-    ]),
-    bundle = mergeVehicleStats(
-      mergeAdvancementTrees(
-        filterLibraryByBooks(source, campaign()),
-        advancement,
-      ),
-      vehicles,
-    );
+  const bundle = filterLibraryByBooks(await publishedLibrary(), campaign());
   if (!Object.values(bundle.documents).some((documents) => documents.length))
     throw new Error("No references match the owned-book selection.");
   return importWithProgress(bundle);

@@ -5,10 +5,11 @@ import { pathToFileURL } from "node:url";
 import { parseSqlDump } from "./sql-parser.mjs";
 import { convertDatabase } from "./import-database.mjs";
 import { indexReferenceDatabase } from "../src/reference-data.mjs";
+import { enrichReferenceDatabase } from "../src/catalogue-enrichment.mjs";
 
-export function publishDatabase(sql) {
+export function publishDatabase(sql, { vehicleStats, vehicleLoadouts } = {}) {
   const tables = parseSqlDump(sql);
-  const database = {
+  let database = {
     format: "star-wars-reference-database",
     version: 1,
     provenance: {
@@ -18,14 +19,20 @@ export function publishDatabase(sql) {
     },
     tables,
   };
+  if (vehicleStats || vehicleLoadouts) {
+    database = enrichReferenceDatabase(database, { stats: vehicleStats, loadouts: vehicleLoadouts,
+      nativeActors: convertDatabase(tables).documents.Actor });
+    for (const [key, value] of Object.entries({ vehicleStats, vehicleLoadouts }))
+      if (value) database.provenance[`${key}Sha256`] = createHash("sha256").update(JSON.stringify(value)).digest("hex");
+  }
   const index = indexReferenceDatabase(database);
   if (!index.records.length || index.records.length > 20000)
     throw new Error("Unexpected database size.");
   return {
     database,
-    library: convertDatabase(tables, { retainCreatorNotes: true }),
+    library: convertDatabase(database.tables, { retainCreatorNotes: true }),
     counts: {
-      tables: Object.keys(tables).length,
+      tables: Object.keys(database.tables).length,
       rows: index.records.length,
       books: index.books.length,
     },
@@ -37,6 +44,8 @@ async function main() {
     throw new Error("Provide the creator-authorized SQL database path.");
   const { database, library, counts } = publishDatabase(
     await readFile(input, "utf8"),
+    { vehicleStats: JSON.parse(await readFile("data/vehicle-stats.json", "utf8")),
+      vehicleLoadouts: JSON.parse(await readFile("data/vehicle-loadouts.json", "utf8")) },
   );
   await mkdir("data", { recursive: true });
   await writeFile(

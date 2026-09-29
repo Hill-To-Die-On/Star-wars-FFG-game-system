@@ -16,6 +16,11 @@ import {
   getSceneRangeProfile,
   measureTokenRange,
 } from "./range-overlay/foundry.mjs";
+import { vehicleFootprintMeters } from "./vehicle-footprints.mjs";
+import { readTurnBudget } from "./turn-economy-foundry.mjs";
+import { homebrewIdentityState } from "./homebrew-identities.mjs";
+import { crewContext } from "./vehicle-crew-foundry.mjs";
+import { groupStateForActor } from "./minion-groups.mjs";
 export const RULE_KNOWLEDGE_POLICY = Object.freeze({
   id: "evidence-required-v1",
   automaticAuthority: "structured-system-data",
@@ -132,6 +137,7 @@ export function actorContext(actor) {
     type: actor.type,
     source: s.source,
     incomplete: s.incomplete,
+    homebrewIdentities: homebrewIdentityState(s),
     privateSourceNotes: getGMSourceNotes(actor),
     campaign,
     guidance: campaignGuidance(campaign),
@@ -150,6 +156,7 @@ export function actorContext(actor) {
     motivations,
     biography: s.biography,
     talentRules,
+    turnEconomy: actor.type === "group" ? undefined : readTurnBudget(actor),
     talentAutomationStatus,
     wounds: s.wounds,
     strain: s.strain,
@@ -163,6 +170,9 @@ export function actorContext(actor) {
     handling: s.handling,
     shields: s.shields,
     crew: s.crew,
+    crewAssignments: actor.type === "vehicle" ? crewContext(actor) : undefined,
+    vehicleFootprint:
+      actor.type === "vehicle" ? vehicleFootprintMeters(actor) : undefined,
     obligation: campaign.obligation ? s.obligation : undefined,
     duty: campaign.duty ? s.duty : undefined,
     morality: campaign.morality ? s.morality : undefined,
@@ -170,6 +180,10 @@ export function actorContext(actor) {
     xp: s.xp,
     creation: s.creation,
     phase: s.phase,
+    minionGroup: actor.type === "minion" ? (()=>{
+      const state=groupStateForActor(actor);return state?{remaining:state.remaining,defeated:state.defeated,rank:state.rank,
+        guidance:"These tokens are one minion group: shared wounds, equipment and one turn. Apply damage once to the shared actor. Healing restores members; unavailable members do not add group ranks."}:undefined;
+    })():undefined,
     advancement: s.advancement,
     equipmentAndAbilities: (actor.items?.contents ?? [])
       .filter((item) =>
@@ -342,6 +356,7 @@ export const directorAdapter = {
             handling: s.handling,
             shields: s.shields,
             crew: s.crew,
+            footprint: vehicleFootprintMeters(actor),
           }),
         },
         {

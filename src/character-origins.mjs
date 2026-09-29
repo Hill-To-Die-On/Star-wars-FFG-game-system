@@ -1,5 +1,6 @@
 import { CHARACTERISTICS, SKILLS } from "./config.mjs";
 import { bookAllowed, RULE_LINES } from "./rules.mjs";
+import { databaseIdentityReset, SPECIES_SOURCE_REVIEW } from "./homebrew-identities.mjs";
 
 const SPECIES_STATS = [
   ...Object.values(CHARACTERISTICS),
@@ -7,12 +8,12 @@ const SPECIES_STATS = [
   "Strain_Base",
   "XP",
 ];
-const ORIGIN_REVIEW =
-  "Verify species abilities and any exceptional creation rules in the source book.";
 export const ORIGIN_INDEX_FIELDS = [
   "type",
   "system.career",
   "system.careerSkills",
+  "system.metadata.Force_Sensitive",
+  "system.metadata.Gain_Force_Rating",
   "system.metadata.Playable",
   ...SPECIES_STATS.map((key) => `system.metadata.${key}`),
   "system.source.book",
@@ -94,7 +95,7 @@ export function availableOriginOptions(entries, campaign) {
 
 function fuzzyScore(option, query) {
   const words = normalizeSearch(
-      `${option.name} ${option.source?.book ?? ""}`,
+      `${option.name} ${option.searchTerms ?? ""} ${option.source?.book ?? ""}`,
     ),
     compactWords = words.replaceAll(" ", ""),
     normalizedQuery = normalizeSearch(query),
@@ -154,6 +155,7 @@ export function originSelectionUpdate(kind, entry, current, campaign) {
       `Choose a valid ${kind} from the enabled campaign reference library.`,
     );
   const creation = { ...(current?.creation ?? {}), applied: false };
+  const reset = databaseIdentityReset(current, [kind]);
   if (kind === "species") {
     const characteristics = Object.fromEntries(
         Object.entries(CHARACTERISTICS).map(([key, label]) => [
@@ -163,6 +165,7 @@ export function originSelectionUpdate(kind, entry, current, campaign) {
       ),
       xp = speciesStat(entry, "XP");
     return {
+      metadata: reset.metadata,
       species: entry.name,
       characteristics,
       soak: characteristics.brawn,
@@ -182,12 +185,13 @@ export function originSelectionUpdate(kind, entry, current, campaign) {
         speciesAbilitiesPending: true,
       },
       incomplete: [
-        ...new Set([...(current?.incomplete ?? []), ORIGIN_REVIEW]),
+        ...new Set([...reset.incomplete, SPECIES_SOURCE_REVIEW]),
       ],
     };
   }
   const careerSkills = new Set(entry.system.careerSkills);
   return {
+    ...reset,
     line: creationLine(entry, current, campaign),
     career: entry.name,
     skills: Object.fromEntries(

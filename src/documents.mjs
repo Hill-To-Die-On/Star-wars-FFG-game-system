@@ -2,6 +2,7 @@ import { SYSTEM_ID, SKILLS, skillKey } from "./config.mjs";
 import { skillPool } from "./dice/core.mjs";
 import { rollPool } from "./dice/foundry.mjs";
 import { minionState, damageAfterSoak, weaponDamage } from "./mechanics.mjs";
+import { groupStateForActor } from "./minion-groups.mjs";
 import {
   talentPurchase,
   skillPurchase,
@@ -35,6 +36,7 @@ import {
   validateSignatureAttachment,
 } from "./signature-abilities.mjs";
 import { requestXpTransaction } from "./xp-transactions.mjs";
+import { assignedCrewCheck, vehicleForActor } from "./vehicle-crew-foundry.mjs";
 export class StarWarsActor extends Actor {
   assertOwner() {
     if (!this.isOwner) throw new Error("Owner permission is required.");
@@ -86,11 +88,11 @@ export class StarWarsActor extends Actor {
       ? skill.group
         ? Math.min(
             5,
-            minionState(
+            (groupStateForActor(this) ?? minionState(
               this.system.groupSize,
               this.system.wounds.value,
               this.system.wounds.max,
-            ).rank,
+            )).rank,
           )
         : 0
       : skill.rank;
@@ -108,12 +110,19 @@ export class StarWarsActor extends Actor {
   }
   async rollSkill(key, options = {}) {
     this.assertOwner();
+    if (this.isVehicle) {
+      const {vehicleToken,crewTokenId,...crewOptions}=options, vehicle=vehicleToken ?? vehicleForActor(this);
+      if(!vehicle) throw new Error("Select this vehicle's token to use its crew.");
+      const crew=assignedCrewCheck(vehicle,key,crewTokenId);
+      return crew.actor.rollSkill(key,{...crewOptions,boost:(options.boost ?? 0)+crew.boost,setback:(options.setback ?? 0)+crew.setback,
+        label:options.label ?? `${this.name} · ${crew.name} · ${key}`});
+    }
     const definition = this.skillDefinition(key);
     if (!definition || this.isVehicle || this.type === "group")
       throw new Error("Choose a character's native skill.");
     const characteristic =
       definition.state.characteristic || definition.characteristic;
-    const { selectedTalents = [], label, ...rollOptions } = options,
+    const { selectedTalents = [], label, turnCost = "action", ...rollOptions } = options,
       rules = this.talentRulesForCheck(definition.key, { selectedTalents }),
       pool = applyTalentPool(
         skillPool(
@@ -127,6 +136,7 @@ export class StarWarsActor extends Actor {
       label: label ?? `${this.name} · ${definition.label}`,
       actor: this,
       ...rollOptions,
+      turnCost,
       automaticResults: rules.automaticResults,
       ruleNotes: rules.reasons,
     });
@@ -190,7 +200,9 @@ export class StarWarsActor extends Actor {
       applied,
       resource,
       value,
-      exceedsThreshold: value > this.system[resource].max,
+      exceedsThreshold: this.type === "minion"
+        ? (groupStateForActor(this) ?? minionState(this.system.groupSize,value,this.system.wounds.max)).remaining === 0
+        : value > this.system[resource].max,
     };
   }
   async buyTalent(itemId, nodeId, { characteristic } = {}) {
@@ -522,7 +534,7 @@ export class StarWarsActor extends Actor {
 }
 export class StarWarsItem extends Item {
   async roll(options = {}) {
-    if (this.type !== "weapon" || !this.actor || this.actor.isVehicle)
+    if (this.type !== "weapon" || !this.actor)
       throw new Error(
         "Roll a weapon from its character or choose the vehicle's gunner.",
       );

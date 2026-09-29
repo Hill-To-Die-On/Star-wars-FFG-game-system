@@ -3,11 +3,19 @@ import assert from "node:assert/strict";
 import {
   RANGE_BAND_ORDER,
   RANGE_SCALES,
+  buildAttackTraceSegments,
   calibrationFromPointer,
+  chooseAttackTraceLabelLayout,
+  chooseRangeLabelLayout,
   classifyRangeDistance,
   createRangeProfile,
+  farthestViewportCornerAngle,
+  inferCombatRangeScale,
+  interpolateRangeLabelAngle,
   normalizeRangeScale,
+  pauseBannerScreenBounds,
   reconcileRangeOrigins,
+  segmentEllipseIntersection,
 } from "../src/range-overlay/core.mjs";
 
 test("scaled personal scenes convert the configured map units into narrative bands", () => {
@@ -211,4 +219,234 @@ test("single-origin selection follows the latest token while multi-origin select
     ),
     [],
   );
+});
+
+test("range labels roll around a band to remain inside the visible viewport", () => {
+  const viewport = { left: 0, top: 0, right: 800, bottom: 600 };
+  const layout = chooseRangeLabelLayout({
+    origin: { x: 760, y: 120 },
+    radius: 180,
+    viewport,
+    size: { width: 120, height: 28 },
+    preferredAngle: -Math.PI / 4,
+  });
+
+  assert.ok(layout);
+  assert.equal(layout.onArc, true);
+  assert.ok(layout.bounds.left >= 12);
+  assert.ok(layout.bounds.right <= 788);
+  assert.ok(layout.bounds.top >= 12);
+  assert.ok(layout.bounds.bottom <= 588);
+  assert.ok(
+    Math.abs(Math.hypot(layout.x - 760, layout.y - 120) - 180) < 0.001,
+  );
+});
+
+test("range labels share the ray from their origin to the furthest viewport corner", () => {
+  const origin = { x: 160, y: 120 };
+  const viewport = { left: 0, top: 0, right: 800, bottom: 600 };
+  const preferredAngle = farthestViewportCornerAngle(origin, viewport);
+  assert.ok(
+    Math.abs(preferredAngle - Math.atan2(480, 640)) < 0.000001,
+  );
+
+  const currentAngle = Math.PI * 0.82;
+  const layouts = [120, 240].map((radius) =>
+    chooseRangeLabelLayout({
+      origin,
+      radius,
+      viewport,
+      size: { width: 100, height: 24 },
+      preferredAngle,
+      currentAngle,
+    }),
+  );
+
+  assert.ok(layouts.every(Boolean));
+  assert.ok(layouts.every((layout) => layout.onArc));
+  assert.ok(
+    layouts.every(
+      (layout) => Math.abs(layout.angle - preferredAngle) < 0.000001,
+    ),
+  );
+});
+
+test("range labels slide along their own arc to repel actor and prop bounds", () => {
+  const origin = { x: 400, y: 300 };
+  const preferredAngle = 0;
+  const occupied = [{ left: 515, top: 272, right: 650, bottom: 328 }];
+  const layout = chooseRangeLabelLayout({
+    origin,
+    radius: 180,
+    viewport: { left: 0, top: 0, right: 800, bottom: 600 },
+    size: { width: 100, height: 24 },
+    preferredAngle,
+    currentAngle: preferredAngle,
+    occupied,
+  });
+
+  assert.ok(layout);
+  assert.equal(layout.onArc, true);
+  assert.ok(Math.abs(layout.angle - preferredAngle) > 0.01);
+  assert.ok(
+    Math.abs(Math.hypot(layout.x - origin.x, layout.y - origin.y) - 180) <
+      0.001,
+  );
+  assert.equal(
+    Math.max(
+      0,
+      Math.min(layout.bounds.right, occupied[0].right) -
+        Math.max(layout.bounds.left, occupied[0].left),
+    ) *
+      Math.max(
+        0,
+        Math.min(layout.bounds.bottom, occupied[0].bottom) -
+          Math.max(layout.bounds.top, occupied[0].top),
+      ),
+    0,
+  );
+});
+
+test("range labels stay visible when a band contains the whole viewport", () => {
+  const layout = chooseRangeLabelLayout({
+    origin: { x: 400, y: 300 },
+    radius: 1200,
+    viewport: { left: 0, top: 0, right: 800, bottom: 600 },
+    size: { width: 100, height: 24 },
+  });
+
+  assert.ok(layout);
+  assert.equal(layout.onArc, false);
+  assert.ok(layout.bounds.left >= 12);
+  assert.ok(layout.bounds.right <= 788);
+  assert.ok(layout.bounds.top >= 12);
+  assert.ok(layout.bounds.bottom <= 588);
+  assert.ok(layout.leaderPoint);
+});
+
+test("range labels remain hidden when the band itself is completely off screen", () => {
+  assert.equal(
+    chooseRangeLabelLayout({
+      origin: { x: -500, y: -500 },
+      radius: 100,
+      viewport: { left: 0, top: 0, right: 800, bottom: 600 },
+      size: { width: 100, height: 24 },
+    }),
+    null,
+  );
+});
+
+test("range label animation takes the short route across the angle boundary", () => {
+  const from = (170 * Math.PI) / 180;
+  const to = (-170 * Math.PI) / 180;
+  const halfway = interpolateRangeLabelAngle(from, to, 0.5);
+
+  assert.ok(Math.abs(Math.abs(halfway) - Math.PI) < 0.000001);
+  assert.equal(interpolateRangeLabelAngle(from, to, 1), to);
+});
+
+test("combat range inference handles clear personal and vehicle encounters", () => {
+  assert.equal(
+    inferCombatRangeScale([{ actor: { type: "character" } }, { actor: { type: "nemesis" } }]),
+    "personal",
+  );
+  assert.equal(
+    inferCombatRangeScale([{ actor: { type: "vehicle" } }, { actor: { type: "vehicle" } }]),
+    "space",
+  );
+  assert.equal(
+    inferCombatRangeScale([{ actor: { type: "character" } }, { actor: { type: "vehicle" } }]),
+    null,
+  );
+  assert.equal(inferCombatRangeScale([]), null);
+});
+
+test("attack traces find the first edge of an intervening token", () => {
+  const hit = segmentEllipseIntersection(
+    { x: 0, y: 0 },
+    { x: 400, y: 0 },
+    { x: 200, y: 0, radiusX: 50, radiusY: 40 },
+  );
+
+  assert.ok(hit);
+  assert.equal(hit.progress, 0.375);
+  assert.deepEqual(hit.point, { x: 150, y: 0 });
+  assert.equal(
+    segmentEllipseIntersection(
+      { x: 0, y: 0 },
+      { x: 400, y: 0 },
+      { x: 200, y: 100, radiusX: 20, radiusY: 20 },
+    ),
+    null,
+  );
+});
+
+test("attack trace geometry draws solid to a blocker and dotted thereafter", () => {
+  const direct = buildAttackTraceSegments({
+    source: { x: 0, y: 0 },
+    target: { x: 100, y: 0 },
+    progress: 0.5,
+  });
+  assert.deepEqual(direct, [
+    {
+      style: "solid",
+      from: { x: 0, y: 0 },
+      to: { x: 50, y: 0 },
+    },
+  ]);
+
+  const blocked = buildAttackTraceSegments({
+    source: { x: 0, y: 0 },
+    target: { x: 100, y: 0 },
+    obstruction: { point: { x: 40, y: 0 }, progress: 0.4 },
+    progress: 1,
+    dashLength: 10,
+    gapLength: 5,
+  });
+  assert.deepEqual(blocked[0], {
+    style: "solid",
+    from: { x: 0, y: 0 },
+    to: { x: 40, y: 0 },
+  });
+  assert.deepEqual(blocked[1], {
+    style: "dotted",
+    from: { x: 40, y: 0 },
+    to: { x: 50, y: 0 },
+  });
+  assert.equal(blocked.at(-1).style, "dotted");
+  assert.ok(blocked.at(-1).to.x <= 100);
+  assert.ok(blocked.some((segment) => segment.from.x > 40));
+});
+
+test("attack trace labels choose a visible side of the line away from UI overlays", () => {
+  const pauseBanner = { left: 320, top: 250, right: 680, bottom: 350 };
+  const layout = chooseAttackTraceLabelLayout({
+    source: { x: 100, y: 300 },
+    target: { x: 900, y: 300 },
+    size: { width: 420, height: 90 },
+    viewport: { left: 0, top: 0, right: 1000, bottom: 700 },
+    occupied: [pauseBanner],
+  });
+
+  assert.ok(layout);
+  assert.ok(layout.bounds.left >= 12);
+  assert.ok(layout.bounds.right <= 988);
+  assert.ok(layout.bounds.top >= 12);
+  assert.ok(layout.bounds.bottom <= 688);
+  assert.ok(
+    layout.bounds.bottom <= pauseBanner.top ||
+      layout.bounds.top >= pauseBanner.bottom ||
+      layout.bounds.right <= pauseBanner.left ||
+      layout.bounds.left >= pauseBanner.right,
+  );
+});
+
+test("paused scenes reserve the central Foundry canvas area for its banner", () => {
+  assert.deepEqual(pauseBannerScreenBounds({ width: 1500, height: 1000 }), {
+    left: 570,
+    top: 380,
+    right: 930,
+    bottom: 630,
+  });
+  assert.equal(pauseBannerScreenBounds({ width: 0, height: 1000 }), null);
 });

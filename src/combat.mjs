@@ -1,13 +1,26 @@
 import { SYSTEM_ID } from "./config.mjs";
 import { initiativeScore } from "./mechanics.mjs";
+import { groupDefinition } from "./minion-groups.mjs";
 export class StarWarsCombat extends Combat {
+  async createEmbeddedDocuments(type,data,options={}) {
+    if(type==="Combatant") {
+      const seen=new Set(Array.from(this.combatants??[],c=>c.actorId));
+      data=data.filter(entry=>{
+        const actor=game.actors.get(entry.actorId);
+        if(!groupDefinition(actor))return true;
+        if(seen.has(actor.id))return false;
+        seen.add(actor.id);return true;
+      });
+    }
+    return super.createEmbeddedDocuments(type,data,options);
+  }
   async rollInitiative(ids, { skill = "vigilance", updateTurn = true } = {}) {
     const updates = [];
     for (const id of typeof ids === "string" ? [ids] : ids) {
       const c = this.combatants.get(id);
       if (!c?.actor?.rollSkill || !c.isOwner || c.actor.type === "vehicle")
         continue;
-      const result = await c.actor.rollSkill(skill, { difficulty: 0 });
+      const result = await c.actor.rollSkill(skill, { difficulty: 0, turnCost: "none" });
       const player = c.actor.hasPlayerOwner;
       updates.push({
         _id: id,

@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import Handlebars from "handlebars";
 import { DICE } from "../src/dice/core.mjs";
 import { validateVehicleData } from "../src/vehicle-data.mjs";
+import { validateVehicleLoadouts } from "../src/vehicle-loadout-data.mjs";
 async function walk(dir) {
   const result = [];
   for (const entry of await readdir(dir, { withFileTypes: true }))
@@ -35,6 +36,7 @@ for (const version of [1, 2])
 validateVehicleData(
   JSON.parse(await readFile("data/vehicle-stats.json", "utf8")),
 );
+validateVehicleLoadouts(JSON.parse(await readFile("data/vehicle-loadouts.json", "utf8")));
 if (manifest.version !== pkg.version)
   throw new Error("Manifest and package versions differ");
 for (const path of [

@@ -9,9 +9,15 @@ import {
 import { SYSTEM_ID, SYSTEM_PATH } from "../config.mjs";
 import { escapeHTML } from "../mechanics.mjs";
 import { registerDiceCompatibility } from "./compatibility.mjs";
+import { groupStateForActor } from "../minion-groups.mjs";
 const VERSIONED_FACE_SUFFIX = Object.freeze({ ability: "v2", difficulty: "v3" });
 const faceTexture = (key, face) =>
   `${SYSTEM_PATH}/assets/dice/${key}-${face}${VERSIONED_FACE_SUFFIX[key] ? `-${VERSIONED_FACE_SUFFIX[key]}` : ""}.png`;
+export function applyChatVisibility(data,mode,ChatClass=globalThis.ChatMessage) {
+  if(typeof ChatClass.applyMode === "function")return ChatClass.applyMode(data,
+    {publicroll:"public",gmroll:"gm",blindroll:"blind",selfroll:"self"}[mode] ?? mode);
+  return ChatClass.applyRollMode(data,mode);
+}
 export function registerDice() {
   for (const [key, config] of Object.entries(DICE)) {
     const cls = class extends foundry.dice.terms.Die {
@@ -131,10 +137,16 @@ export async function rollPool(
     chatMessage = true,
     automaticResults = {},
     ruleNotes = [],
+    turnCost = "none",
   } = {},
 ) {
+  if(groupStateForActor(actor)?.remaining===0)throw new Error("This minion group has no active members to make a check.");
   const normalized = normalizePool(pool);
+  const { automaticRollCost, performTurnCommand, readTurnBudget } = await import("../turn-economy-foundry.mjs");
+  const cost = automaticRollCost(actor,turnCost);
+  const expectedKey = cost ? readTurnBudget(actor).key : undefined;
   const roll = await new foundry.dice.Roll(poolFormula(normalized)).evaluate();
+  if (cost) await performTurnCommand(actor,cost,{automatic:"roll",expectedKey});
   const outcome = applyAutomaticResults(
     resultFromRoll(roll),
     automaticResults,
@@ -157,7 +169,7 @@ export async function rollPool(
       },
     };
     await ChatMessage.create(
-      ChatMessage.applyRollMode(
+      applyChatVisibility(
         data,
         rollMode ?? game.settings.get("core", "rollMode"),
       ),

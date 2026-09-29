@@ -6,8 +6,8 @@
     <label class="sf-theme-select">Sheet theme<select name="system.theme">{{selectOptions themes selected=system.theme}}</select>
 </label>
     <div class="sf-identity">
-<div class="sf-portrait-frame">
-<img src="{{actor.img}}" alt="{{actor.name}}" data-action="editImage" data-edit="img">
+<div class="sf-portrait-frame" data-portrait-family="{{portraitFamily}}" data-icon-role="{{portraitCategory}}" data-procedural="{{portraitProcedural}}">
+<img src="{{portraitSrc}}" alt="{{actor.name}}" data-action="editImage" data-edit="img">
 <span class="sf-portrait-marks" aria-hidden="true"></span>
 </div>
 <div>
@@ -17,10 +17,35 @@
 </div>
 </div>
     <div class="sf-header-meta">
-{{#if isVehicle}}<label>Model<input name="system.model" value="{{system.model}}">
-</label>
-<label>Manufacturer<input name="system.manufacturer" value="{{system.manufacturer}}">
-</label>{{else}}{{#if isCharacter}}<div class="sf-origin-picker" data-origin-picker="species" data-current="{{system.species}}">
+{{#if isVehicle}}<div class="sf-origin-picker" data-origin-picker="model" data-current="{{system.model}}">
+<span class="sf-origin-label">Model</span>
+<div class="sf-origin-control">
+{{#if vehicleIdentityEditable}}<input type="search" value="{{system.model}}" placeholder="Choose vehicle model…" autocomplete="off" role="combobox" aria-label="Model" aria-autocomplete="list" aria-expanded="false" data-origin-search>
+<button type="button" class="sf-origin-toggle" data-origin-toggle aria-label="Show model choices" aria-expanded="false"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>{{else}}<input type="text" value="{{system.model}}" aria-label="Model" readonly>{{/if}}
+</div>
+{{#if vehicleIdentityEditable}}<div class="sf-origin-menu" role="listbox" aria-label="Model choices" data-origin-menu hidden>
+{{#each modelOptions}}<button type="button" role="option" aria-selected="{{selected}}" data-action="selectVehicleChoice" data-kind="model" data-document-id="{{id}}"><strong>{{name}}</strong><small>{{detail}}</small><small>{{source.book}}{{#if source.page}} · p. {{source.page}}{{/if}}</small></button>{{/each}}
+<p data-origin-empty hidden>No valid model matches that search.</p>
+{{#if homebrewAllowed}}<button type="button" role="option" data-action="selectHomebrewIdentity" data-homebrew-choice hidden>Use homebrew model</button>{{/if}}
+</div>{{/if}}
+<small class="sf-origin-help">Choose a model to fill its recorded profile. The ship's name stays editable.</small>
+</div>
+<div class="sf-origin-picker" data-origin-picker="manufacturer" data-current="{{vehicleManufacturerDisplay}}">
+<span class="sf-origin-label">Manufacturer</span>
+<div class="sf-origin-control">
+{{#if vehicleIdentityEditable}}<input type="search" value="{{vehicleManufacturerDisplay}}" placeholder="Find a manufacturer…" autocomplete="off" role="combobox" aria-label="Manufacturer" aria-autocomplete="list" aria-expanded="false" data-origin-search>
+<button type="button" class="sf-origin-toggle" data-origin-toggle aria-label="Show manufacturer choices" aria-expanded="false"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button>{{else}}<input type="text" value="{{system.manufacturer}}" aria-label="Manufacturer" readonly>{{/if}}
+</div>
+{{#if vehicleIdentityEditable}}<div class="sf-origin-menu" role="listbox" aria-label="Manufacturer choices" data-origin-menu hidden>
+{{#each manufacturerOptions}}<button type="button" role="option" aria-selected="{{selected}}" data-action="selectVehicleChoice" data-kind="manufacturer" data-document-id="{{id}}"><strong>{{name}}</strong></button>{{/each}}
+<p data-origin-empty hidden>No valid manufacturer matches that search.</p>
+{{#if homebrewAllowed}}<button type="button" role="option" data-action="selectHomebrewIdentity" data-homebrew-choice hidden>Use homebrew manufacturer</button>{{/if}}
+</div>{{/if}}
+<small class="sf-origin-help">Filter models by manufacturer; choosing a model sets both.</small>
+{{#if vehicleManufacturerFilter}}<button type="button" data-action="selectVehicleChoice" data-kind="manufacturer" data-document-id="">Show all manufacturers</button>{{/if}}
+</div>
+<label>Registration<input name="system.registration" value="{{system.registration}}" placeholder="Assigned when a model is chosen"></label>
+{{else}}{{#if isCharacter}}<div class="sf-origin-picker" data-origin-picker="species" data-current="{{system.species}}">
 <span class="sf-origin-label">Species{{#if originsLocked}} <i class="fa-solid fa-lock" aria-hidden="true"></i>{{/if}}</span>
 <div class="sf-origin-control">
 {{#if originEditable}}<input type="search" value="{{system.species}}" placeholder="Choose species…" autocomplete="off" role="combobox" aria-label="Species" aria-autocomplete="list" aria-expanded="false" data-origin-search>
@@ -29,6 +54,7 @@
 {{#if originEditable}}<div class="sf-origin-menu" role="listbox" aria-label="Species choices" data-origin-menu hidden>
 {{#each speciesOptions}}<button type="button" role="option" aria-selected="{{selected}}" data-action="selectOrigin" data-kind="species" data-document-id="{{id}}"><strong>{{name}}</strong><small>{{#if source.book}}{{source.book}}{{else}}Unreferenced source{{/if}}{{#if source.page}} · p. {{source.page}}{{/if}}</small></button>{{/each}}
 <p data-origin-empty hidden>No valid species matches that search.</p>
+{{#if homebrewAllowed}}<button type="button" role="option" data-action="selectHomebrewIdentity" data-homebrew-choice hidden>Use homebrew species</button>{{/if}}
 </div>{{/if}}
 <small class="sf-origin-help">{{originHelp}}</small>
 </div>
@@ -41,6 +67,7 @@
 {{#if originEditable}}<div class="sf-origin-menu" role="listbox" aria-label="Career choices" data-origin-menu hidden>
 {{#each careerOptions}}<button type="button" role="option" aria-selected="{{selected}}" data-action="selectOrigin" data-kind="career" data-document-id="{{id}}"><strong>{{name}}</strong><small>{{#if source.book}}{{source.book}}{{else}}Unreferenced source{{/if}}{{#if source.page}} · p. {{source.page}}{{/if}}</small></button>{{/each}}
 <p data-origin-empty hidden>No valid career matches that search.</p>
+{{#if homebrewAllowed}}<button type="button" role="option" data-action="selectHomebrewIdentity" data-homebrew-choice hidden>Use homebrew career</button>{{/if}}
 </div>{{/if}}
 <small class="sf-origin-help">{{originHelp}}</small>
 </div>
@@ -52,14 +79,25 @@
 <div class="sf-origin-rules"><span>Campaign rules</span><strong>{{campaignRulesLabel}}</strong><small>Chosen by the GM for this adventure.</small></div>{{/if}}{{/if}}
 </div>
   </header>
+  {{#if homebrew.active}}<aside class="sf-notice" aria-label="Homebrew setup">
+<strong>Homebrew identity</strong> · {{#each homebrew.entries}}{{kind}}: {{name}}{{#unless @last}} · {{/unless}}{{/each}}
+<p>{{#if homebrew.pending}}Current stats are retained for manual setup. The GM must review characteristics, skills, abilities and resources before completing setup.{{else}}The GM has reviewed the entered setup. Use these recorded values; custom names do not grant additional rules.{{/if}}</p>
+{{#if canReviewHomebrew}}<button type="button" data-action="reviewHomebrewIdentity">Finish homebrew setup · GM</button>{{/if}}
+</aside>{{/if}}
+  {{{turnPanel}}}
+  {{{minionPanel}}}
+  {{#if isCharacter}}{{#unless originsLocked}}{{#unless homebrew.active}}<aside class="sf-creation-entry"><strong>Create this character</strong><span>Choose every option, or start with a few questions.</span><div class="sf-button-row"><button type="button" data-action="createCharacter" data-mode="manual">Manual creation</button><button type="button" data-action="createCharacter" data-mode="guided">Guide me</button></div></aside>{{/unless}}{{/unless}}{{/if}}
+  {{#if canGenerateEnemy}}<aside class="sf-creation-entry"><strong>Build an enemy</strong><span>Choose a role and review an original NPC preset.</span><button type="button" data-action="enemyGuide">Enemy guide</button></aside>{{/if}}
+  {{#if canFinishCreation}}<aside class="sf-creation-entry"><strong>Finish character creation</strong><span>Spend XP using + XP and the talent trees, review species exceptions and finish starting funds.</span>{{#each creationIssues}}<small>{{this}}</small>{{/each}}<button type="button" data-action="finishCreation">Ready for play</button></aside>{{/if}}
   <nav class="sf-tabs" aria-label="Character sections">
 {{#each tabs}}<button type="button" data-action="switchSection" data-tab="{{id}}" aria-selected="{{active}}" class="{{#if active}}active{{/if}}">{{label}}</button>{{/each}}
 </nav>
   <main class="sf-content">
-    {{#if system.incomplete.length}}<aside class="sf-notice">
+    {{#if showCrew}}{{{crewPanel}}}{{/if}}
+    {{#if sourceChecks.length}}<aside class="sf-notice">
 <strong>Source check needed</strong>
 <span>
-{{#each system.incomplete}}{{this}}{{#unless @last}} · {{/unless}}{{/each}}
+{{#each sourceChecks}}{{this}}{{#unless @last}} · {{/unless}}{{/each}}
 </span>
 <button type="button" data-action="verifySource">Confirm source checks</button>
 </aside>{{/if}}
@@ -135,6 +173,20 @@
 <label>Cargo<input name="system.cargo" value="{{system.cargo}}">
 </label>
 </div>
+{{#if vehicleSystems.length}}<dl class="sf-vehicle-systems">{{#each vehicleSystems}}<div><dt>{{label}}</dt><dd>{{value}}</dd></div>{{/each}}</dl>{{/if}}
+<p class="sf-hint">{{vehicleLoadoutStatus}}</p>
+</section>
+<section class="sf-panel sf-vehicle-footprint">
+<h2>Canvas footprint</h2>
+<p class="sf-hint">The token badge fills its occupied width and length, with the hull symbol centred inside it. Characters can stand on or board ground vehicles.</p>
+<div class="sf-form-grid">
+<label>Hull symbol<select name="system.footprint.hull">{{selectOptions vehicleHullOptions selected=system.footprint.hull}}</select></label>
+<label>Sizing<select name="system.footprint.mode">{{selectOptions vehicleFootprintModes selected=system.footprint.mode}}</select></label>
+<label>Length (m)<input type="number" min="0" step="0.1" name="system.footprint.length" value="{{system.footprint.length}}" {{#unless vehicleFootprintManual}}readonly{{/unless}}></label>
+<label>Width (m)<input type="number" min="0" step="0.1" name="system.footprint.width" value="{{system.footprint.width}}" {{#unless vehicleFootprintManual}}readonly{{/unless}}></label>
+</div>
+<p class="sf-footprint-summary"><strong>{{vehicleFootprint.length}} × {{vehicleFootprint.width}} m</strong> {{#if vehicleFootprintManual}}exact dimensions{{else}}silhouette display estimate{{/if}} · {{vehicleCanvasFootprint}}.</p>
+<p class="sf-hint">Use exact dimensions when the craft's published measurements are known. Manual token resizing disables later automatic rescaling for that placed token.</p>
 </section>{{else}}<section class="sf-panel">
 <h2>A place in the galaxy</h2>
 <div class="sf-form-grid">
@@ -163,7 +215,7 @@
 </section>{{/if}}
       {{#if isMinion}}<section class="sf-panel">
 <h2>Minion group</h2>
-<label>Starting members<input type="number" min="1" name="system.groupSize" value="{{system.groupSize}}">
+<label>Starting members<input type="number" min="1" name="system.groupSize" value="{{system.groupSize}}" {{#if linkedMinions}}readonly{{/if}}>
 </label>
 <p>{{minions.remaining}} active · {{minions.defeated}} defeated · group skill rank {{minions.rank}}</p>
 <p class="sf-hint">Enter the wound threshold of one member above. Mark trained group skills on the Skills tab.</p>
@@ -178,7 +230,7 @@
 <h3><span>{{label}}</span>{{#if addCustom}}<button type="button" data-action="addCustomSkill" title="Add a custom skill" aria-label="Add a custom skill"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>{{/if}}</h3>
 {{#each skills}}<div class="sf-skill-compact-row {{#if showGroup}}minion{{/if}} {{#if custom}}custom{{/if}}">
 {{#if custom}}<span class="sf-custom-skill-name-cell">
-<button type="button" class="sf-skill-roll sf-skill-roll-compact" data-action="skill" data-skill="{{key}}" aria-label="Roll {{label}} using {{characteristicLabel}} {{characteristicValue}} and rank {{rank}}">
+<button type="button" class="sf-skill-roll sf-skill-roll-compact" data-action="skill" data-skill="{{key}}" aria-label="Roll {{label}} using {{characteristicLabel}} {{characteristicValue}} and rank {{effectiveRank}}">
 <strong title="{{label}}">{{label}}</strong>
 <span class="sf-inline-pool" aria-label="{{pool}}">{{#each poolDice}}<span class="sf-die-count" title="{{count}} {{label}} dice"><b>{{count}}</b><i class="sf-die-shape sf-die-{{key}}" aria-hidden="true"></i><span class="sr-only">{{label}}</span></span>{{else}}<small>—</small>{{/each}}</span>
 <i class="fa-solid fa-dice sf-compact-roll-cue" aria-hidden="true"></i>
@@ -193,7 +245,7 @@
 {{#if showGroup}}<span class="sf-paper-check sf-readonly-check {{#if group}}checked{{/if}}" title="{{#if group}}Minion group skill{{else}}Not a minion group skill{{/if}}"><span>G</span></span>{{/if}}</span>
 <span class="sf-skill-rank sf-skill-rank-display" aria-label="{{label}} rank {{rank}}">{{rank}}</span>
 {{else}}
-<button type="button" class="sf-skill-roll sf-skill-roll-compact" data-action="skill" data-skill="{{key}}" aria-label="Roll {{label}} using {{characteristicLabel}} {{characteristicValue}} and rank {{rank}}">
+<button type="button" class="sf-skill-roll sf-skill-roll-compact" data-action="skill" data-skill="{{key}}" aria-label="Roll {{label}} using {{characteristicLabel}} {{characteristicValue}} and rank {{effectiveRank}}">
 <strong title="{{label}}">{{label}}</strong>
 <span class="sf-inline-pool" aria-label="{{pool}}">{{#each poolDice}}<span class="sf-die-count" title="{{count}} {{label}} dice"><b>{{count}}</b><i class="sf-die-shape sf-die-{{key}}" aria-hidden="true"></i><span class="sr-only">{{label}}</span></span>{{else}}<small>—</small>{{/each}}</span>
 <i class="fa-solid fa-dice sf-compact-roll-cue" aria-hidden="true"></i>
@@ -235,9 +287,9 @@
 </label>
 <label>Total earned XP<input type="number" min="0" name="system.xp.total" value="{{system.xp.total}}">
 </label>
-<div class="sf-phase-status"><span>Advancement phase</span><strong>{{#if creation}}Character creation{{else}}Campaign play{{/if}}</strong><small>{{#if originsLocked}}Starting species and career locked{{else}}The GM starts campaign play from Campaign rulebooks{{/if}}</small></div>
+<div class="sf-phase-status"><span>Advancement phase</span><strong>{{#if creation}}Character creation{{else}}Campaign play{{/if}}</strong><small>{{#if originsLocked}}Starting species and career locked{{else}}Complete starting choices and source review before Ready for play{{/if}}</small></div>
 </div>
-{{#if isCharacter}}{{#unless originsLocked}}<button type="button" data-action="createCharacter" {{#unless originSelectionReady}}disabled title="Choose a valid species and career in the sheet header first"{{/unless}}>Complete starting choices</button>{{/unless}}{{/if}}
+{{#if isCharacter}}{{#unless originsLocked}}{{#if homebrew.active}}<p class="sf-hint">Set homebrew starting statistics, skills, abilities, XP and equipment manually. The GM completes this setup using the Homebrew identity panel above.</p>{{else}}<div class="sf-button-row"><button type="button" data-action="createCharacter" data-mode="manual">Manual creation</button><button type="button" data-action="createCharacter" data-mode="guided">Guide me</button></div>{{/if}}{{/unless}}{{/if}}
 <p class="sf-hint">Purchase connected talents with available XP. Structured passive effects marked Auto feed the dice pool; use the cited book for every node whose wording is not supplied by a private library.</p>
 </section>
 {{#each advancementTrees}}<section class="sf-panel">
