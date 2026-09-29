@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "tighten-the-core-implementat",
-      "normalizedText": "tighten the core implementation around the agreed stack: typescript, react, vite, node, c#.",
+      "normalizedText": "incrementally add strict typescript checks while keeping the current foundry interface, as selected by the user. the dice core now has checked pool, face, symbol and outcome contracts; six negative compile-time assertions reject invalid use, and npm run check runs the compiler. extend this coverage to the remaining pure mechanics and integration boundaries with behavioral tests before considering separate react/vite or c# scope.",
       "imported": {
         "kind": "markdown",
         "sourceId": ".local/website-catalogue-review/project_memory/roadmap/improvement-plan.md::tighten the core implementation around the agreed stack typescript react vite node c",

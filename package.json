@@ -18,11 +18,13 @@
     "publish:advancement": "node scripts/publish-advancement-trees.mjs",
     "publish:vehicles": "python scripts/publish-vehicle-stats.py",
     "publish:loadouts": "python scripts/publish-vehicle-loadouts.py",
-    "import:swa": "node scripts/fetch-swa.mjs"
+    "import:swa": "node scripts/fetch-swa.mjs",
+    "typecheck": "tsc --project tsconfig.json"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "fflate": "^0.8.3",
-    "handlebars": "^4.7.9"
+    "handlebars": "^4.7.9",
+    "typescript": "7.0.2"
   }
 }

@@ -14,7 +14,7 @@ Layout: vertical — the tree runs top to bottom. Nodes moved by hand keep their
 
 | Id | Item | Branch | Deadline | Estimate | AI-assisted | Added | Completed |
 |---|---|---|---|---|---|---|---|
-| `tighten-the-core-implementat` | tighten the core implementation around the agreed stack: typescript, react, vite | — | — | derived | yes | — | — |
+| `tighten-the-core-implementat` | Incremental TypeScript checks; dice core covered, remaining mechanics and integration boundaries pending | — | — | derived | yes | — | — |
 
 ## Links
 

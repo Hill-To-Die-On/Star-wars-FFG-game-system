@@ -1,3 +1,13 @@
+/**
+ * @typedef {'boost'|'ability'|'proficiency'|'setback'|'difficulty'|'challenge'|'force'} DieKey
+ * @typedef {'success'|'advantage'|'failure'|'threat'|'triumph'|'despair'|'light'|'dark'} SymbolName
+ * @typedef {Record<DieKey, number>} DicePool
+ * @typedef {Readonly<Partial<Record<DieKey, number|string>>>} PoolInput
+ * @typedef {Record<SymbolName, number>} SymbolCounts
+ * @typedef {SymbolCounts & {raw: SymbolCounts, netSuccess: number, netAdvantage: number, passed: boolean}} DiceOutcome
+ * @typedef {{die: DieKey, result: number, active?: boolean}} FaceResult
+ */
+
 // Mechanical face distributions. Symbol provenance is recorded in THIRD_PARTY_NOTICES.md.
 const face = (
   success = 0,
@@ -98,23 +108,26 @@ for (const die of Object.values(DICE)) {
   Object.freeze(die.faces);
   Object.freeze(die);
 }
-export const SYMBOLS = Object.keys(B);
+export const SYMBOLS = /** @type {SymbolName[]} */ (Object.keys(B));
+/** @param {unknown} value */
 export function count(value, name = "count", max = 100) {
   const n = Number(value);
   if (!Number.isInteger(n) || n < 0 || n > max)
     throw new RangeError(`${name} must be an integer from 0 to ${max}.`);
   return n;
 }
+/** @param {PoolInput} input @returns {DicePool} */
 export function normalizePool(input = {}) {
   for (const key of Object.keys(input))
     if (!(key in DICE)) throw new Error(`Unknown die: ${key}`);
-  const pool = Object.fromEntries(
-    Object.keys(DICE).map((key) => [key, count(input[key] ?? 0, key, 40)]),
-  );
+  const pool = /** @type {DicePool} */ (Object.fromEntries(
+    (/** @type {DieKey[]} */ (Object.keys(DICE))).map((key) => [key, count(input[key] ?? 0, key, 40)]),
+  ));
   if (Object.values(pool).reduce((a, b) => a + b, 0) > 80)
     throw new RangeError("A pool is limited to 80 dice.");
   return pool;
 }
+/** @param {number} base @param {number} upgraded @returns {[number, number]} */
 export function upgrade(base, upgraded, times = 1) {
   count(base);
   count(upgraded);
@@ -127,6 +140,7 @@ export function upgrade(base, upgraded, times = 1) {
   }
   return [base, upgraded];
 }
+/** @param {number} base @param {number} upgraded @returns {[number, number]} */
 export function downgrade(base, upgraded, times = 1) {
   count(base);
   count(upgraded);
@@ -134,6 +148,7 @@ export function downgrade(base, upgraded, times = 1) {
   const converted = Math.min(times, upgraded);
   return [base + converted, upgraded - converted];
 }
+/** @param {number} characteristic @param {number} rank @returns {DicePool} */
 export function skillPool(
   characteristic,
   rank,
@@ -169,6 +184,7 @@ export function skillPool(
     force,
   });
 }
+/** @param {SymbolCounts} raw @returns {DiceOutcome} */
 function outcomeFromRaw(raw) {
   const netSuccess = raw.success - raw.failure,
     netAdvantage = raw.advantage - raw.threat;
@@ -187,8 +203,9 @@ function outcomeFromRaw(raw) {
     passed: netSuccess > 0,
   };
 }
+/** @param {ReadonlyArray<FaceResult>} results @returns {DiceOutcome} */
 export function resolveFaces(results) {
-  const raw = Object.fromEntries(SYMBOLS.map((key) => [key, 0]));
+  const raw = /** @type {SymbolCounts} */ (Object.fromEntries(SYMBOLS.map((key) => [key, 0])));
   for (const { die, result, active = true } of results) {
     if (!active) continue;
     const symbols = DICE[die]?.faces[result - 1];
@@ -198,26 +215,29 @@ export function resolveFaces(results) {
   }
   return outcomeFromRaw(raw);
 }
+/** @param {DiceOutcome} outcome @param {Partial<SymbolCounts>} additions @returns {DiceOutcome} */
 export function applyAutomaticResults(outcome, additions = {}) {
-  for (const key of Object.keys(additions))
+  for (const key of /** @type {SymbolName[]} */ (Object.keys(additions)))
     if (!SYMBOLS.includes(key) || !Number.isInteger(additions[key]))
       throw new Error(`Invalid automatic result: ${key}`);
-  const raw = Object.fromEntries(
+  const raw = /** @type {SymbolCounts} */ (Object.fromEntries(
     SYMBOLS.map((key) => [
       key,
       Math.max(0, outcome.raw[key] + (additions[key] ?? 0)),
     ]),
-  );
+  ));
   return outcomeFromRaw(raw);
 }
+/** @param {PoolInput} pool @returns {string} */
 export function poolFormula(pool) {
   return (
-    Object.entries(normalizePool(pool))
+    (/** @type {Array<[DieKey, number]>} */ (Object.entries(normalizePool(pool))))
       .filter(([, n]) => n)
       .map(([key, n]) => `${n}d${DICE[key].term}`)
       .join(" + ") || "0"
   );
 }
+/** @param {Readonly<SymbolCounts>} symbols @returns {string} */
 export function faceLabel(symbols) {
   // Triumph/Despair include a success/failure mechanically but use one emblem visually.
   const visible = {
