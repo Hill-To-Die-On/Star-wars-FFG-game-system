@@ -2,7 +2,7 @@
 
 This register defines the public repository artifacts, their owners, and the GitHub-hosted settings that support the `dev` → `staging` → `main` delivery path. Review it when the build, release process, dependency ecosystems, branch policy, or public content boundary changes.
 
-Last verified: **2026-09-26**.
+Last verified: **2026-09-29**.
 
 ## Repository health and governance
 
@@ -23,7 +23,7 @@ Last verified: **2026-09-26**.
 
 | Artifact | Location | Purpose |
 | --- | --- | --- |
-| System validation | `.github/workflows/ci.yml` | Tests, checks, builds, and uploads the three build outputs with immutable v7 checkout, Node setup, and artifact action commits |
+| System validation | `.github/workflows/ci.yml` | Tests, checks, builds, audits the actual archive, and uploads validation evidence with the build outputs with immutable v7 checkout, Node setup, and artifact action commits |
 | Reviewed local CI controller | `.github/workflows/atlasmind-reviewed-pr-local-ci.yml` | Runs the AtlasMind command contract against an approved immutable PR SHA |
 | Local CI contract | `.atlasmind/local-ci.json` and `.atlasmind/local-ci-runner.mjs` | Declares and executes the trusted local validation commands |
 | Dependency maintenance | `.github/dependabot.yml` | Monitors npm and GitHub Actions; routine PRs target `dev`, security PRs target `main` |
@@ -43,6 +43,7 @@ The validation workflow pins reviewed GitHub Action commits rather than mutable 
 | `star-wars-ffg.zip` | Foundry system package |
 | `system.json` | Foundry manifest and latest-release installer URL |
 | `contents.json` | Reviewable inventory of paths inside the ZIP |
+| `release-audit.json` | Local/CI validation evidence and archive/file hashes; optional release attachment |
 
 The ZIP is assembled from the positive allow-list in `scripts/build.mjs`. It includes runtime source, templates, styles, localizations, original/attributed assets, public documentation, notices, the two authorized reference JSON files, the copyright-bounded advancement graphs, and their verification register. It excludes PDFs, scans, SQL/database backups, `.local` imports, environment files, tests, previews, and private campaign/source material.
 
@@ -54,7 +55,7 @@ Published tags and releases are retained as historical delivery artifacts. Curre
 | --- | --- |
 | Visibility and default branch | Public; `main` is default |
 | Delivery branches | `dev` for integration; protected `staging` and `main` for promotion |
-| Protected-branch policy | Pull requests, linear history, resolved conversations, stale-review dismissal, admin enforcement, no force pushes or deletion |
+| Protected-branch policy | Required GitHub Actions validate check against the current base, pull requests, linear history, resolved conversations, stale-review dismissal, admin enforcement, no force pushes or deletion |
 | Dependency security | Dependency graph, Dependabot alerts, and Dependabot security updates enabled |
 | Vulnerability intake | Private vulnerability reporting enabled |
 | Secret protection | Secret scanning and push protection enabled when available to the organization |
@@ -62,7 +63,7 @@ Published tags and releases are retained as historical delivery artifacts. Curre
 | Discovery topics | `foundry-vtt`, `foundry-vtt-system`, `star-wars-rpg`, `ffg`, `genesys`, `tabletop-rpg`, `narrative-dice`, `javascript` |
 | Managed labels | `breaking-change`, `content`, `dependencies`, `github-actions`, `javascript`, `needs-triage`, `security`, `skip-changelog`, plus GitHub defaults |
 
-At the verification date, GitHub-hosted Actions jobs were prevented from starting by an account billing lock. This is a service-level limitation rather than test evidence. Local container execution of the AtlasMind contract and the validation commands remains recorded separately in `docs/validation.md`; protected branches deliberately do not require an unavailable hosted status check.
+GitHub-hosted validation is operational: PR #20 passed two validate runs, and staging/main require that check from GitHub Actions. The expanded AtlasMind command contract also passed locally in an isolated Node 24 Linux container. GitHub reports no registered AtlasMind runner for this repository, and its existing organization-owner dispatcher condition still requires a separate authorization decision. See `docs/release-audit.md` for current evidence and remaining gates.
 
 ## Maintenance check
 

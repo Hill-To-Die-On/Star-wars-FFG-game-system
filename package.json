@@ -18,7 +18,8 @@
     "publish:advancement": "node scripts/publish-advancement-trees.mjs",
     "publish:vehicles": "python scripts/publish-vehicle-stats.py",
     "publish:loadouts": "python scripts/publish-vehicle-loadouts.py",
-    "import:swa": "node scripts/fetch-swa.mjs"
+    "import:swa": "node scripts/fetch-swa.mjs",
+    "audit:release": "node scripts/audit-release.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
