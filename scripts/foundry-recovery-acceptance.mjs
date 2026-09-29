@@ -61,9 +61,13 @@ async function selectAuthority() {
   if(!supported)return false;
   await page.evaluate(()=>{ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
   await page.locator('[data-transaction-authority]').click();
-  await page.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true}).click();
+  const confirm=page.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true});
+  const dialogId=await confirm.evaluate(button=>button.closest('dialog')?.id);
+  assert.ok(dialogId,'Native authority confirmation must be a dialog.');
+  await confirm.click();
   await page.waitForFunction(async()=>
     (await import('/systems/star-wars-ffg/src/document-transactions.mjs')).getDocumentTransactionBroker().isAuthority());
+  await page.waitForFunction(id=>!document.getElementById(id),dialogId);
   return true;
 }
 async function reloadClient() {
