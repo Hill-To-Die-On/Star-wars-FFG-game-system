@@ -1,6 +1,19 @@
 import {spawn,execFileSync} from 'node:child_process';
 import {join} from 'node:path';
 
+function stopPosixTree(pid) {
+  // Playwright starts Chromium in a separate process group. Capture ancestry before killing its parent.
+  const rows=execFileSync('ps',['-A','-o','pid=,ppid=,pgid='],{encoding:'utf8',timeout:5_000,maxBuffer:4*1024*1024})
+    .trim().split('\n').map(line=>line.trim().split(/\s+/).map(Number));
+  const owned=new Set([pid]);let changed=true;
+  while(changed){changed=false;for(const [id,parent]of rows)if(owned.has(parent)&&!owned.has(id)){owned.add(id);changed=true;}}
+  const signal=target=>{try{process.kill(target,'SIGKILL');}catch(error){if(error.code!=='ESRCH')throw error;}};
+  const groups=new Set(rows.filter(([id,,group])=>owned.has(id)&&owned.has(group)).map(([,,group])=>group));
+  for(const group of groups)if(group!==pid)signal(-group);
+  for(const id of [...owned].reverse())if(id!==pid)signal(id);
+  signal(-pid);
+}
+
 /** Each fixture owns one process tree. Timeout cleanup must include browser descendants. */
 export function runBoundedChild(command,args,{cwd,env,timeout=120_000,maxBuffer=8*1024*1024}={}) {
   return new Promise(resolve=>{
@@ -16,7 +29,7 @@ export function runBoundedChild(command,args,{cwd,env,timeout=120_000,maxBuffer=
       // Kill descendants while their owned parent still exists. Never kill by process name.
       try {
         if(process.platform==='win32')execFileSync(join(process.env.SystemRoot??'C:\\Windows','System32','taskkill.exe'),['/PID',String(child.pid),'/T','/F'],{windowsHide:true,stdio:'ignore',timeout:10_000});
-        else process.kill(-child.pid,'SIGKILL');
+        else stopPosixTree(child.pid);
       } catch(error) {
         result.cleanupFailure=`Could not stop the owned fixture process tree: ${error.message}`;
         child.kill('SIGKILL');

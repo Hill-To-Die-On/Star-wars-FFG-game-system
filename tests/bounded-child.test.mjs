@@ -15,7 +15,7 @@ test('fixture timeout stops its owned parent and grandchild without killing anot
   const control=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore',windowsHide:true});
   let pids=[];
   try {
-    const script=`const {spawn}=require('node:child_process');const child=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore',windowsHide:true,detached:process.platform==='win32'});console.log(JSON.stringify([process.pid,child.pid]));setInterval(()=>{},1000);`;
+    const script=`const {spawn}=require('node:child_process');const child=spawn(process.execPath,['-e','setInterval(()=>{},1000)'],{stdio:'ignore',windowsHide:true,detached:true});console.log(JSON.stringify([process.pid,child.pid]));setInterval(()=>{},1000);`;
     const result=await runBoundedChild(process.execPath,['-e',script],{timeout:1500});
     pids=JSON.parse(result.stdout.trim());
     assert.equal(pids.length,2);assert.ok(pids.every(Number.isInteger));
