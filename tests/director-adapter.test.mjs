@@ -4,7 +4,96 @@ import {
   actorContext,
   directorAdapter,
   RULE_KNOWLEDGE_POLICY,
+  combatRangeDecision,
 } from "../src/director-adapter.mjs";
+
+test("Director range decisions never treat an unverified vertical path as clear", () => {
+  const clear = { available: true, lineOfSightBlocked: false, requiresGmRuling: false };
+  assert.equal(combatRangeDecision(clear).allowed, true);
+  for (const lineOfSightBlocked of [false, null, true]) {
+    const result = combatRangeDecision({
+      ...clear, lineOfSightBlocked, requiresGmRuling: true,
+      sightReason: "The floor between these levels has not been verified.",
+    });
+    assert.equal(result.allowed, false);
+    assert.match(result.reason, /floor/);
+  }
+  assert.equal(combatRangeDecision({ ...clear, lineOfSightBlocked: true }).allowed, false);
+  assert.equal(combatRangeDecision({ ...clear, lineOfSightBlocked: null }).allowed, false);
+  assert.equal(combatRangeDecision({ available: false }).allowed, false);
+  assert.equal(combatRangeDecision(null).allowed, false);
+});
+
+test("Director targeted checks remeasure and reject blocked, unknown and unverified paths before rolling", async () => {
+  let calls = 0;
+  const actor = { uuid: "Actor.attacker", rollSkill: async (skill, options) => { calls++; return { skill, options }; } };
+  const sourceToken = { id: "source", actor }, targetToken = { id: "target" };
+  for (const range of [
+    { available: true, lineOfSightBlocked: true },
+    { available: true, lineOfSightBlocked: null },
+    { available: true, lineOfSightBlocked: false, requiresGmRuling: true, automaticRangedCheckAllowed: true },
+  ]) {
+    const adapter = { ...directorAdapter, getCombatRange: (source, target) => {
+      assert.equal(source, sourceToken); assert.equal(target, targetToken); return range;
+    } };
+    await assert.rejects(adapter.executeCheck(actor, "gunnery", {
+      sourceToken, targetToken, difficulty: 2,
+    }), /GM.*Manual|Manual.*GM/);
+  }
+  assert.equal(calls, 0);
+  await assert.rejects(directorAdapter.executeCheck(actor, "gunnery", { targetToken }), /both.*token/i);
+  assert.equal(calls, 0);
+  const adapter = { ...directorAdapter, getCombatRange: () => ({
+    available: true, lineOfSightBlocked: false, requiresGmRuling: false,
+  }) };
+  assert.deepEqual(await adapter.executeCheck(actor, "gunnery", {
+    sourceToken, targetToken, difficulty: 2, boost: 1,
+  }), { skill: "gunnery", options: { difficulty: 2, boost: 1 } });
+  assert.equal(calls, 1);
+  await directorAdapter.executeCheck(actor, "negotiation", { difficulty: 1 });
+  assert.equal(calls, 2);
+  assert.match(directorAdapter.getNativeCheckRules().guidance, /requiresGmRuling/);
+});
+
+test("Director targeted checks bind the rolled actor and assigned vehicle crew to the measured source", async () => {
+  let rolls = 0, measurements = 0;
+  const actor = { uuid: "Actor.ship", type: "vehicle", rollSkill: async (skill, options) => {
+    rolls++; return { skill, options };
+  } };
+  const sourceToken = { id: "source", actor }, targetToken = { id: "target" };
+  const adapter = { ...directorAdapter, getCombatRange: () => {
+    measurements++; return { available: true, lineOfSightBlocked: false };
+  } };
+  for (const source of [
+    { id: "unrelated", actor: { uuid: "Actor.other" } },
+    { id: "synthetic", actor: { id: "ship", uuid: "Scene.one.Token.copy.Actor.ship" } },
+    { id: "missingActor" },
+    "missing-token-id",
+  ]) {
+    await assert.rejects(adapter.executeCheck(actor, "gunnery", { sourceToken: source, targetToken }), /source token.*actor/i);
+  }
+  assert.equal(rolls, 0);
+  assert.equal(measurements, 0);
+  const result = await adapter.executeCheck(actor, "gunnery", {
+    sourceToken, targetToken, difficulty: 2, crewTokenId: "assigned-gunner",
+    vehicleToken: { id: "another-copy", actor },
+  });
+  assert.equal(result.options.vehicleToken, sourceToken);
+  assert.equal(result.options.crewTokenId, "assigned-gunner");
+  assert.equal(result.options.difficulty, 2);
+  assert.equal(rolls, 1);
+  assert.equal(measurements, 1);
+  const previousCanvas = globalThis.canvas;
+  try {
+    globalThis.canvas = { tokens: { get: (id) => id === "source" ? sourceToken : null } };
+    const byId = await adapter.executeCheck(actor, "gunnery", { sourceToken: "source", targetToken });
+    assert.equal(byId.options.vehicleToken, sourceToken);
+    const byDocument = await adapter.executeCheck(actor, "gunnery", { sourceToken: { document: sourceToken }, targetToken });
+    assert.equal(byDocument.options.vehicleToken.document, sourceToken);
+  } finally {
+    globalThis.canvas = previousCanvas;
+  }
+});
 
 test("Director of Realms receives every custom skill with its effective rank", () => {
   const customSkills = Array.from({ length: 8 }, (_, index) => ({
