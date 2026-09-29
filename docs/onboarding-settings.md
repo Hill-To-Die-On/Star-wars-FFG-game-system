@@ -21,6 +21,10 @@ Core configuration applications, campaign rules, owned books and GM-key backup k
 
 The native tour adds keyboard names and focus access to Exit, Previous, Next and Finish. Missing or hidden controls become centred explanatory steps. Tour popovers are explicitly closed during teardown, including when a reduced-motion theme suppresses Foundry's expected transition event.
 
+## Default backdrop
+
+The interface already uses the credited NASA artwork. A viewed scene's image or solid background covers that interface layer. On a completely new world, the system now replaces only Foundry's untouched automatic welcome demonstration with the NASA scene, at the original artwork aspect ratio and without the stock logo/animated light. Existing scenes, blank tactical play areas and custom maps remain unchanged; an explicit Foundry-default theme opts out.
+
 ## Compact sheets
 
 Actor sheets retain Foundry's native resize handle. CSS container queries follow the individual window width, reducing header/portrait size and spacing, wrapping tabs and showing skills in three, two or one columns. Inputs and roll actions stay available; narrow talent trees scroll within their panel instead of shrinking the nodes. The window is bounded to the viewport, including a 640 by 480 display. There are no per-frame resize listeners or actor mutations.

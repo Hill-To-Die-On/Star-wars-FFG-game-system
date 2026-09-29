@@ -1,3 +1,4 @@
+import { registerWelcomeBackdrop } from "./welcome-backdrop.mjs";
 import { registerOnboarding, onboardingApi } from "./onboarding-foundry.mjs";
 import { registerWindowPresentation, refreshWindowPresentation } from "./window-presentation.mjs";
 import { registerSupportTools, supportApi } from "./support-foundry.mjs";
@@ -336,6 +337,7 @@ Hooks.once("init", () => {
   registerMinionGroups();
   registerTabletopWorkflows();
   registerSupportTools();
+  registerWelcomeBackdrop();
   registerOnboarding();
   registerWindowPresentation();
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {

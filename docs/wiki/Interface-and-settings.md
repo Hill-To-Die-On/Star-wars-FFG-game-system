@@ -1,5 +1,7 @@
 # Interface and settings
 
+The 0.4.1 candidate uses the credited NASA artwork for the automatic new-world welcome scene. The same artwork sits behind the interface, but a viewed scene's map or solid background covers it. Existing tactical scenes and assigned maps are preserved.
+
 **The first-launch tour and these settings groups are part of the unreleased 0.4.1 candidate.** Settings retain Foundry's own controls, theme, permissions, search and save behavior. Gameplay windows use the system's paper-and-datapad presentation. Journals follow the selected interface theme.
 
 | Group | What belongs here |

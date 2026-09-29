@@ -4,6 +4,8 @@
 
 ### Added
 
+- Use the credited NASA artwork for Foundry's automatic new-world welcome scene, removing its stock illustration and demonstration effects while preserving existing/custom scenes.
+
 - Character and vehicle sheets adapt to their own resized width: compact identity/header spacing, wrapping tabs, three/two/one-column skills and readable narrow layouts with scrolling talent graphs.
 
 - First-launch welcome with a copyright reminder, GM-owned bookshelf, optional browser remembrance for future worlds, per-user skip state and a seven-step replayable Foundry interface tour.
