@@ -5,6 +5,8 @@ import Handlebars from "handlebars";
 import { DICE } from "../src/dice/core.mjs";
 import { validateVehicleData } from "../src/vehicle-data.mjs";
 import { validateVehicleLoadouts } from "../src/vehicle-loadout-data.mjs";
+const typecheck = spawnSync(process.execPath, ["node_modules/typescript/bin/tsc", "--project", "tsconfig.json", "--pretty", "false"], { encoding: "utf8" });
+if (typecheck.error || typecheck.status !== 0) throw new Error("TypeScript checks failed.\n" + (typecheck.error?.message ?? "") + typecheck.stdout + typecheck.stderr);
 async function walk(dir) {
   const result = [];
   for (const entry of await readdir(dir, { withFileTypes: true }))
@@ -74,5 +76,5 @@ for (const [key, die] of Object.entries(DICE))
     }
   }
 console.log(
-  "Syntax, templates, manifest, integration schemas, versions, public vehicle data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
+  "TypeScript, syntax, templates, manifest, integration schemas, versions, public vehicle data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
 );

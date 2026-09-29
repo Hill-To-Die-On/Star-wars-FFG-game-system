@@ -27,6 +27,7 @@ Node.js 24 or later is required.
 
 ```sh
 npm ci
+npm run typecheck
 npm test
 npm run check
 npm run build

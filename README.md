@@ -84,6 +84,7 @@ Start contribution branches from `dev`; maintainer promotion runs through protec
 
 ```sh
 npm ci
+npm run typecheck
 npm test
 npm run check
 npm run build
