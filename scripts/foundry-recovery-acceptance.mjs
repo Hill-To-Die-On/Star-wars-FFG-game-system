@@ -45,13 +45,30 @@ async function start(stage) {
     await wait(250);
   }
   browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
-  page=await browser.newPage({viewport:{width:1200,height:900}});stage.errors=[];page.on('pageerror',e=>stage.errors.push(e.message));
+  page=await browser.newPage({viewport:{width:1500,height:1000}});stage.errors=[];page.on('pageerror',e=>stage.errors.push(e.message));
   await page.goto(`http://127.0.0.1:${port}/game`);
   if(page.url().includes('/join')){await page.locator('#join-username').fill('Gamemaster');await page.getByRole('button',{name:'Join Game Session'}).click();}
   await page.waitForFunction(()=>globalThis.game?.ready,null,{timeout:60_000});
   await page.waitForFunction(()=>canvas.initialized&&!canvas.loading,null,{timeout:60_000});
+  stage.selectedAuthority=await selectAuthority();
   stage.runtime=await page.evaluate(()=>({core:game.version,system:game.system.version,activeModules:[...game.modules.values()].filter(m=>m.active).map(m=>m.id)}));
   assert.equal(stage.runtime.system,stage.version);assert.deepEqual(stage.runtime.activeModules,[]);
+}
+async function selectAuthority() {
+  // Released baselines predate this module. New candidates must exercise the GM's actual confirmation UI.
+  const supported=await page.evaluate(async()=>
+    (await fetch('/systems/star-wars-ffg/src/document-transactions.mjs',{method:'HEAD'})).ok);
+  if(!supported)return false;
+  await page.evaluate(()=>{ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
+  await page.locator('[data-transaction-authority]').click();
+  await page.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true}).click();
+  await page.waitForFunction(async()=>
+    (await import('/systems/star-wars-ffg/src/document-transactions.mjs')).getDocumentTransactionBroker().isAuthority());
+  return true;
+}
+async function reloadClient() {
+  await page.reload();await page.waitForFunction(()=>game.ready,null,{timeout:60_000});
+  await selectAuthority();
 }
 async function bounded(promise,ms) {
   let timer;
@@ -121,16 +138,16 @@ async function exerciseRecovery() {
 }
 try {
   const fresh=await prepare('fresh',archive);await start(fresh);await seed();
-  const before=await snapshot(),recovery=await exerciseRecovery();await page.reload();await page.waitForFunction(()=>game.ready,null,{timeout:60_000});assert.deepEqual(await snapshot(),before);
+  const before=await snapshot(),recovery=await exerciseRecovery();await reloadClient();assert.deepEqual(await snapshot(),before);
   await page.evaluate(()=>foundry.nue.Tour.activeTour?.exit());
   await page.screenshot({path:join(output,'fresh-install.png')});await stop();
-  report.scenarios.push({scenario:'fresh',package:fresh.sha256,runtime:fresh.runtime,recovery,persistedAfterReload:true,pageErrors:fresh.errors});
+  report.scenarios.push({scenario:'fresh',package:fresh.sha256,runtime:fresh.runtime,selectedAuthority:fresh.selectedAuthority,recovery,persistedAfterReload:true,pageErrors:fresh.errors});
   for(const [index,baseline]of baselines.entries()) {
     const original=await prepare(`baseline-${index}`,baseline);await start(original);await seed();const expected=await snapshot();await stop();
     const backup=ownedPath(output,`backup-${index}`);await cp(original.world,backup,{recursive:true,errorOnExist:true,force:false});
-    const candidate=await prepare(`upgrade-${index}`,archive,backup);await start(candidate);assert.deepEqual(await snapshot(),expected);const result=await exerciseRecovery();await page.reload();await page.waitForFunction(()=>game.ready,null,{timeout:60_000});assert.deepEqual(await snapshot(),expected);await stop();
+    const candidate=await prepare(`upgrade-${index}`,archive,backup);await start(candidate);assert.deepEqual(await snapshot(),expected);const result=await exerciseRecovery();await reloadClient();assert.deepEqual(await snapshot(),expected);await stop();
     const restored=await prepare(`restored-${index}`,baseline,backup);await start(restored);assert.deepEqual(await snapshot(),expected);await stop();
-    report.scenarios.push({scenario:`upgrade-from-${original.version}`,baseline:original.sha256,candidate:candidate.sha256,runtime:candidate.runtime,recovery:result,restoredBaseline:true,pageErrors:[...original.errors,...candidate.errors,...restored.errors]});
+    report.scenarios.push({scenario:`upgrade-from-${original.version}`,baseline:original.sha256,candidate:candidate.sha256,runtime:candidate.runtime,selectedAuthority:candidate.selectedAuthority,recovery:result,restoredBaseline:true,pageErrors:[...original.errors,...candidate.errors,...restored.errors]});
   }
   assert.ok(report.scenarios.every(s=>s.pageErrors.length===0),'Native page errors require review');report.passed=true;
 } catch(error) {report.passed=false;report.failure=error.message;await page?.screenshot({path:join(output,'failure.png')}).catch(()=>{});throw error;}
