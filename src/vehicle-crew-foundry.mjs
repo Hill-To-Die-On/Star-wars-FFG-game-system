@@ -310,7 +310,7 @@ async function followVehicle(vehicle,position={}) {
   if(selectXpAuthority(vehicle.actor,game.users)?.id!==game.user.id)return;
   await coordinator.queue.run(vehicle.parent.id,async()=>{
     const end={x:position.x ?? vehicle.x,y:position.y ?? vehicle.y,elevation:position.elevation ?? vehicle.elevation,
-      width:vehicle.width,height:vehicle.height,parent:vehicle.parent};
+      level:position.level ?? vehicle.level,width:vehicle.width,height:vehicle.height,parent:vehicle.parent};
     const updates=crewRoster(vehicle,sceneTokens(vehicle)).map(r=>({_id:r.id,...attachedPosition(r.token,end)}));
     if(updates.length)await vehicle.parent.updateEmbeddedDocuments("Token",updates,{starWarsCrewMove:true,starWarsFreeMovement:true,animate:false});
   });
@@ -337,7 +337,7 @@ export function registerVehicleCrew({openCheck}={}) {
   Hooks.on("updateToken",(token,changes,options)=>{
     maskEmbarkedToken(token.object ?? token);scheduleCrew();
     if(changes.flags || changes.delta || changes.actorLink!==undefined)refreshCrewSheets();
-    if(token.actor?.type==="vehicle" && !options.starWarsCrewMove && !options._movement && ["x","y","elevation","width","height"].some(k=>k in changes))void followVehicle(token,changes).catch(warn);
+    if(token.actor?.type==="vehicle" && !options.starWarsCrewMove && !options._movement && ["x","y","elevation","level","width","height"].some(k=>k in changes))void followVehicle(token,changes).catch(warn);
   });
   Hooks.on("moveToken",(token,move,options,user)=>{
     if(token.actor?.type==="vehicle" && !options.starWarsCrewMove && !move.planned)void followVehicle(token,move.destination).catch(warn);

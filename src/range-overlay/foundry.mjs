@@ -8,6 +8,8 @@ import { checkWeaponArc, weaponArcProfile } from "./arcs.mjs";
 import { defenseZoneExposed, defenseZoneBoundaryPoints, firingZoneRays } from "./hull-zones.mjs";
 import { expectedAttackImpact, compareAttackOptions } from "./strength.mjs";
 import { openCanvasArcPicker, closeCanvasArcPicker, repositionCanvasArcPicker } from "./arc-picker-foundry.mjs";
+import { nativeSightResult, openFlightDialog, spatialTokenVisible } from "./spatial-foundry.mjs";
+import { tokenVolumeIntersection, verticalRelationship } from "./spatial.mjs";
 import { escapeHTML } from "../mechanics.mjs";
 import { footprintBoundaryPoint, footprintRayIntersections, footprintSightCandidates, footprintSightRay, measureFootprintGap, rangeFootprint, rangeOutline } from "./footprints.mjs";
 import {
@@ -25,7 +27,6 @@ import {
   normalizeRangeScale,
   pauseBannerScreenBounds,
   reconcileRangeOrigins,
-  segmentEllipseIntersection,
 } from "./core.mjs";
 
 const FLAG = "rangeOverlay";
@@ -172,78 +173,6 @@ function tokenElevation(token) {
   return Number.isFinite(elevation) ? elevation : 0;
 }
 
-function segmentProgress(sourcePoint, targetPoint, point) {
-  const deltaX = targetPoint.x - sourcePoint.x;
-  const deltaY = targetPoint.y - sourcePoint.y;
-  const lengthSquared = deltaX ** 2 + deltaY ** 2;
-  if (lengthSquared <= Number.EPSILON) return 0;
-  return Math.max(
-    0,
-    Math.min(
-      1,
-      ((point.x - sourcePoint.x) * deltaX +
-        (point.y - sourcePoint.y) * deltaY) /
-        lengthSquared,
-    ),
-  );
-}
-
-function collisionPoint(collision) {
-  const candidate = Array.isArray(collision) ? collision[0] : collision;
-  const point = candidate?.point ?? candidate?.target ?? candidate;
-  const x = Number(point?.x);
-  const y = Number(point?.y);
-  return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
-}
-
-function lineOfSightResult(sourcePoint, targetPoint) {
-  const backend = globalThis.CONFIG?.Canvas?.polygonBackends?.sight;
-  if (typeof backend?.testCollision !== "function")
-    return {
-      lineOfSight: "unavailable",
-      lineOfSightBlocked: null,
-      obstruction: null,
-    };
-  try {
-    const collision = backend.testCollision(sourcePoint, targetPoint, {
-      mode: "closest",
-      type: "sight",
-    });
-    if (collision && typeof collision.then === "function")
-      return {
-        lineOfSight: "unavailable",
-        lineOfSightBlocked: null,
-        obstruction: null,
-      };
-    const point = collisionPoint(collision);
-    const blocked = Boolean(collision);
-    return {
-      lineOfSight: blocked ? "blocked" : "clear",
-      lineOfSightBlocked: blocked,
-      obstruction: blocked
-        ? {
-            kind: "wall",
-            name: "Sight-blocking wall",
-            point:
-              point ?? {
-                x: (sourcePoint.x + targetPoint.x) / 2,
-                y: (sourcePoint.y + targetPoint.y) / 2,
-              },
-            progress: point
-              ? segmentProgress(sourcePoint, targetPoint, point)
-              : 0.5,
-          }
-        : null,
-    };
-  } catch {
-    return {
-      lineOfSight: "unavailable",
-      lineOfSightBlocked: null,
-      obstruction: null,
-    };
-  }
-}
-
 function tokenDimensions(token) {
   const resolved = resolveToken(token);
   const bounds = resolved?.bounds;
@@ -260,7 +189,7 @@ function tokenDimensions(token) {
   };
 }
 
-function tokenObstructionResult(source, target, sourcePoint, targetPoint) {
+function tokenObstructionResult(source, target, sourcePoint, targetPoint, scene) {
   const sourceId = String(source?.id ?? source?.document?.id ?? "");
   const targetId = String(target?.id ?? target?.document?.id ?? "");
   let nearest = null;
@@ -276,12 +205,14 @@ function tokenObstructionResult(source, target, sourcePoint, targetPoint) {
     const center = tokenCenter(resolved);
     if (!center) continue;
     const { width, height } = tokenDimensions(resolved);
-    const hit = segmentEllipseIntersection(sourcePoint, targetPoint, {
-      x: center.x,
-      y: center.y,
-      radiusX: width * 0.46,
-      radiusY: height * 0.46,
-    });
+    const sourceLevel=source.document?.level,targetLevel=target.document?.level;
+    if(sourceLevel && sourceLevel===targetLevel && resolved.document?.level!==sourceLevel)continue;
+    const vehicle=resolved.actor?.type==="vehicle",elevation=tokenElevation(resolved);
+    const hit = tokenVolumeIntersection(
+      {...sourcePoint,elevation:tokenElevation(source)}, {...targetPoint,elevation:tokenElevation(target)},
+      {x:center.x,y:center.y,width:width*(vehicle?1:.92),height:height*(vehicle?1:.92),
+        shape:vehicle?"rectangle":"circle",rotation:resolved.document?.lockRotation?0:resolved.document?.rotation??0,
+        bottom:elevation,top:elevation+Math.max(0,Number(resolved.document?.depth)||0)*(Number(sceneGrid(scene).distance)||1)});
     if (!hit || hit.progress >= 0.995) continue;
     if (!nearest || hit.progress < nearest.progress)
       nearest = {
@@ -304,17 +235,17 @@ function nearerObstruction(left, right) {
   return left.progress <= right.progress ? left : right;
 }
 
-function attackSightResult(source, target, sourceFootprint, targetFootprint, traceSource, traceTarget, weapon, fireArc, defenseZone) {
+function attackSightResult(source, target, sourceFootprint, targetFootprint, traceSource, traceTarget, weapon, fireArc, defenseZone, scene) {
   const arcCheck=end=>source?.actor?.type==="vehicle" && weapon ? checkWeaponArc(weapon,{
     origin:tokenCenter(source),point:end,rotation:source.document?.rotation ?? 0,hull:sourceFootprint,
     sourceElevation:tokenElevation(source),targetElevation:tokenElevation(target),fireArc,
   }) : {inArc:true,arc:"",error:""};
   const check = (start,end) => {
-    const wallSight=lineOfSightResult(start,end);
-    const obstruction=nearerObstruction(wallSight.obstruction,tokenObstructionResult(source,target,start,end));
+    const wallSight=nativeSightResult({source,target,start:{...start,elevation:tokenElevation(source)},end:{...end,elevation:tokenElevation(target)},scene});
+    const obstruction=nearerObstruction(wallSight.obstruction,tokenObstructionResult(source,target,start,end,scene));
     const arc=arcCheck(end);
     const zone={inArc:!defenseZone || target?.actor?.type!=="vehicle" || defenseZoneExposed(targetFootprint,defenseZone,end,start)};
-    return {...(obstruction ? {lineOfSight:"blocked",lineOfSightBlocked:true,obstruction} : wallSight),
+    return {...wallSight,...(obstruction ? {lineOfSight:"blocked",lineOfSightBlocked:true,obstruction} : {}),
       arcValid:arc.inArc===null||zone.inArc===null ? null : arc.inArc&&zone.inArc,firingArc:arc.arc,
       arcError:arc.error || (zone.inArc ? "" : `No clear shot reaches the target's ${defenseZone} defensive zone.`)};
   };
@@ -356,9 +287,9 @@ function attackSightResult(source, target, sourceFootprint, targetFootprint, tra
     }
     if (!best || ray.distance<best.distance) best=ray;
   }
-  if (best) return {lineOfSight:"clear",lineOfSightBlocked:false,obstruction:null,
+  if (best) return {...check(best.source,best.target),
     traceSource:best.source,traceTarget:best.target,sightPath:"alternate",partiallyObscured:!!nearest.lineOfSightBlocked,
-    arcValid:true,firingArc:arcCheck(best.target).arc,arcError:""};
+  };
   return nearest;
 }
 
@@ -369,6 +300,7 @@ export function measureTokenRange(
 ) {
   const source = resolveToken(sourceToken);
   const target = resolveToken(targetToken);
+  if(!spatialTokenVisible(source) || !spatialTokenVisible(target))return {available:false,reason:"Both tokens must be visible to measure this attack."};
   const sourcePoint = tokenCenter(source);
   const targetPoint = tokenCenter(target);
   if (!sourcePoint || !targetPoint)
@@ -395,7 +327,9 @@ export function measureTokenRange(
   const sourceFootprint=tokenRangeFootprint(source, scene), targetFootprint=tokenRangeFootprint(target, scene);
   const gap = measureFootprintGap(sourceFootprint, targetFootprint);
   const sight=attackSightResult(source,target,sourceFootprint,targetFootprint,
-    gap.distance>0 ? gap.source : sourcePoint, gap.distance>0 ? gap.target : targetPoint,weapon,fireArc,defenseZone);
+    gap.distance>0 ? gap.source : sourcePoint, gap.distance>0 ? gap.target : targetPoint,weapon,fireArc,defenseZone,scene);
+  if(profile.mode==="theatre" && tokenElevation(source)!==tokenElevation(target))Object.assign(sight,
+    {requiresGmRuling:true,sightReason:"Theatre-of-the-Mind calibration has no physical altitude scale. The GM must confirm vertical range and obstructions."});
   const horizontalDistancePx = sight.sightPath==="alternate"
     ? Math.hypot(sight.traceTarget.x-sight.traceSource.x,sight.traceTarget.y-sight.traceSource.y) : gap.distance;
   const grid = sceneGrid(scene),
@@ -430,6 +364,9 @@ export function measureTokenRange(
     horizontalSceneDistance,
     elevationDifference,
     elevationApplied: scaled && elevationDifference > 0,
+    vertical: verticalRelationship(tokenElevation(source),tokenElevation(target)),
+    sourceLevelId: source?.document?.level ?? "",
+    targetLevelId: target?.document?.level ?? "",
     sceneDistance,
     units: sceneDistance === null ? "" : grid.units,
     ...sight,
@@ -722,7 +659,7 @@ function buildSingleAttackPreview(
   if(target?.actor?.type==="vehicle" && shieldValue===null)result.error ||= "Choose the target's agreed defence zone on its token or in the vehicle check builder.";
   const obstructionError = range.lineOfSightBlocked
     ? `Line of sight is blocked by ${range.obstruction?.name ?? "an obstruction"}.`
-    : "";
+    : range.requiresGmRuling ? range.sightReason : "";
   return {
     available: true,
     range,
@@ -1123,6 +1060,8 @@ function attackTraceLabelLines(preview) {
     `${attack?.actorName ?? "Attacker"} → ${attack?.targetName ?? "Target"}`,
     `${range.label ?? "Range unavailable"}${distance} · ${lineOfSight}`,
   ];
+  if(range.vertical?.direction!=="level" && range.vertical?.difference>0)
+    lines.push(`TARGET · ${formatDistance(range.vertical.difference)} ${sceneGrid().units} ${range.vertical.direction}${range.sourceLevelId!==range.targetLevelId?" · cross-level":""}`);
   if (attack) {
     const opposition =
       Number.isFinite(attack.defense) && Number.isFinite(attack.adversary)
@@ -2032,8 +1971,9 @@ function combatTurnToken(combat, turn = null) {
   const turnIndex = turn !== null && turn !== undefined && Number.isInteger(Number(turn))
     ? Number(turn)
     : Number(combat?.turn);
-  const combatant =
+  const slot =
     turns[turnIndex] ?? combat?.combatant ?? combat?.current?.combatant ?? null;
+  const combatant = combat?.getClaimedCombatant?.(slot?.id) ?? slot;
   return resolveToken(
     combatant?.token?.object ?? combatant?.token ?? combatant?.tokenId,
   );
@@ -2206,7 +2146,8 @@ function renderCombatRangeBadges(_application, html) {
     const combatant = combatants.find(
       (entry) => String(entry.id) === String(row.dataset.combatantId),
     );
-    const target = targeted.get(combatantTokenId(combatant));
+    const actingCombatant = combat.getClaimedCombatant?.(combatant?.id) ?? combatant;
+    const target = targeted.get(combatantTokenId(actingCombatant));
     if (!target) continue;
     const result = measureTokenRange(source, target, { scene });
     if (!result.available) continue;
@@ -2293,6 +2234,10 @@ export function addRangeSceneControl(controls) {
         toggle: true,
         active: setting(TARGET_TRACE_SETTING, true),
         onChange: (_event, active) => handleTargetTraceToggle(active),
+      },
+      flight: {
+        name: "flight", order: 4.5, title: "Flight · level and altitude", icon: "fa-solid fa-up-down",
+        button: true, onChange: () => openFlightDialog().catch(error=>ui.notifications.error(error.message)),
       },
       rangeScale: {
         name: "rangeScale",
@@ -2438,6 +2383,12 @@ export function registerRangeOverlay() {
   Hooks.on("createTile", scheduleRangeLabelReflow);
   Hooks.on("updateTile", scheduleRangeLabelReflow);
   Hooks.on("deleteTile", scheduleRangeLabelReflow);
+  // Re-evaluate retained cards when the GM edits actual obstruction geometry.
+  for(const name of ["Wall","Region","RegionBehavior","Level"])for(const action of ["create","update","delete"])
+    Hooks.on(`${action}${name}`,document=>{
+      const scene=document.parent?.parent?.documentName==="Scene"?document.parent.parent:document.parent;
+      if(scene?.id===currentScene()?.id && globalThis.canvas?.ready)refreshTargetTraces({animate:false});
+    });
   Hooks.on("updateToken", (document) => {
     if (document.parent?.id === currentScene()?.id) {
       refreshRangeOverlay();
@@ -2475,6 +2426,13 @@ export function registerRangeOverlay() {
         ui.notifications.error(`Combat range assistant: ${error.message}`),
     );
   });
+  Hooks.on("updateCombat", (combat, changes) => {
+    const claimChange = Object.hasOwn(changes.flags?.[SYSTEM_ID] ?? {}, "slotClaims") ||
+      Object.hasOwn(changes, `flags.${SYSTEM_ID}.slotClaims`);
+    const session = combatSessions.get(combat.id);
+    if (claimChange && combat.started && session?.accepted)
+      followCombatTurn(combat, null, session);
+  });
   Hooks.on("targetToken", handleTargetToken);
   Hooks.on("renderCombatTracker", renderCombatRangeBadges);
   Hooks.on("deleteCombat", (combat) => {
@@ -2493,6 +2451,7 @@ export const rangeOverlayApi = Object.freeze({
   getSceneState: getRangeOverlaySceneState,
   measureTokenRange,
   measureActorTargetRange,
+  openFlightDialog,
   buildAttackTracePreview,
   vehicleAttackOptions,
   chooseAttackDialog,
