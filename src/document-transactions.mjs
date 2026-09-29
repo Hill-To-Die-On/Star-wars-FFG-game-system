@@ -65,7 +65,7 @@ export class DocumentTransactionBroker {
   });
   await this.process(key);
  }
- async #write(key,change){return this.#metadata.run('receipts',async()=>{if(!this.isAuthority())throw new Error('GM authority changed; inspect the pending transaction.');const records=clone(this.readReceipts());records[key]={...records[key],...change};await this.writeReceipts(records);return records[key];});}
+ async #write(key,change,expected){return this.#metadata.run('receipts',async()=>{if(!this.isAuthority())throw new Error('GM authority changed; inspect the pending transaction.');const records=clone(this.readReceipts());if(expected&&JSON.stringify(records[key])!==JSON.stringify(expected))return null;records[key]={...records[key],...change};await this.writeReceipts(records);return records[key];});}
  async process(key){
   if(this.#jobs.has(key))return this.#jobs.get(key);
   const job=this.#execution.run('authority',()=>this.#process(key));this.#jobs.set(key,job);
@@ -96,10 +96,10 @@ export class DocumentTransactionBroker {
  mayComplete(key,executionId){const row=this.readReceipts()[key];return this.isAuthority()&&row?.status==='running'&&row.executionId===executionId&&row.authoritySession===this.sessionId;}
  async finish(key,response,status){
   if(!this.isAuthority())return;
-  const receipt=this.readReceipts()[key];
+  const receipt=clone(this.readReceipts()[key]);
   const payload={key,requestId:receipt.id,creatorId:receipt.creatorId,...response};
   const message=await this.createMessage({content:response.ok?'<p>Game transaction confirmed.</p>':'<p>Game transaction was not confirmed. The GM can inspect its receipt.</p>',whisper:[...new Set([receipt.creatorId,...Array.from(this.users()).filter(u=>u.isGM).map(u=>u.id)])],flags:{[SYSTEM_ID]:{[RESPONSE]:payload}}});
-  await this.#write(key,{status,responseUuid:message.uuid,responseFingerprint:await transactionDigest(payload),finishedAt:Date.now()});if(!response.ok)await this.refreshMessage?.(message);await this.settle();
+  const written=await this.#write(key,{status,responseUuid:message.uuid,responseFingerprint:await transactionDigest(payload),finishedAt:Date.now()},receipt);if(!written)return;if(!response.ok)await this.refreshMessage?.(message);await this.settle();
  }
  async settle(){
   for(const [key,pending]of this.#pending){

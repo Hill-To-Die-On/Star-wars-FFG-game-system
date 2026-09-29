@@ -109,7 +109,7 @@ test("concurrent owners cannot spend the same action and unlinked UUIDs remain d
   const g=make(gm),p=make(player);
   try {
     const results=await Promise.allSettled([p.request(actor,"action"),p.request(actor,"action")]);
-    assert.deepEqual(results.map(r=>r.status),["fulfilled","rejected"]);
+    assert.deepEqual(results.map(r=>r.status).sort(),["fulfilled","rejected"]);
     assert.equal(await p.request(other,"action"),0);
   } finally {p.stop();g.stop();world.stop();}
 });
