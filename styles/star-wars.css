@@ -2941,6 +2941,12 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-arc-picker-help nav { display:flex; gap:8px; }
 .sf-arc-picker-help button { color:#fff5d5; background:#244751; border:1px solid #9bbdc6; padding:6px 10px; font:inherit; }
 .sf-arc-picker-help button[hidden] { display:none; }
+.sf-arc-accessible-choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.sf-arc-picker-help button { min-height:44px; }
+.sf-arc-picker-help button:focus-visible { outline:3px solid #ffe7a1; outline-offset:2px; }
+.sf-arc-picker-help { max-height:calc(100vh - 160px); overflow:auto; }
+.sf-sr-only { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip-path:inset(50%)!important; white-space:nowrap!important; border:0!important; }
+.sf-origin-control input:focus-visible { outline:3px solid var(--sf-accent,#815c35); outline-offset:2px; }
 .sf-flight-dialog .sf-dialog { padding:16px 20px; color:#23313a; }
 .sf-flight-dialog .sf-dialog p { margin:0 0 16px; line-height:1.5; }
 .sf-flight-dialog .sf-dialog label { display:grid; gap:6px; margin:0 0 16px; font-weight:600; }

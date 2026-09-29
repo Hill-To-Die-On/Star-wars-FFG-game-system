@@ -10,6 +10,7 @@ import { expectedAttackImpact, compareAttackOptions } from "./strength.mjs";
 import { openCanvasArcPicker, closeCanvasArcPicker, repositionCanvasArcPicker } from "./arc-picker-foundry.mjs";
 import { nativeSightResult, openFlightDialog, spatialTokenVisible } from "./spatial-foundry.mjs";
 import { tokenVolumeIntersection, verticalRelationship } from "./spatial.mjs";
+import { motionPreference } from "../ui/motion-preference.mjs";
 import { escapeHTML } from "../mechanics.mjs";
 import { footprintBoundaryPoint, footprintRayIntersections, footprintSightCandidates, footprintSightRay, measureFootprintGap, rangeFootprint, rangeOutline } from "./footprints.mjs";
 import {
@@ -49,6 +50,7 @@ let calibrationSession = null;
 let labelReflowFrame = null;
 let registered = false;
 let interfaceObserver = null;
+let stopMotionPreference = null;
 
 const currentScene = () => globalThis.canvas?.scene ?? null;
 
@@ -1157,7 +1159,7 @@ function moveAttackTraceLabel(entry, layout, animate) {
   entry.labelFrame = null;
   const from = { x: entry.label.position.x, y: entry.label.position.y };
   entry.labelDestination = layout;
-  if (!animate || !entry.label.visible || globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+  if (!animate || !entry.label.visible || motionPreference.reduced()) {
     entry.label.position.set(layout.x, layout.y);
     return;
   }
@@ -1404,9 +1406,7 @@ export function showAttackTrace(
     label.alpha = previousVisible ? 1 : 0;
   }
   reflowRangeLabels();
-  const reducedMotion = globalThis.matchMedia?.(
-    "(prefers-reduced-motion: reduce)",
-  )?.matches;
+  const reducedMotion = motionPreference.reduced();
   const duration = animate && !reducedMotion ? ATTACK_TRACE_DURATION_MS : 0;
   const reveal = () => {
     label.visible = true;
@@ -1497,7 +1497,7 @@ function animateRangeLabel(entry, layout) {
         fromPosition.y + (layout.y - fromPosition.y) * progress,
       );
   };
-  if (globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+  if (motionPreference.reduced()) {
     state.angle = to;
     entry.label.position.set(layout.x, layout.y);
     return;
@@ -2346,6 +2346,17 @@ export function registerRangeOverlay() {
   });
   Hooks.on("getSceneControlButtons", addRangeSceneControl);
   Hooks.on("canvasReady", () => {
+    stopMotionPreference?.();
+    stopMotionPreference=motionPreference.subscribe(reduced=>{
+      if(!reduced)return;
+      for(const entry of attackTraceEntries.values()) {
+        cancelFrame(entry.frame);entry.frame=null;cancelFrame(entry.labelFrame);entry.labelFrame=null;
+        renderAttackTraceFrame(entry,1);entry.label.visible=true;entry.label.alpha=1;
+        if(entry.labelDestination)entry.label.position.set(entry.labelDestination.x,entry.labelDestination.y);
+      }
+      for(const state of labelStates.values()){cancelFrame(state.frame);state.frame=null;}
+      reflowRangeLabels();
+    });
     watchInterfaceObstacles();
     seedOrigins();
     refreshRangeOverlay();
@@ -2356,6 +2367,7 @@ export function registerRangeOverlay() {
       );
   });
   Hooks.on("canvasTearDown", () => {
+    stopMotionPreference?.();stopMotionPreference=null;
     closeCanvasArcPicker({restore:false});
     interfaceObserver?.disconnect();
     interfaceObserver = null;
