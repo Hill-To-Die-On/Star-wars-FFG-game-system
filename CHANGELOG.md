@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add a resizable Help & rules coverage window with implementation limits, campaign-filtered learned talent/signature effects, source references, graph-verification distinctions and observer permission checks.
+- Add GM/player quick starts and an explicit local diagnostic export limited to versions, known integration states and document counts.
+
 - Manual and guided character creation with shared starting-resource and XP validation, plus a GM guide for editable, original enemy presets.
 - Deterministic SVG portraits and default tokens distinguished by role, species and vehicle family, with retained frames on custom portraits and vehicle footprints sized from silhouette estimates or exact dimensions through the scene scale.
 - Vehicle Crew & Passengers sheets, generated crew previews, drag-to-board workflows, compact roster badges, role assignments, selective disembarking and character-sheet shortcuts. Vehicle checks use the assigned crew's skills and talents.
@@ -17,6 +20,8 @@
 
 ### Changed
 
+- Species, career, model and manufacturer selectors support keyboard navigation and selection. Vehicle arcs have focusable button alternatives, and active range/minion animations honor reduced-motion preferences.
+
 - Range overlays can follow combat and select the scale from both scene and attacker. Labels rotate along their range arcs, stay readable near viewport edges and avoid actors, props and other controls.
 - Combat targeting searches usable edge-to-edge paths, accounts for rotated hulls and eligible firing/defence faces, animates clear and blocked trajectory segments, and sends the resulting dice to the adjustable pool. Vehicle weapon/gunner choices and interactive arc selection retain manual control.
 - Species, career, vehicle model and manufacturer fields use database-backed fuzzy choices. Vehicle selection supplies default identity, artwork and reviewed statistics; a GM setting permits explicitly identified homebrew entries.
@@ -24,18 +29,32 @@
 
 ### Fixed
 
+- Keep authenticated transactions, approval fingerprints and vehicle loadouts working on ordinary HTTP LAN clients using secure random IDs and an attributed local SHA-256 fallback; private source-note encryption retains its HTTPS requirement.
+
+- Preserve manually sized legacy vehicle tokens during upgrades; automatic resizing requires explicit opt-in.
+- Reject damage previews when reviewed inputs such as soak change before approval, even if the prior wound value is unchanged.
+- Remove stale sheet drop handlers, crew drag state and range-motion listeners on rerender, cancellation and teardown.
+
+- Keep the characteristic/rank base dice explanation separate from talent changes; preserve cited structured modifier contributions and source references in check results.
+
 - Keep vehicle facing independent of movement direction and provide clockwise/counterclockwise token controls. Improve token-art resolution and frame placement, and keep names, elevation labels, turn controls and targeting cards from covering one another.
+- Route XP, turn and crew changes through authenticated native requests with durable receipts, complete synthetic actor identities, queued permission rechecks and explicit GM-browser selection. Fence late completions and retain interrupted work for GM review. Keep routine protocol cards out of play chat.
 - Protect tabletop mechanical requests with authenticated authorship, unchanged-payload checks and replay guards. Spending approvals check the proposer's blind/whisper visibility, and initiative choices follow the actual turn order.
 - Serialize actor changes across tabletop effects, XP purchases, turn spending and crew operations. Preserve dotted snapshot paths through Foundry document transport so previews and undo use the correct saved values.
 - Reject DoR targeted checks before rolling when sight is blocked, unknown or requires a GM ruling. Bind the rolled actor and assigned-crew lookup to the measured source token.
 
 ### Development and documentation
 
+- Add repeatable packaged installation, upgrade and backup/restore acceptance, with released 0.2.1 and 0.3.0 baselines and private evidence.
+- Run browser fixtures in hosted validation and stop their owned process trees after timeout; leave unrelated processes running.
+
 - Start incremental strict TypeScript checking with narrative-dice pool, face, symbol and outcome contracts, including negative compile-time assertions in the normal validation command.
 - Add actual release-archive auditing with path/content checks, manifest and inventory comparison, and file/archive hashes. Expand the AtlasMind local command contract and require validated GitHub checks on protected promotion branches.
 - Add usage and acceptance guides for creation, minions, crew, turn indicators, flight, shadows and tabletop tools; update the README, contribution instructions, range/DoR guides and canonical roadmap. Record native multi-client acceptance separately from browser fixtures and provider-dependent campaign testing.
 
 ### Remaining limitations
+
+- GM transaction selection must be repeated after reload or handover. Simultaneous deliberate GM takeovers are not atomic, and receipt storage remains unbounded pending safe compaction and long-campaign load testing.
 
 - Reviewed narrative-option tables are not bundled. Critical/condition records do not apply every rules modifier; remaining weapon qualities, equipment rewards and automated story/downtime effects still require source-backed work or an explicit GM ruling.
 - Full DoR beginner and mixed-rule campaigns, cinematic interpretation, image derivatives and Surveyor acceptance remain open. Native roll facts and private artwork catalogue review have been verified separately; those checks do not establish a completed AI-led campaign.

@@ -1,3 +1,4 @@
+import {transactionWorld} from './fixtures/document-transactions.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import { SYSTEM_ID } from "../src/config.mjs";
@@ -70,8 +71,8 @@ test("a failed prepared-roster save removes newly generated actors",async()=>{
   await assert.rejects(generateVehicleCrew(f.vehicle,recipe,f.ctx),/save failed/);assert.equal(f.ctx.actors.size,0);
 });
 test("the transaction queue serializes generation on unplaced Actor documents",async()=>{
-  const f=fixture(),calls=[];
-  const service=new CrewTransactionCoordinator({currentUser:()=>f.ctx.user,users:()=>[f.ctx.user],execute:async(actor,command)=>{calls.push([actor.uuid,command]);return generateVehicleCrew(actor,{...recipe,counts:{pilot:1}},f.ctx);}});
+  const f=fixture(),calls=[],world=transactionWorld([f.ctx.user]);
+  const service=new CrewTransactionCoordinator({transport:world.client(f.ctx.user).transport,getToken:async uuid=>uuid===f.vehicle.uuid?f.vehicle:null,currentUser:()=>f.ctx.user,users:()=>[f.ctx.user],execute:async(actor,command)=>{calls.push([actor.uuid,command]);return generateVehicleCrew(actor,{...recipe,counts:{pilot:1}},f.ctx);}});
   const result=await Promise.allSettled([service.request(f.vehicle,"generate",recipe),service.request(f.vehicle,"generate",recipe)]);
-  assert.equal(result[0].status,"fulfilled");assert.equal(result[1].status,"rejected");assert.equal(f.created.length,1);assert.equal(calls.length,2);
+  assert.equal(result.filter(r=>r.status==="fulfilled").length,1);assert.equal(result.filter(r=>r.status==="rejected").length,1);assert.match(result.find(r=>r.status==="rejected").reason.message,/Only one primary pilot/);assert.equal(f.created.length,1);assert.equal(calls.length,2);world.stop();
 });

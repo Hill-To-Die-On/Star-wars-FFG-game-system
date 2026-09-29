@@ -4,6 +4,12 @@ A free, independent **Foundry VTT 14** game system for campaigns using **Edge of
 
 Original sheets and interface, with familiar narrative dice symbols from an attributed community source. The complete creator-authorized reference database is included: **6,662 original rows across 44 tables**, with statistics, creator notes and book/page references. Vehicle enrichment adds 288 weapon-mount relationships, bringing the searchable catalogue to **6,950 rows across 45 tables**; source-review status distinguishes checked profiles from candidates. Rulebooks, adventure text and official illustrations are not distributed. The books remain necessary. Star Wars FFG is not affiliated with or endorsed by Lucasfilm, Fantasy Flight Games, Asmodee, or EDGE Studio.
 
+## Getting started and support
+
+[GM quick start](docs/gm-quick-start.md) · [Player quick start](docs/player-quick-start.md) · [Tabletop workflows](docs/tabletop-workflows.md) · [Production gates and limitations](docs/production-readiness.md) · [Backup and recovery](docs/backup-recovery.md) · [Keyboard access and performance](docs/accessibility-performance.md)
+
+In Foundry, open **Configure Settings → Star Wars FFG → Help & rules coverage** for the implementation inventory, campaign-filtered learned effects and an inspectable diagnostic download. The report distinguishes graph verification from effect automation and never changes a character. Diagnostics exclude names, campaign content, settings and credentials; nothing is uploaded.
+
 ## Install
 
 Use this manifest in Foundry's **Install System → Manifest URL**:
@@ -12,7 +18,7 @@ Use this manifest in Foundry's **Install System → Manifest URL**:
 https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json
 ```
 
-Create a world using **Star Wars FFG**. Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
+Create a world using **Star Wars FFG**. For the unreleased candidate, the GM selects **Settings sidebar → Transaction authority** for one browser tab and repeats that selection after reload or handover. Other GM tabs can view without processing changes; see [transaction authority and recovery](docs/security-authority.md). Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
 
 The compact seven-die tray beside the chat bar supports quick ad-hoc pools and follows Foundry's public, GM, blind and self chat buttons. Each player can hide it under **Configure Settings → Star Wars FFG → Compact dice tray by chat**.
 

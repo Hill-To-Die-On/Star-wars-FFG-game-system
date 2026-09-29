@@ -1,3 +1,4 @@
+import {transactionWorld} from './fixtures/document-transactions.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import { SYSTEM_ID } from "../src/config.mjs";
@@ -98,14 +99,14 @@ test("a failed split creation restores the original linked/unlinked token state"
 test("the GM authority serializes competing last-seat requests and rejects a role change by a non-owner",async()=>{
   const {gm,player,vehicle,make,scene}=fixture(),a=make("a"),b=make("b"),listeners=new Set();
   const socket={on:(_c,f)=>listeners.add(f),off:(_c,f)=>listeners.delete(f),emit:(_c,m)=>queueMicrotask(()=>{for(const f of listeners)f(structuredClone(m));})};
-  const users=[gm,player],getToken=uuid=>[a,b].find(t=>t.uuid===uuid),makeService=user=>new CrewTransactionCoordinator({socket,currentUser:()=>user,users:()=>users,getToken,execute:executeCrewCommand}).start();
+  const users=[gm,player],world=transactionWorld(users),getToken=uuid=>[a,b].find(t=>t.uuid===uuid),makeService=user=>new CrewTransactionCoordinator({transport:world.client(user).transport,currentUser:()=>user,users:()=>users,getToken,execute:executeCrewCommand}).start();
   const g=makeService(gm),p=makeService(player);
   try {
     const results=await Promise.allSettled([p.request(a,"board",{vehicleId:vehicle.id}),p.request(b,"board",{vehicleId:vehicle.id})]);
-    assert.deepEqual(results.map(r=>r.status),["fulfilled","rejected"]);assert.match(results[1].reason.message,/full/i);
+    assert.deepEqual(results.map(r=>r.status).sort(),["fulfilled","rejected"]);assert.match(results.find(r=>r.status==="rejected").reason.message,/full/i);
     assert.equal(Array.from(scene.tokens).filter(t=>aboard(t)).length,1);
     await assert.rejects(executeCrewCommand(a,"role",{role:"pilot"},{id:"other"}),/permission/);
-  }finally{g.stop();p.stop();}
+  }finally{g.stop();p.stop();world.stop();}
 });
 test("off-canvas crew documents with read-only visibility are never treated as drawable tokens",async()=>{
   const {gm,vehicle,make}=fixture(),p=make("off-canvas pilot");

@@ -29,12 +29,16 @@ Node.js 24 or later is required.
 npm ci
 npm run typecheck
 npm test
+npx playwright install chromium
+npm run test:browser
 npm run check
 npm run build
 npm run audit:release
 ```
 
 `npm run build` creates `dist/star-wars-ffg.zip`, `dist/system.json`, and `dist/contents.json`. The `dist` directory is ignored and should not be committed. The build uses a positive allow-list so private local imports do not enter a release.
+
+The browser command builds the current package first so packaged tests cannot use a missing or stale ZIP. Browser fixtures run sequentially with per-process timeouts and write screenshots/logs under ignored `test-results/browser/`. Hosted validation installs Chromium and retains these artifacts. Native licensed Foundry recovery is a separate opt-in command described in [backup and recovery](docs/backup-recovery.md); it must use an isolated port and disposable world.
 
 Follow the testing protocols in `AGENTS.md`. Add focused assertions for changed logic, then run the full test, check, and build commands before requesting review. A passing automated check does not replace Foundry runtime verification for sheets, settings, migrations, multi-client behaviour, Dice So Nice rendering, or Director of Realms integration.
 

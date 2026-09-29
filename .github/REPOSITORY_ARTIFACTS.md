@@ -45,6 +45,8 @@ The validation workflow pins reviewed GitHub Action commits rather than mutable 
 | `contents.json` | Reviewable inventory of paths inside the ZIP |
 | `release-audit.json` | Local/CI validation evidence and archive/file hashes; optional release attachment |
 
+The validation workflow also retains `browser-fixture-evidence` for 14 days, including fixture results, logs and screenshots under `test-results/browser/`. These contain synthetic test data and are CI evidence, not a native Foundry or Director of Realms acceptance certificate. Licensed native recovery evidence remains private and is not uploaded by this workflow.
+
 The ZIP is assembled from the positive allow-list in `scripts/build.mjs`. It includes runtime source, templates, styles, localizations, original/attributed assets, public documentation, notices, the two authorized reference JSON files, the copyright-bounded advancement graphs, and their verification register. It excludes PDFs, scans, SQL/database backups, `.local` imports, environment files, tests, previews, and private campaign/source material.
 
 Published tags and releases are retained as historical delivery artifacts. Current releases use semantic tags such as `v0.2.1` and the three asset names above.

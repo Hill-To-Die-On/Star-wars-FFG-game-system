@@ -1,7 +1,8 @@
+import {getDocumentTransactionBroker} from './document-transactions.mjs';
 import { SYSTEM_ID, SKILLS } from './config.mjs';
 import { escapeHTML as esc } from './mechanics.mjs';
 import { ActorTransactionQueue, canSpendXp } from './xp-transactions.mjs';
-import { SYMBOLS, remainingSymbols, planActorEffect, planSessionAward, planSlotClaim, reviewedSource, snapshotValues } from './tabletop-workflows.mjs';
+import { SYMBOLS, remainingSymbols, planActorEffect, planSessionAward, planSlotClaim, reviewedSource, snapshotValues, reviewSnapshot } from './tabletop-workflows.mjs';
 import { TabletopWorkflowService, workflowAuthority, canProposeSpend } from './tabletop-service.mjs';
 import { crewRoster, CREW_ROLES } from './vehicle-crew.mjs';
 import { vehicleForActor, crewCheckDialog } from './vehicle-crew-foundry.mjs';
@@ -30,6 +31,7 @@ async function authenticatedRequester(message,key,creatorId,{requireActive=true}
     const receipt=await createMessageProvenance(message,key,creatorId,game.users);
     await provenanceQueue.run('receipts',async()=>{
       const receipts=game.settings.get(SYSTEM_ID,'tabletopProvenance')??{};
+      if(!getDocumentTransactionBroker().isAuthority())throw new Error('Transaction authority changed; select the active GM browser.');
       await game.settings.set(SYSTEM_ID,'tabletopProvenance',{...receipts,[message.id]:receipt});
     });
   }
@@ -59,7 +61,7 @@ function settleRequest(message) {
   clearTimeout(waiter.timer);pending.delete(message.id);result.ok?waiter.resolve(result.result):waiter.reject(new Error(result.error));
 }
 async function processRequest(message,creatorId) {
-  if(workflowAuthority(game.users)?.id!==game.user.id || flag(message,'tabletopResult') || processing.has(message.id))return;
+  if(!getDocumentTransactionBroker().isAuthority() || flag(message,'tabletopResult') || processing.has(message.id))return;
   const storedRequest=flag(message,'tabletopRequest');if(!storedRequest)return;
   const request=structuredClone(storedRequest);
   processing.add(message.id);
@@ -67,6 +69,7 @@ async function processRequest(message,creatorId) {
     let result;
     try {result={ok:true,result:await service.execute(request.command,request.args,await authenticatedRequester(message,'tabletopRequest',creatorId),request.operationId)};}
     catch(error){result={ok:false,error:error.message};}
+    if(!getDocumentTransactionBroker().isAuthority())return;
     await message.update({[`flags.${SYSTEM_ID}.tabletopResult`]:result,
       content:`<p>${esc(request.command)} · ${result.ok?'Confirmed':esc(result.error)}</p>`});
   } finally {processing.delete(message.id);}
@@ -99,7 +102,7 @@ export async function openResolution(actor,{message,weapon}={}) {
   if(!form)return;
   const request={...form,amount:Number(form.amount),pierce:Number(form.pierce),breach:Number(form.breach),strain:form.strain==='on',ignoreSoak:form.ignoreSoak==='on',source:sourceFrom(form),entryId:uuid()};
   const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});
-  if(await confirmPlan(actor,plan)){await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:plan.before});ui.notifications.info(`Applied to ${actor.name}. Undo is available in Tabletop history.`);}
+  if(await confirmPlan(actor,plan)){await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});ui.notifications.info(`Applied to ${actor.name}. Undo is available in Tabletop history.`);}
 }
 export async function openWorkflowHistory(actor) {
   if(!canSpendXp(actor,game.user))throw new Error('Owner permission is required.');
@@ -196,7 +199,7 @@ export async function openVehicleDashboard(actor) {
         if(b.dataset.dashboard==='state') {
           const form=await prompt(`Vehicle state · ${actor.name}`,`${numeric('speed','Speed',s.speed.value,0,s.speed.max)}${Object.entries(s.shields).map(([z,n])=>numeric(z,`${z} shields`,n,0,4)).join('')}${sourceHTML()}`);if(!form)return;
           const request={kind:'vehicle-state',speed:Number(form.speed),shields:Object.fromEntries(Object.keys(s.shields).map(z=>[z,Number(form[z])])),source:sourceFrom(form),note:'Reviewed speed / shields adjustment'};
-          const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});if(await confirmPlan(actor,plan))await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:plan.before});
+          const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});if(await confirmPlan(actor,plan))await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});
         }
       });};
       root.addEventListener('click',onClick);
@@ -221,7 +224,7 @@ export async function openSessionWrapUp() {
   const plans=selected.map(actor=>({actor,plan:planSessionAward(actor,request,{user:game.user,campaign:c})}));
   if(!await foundry.applications.api.DialogV2.confirm({...dialogDefaults,window:{...dialogDefaults.window,title:'Review session awards'},content:`<div class="sf-tabletop-body">${plans.map(({actor,plan})=>`<h2>${esc(actor.name)}</h2>${reviewHTML(plan)}`).join('')}</div>`,yes:{label:'Award reviewed changes'}}))return;
   const completed=[];
-  try {for(const {actor,plan}of plans){await requestTabletop('award',{actorUuid:actor.uuid,request,expected:plan.before});completed.push(actor.name);}}
+  try {for(const {actor,plan}of plans){await requestTabletop('award',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});completed.push(actor.name);}}
   catch(error){throw new Error(`${error.message} Confirmed recipients: ${completed.join(', ')||'none'}. Review history before retrying; each recipient is committed independently.`);}
   ui.notifications.info(`Session awards saved for ${completed.length} characters. Their histories include the before/after values and downtime.`);
 }
@@ -240,11 +243,12 @@ export function registerTabletopWorkflows() {
   // TODO: preload narrative options only after their rule sources are reviewed.
   game.settings.register(SYSTEM_ID,'narrativeSpendingOptions',{scope:'world',config:false,type:Array,default:[]});
   Hooks.once('ready',()=>{
-    service=new TabletopWorkflowService({resolve:uuid=>fromUuid(uuid),campaign,verifyProposal:message=>authenticatedRequester(message,'spendingProposal',undefined,{requireActive:false})});
+    service=new TabletopWorkflowService({assertAuthority:()=>{if(!getDocumentTransactionBroker().isAuthority())throw new Error('Transaction authority changed; inspect the request before retrying.');},resolve:uuid=>fromUuid(uuid),campaign,verifyProposal:message=>authenticatedRequester(message,'spendingProposal',undefined,{requireActive:false})});
     for(const message of game.messages??[])if(flag(message,'tabletopRequest')&&!flag(message,'tabletopResult'))void handle(()=>processRequest(message));
   });
+  Hooks.on('starWarsAuthoritySelected',()=>{for(const message of game.messages??[])if(flag(message,'tabletopRequest')&&!flag(message,'tabletopResult'))void handle(()=>processRequest(message));});
   Hooks.on('createChatMessage',(message,_options,creatorId)=>{
-    if(!service || workflowAuthority(game.users)?.id!==game.user.id)return;
+    if(!service || !getDocumentTransactionBroker().isAuthority())return;
     if(flag(message,'tabletopRequest'))void handle(()=>processRequest(message,creatorId));
     if(flag(message,'spendingProposal'))void handle(async()=>{await authenticatedRequester(message,'spendingProposal',creatorId);await message.update({[`flags.${SYSTEM_ID}.proposalReady`]:true});});
   });
