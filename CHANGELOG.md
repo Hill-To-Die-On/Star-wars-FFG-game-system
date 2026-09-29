@@ -20,12 +20,18 @@
 
 ### Changed
 
+- Species, career, model and manufacturer selectors support keyboard navigation and selection. Vehicle arcs have focusable button alternatives, and active range/minion animations honor reduced-motion preferences.
+
 - Range overlays can follow combat and select the scale from both scene and attacker. Labels rotate along their range arcs, stay readable near viewport edges and avoid actors, props and other controls.
 - Combat targeting searches usable edge-to-edge paths, accounts for rotated hulls and eligible firing/defence faces, animates clear and blocked trajectory segments, and sends the resulting dice to the adjustable pool. Vehicle weapon/gunner choices and interactive arc selection retain manual control.
 - Species, career, vehicle model and manufacturer fields use database-backed fuzzy choices. Vehicle selection supplies default identity, artwork and reviewed statistics; a GM setting permits explicitly identified homebrew entries.
 - Vehicle enrichment adds 288 searchable weapon-mount relationships, bringing the catalogue to 6,950 rows across 45 tables. Only the 11 printed-page-checked loadouts equip automatically; 141 candidates remain pending review, and model changes preserve custom or modified equipment.
 
 ### Fixed
+
+- Preserve manually sized legacy vehicle tokens during upgrades; automatic resizing requires explicit opt-in.
+- Reject damage previews when reviewed inputs such as soak change before approval, even if the prior wound value is unchanged.
+- Remove stale sheet drop handlers, crew drag state and range-motion listeners on rerender, cancellation and teardown.
 
 - Keep the characteristic/rank base dice explanation separate from talent changes; preserve cited structured modifier contributions and source references in check results.
 
@@ -35,6 +41,9 @@
 - Reject DoR targeted checks before rolling when sight is blocked, unknown or requires a GM ruling. Bind the rolled actor and assigned-crew lookup to the measured source token.
 
 ### Development and documentation
+
+- Add repeatable packaged installation, upgrade and backup/restore acceptance, with released 0.2.1 and 0.3.0 baselines and private evidence.
+- Run browser fixtures in hosted validation and stop their owned process trees after timeout; leave unrelated processes running.
 
 - Start incremental strict TypeScript checking with narrative-dice pool, face, symbol and outcome contracts, including negative compile-time assertions in the normal validation command.
 - Add actual release-archive auditing with path/content checks, manifest and inventory comparison, and file/archive hashes. Expand the AtlasMind local command contract and require validated GitHub checks on protected promotion branches.

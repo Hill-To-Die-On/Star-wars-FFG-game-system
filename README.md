@@ -6,7 +6,7 @@ Original sheets and interface, with familiar narrative dice symbols from an attr
 
 ## Getting started and support
 
-[GM quick start](docs/gm-quick-start.md) · [Player quick start](docs/player-quick-start.md) · [Tabletop workflows](docs/tabletop-workflows.md) · [Production gates and limitations](docs/production-readiness.md)
+[GM quick start](docs/gm-quick-start.md) · [Player quick start](docs/player-quick-start.md) · [Tabletop workflows](docs/tabletop-workflows.md) · [Production gates and limitations](docs/production-readiness.md) · [Backup and recovery](docs/backup-recovery.md) · [Keyboard access and performance](docs/accessibility-performance.md)
 
 In Foundry, open **Configure Settings → Star Wars FFG → Help & rules coverage** for the implementation inventory, campaign-filtered learned effects and an inspectable diagnostic download. The report distinguishes graph verification from effect automation and never changes a character. Diagnostics exclude names, campaign content, settings and credentials; nothing is uploaded.
 
