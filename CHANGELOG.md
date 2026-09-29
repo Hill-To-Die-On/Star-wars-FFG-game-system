@@ -4,6 +4,9 @@
 
 ### Added
 
+- Add a resizable Help & rules coverage window with implementation limits, campaign-filtered learned talent/signature effects, source references, graph-verification distinctions and observer permission checks.
+- Add GM/player quick starts and an explicit local diagnostic export limited to versions, known integration states and document counts.
+
 - Manual and guided character creation with shared starting-resource and XP validation, plus a GM guide for editable, original enemy presets.
 - Deterministic SVG portraits and default tokens distinguished by role, species and vehicle family, with retained frames on custom portraits and vehicle footprints sized from silhouette estimates or exact dimensions through the scene scale.
 - Vehicle Crew & Passengers sheets, generated crew previews, drag-to-board workflows, compact roster badges, role assignments, selective disembarking and character-sheet shortcuts. Vehicle checks use the assigned crew's skills and talents.
@@ -23,6 +26,8 @@
 - Vehicle enrichment adds 288 searchable weapon-mount relationships, bringing the catalogue to 6,950 rows across 45 tables. Only the 11 printed-page-checked loadouts equip automatically; 141 candidates remain pending review, and model changes preserve custom or modified equipment.
 
 ### Fixed
+
+- Keep the characteristic/rank base dice explanation separate from talent changes; preserve cited structured modifier contributions and source references in check results.
 
 - Keep vehicle facing independent of movement direction and provide clockwise/counterclockwise token controls. Improve token-art resolution and frame placement, and keep names, elevation labels, turn controls and targeting cards from covering one another.
 - Protect tabletop mechanical requests with authenticated authorship, unchanged-payload checks and replay guards. Spending approvals check the proposer's blind/whisper visibility, and initiative choices follow the actual turn order.

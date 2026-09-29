@@ -153,7 +153,8 @@ const effectApplies = (effect, skill) => {
 const effectReason = (rule, effect) => {
   const value = `${effect.count} ${effect.target}`,
     operation = effect.operation === "add" ? "+" : "remove ";
-  return `${rule.name}: ${operation}${value}`;
+  const source = [rule.source?.book, rule.source?.page].filter(Boolean).join(" · ") || "Source not recorded";
+  return `${rule.name}: ${operation}${value} — ${source} (structured effect)`;
 };
 
 export function talentRulesForCheck(
@@ -171,6 +172,7 @@ export function talentRulesForCheck(
     },
     automaticResults = Object.fromEntries(SYMBOLS.map((key) => [key, 0])),
     reasons = [],
+    contributions = [],
     decisions = [];
   for (const rule of learned) {
     const effects = rule.effects.filter(
@@ -188,6 +190,7 @@ export function talentRulesForCheck(
         name: rule.name,
         activation: rule.activation,
         summary: rule.summary,
+        source: structuredClone(rule.source),
         effects,
       });
       continue;
@@ -199,9 +202,10 @@ export function talentRulesForCheck(
         automaticResults[effect.target] +=
           effect.count * (effect.operation === "add" ? 1 : -1);
       reasons.push(effectReason(rule, effect));
+      contributions.push({ruleId:rule.id,name:rule.name,status:automatic ? "automatic" : "selected",verification:"structured-effect",source:structuredClone(rule.source),effect:structuredClone(effect)});
     }
   }
-  return { learned, pool, automaticResults, reasons, decisions };
+  return { learned, pool, automaticResults, reasons, contributions, decisions };
 }
 
 export function applyTalentPool(pool, rules) {

@@ -4,6 +4,12 @@ A free, independent **Foundry VTT 14** game system for campaigns using **Edge of
 
 Original sheets and interface, with familiar narrative dice symbols from an attributed community source. The complete creator-authorized reference database is included: **6,662 original rows across 44 tables**, with statistics, creator notes and book/page references. Vehicle enrichment adds 288 weapon-mount relationships, bringing the searchable catalogue to **6,950 rows across 45 tables**; source-review status distinguishes checked profiles from candidates. Rulebooks, adventure text and official illustrations are not distributed. The books remain necessary. Star Wars FFG is not affiliated with or endorsed by Lucasfilm, Fantasy Flight Games, Asmodee, or EDGE Studio.
 
+## Getting started and support
+
+[GM quick start](docs/gm-quick-start.md) · [Player quick start](docs/player-quick-start.md) · [Tabletop workflows](docs/tabletop-workflows.md) · [Production gates and limitations](docs/production-readiness.md)
+
+In Foundry, open **Configure Settings → Star Wars FFG → Help & rules coverage** for the implementation inventory, campaign-filtered learned effects and an inspectable diagnostic download. The report distinguishes graph verification from effect automation and never changes a character. Diagnostics exclude names, campaign content, settings and credentials; nothing is uploaded.
+
 ## Install
 
 Use this manifest in Foundry's **Install System → Manifest URL**:
