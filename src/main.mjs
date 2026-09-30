@@ -72,6 +72,24 @@ import {
 import { configureXpTransactions } from "./xp-transactions.mjs";
 import { registerMinionGroups } from "./minion-groups-foundry.mjs";
 import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
+import { renderAboutContent } from "./about.mjs";
+class AboutMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    foundry.applications.api.DialogV2.wait({
+      window: { title: "About Star Wars FFG" },
+      position: { width: 420 },
+      content: renderAboutContent({
+        systemTitle: game.system?.title,
+        systemId: game.system?.id,
+        systemVersion: game.system?.version,
+        foundryVersion: game.version,
+      }),
+      buttons: [{ action: "close", label: "Close" }],
+      rejectClose: false,
+    }).catch((error) => ui.notifications.error(error.message));
+    return this;
+  }
+}
 class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openReferenceBrowser();
@@ -333,6 +351,14 @@ Hooks.once("init", () => {
   registerMinionGroups();
   registerTabletopWorkflows();
   registerSupportTools();
+  game.settings.registerMenu(SYSTEM_ID, "aboutMenu", {
+    name: "About Star Wars FFG",
+    label: "About",
+    hint: "Show the system and Foundry versions loaded in this game session.",
+    icon: "fas fa-circle-info",
+    type: AboutMenu,
+    restricted: false,
+  });
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
     name: "GM source key",
     label: "Backup or restore key",
