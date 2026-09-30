@@ -24,6 +24,7 @@ import { groupStateForActor } from "./minion-groups.mjs";
 import { speciesAbilityEntry } from "./species-abilities.mjs";
 import { selectBookPlayGuidance, seedReferencePage } from "./book-play-guidance.mjs";
 import { selectOwnedBookArt } from "./book-art-catalogue.mjs";
+import { gmSightRuling } from "./line-of-sight-ruling.mjs";
 export const RULE_KNOWLEDGE_POLICY = Object.freeze({
   id: "evidence-required-v1",
   automaticAuthority: "structured-system-data",
@@ -495,7 +496,7 @@ export const directorAdapter = {
       targetSemantics: "successes",
       defaultTarget: 1,
       guidance:
-        `Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. On scaled maps it includes token elevation, sourceLevelId, targetLevelId, vertical relation and sightBasis when supported. A blocked, unknown or unverified path must stop automated firing: requiresGmRuling takes precedence even when lineOfSightBlocked is false or null. Report sightReason and request an explicit GM ruling through the sheet's Manual mode. For targeted execution use executeCheck(actor, skill, {sourceToken, targetToken, rangeOptions, difficulty, ...modifiers}); it remeasures the actual path before rolling. Do not pass a precomputed range as authorization. Untargeted skill checks do not authorize an attack. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target. ${RULE_KNOWLEDGE_POLICY.guidance}`,
+        `Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. On scaled maps it includes token elevation, sourceLevelId, targetLevelId, vertical relation and sightBasis when supported. A blocked, unknown or unverified path must stop automated firing: requiresGmRuling takes precedence even when lineOfSightBlocked is false or null. Report sightReason and request an explicit GM ruling. A GM can call executeCheck(actor, skill, {sourceToken, targetToken, sightOverride:{approved:true,reason:"..."}, ...modifiers}) for an adjudicated effect that works without sight; the reason is recorded in the roll. For targeted execution use executeCheck(actor, skill, {sourceToken, targetToken, rangeOptions, difficulty, ...modifiers}); it remeasures the actual path before rolling. Do not pass a precomputed range as authorization. Untargeted skill checks do not authorize an attack. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target. ${RULE_KNOWLEDGE_POLICY.guidance}`,
     };
   },
   readNativeCheckRoll(message) {
@@ -642,7 +643,7 @@ export const directorAdapter = {
     return talentRulesForCheck(actor, definition, options);
   },
   async executeCheck(actor, skill, options = {}) {
-    const { sourceToken, targetToken, rangeOptions = {}, ...rollOptions } = options;
+    const { sourceToken, targetToken, rangeOptions = {}, sightOverride, ...rollOptions } = options;
     if (sourceToken !== undefined || targetToken !== undefined) {
       if (!sourceToken || !targetToken)
         throw new Error("Targeted checks require both source and target tokens.");
@@ -656,8 +657,20 @@ export const directorAdapter = {
       if (actor.type === "vehicle") rollOptions.vehicleToken = source;
       const range = this.getCombatRange(sourceToken, targetToken, rangeOptions);
       const decision = combatRangeDecision(range);
-      if (!decision.allowed)
-        throw new Error(`${decision.reason} Request a GM ruling through the sheet's Manual mode.`);
+      if (!decision.allowed) {
+        if (range.available !== true)
+          throw new Error(`${decision.reason} The target range must be established before a GM ruling.`);
+        const ruling = gmSightRuling({
+          needsRuling: true,
+          isGM: globalThis.game?.user?.isGM === true,
+          manual: true,
+          approved: sightOverride?.approved === true,
+          reason: sightOverride?.reason,
+        });
+        if (!ruling.allowed)
+          throw new Error(`${decision.reason} ${ruling.reason} Request a GM ruling through the sheet's Manual mode.`);
+        rollOptions.ruleNotes = [...(rollOptions.ruleNotes ?? []), ruling.note];
+      }
     }
     return actor.rollSkill(skill, rollOptions);
   },

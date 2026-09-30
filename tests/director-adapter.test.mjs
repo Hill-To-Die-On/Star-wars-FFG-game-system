@@ -55,6 +55,23 @@ test("Director targeted checks remeasure and reject blocked, unknown and unverif
   assert.match(directorAdapter.getNativeCheckRules().guidance, /requiresGmRuling/);
 });
 
+test("targeted Force-style checks require a recorded GM sight override", async () => {
+  const previousGame = globalThis.game;
+  const actor = { uuid: "Actor.force-user", rollSkill: async (_skill, options) => options };
+  const sourceToken = { actor }, targetToken = { id: "target" };
+  const adapter = { ...directorAdapter, getCombatRange: () => ({ available: true, lineOfSightBlocked: true }) };
+  const options = { sourceToken, targetToken, sightOverride: { approved: true, reason: "Sense locates the target beyond the bulkhead" } };
+  try {
+    globalThis.game = { user: { isGM: false } };
+    await assert.rejects(adapter.executeCheck(actor, "discipline", options), /GM/i);
+    globalThis.game.user.isGM = true;
+    await assert.rejects(adapter.executeCheck(actor, "discipline", { ...options, sightOverride: { approved: true, reason: " " } }), /Record|reason/i);
+    const roll = await adapter.executeCheck(actor, "discipline", options);
+    assert.deepEqual(roll.ruleNotes, ["GM line of sight override: Sense locates the target beyond the bulkhead"]);
+    assert.equal(Object.hasOwn(roll, "sightOverride"), false);
+  } finally { globalThis.game = previousGame; }
+});
+
 test("Director targeted checks bind the rolled actor and assigned vehicle crew to the measured source", async () => {
   let rolls = 0, measurements = 0;
   const actor = { uuid: "Actor.ship", type: "vehicle", rollSkill: async (skill, options) => {

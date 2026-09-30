@@ -123,7 +123,7 @@ export class StarWarsActor extends Actor {
       throw new Error("Choose a character's native skill.");
     const characteristic =
       definition.state.characteristic || definition.characteristic;
-    const { selectedTalents = [], label, turnCost = "action", ...rollOptions } = options,
+    const { selectedTalents = [], label, turnCost = "action", ruleNotes = [], ...rollOptions } = options,
       rules = this.talentRulesForCheck(definition.key, { selectedTalents }),
       species = this.type === "character"
         ? speciesCheckBonuses(this.system.species, this.system.creation?.species, definition.key)
@@ -148,7 +148,7 @@ export class StarWarsActor extends Actor {
         ...rules.automaticResults,
         advantage: (rules.automaticResults?.advantage ?? 0) + species.advantage,
       },
-      ruleNotes: [...rules.reasons, ...species.reasons],
+      ruleNotes: [...rules.reasons, ...species.reasons, ...ruleNotes],
     });
   }
   async rollForce(options = {}) {

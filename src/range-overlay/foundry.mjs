@@ -1352,6 +1352,10 @@ export function showAttackTrace(
   if (!setting(TARGET_TRACE_SETTING, true)) return null;
   const sourceTokenObject = resolveToken(sourceToken);
   const targetTokenObject = resolveToken(targetToken);
+  if (!spatialTokenVisible(sourceTokenObject) || !spatialTokenVisible(targetTokenObject)) {
+    clearAttackTrace(targetTokenObject?.id ?? targetTokenObject?.document?.id);
+    return null;
+  }
   const preview = buildAttackTracePreview(sourceTokenObject, targetTokenObject,{selection});
   const source = preview.range?.traceSource ?? tokenCenter(sourceTokenObject);
   const target = preview.range?.traceTarget ?? tokenCenter(targetTokenObject);
@@ -1447,7 +1451,11 @@ function refreshTargetTraces({ animate = false, actorId = "" } = {}) {
     return;
   }
   const source = currentAttackSource();
-  if (!source || (actorId && String(source.actor?.id ?? "") !== actorId)) return;
+  if (!source || !spatialTokenVisible(source)) {
+    clearAttackTrace();
+    return;
+  }
+  if (actorId && String(source.actor?.id ?? "") !== actorId) return;
   const targets = Array.from(globalThis.game?.user?.targets ?? []);
   const targetIds = new Set(targets.map((target) => String(target.id)));
   for (const entry of attackTraceEntries.values())
@@ -1699,6 +1707,10 @@ export function refreshRangeOverlay({ preview = null } = {}) {
     return;
   }
   if (preview?.token) {
+    if (!spatialTokenVisible(preview.token)) {
+      pruneRangeLabelStates();
+      return;
+    }
     const profile = preview.profile ?? getTokenRangeProfile(preview.token, scene);
     if (!profile) {
       pruneRangeLabelStates();
@@ -1711,6 +1723,7 @@ export function refreshRangeOverlay({ preview = null } = {}) {
   }
   for (const id of originIds(scene)) {
     const token = resolveToken(id);
+    if (!token || !spatialTokenVisible(token)) continue;
     const profile = getTokenRangeProfile(token, scene);
     if (token && profile) drawOrigin(container, token, profile);
   }

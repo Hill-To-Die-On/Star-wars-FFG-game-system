@@ -31,6 +31,36 @@ test("range caption still clears rotated artwork without a rendered nameplate",(
   assert.equal(position.x,150);assert.ok(position.y>=512);
 });
 
+test("a player never draws a range origin for a token outside their vision",()=>{
+  const oldCanvas=globalThis.canvas,oldPIXI=globalThis.PIXI,oldGame=globalThis.game;
+  const point=()=>({set(){}});
+  class Container {
+    children=[];position=point();scale=point();anchor=point();
+    addChild(child){child.parent=this;this.children.push(child);return child;}
+    removeChildren(){return this.children.splice(0);}
+    sortChildren(){}destroy(){this.destroyed=true;}
+  }
+  class Graphics extends Container {
+    lineStyle(){return this;}beginFill(){return this;}endFill(){return this;}
+    drawRoundedRect(){return this;}drawCircle(){return this;}moveTo(){return this;}lineTo(){return this;}
+  }
+  class Text extends Container {constructor(text){super();this.text=text;}}
+  const root=new Container();
+  const token={id:"unseen",center:{x:150,y:250},x:100,y:200,w:100,h:100,visible:false,
+    actor:{name:"Unseen Droid"},document:{id:"unseen",hidden:false,rotation:0}};
+  globalThis.PIXI={Container,Graphics,Text,TextStyle:class{}};
+  globalThis.canvas={interface:root,scene:{id:"vision-test",grid:{size:100}}};
+  globalThis.game={user:{isGM:false},settings:{get:()=>true}};
+  try {
+    const preview={token,profile:{bands:[],scaleLabel:"Personal"}};
+    refreshRangeOverlay({preview});
+    assert.equal(root.children[0].children.length,0,"the hidden token's crosshair and name stay concealed");
+    token.visible=true;
+    refreshRangeOverlay({preview});
+    assert.equal(root.children[0].children.length,1,"the same origin appears when Foundry reveals its token");
+  }finally{globalThis.canvas=oldCanvas;globalThis.PIXI=oldPIXI;globalThis.game=oldGame;}
+});
+
 test("a late minion name reflows an existing caption once, including a caption without band labels",()=>{
   const keys=["canvas","PIXI","game","document","Hooks","requestAnimationFrame","cancelAnimationFrame","innerWidth","innerHeight"];
   const saved=Object.fromEntries(keys.map(key=>[key,globalThis[key]])),hooks=new Map(),frames=new Map();let next=0;

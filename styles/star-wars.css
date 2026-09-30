@@ -2414,6 +2414,21 @@ body[data-star-wars-theme] #pause figcaption {
   border-radius: 5px;
   font-weight: 650;
 }
+.sf-gm-sight-ruling {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  color: var(--sf-ink);
+  background: #fff1db;
+  border: 1px solid #c98745;
+  border-radius: 6px;
+}
+.sf-gm-sight-ruling p { margin: 0; }
+.sf-gm-sight-ruling label { display: grid; gap: 4px; }
+.sf-gm-sight-ruling label:has([type="checkbox"]) { display: flex; align-items: center; gap: 8px; }
+.sf-gm-sight-ruling [name="gmSightReason"] { width: 100%; }
+.sf-gm-sight-ruling [data-sight-ruling-error] { color: #8b1f2d; font-weight: 650; }
 .sf-manual-presets {
   margin-bottom: 12px;
 }

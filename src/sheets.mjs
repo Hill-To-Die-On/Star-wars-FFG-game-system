@@ -31,6 +31,7 @@ import {
   bookAllowed,
 } from "./rules.mjs";
 import { escapeHTML, minionState } from "./mechanics.mjs";
+import { gmSightRuling } from "./line-of-sight-ruling.mjs";
 import { referenceSummary } from "./reference-summaries.mjs";
 import { speciesAbilityEntry, speciesCheckBonuses } from "./species-abilities.mjs";
 import {
@@ -108,6 +109,7 @@ const DIE_HINTS = {
   difficulty: "Task and range",
   challenge: "Upgraded opposition",
   setback: "Defense and hindrances",
+  force: "Force power dice",
 };
 const dieShape = (key) =>
   `<span class="sf-die-shape sf-die-${key}" aria-hidden="true"></span>`;
@@ -389,8 +391,17 @@ function automaticContextHTML(context) {
     <div>${target}</div>
   </div>`;
 }
+function sightRulingRequired(context) {
+  return context.combat && !context.melee && !!context.target.name &&
+    (context.target.lineOfSight === "blocked" || context.target.requiresGmRuling);
+}
 function poolBuilderHTML(context) {
   const pool = context.automatic.pool,
+    sightRuling = sightRulingRequired(context)
+      ? `<div class="sf-gm-sight-ruling"><strong>Line of sight needs a GM ruling</strong><p>${escapeHTML(context.target.sightReason || "The target is behind a sight-blocking wall.")}</p>${game.user.isGM
+          ? `<label><input type="checkbox" name="gmSightOverride" value="yes"> Override line of sight for this effect</label><label>Why can it reach the target?<input type="text" name="gmSightReason" maxlength="240" placeholder="Source rule, Force power, or scene ruling"></label>`
+          : `<p>Ask the GM to make and record this ruling.</p>`}<p data-sight-ruling-error hidden></p></div>`
+      : "",
     automaticControl = context.combat
       ? context.melee
         ? `<div class="sf-fixed-range"><span class="sf-eyebrow">Range</span><strong>Engaged</strong><small>Melee attacks use Average difficulty.</small></div>`
@@ -426,6 +437,7 @@ function poolBuilderHTML(context) {
       </section>
     </div>
     <div data-mode-panel="manual" hidden>
+      ${sightRuling}
       <section class="sf-pool-section">
         <div class="sf-pool-section-title"><div><span class="sf-step-number">1</span><h3>Adjust the automatic pool</h3><p>The automatic dice are already loaded. Change only what the situation requires.</p></div><button type="button" data-pool-reset><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reset to auto</button></div>
         <div class="sf-difficulty-presets sf-manual-presets">${difficultyPresetsHTML(pool.challenge ? -1 : pool.difficulty, "data-manual-difficulty")}</div>
@@ -444,6 +456,24 @@ function attachPoolBuilder(dialog, context) {
   const root = dialog.element.querySelector(".sf-pool-builder");
   if (!root || root.dataset.ready) return;
   root.dataset.ready = "true";
+  const currentSightRuling = () => gmSightRuling({
+    needsRuling: sightRulingRequired(context),
+    isGM: game.user.isGM,
+    manual: root.dataset.mode === "manual",
+    approved: root.querySelector('[name="gmSightOverride"]')?.checked === true,
+    reason: root.querySelector('[name="gmSightReason"]')?.value ?? "",
+  });
+  const renderSightRuling = () => {
+    if (root.dataset.mode !== "manual") return;
+    const ruling = currentSightRuling();
+    const submit = dialog.element.querySelector('button[data-action="ok"]');
+    if (submit) submit.disabled = !ruling.allowed;
+    const error = root.querySelector("[data-sight-ruling-error]");
+    if (error) {
+      error.hidden = ruling.allowed;
+      error.textContent = ruling.reason ?? "";
+    }
+  };
   const readPool = () =>
     Object.fromEntries(
       ROLL_DICE.map((key) => [
@@ -530,9 +560,8 @@ function attachPoolBuilder(dialog, context) {
     }
     for (const panel of root.querySelectorAll("[data-mode-panel]"))
       panel.hidden = panel.dataset.modePanel !== mode;
-    const submit = dialog.element.querySelector('button[data-action="ok"]');
     if (mode === "auto") renderAutomatic();
-    else if (submit) submit.disabled = false;
+    else renderSightRuling();
   };
   const enterManual = () => {
     writePool(automatic().pool);
@@ -579,8 +608,12 @@ function attachPoolBuilder(dialog, context) {
   });
   root.addEventListener("input", (event) => {
     if (event.target.matches("[data-die] input")) writePool(readPool());
+    if (event.target.matches('[name="gmSightReason"]')) renderSightRuling();
   });
-  root.addEventListener("change",event=>{if(event.target.matches("[data-vehicle-zone]"))renderAutomatic();});
+  root.addEventListener("change",event=>{
+    if(event.target.matches("[data-vehicle-zone]"))renderAutomatic();
+    if(event.target.matches('[name="gmSightOverride"]'))renderSightRuling();
+  });
   setMode("auto");
 }
 export async function checkDialog(actor, key, item, options = {}) {
@@ -612,9 +645,18 @@ export async function checkDialog(actor, key, item, options = {}) {
       icon: "fa-solid fa-dice",
       callback: (_event, button) => {
         const data = Object.fromEntries(new FormData(button.form));
+        const ruling = gmSightRuling({
+          needsRuling: sightRulingRequired(context),
+          isGM: game.user.isGM,
+          manual: data.poolMode === "manual",
+          approved: data.gmSightOverride === "yes",
+          reason: data.gmSightReason,
+        });
+        if (!ruling.allowed) throw new Error(ruling.reason);
         return {
           rollMode: data.rollMode,
           turnCost: data.turnCost ?? "none",
+          sightRulingNote: ruling.note,
           pool: Object.fromEntries(
             ROLL_DICE.map((die) => [die, Number(data[die])]),
           ),
@@ -633,7 +675,7 @@ export async function checkDialog(actor, key, item, options = {}) {
       ...context.talentRules.automaticResults,
       advantage: (context.talentRules.automaticResults?.advantage ?? 0) + context.speciesAdvantage,
     },
-    ruleNotes: [...context.talentRules.reasons, ...context.speciesReasons],
+    ruleNotes: [...context.talentRules.reasons, ...context.speciesReasons, ...(form.sightRulingNote ? [form.sightRulingNote] : [])],
   });
   if (item && result.outcome.passed) {
     ui.notifications.info(
