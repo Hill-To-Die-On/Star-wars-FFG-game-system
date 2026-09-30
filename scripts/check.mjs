@@ -1,4 +1,5 @@
 import { readFile, readdir } from "node:fs/promises";
+import { readVersionMetadata, validateVersionMetadata } from "./version-metadata.mjs";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import Handlebars from "handlebars";
@@ -9,6 +10,8 @@ import { validateRollTables } from "../src/roll-tables.mjs";
 import { validateSpeciesAbilityRegistry } from "../src/species-abilities.mjs";
 import { validateBookPlayGuidance } from "../src/book-play-guidance.mjs";
 import { normalizeBookTitle } from "../src/rules.mjs";
+const typecheck = spawnSync(process.execPath, ["node_modules/typescript/bin/tsc", "--project", "tsconfig.json", "--pretty", "false"], { encoding: "utf8" });
+if (typecheck.error || typecheck.status !== 0) throw new Error("TypeScript checks failed.\n" + (typecheck.error?.message ?? "") + typecheck.stdout + typecheck.stderr);
 async function walk(dir) {
   const result = [];
   for (const entry of await readdir(dir, { withFileTypes: true }))
@@ -32,7 +35,7 @@ for (const file of [
 for (const file of await walk("templates"))
   Handlebars.precompile(await readFile(file, "utf8"));
 const manifest = JSON.parse(await readFile("system.json", "utf8"));
-const pkg = JSON.parse(await readFile("package.json", "utf8"));
+
 for (const version of [1, 2])
   JSON.parse(
     await readFile(`docs/schemas/integration-v${version}.schema.json`, "utf8"),
@@ -62,8 +65,7 @@ const registeredBooks = new Set(referenceDatabase.tables.books.map((row) => norm
 for (const entry of playGuidance.entries)
   if (!registeredBooks.has(normalizeBookTitle(entry.source.book)))
     throw new Error(`Book play guidance source is absent from the public catalogue: ${entry.id}.`);
-if (manifest.version !== pkg.version)
-  throw new Error("Manifest and package versions differ");
+validateVersionMetadata(await readVersionMetadata());
 for (const path of [
   ...manifest.esmodules,
   ...manifest.styles,
@@ -99,5 +101,5 @@ for (const [key, die] of Object.entries(DICE))
     }
   }
 console.log(
-  "Syntax, templates, manifest, integration schemas, versions, public vehicle, species and book-play data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
+  "TypeScript, syntax, templates, manifest, integration schemas, versions, public vehicle, species and book-play data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
 );

@@ -58,13 +58,23 @@ function assertCrewPermission(token,vehicle,user,options) {
 }
 export function attachedPosition(token,vehicle) {
   const t=doc(token),v=doc(vehicle),size=Number(v.parent?.grid?.size)||100;
-  return {x:v.x+(v.width-t.width)*size/2,y:v.y+(v.height-t.height)*size/2,elevation:v.elevation ?? 0};
+  return {x:v.x+(v.width-t.width)*size/2,y:v.y+(v.height-t.height)*size/2,elevation:v.elevation ?? 0,...(v.level?{level:v.level}:{})};
+}
+function sharesBoardingHeight(token,vehicle,position=token) {
+  const level=position.level??token.level;
+  if(!level && !vehicle.level)return true;
+  if(level!==vehicle.level)return false;
+  const distance=Number(token.parent?.grid?.distance)||1;
+  const bottom=Number(position.elevation??token.elevation)||0,vehicleBottom=Number(vehicle.elevation)||0;
+  return bottom<=vehicleBottom+Math.max(0,Number(vehicle.depth)||0)*distance &&
+    vehicleBottom<=bottom+Math.max(0,Number(token.depth)||0)*distance;
 }
 export function boardingUpdate(token,vehicle,tokens,{user,seat="crew"}={}) {
   const t=doc(token),v=doc(vehicle);
   assertCrewPermission(t,v,user);
   if(v.actor?.type!=="vehicle" || !["character","minion","rival","nemesis"].includes(t.actor?.type)) throw new Error("Board a character or NPC onto a vehicle.");
   if(t.parent?.id!==v.parent?.id) throw new Error("Both tokens must be in the same scene.");
+  if(!sharesBoardingHeight(t,v))throw new Error("Boarding requires the same native level and overlapping altitude. Move to the vehicle first.");
   if(aboard(t)) throw new Error("This token is already aboard a vehicle. Disembark first.");
   if(groupId(t)) throw new Error("This token shares a linked combat group. Use a separate minion actor for vehicle crew; splitting a linked group between stations is not supported.");
   if(!["crew","passenger"].includes(seat)) throw new Error("Choose a crew or passenger place.");
@@ -73,7 +83,7 @@ export function boardingUpdate(token,vehicle,tokens,{user,seat="crew"}={}) {
   if(!occupantCount(t)) throw new Error("This minion group has no active members.");
   if(used+occupantCount(t)>limit) throw new Error(`The ${seat} places are full or cannot hold this group.`);
   return {...attachedPosition(t,v),[CREW_FLAG]:{vehicleId:v.id,seat,roles:[],
-    original:{x:t.x,y:t.y,rotation:t.rotation ?? 0,elevation:t.elevation ?? 0}}};
+    original:{x:t.x,y:t.y,rotation:t.rotation ?? 0,elevation:t.elevation ?? 0,...(t.level?{level:t.level}:{})}}};
 }
 export function departureUpdate(token,vehicle,{user,index=0}={}) {
   const t=doc(token),v=doc(vehicle),state=aboard(t);
@@ -83,7 +93,8 @@ export function departureUpdate(token,vehicle,{user,index=0}={}) {
   return {[CREW_FLAG]:null,rotation:state.original?.rotation ?? t.rotation,
     x:v ? v.x+v.width*size+index*t.width*size : state.original?.x ?? t.x,
     y:v ? v.y+(v.height-t.height)*size/2 : state.original?.y ?? t.y,
-    elevation:v?.elevation ?? state.original?.elevation ?? t.elevation};
+    elevation:v?.elevation ?? state.original?.elevation ?? t.elevation,
+    ...((v?.level??state.original?.level??t.level)?{level:v?.level??state.original?.level??t.level}:{})};
 }
 export function roleUpdate(token,vehicle,tokens,role,{user}={}) {
   const t=doc(token),v=doc(vehicle),state=aboard(t);
@@ -121,6 +132,7 @@ export function boardingTargets(token,movement,tokens,{user}={}) {
   const destination=movement?.destination ?? t;
   const c={x:destination.x+t.width*size/2,y:destination.y+t.height*size/2};
   return Array.from(tokens).map(doc).filter(v=>v.actor?.type==="vehicle" && (!v.hidden || user?.isGM) && canManageCrew(t,v,user) &&
+    sharesBoardingHeight(t,v,destination) &&
     c.x>=v.x && c.x<=v.x+v.width*size && c.y>=v.y && c.y<=v.y+v.height*size).sort((a,b)=>a.width*a.height-b.width*b.height);
 }
 export function crewVacancyPosition(rect,size,viewport,width=size) {

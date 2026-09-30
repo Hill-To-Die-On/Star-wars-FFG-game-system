@@ -2974,3 +2974,15 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-career-story li + li { margin-top: 5px; }
 .sf-reference-summary { margin: 12px 0; line-height: 1.5; }
 .sf-reference-summary small { display: block; opacity: .8; }
+.sf-arc-accessible-choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.sf-arc-picker-help button { min-height:44px; }
+.sf-arc-picker-help button:focus-visible { outline:3px solid #ffe7a1; outline-offset:2px; }
+.sf-arc-picker-help { max-height:calc(100vh - 160px); overflow:auto; }
+.sf-sr-only { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip-path:inset(50%)!important; white-space:nowrap!important; border:0!important; }
+.sf-origin-control input:focus-visible { outline:3px solid var(--sf-accent,#815c35); outline-offset:2px; }
+.sf-flight-dialog .sf-dialog { padding:16px 20px; color:#23313a; }
+.sf-flight-dialog .sf-dialog p { margin:0 0 16px; line-height:1.5; }
+.sf-flight-dialog .sf-dialog label { display:grid; gap:6px; margin:0 0 16px; font-weight:600; }
+.sf-flight-dialog .sf-dialog input,.sf-flight-dialog .sf-dialog select { background:#f9f5e9; color:#23313a; border:1px solid #6f7776; padding:6px 10px; min-height:36px; }
+.sf-flight-dialog .sf-dialog input:focus,.sf-flight-dialog .sf-dialog select:focus { outline:2px solid #317c83; outline-offset:2px; }
+.sf-flight-dialog .form-footer { padding:0 20px 16px; }

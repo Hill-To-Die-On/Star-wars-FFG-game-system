@@ -384,7 +384,8 @@ async function rescaleVehicleTokens(actor) {
     const updates = [];
     for (const token of scene.tokens ?? []) {
       if (token.actorId !== actor.id) continue;
-      if (token.getFlag?.(SYSTEM_ID, "automaticFootprint") === false) continue;
+      // Older worlds have no opt-in flag; their placed sizes are deliberate until reset explicitly.
+      if (token.getFlag?.(SYSTEM_ID, "automaticFootprint") !== true) continue;
       const update = vehicleTokenCreationUpdate(actor, scene);
       if (update)
         updates.push({
@@ -419,7 +420,7 @@ async function rescaleSceneVehicles(scene) {
   if (!globalThis.game?.user?.isGM) return;
   const updates = [];
   for (const token of scene?.tokens ?? []) {
-    if (token.getFlag?.(SYSTEM_ID, "automaticFootprint") === false) continue;
+    if (token.getFlag?.(SYSTEM_ID, "automaticFootprint") !== true) continue;
     const actor = token.actor ?? game.actors?.get?.(token.actorId),
       update = vehicleTokenCreationUpdate(actor, scene);
     if (update) updates.push({ _id: token.id, ...update });

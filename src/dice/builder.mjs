@@ -105,7 +105,7 @@ export function automaticCheckPool({
     }),
     pool = talentRules ? applyTalentPool(basePool, talentRules) : basePool;
   reasons.push(
-    `${characteristic} characteristic + rank ${rank}: ${pool.ability} ability, ${pool.proficiency} proficiency`,
+    `${characteristic} characteristic + rank ${rank}: ${basePool.ability} ability, ${basePool.proficiency} proficiency`,
   );
   if (combat)
     reasons.push(
@@ -124,6 +124,8 @@ export function automaticCheckPool({
   if (setback) reasons.push(`Vehicle / task modifier: ${setback} setback`);
   return {
     pool,
+    basePool,
+    contributions: structuredClone(talentRules?.contributions ?? []),
     reasons,
     error,
     combat,

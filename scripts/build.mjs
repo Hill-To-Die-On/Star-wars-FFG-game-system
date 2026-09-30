@@ -1,9 +1,13 @@
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
-import { zipSync, strToU8 } from "fflate";
+import { zipSync } from "fflate";
+import { validateReleasePath } from "./release-policy.mjs";
+import { readVersionMetadata, validateVersionMetadata } from "./version-metadata.mjs";
+const version = validateVersionMetadata(await readVersionMetadata());
 const files = {};
 async function collect(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const name = `${dir}/${entry.name}`;
+    if (entry.isSymbolicLink()) throw new Error("Symlinks cannot enter a release: " + name);
     if (entry.isDirectory()) await collect(name);
     else files[name] = new Uint8Array(await readFile(name));
   }
@@ -30,8 +34,7 @@ for (const name of [
 ])
   files[name] = new Uint8Array(await readFile(name));
 for (const name of Object.keys(files))
-  if (/(?:\.local|\.pdf$|\.sql$|\.xml$|\.env)/i.test(name))
-    throw new Error(`Forbidden release entry ${name}`);
+  validateReleasePath(name);
 await mkdir("dist", { recursive: true });
 await writeFile("dist/star-wars-ffg.zip", zipSync(files, { level: 9 }));
 await writeFile("dist/system.json", files["system.json"]);
@@ -40,5 +43,5 @@ await writeFile(
   JSON.stringify(Object.keys(files).sort(), null, 2),
 );
 console.log(
-  `Packaged ${Object.keys(files).length} public files, including the creator-authorized reference database; no PDFs or private adventure imports.`,
+  `Packaged Star Wars FFG ${version}: ${Object.keys(files).length} public files, including the creator-authorized reference database; no PDFs or private adventure imports.`,
 );

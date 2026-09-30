@@ -4,6 +4,12 @@ A free, independent **Foundry VTT 14** game system for campaigns using **Edge of
 
 Original sheets and interface, with familiar narrative dice symbols from an attributed community source. The complete creator-authorized reference database is included: **6,662 original rows across 44 tables**, with statistics, creator notes and book/page references. Vehicle enrichment adds 288 weapon-mount relationships, bringing the searchable catalogue to **6,950 rows across 45 tables**; source-review status distinguishes checked profiles from candidates. Rulebooks, adventure text and official illustrations are not distributed. The books remain necessary. Star Wars FFG is not affiliated with or endorsed by Lucasfilm, Fantasy Flight Games, Asmodee, or EDGE Studio.
 
+## Getting started and support
+
+[GM quick start](docs/gm-quick-start.md) · [Player quick start](docs/player-quick-start.md) · [Tabletop workflows](docs/tabletop-workflows.md) · [Production gates and limitations](docs/production-readiness.md) · [Backup and recovery](docs/backup-recovery.md) · [Keyboard access and performance](docs/accessibility-performance.md)
+
+In Foundry, open **Configure Settings → Star Wars FFG → Help & rules coverage** for the implementation inventory, campaign-filtered learned effects and an inspectable diagnostic download. The report distinguishes graph verification from effect automation and never changes a character. Diagnostics exclude names, campaign content, settings and credentials; nothing is uploaded.
+
 ## Install
 
 Use this manifest in Foundry's **Install System → Manifest URL**:
@@ -12,7 +18,7 @@ Use this manifest in Foundry's **Install System → Manifest URL**:
 https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json
 ```
 
-Create a world using **Star Wars FFG**. Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
+Create a world using **Star Wars FFG**. For the unreleased candidate, the GM selects **Settings sidebar → Transaction authority** for one browser tab and repeats that selection after reload or handover. Other GM tabs can view without processing changes; see [transaction authority and recovery](docs/security-authority.md). Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
 
 The compact seven-die tray beside the chat bar supports quick ad-hoc pools and follows Foundry's public, GM, blind and self chat buttons. Each player can hide it under **Configure Settings → Star Wars FFG → Compact dice tray by chat**.
 
@@ -27,6 +33,7 @@ The compact seven-die tray beside the chat bar supports quick ad-hoc pools and f
 - **Configure Settings → Star Wars FFG → Campaign rules & adventure state** lets the GM enable any one, two or all three rule lines; new worlds enable all three. It also selects story mechanics and beginner teaching mode, and moves completed characters into play when the adventure starts.
 - **Reference catalogue** searches the full database. **Owned books** lets the GM select sources from 45 book titles; that selection filters the catalogue for the GM and players, the reference API, starting choices and future imports. **Populate compendiums** creates native documents for the selected books.
 - **Dice & Destiny** opens the pool builder and the persistent shared Destiny pool.
+- [Tabletop tools](docs/tabletop-workflows.md) add reviewed narrative spending, combat-effect previews and undo, player initiative claims, a vehicle dashboard, and session XP/reward review. Unsupported effects remain explicit GM rulings.
 - [Manual and guided character creation](docs/character-creation.md) share source-filtered origins, free-rank validation, equipment budgets and starting-XP checks. The guided path narrows choices through four questions; final application stays separate from source review and readiness for play. A GM enemy guide creates explicitly labelled original NPC presets.
 - [Linked minion groups](docs/minion-groups.md) connect separately positioned members with animated dashed lines when selected. Shared wounds remove casualties from the connections and reduce trained group ranks; healing restores them. The group shares a combat slot and turn budget, including one move per active member for each group manoeuvre.
 - The dedicated **Star Wars FFG · Range bands** scene control draws labelled colour bands from a selected token. It follows the latest selection or retains multiple origins and resolves scale from both scene context and attacker: personal actors use Personal, vehicles use Ship/vehicle, and vehicles on Battlefield scenes use the longer Battlefield/planetary bands. It uses a battlemap's configured grid scale and stores independent click calibrations for gridless Theatre-of-the-Mind scenes. Its optional combat assistant opens the overlay when an encounter starts and follows the acting token. Labels share a guide toward the furthest unobscured viewport corner, rotate smoothly around their individual arcs, and repel from visible tokens and tiles; an edge-safe fallback keeps an off-screen circumference readable. Targeting draws a two-second attack line: solid to the first wall or visible intervening token, dotted from that obstruction to the target, followed by a status card containing the computed pool. **Send dice to pool** replaces the compact chat-side tray with that pool so the GM can add or remove dice before rolling. A blocked shot stops the automatic transfer while the prefilled Manual pool remains available for a GM ruling. Measured target range feeds the ordinary automatic dice-pool builder and the public/DoR APIs. See [range bands](docs/range-bands.md).
@@ -86,6 +93,7 @@ Start contribution branches from `dev`; maintainer promotion runs through protec
 
 ```sh
 npm ci
+npm run typecheck
 npm test
 npm run check
 npm run build

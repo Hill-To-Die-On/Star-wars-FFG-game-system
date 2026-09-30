@@ -12,6 +12,8 @@ const sceneTokens=vehicle=>documentOf(vehicle)?.parent?.tokens ?? [];
 const warn=error=>globalThis.ui?.notifications?.warn(error.message);
 let coordinator,frame=0,checkBuilder;
 const strips=new Map(),masked=new WeakSet(),prompts=new Set();
+let activeCrewDrag=null;
+export function cancelCrewDrag() {activeCrewDrag?.cancel();}
 export const hasVehicle=token=>!!aboard(token) && !!documentOf(token)?.parent?.tokens?.get(aboard(token).vehicleId);
 
 export function vehicleForActor(actor) {
@@ -226,6 +228,7 @@ export function bindCrewControls(root,vehicle,actor=vehicle?.actor) {
   root.addEventListener("pointerdown",event=>{
     const button=event.target.closest(".sf-crew-portrait[data-crew-token]");
     if(!button || button.disabled || event.button!==0)return;
+    cancelCrewDrag();
     event.stopPropagation();delete root.dataset.crewDragged;
     const start={x:event.clientX,y:event.clientY},members=membersFor(vehicle,button.dataset.crewToken);
     let ghost;
@@ -235,16 +238,24 @@ export function bindCrewControls(root,vehicle,actor=vehicle?.actor) {
       ghost.style.left=`${e.clientX-24}px`;ghost.style.top=`${e.clientY-24}px`;
     };
     const finish=e=>{
-      document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",finish);document.removeEventListener("pointercancel",cancel);
-      if(!ghost)return;ghost.remove();
+      const dragged=!!ghost;cleanup();
+      if(!dragged)return;
       const target=document.elementFromPoint(e.clientX,e.clientY);
       if(!target?.closest("canvas"))return;
       const point=canvasPoint(e),v=documentOf(vehicle),size=v.parent.grid?.size||100;
       if(point.x>=v.x && point.x<=v.x+v.width*size && point.y>=v.y && point.y<=v.y+v.height*size)return;
       void disembarkDialog(vehicle,members,point,{all:button.dataset.crewToken==="all"}).catch(warn);
     };
-    const cancel=()=>{ghost?.remove();document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",finish);document.removeEventListener("pointercancel",cancel);};
+    const keydown=event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();cancel();}};
+    const cleanup=()=>{
+      ghost?.remove();document.removeEventListener("pointermove",move);document.removeEventListener("pointerup",finish);document.removeEventListener("pointercancel",cancel);
+      document.removeEventListener('keydown',keydown,true);globalThis.removeEventListener?.('blur',cancel);
+      if(activeCrewDrag?.cancel===cancel)activeCrewDrag=null;
+    };
+    const cancel=()=>{cleanup();delete root.dataset.crewDragged;};
+    activeCrewDrag={root,cancel};
     document.addEventListener("pointermove",move);document.addEventListener("pointerup",finish,{once:true});document.addEventListener("pointercancel",cancel,{once:true});
+    document.addEventListener('keydown',keydown,true);globalThis.addEventListener?.('blur',cancel,{once:true});
   });
 }
 function viewport() {
@@ -310,7 +321,7 @@ async function followVehicle(vehicle,position={}) {
   if(selectXpAuthority(vehicle.actor,game.users)?.id!==game.user.id)return;
   await coordinator.queue.run(vehicle.parent.id,async()=>{
     const end={x:position.x ?? vehicle.x,y:position.y ?? vehicle.y,elevation:position.elevation ?? vehicle.elevation,
-      width:vehicle.width,height:vehicle.height,parent:vehicle.parent};
+      level:position.level ?? vehicle.level,width:vehicle.width,height:vehicle.height,parent:vehicle.parent};
     const updates=crewRoster(vehicle,sceneTokens(vehicle)).map(r=>({_id:r.id,...attachedPosition(r.token,end)}));
     if(updates.length)await vehicle.parent.updateEmbeddedDocuments("Token",updates,{starWarsCrewMove:true,starWarsFreeMovement:true,animate:false});
   });
@@ -337,7 +348,7 @@ export function registerVehicleCrew({openCheck}={}) {
   Hooks.on("updateToken",(token,changes,options)=>{
     maskEmbarkedToken(token.object ?? token);scheduleCrew();
     if(changes.flags || changes.delta || changes.actorLink!==undefined)refreshCrewSheets();
-    if(token.actor?.type==="vehicle" && !options.starWarsCrewMove && !options._movement && ["x","y","elevation","width","height"].some(k=>k in changes))void followVehicle(token,changes).catch(warn);
+    if(token.actor?.type==="vehicle" && !options.starWarsCrewMove && !options._movement && ["x","y","elevation","level","width","height"].some(k=>k in changes))void followVehicle(token,changes).catch(warn);
   });
   Hooks.on("moveToken",(token,move,options,user)=>{
     if(token.actor?.type==="vehicle" && !options.starWarsCrewMove && !move.planned)void followVehicle(token,move.destination).catch(warn);
@@ -350,7 +361,8 @@ export function registerVehicleCrew({openCheck}={}) {
     const updates=crewRoster(vehicle,sceneTokens(vehicle)).map((r,index)=>({_id:r.id,...departureUpdate(r.token,vehicle,{user:game.user,index})}));
     if(updates.length)void vehicle.parent.updateEmbeddedDocuments("Token",updates,{starWarsCrewMove:true,animate:false}).catch(warn);
   });
-  Hooks.on("canvasTearDown",()=>{cancelAnimationFrame(frame);frame=0;for(const e of strips.values())e.element.remove();strips.clear();});
+  Hooks.on("canvasTearDown",()=>{cancelCrewDrag();cancelAnimationFrame(frame);frame=0;for(const e of strips.values())e.element.remove();strips.clear();});
+  Hooks.on('closeApplicationV2',app=>{if(activeCrewDrag&&(!activeCrewDrag.root.isConnected||app.element?.contains(activeCrewDrag.root)))cancelCrewDrag();});
 }
 export const crewApi=Object.freeze({roster:visibleCrew,context:crewContext,capacities:crewCapacities,vehicleForActor,assignedCheck:assignedCrewCheck,
   generate:(target,recipe)=>requestCrewCommand(target,"generate",recipe),deployPrepared:vehicle=>requestCrewCommand(vehicle,"deploy"),
