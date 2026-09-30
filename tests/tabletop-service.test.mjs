@@ -51,6 +51,7 @@ test('GM spending records a next-check boost and the owning actor consumes it on
  await service.execute('spend',{messageUuid:message.uuid,request},gm,'boost-1');
  assert.equal(message.flags[id].spending[0].futureEffect.actorUuid,a.uuid);
  assert.equal(a.flags[id].narrativeEffects[0].id,'boost-1');
+ assert.equal(a.flags[id].narrativeEffects[0].note,request.note);
  await service.execute('consume-future-effect',{actorUuid:a.uuid,entryIds:['boost-1'],skillKey:'computers',rollId:'roll-1'},p,'consume-1');
  assert.equal(a.flags[id].narrativeEffects[0].consumedBy,'roll-1');
  await assert.rejects(service.execute('consume-future-effect',{actorUuid:a.uuid,entryIds:['boost-1'],skillKey:'computers',rollId:'roll-2'},p,'consume-2'),/already used/);

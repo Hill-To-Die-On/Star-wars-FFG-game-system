@@ -82,7 +82,7 @@ export class TabletopWorkflowService {
           await actorMutationQueue.run(actor.uuid,async()=>{
             const previous=clone(flag(actor,'narrativeEffects')??[]);
             if(previous.some(effect=>effect.id===entry.id))throw new Error('This narrative effect is already attached to the actor.');
-            this.assertAuthority();await actor.update({[`flags.${SYSTEM_ID}.narrativeEffects`]:[...previous,{...entry.futureEffect,id:entry.id,label:entry.label,sourceMessageUuid:message.uuid,at:entry.at}]});
+            this.assertAuthority();await actor.update({[`flags.${SYSTEM_ID}.narrativeEffects`]:[...previous,{...entry.futureEffect,id:entry.id,label:entry.label,note:entry.note,source:entry.source,sourceMessageUuid:message.uuid,at:entry.at}]});
             try {this.assertAuthority();await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});}
             catch(error){await actor.update({[`flags.${SYSTEM_ID}.narrativeEffects`]:previous});throw error;}
           });

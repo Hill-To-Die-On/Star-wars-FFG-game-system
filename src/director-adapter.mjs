@@ -27,6 +27,7 @@ import { speciesAbilityEntry } from "./species-abilities.mjs";
 import { selectBookPlayGuidance, seedReferencePage } from "./book-play-guidance.mjs";
 import { selectOwnedBookArt } from "./book-art-catalogue.mjs";
 import { gmSightRuling } from "./line-of-sight-ruling.mjs";
+import { storyBackgroundParagraph, storyHookCards } from "./story-hooks.mjs";
 export const RULE_KNOWLEDGE_POLICY = Object.freeze({
   id: "evidence-required-v1",
   automaticAuthority: "structured-system-data",
@@ -39,6 +40,43 @@ const knowledgeBoundaryStat = () => ({
   label: "Rules evidence boundary",
   value: RULE_KNOWLEDGE_POLICY.guidance,
 });
+function gmNarrativeStats(actor) {
+  const flags = actor.flags?.[SYSTEM_ID] ?? {};
+  const rows = (value) => Array.isArray(value) ? value : [];
+  const conditions = [
+    ...rows(flags.conditions),
+    ...rows(actor.system?.criticals),
+    ...rows(flags.vehicleCriticals),
+  ].slice(-16).map((entry) => ({
+    name: String(entry.name ?? "").slice(0, 200),
+    note: String(entry.note ?? "").slice(0, 800),
+    automation: entry.automation ?? (entry.modifier ? "pool-modifier" : "record-only"),
+    modifier: entry.modifier ?? null,
+    source: entry.source ?? null,
+  }));
+  const pending = rows(flags.narrativeEffects)
+    .filter((entry) => !entry.consumedBy && !entry.cancelled)
+    .slice(-16).map((entry) => ({
+      label: String(entry.label ?? "").slice(0, 200),
+      note: String(entry.note ?? "").slice(0, 800),
+      die: entry.die, count: entry.count, skillKey: entry.skillKey,
+      source: entry.source ?? null,
+    }));
+  const reviewed = rows(flags.workflowHistory)
+    .filter((entry) => !entry.undone)
+    .slice(-12).map((entry) => ({
+      kind: entry.kind,
+      label: String(entry.label ?? "").slice(0, 800),
+      at: entry.at,
+      source: entry.source ?? null,
+      calculation: entry.calculation ?? null,
+    }));
+  return [
+    { label: "Active GM conditions", value: JSON.stringify(conditions) },
+    { label: "Pending GM dice effects", value: JSON.stringify(pending) },
+    { label: "Recent reviewed GM changes", value: JSON.stringify(reviewed) },
+  ];
+}
 export function combatRangeDecision(range) {
   if (range?.available !== true)
     return { allowed: false, reason: range?.reason || "Combat range is unavailable." };
@@ -395,6 +433,7 @@ export const directorAdapter = {
           label: "Vehicle weapons",
           value: JSON.stringify(actorContext(actor).equipmentAndAbilities),
         },
+        ...gmNarrativeStats(actor),
         ...privateNotes,
         knowledgeBoundaryStat(),
       ];
@@ -457,6 +496,8 @@ export const directorAdapter = {
             : context.motivation) || "No motivation recorded.",
       },
       { label: "Biography and character notes", value: s.biography ?? "" },
+      { label: "Species and career background", value: storyBackgroundParagraph(s) },
+      { label: "Story hooks and rolled narrative values", value: JSON.stringify(storyHookCards(s)) },
       {
         label: "Available talent paths",
         value: paths || "No specialization attached",
@@ -481,6 +522,7 @@ export const directorAdapter = {
           s.incomplete.join(", ") ||
           "None recorded; talent and ability effects require source review.",
       },
+      ...gmNarrativeStats(actor),
       ...privateNotes,
       {
         label: "Campaign rules",
@@ -500,7 +542,7 @@ export const directorAdapter = {
       targetSemantics: "successes",
       defaultTarget: 1,
       guidance:
-        `Choose a skill by its skillGuidance purpose before calling for a check; Astrogation concerns spacecraft routes, not ordinary terminal access. Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. On scaled maps it includes token elevation, sourceLevelId, targetLevelId, vertical relation and sightBasis when supported. A blocked, unknown or unverified path must stop automated firing: requiresGmRuling takes precedence even when lineOfSightBlocked is false or null. Report sightReason and request an explicit GM ruling. A GM can call executeCheck(actor, skill, {sourceToken, targetToken, sightOverride:{approved:true,reason:"..."}, ...modifiers}) for an adjudicated effect that works without sight; the reason is recorded in the roll. For targeted execution use executeCheck(actor, skill, {sourceToken, targetToken, rangeOptions, difficulty, ...modifiers}); it remeasures the actual path before rolling. Do not pass a precomputed range as authorization. Untargeted skill checks do not authorize an attack. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target. ${RULE_KNOWLEDGE_POLICY.guidance}`,
+        `Choose a skill by its skillGuidance purpose before calling for a check; Astrogation concerns spacecraft routes, not ordinary terminal access. Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. On scaled maps it includes token elevation, sourceLevelId, targetLevelId, vertical relation and sightBasis when supported. A blocked, unknown or unverified path must stop automated firing: requiresGmRuling takes precedence even when lineOfSightBlocked is false or null. Report sightReason and request an explicit GM ruling. A GM can call executeCheck(actor, skill, {sourceToken, targetToken, sightOverride:{approved:true,reason:"..."}, ...modifiers}) for an adjudicated effect that works without sight; the reason is recorded in the roll. For targeted execution use executeCheck(actor, skill, {sourceToken, targetToken, rangeOptions, difficulty, ...modifiers}); it remeasures the actual path before rolling. Do not pass a precomputed range as authorization. Untargeted skill checks do not authorize an attack. Honor Active GM conditions and story hooks from getNarrativeSheetStats when framing the scene. Record-only conditions require GM adjudication; pending dice effects are already applied by actor.rollSkill, so do not add them twice. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target. ${RULE_KNOWLEDGE_POLICY.guidance}`,
     };
   },
   readNativeCheckRoll(message) {
