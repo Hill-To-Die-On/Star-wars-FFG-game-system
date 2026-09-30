@@ -28,9 +28,19 @@ test("default actor art becomes a persisted procedural SVG when permitted", () =
   assert.match(update.img, /^data:image\/svg\+xml;base64,/);
   assert.equal(update.prototypeToken.texture.src, update.img);
   assert.equal(update.prototypeToken.actorLink, true);
+  assert.equal(update.prototypeToken.disposition, 1, "A new hero's token starts friendly");
   assert.equal(update.prototypeToken.rotation, 180, "The default north-facing portrait starts upright");
   assert.equal(update.flags["star-wars-ffg"].proceduralIcon.enabled, true);
   assert.equal(update.flags["star-wars-ffg"].proceduralIcon.category, "player");
+});
+
+test("explicit character disposition wins and enemy tokens keep their normal disposition", () => {
+  const hostileHero = actorCreationUpdate(
+    actor(), { prototypeToken: { disposition: -1 } }, { persist: true },
+  );
+  assert.equal(hostileHero.prototypeToken.disposition, -1);
+  const enemy = actorCreationUpdate(actor({ type: "minion" }), {}, { persist: true });
+  assert.equal(enemy.prototypeToken.disposition, undefined);
 });
 
 test("static artwork remains a safe fallback when image upload is unavailable", () => {

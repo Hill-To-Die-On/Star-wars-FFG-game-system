@@ -118,6 +118,8 @@ export function actorCreationUpdate(
         texture: { fit: "contain" },
       },
     };
+  if (type === "character")
+    update.prototypeToken.disposition = nested(data, "prototypeToken.disposition") ?? 1;
   if (footprint)
     Object.assign(update.prototypeToken, {
       width: footprint.width,
