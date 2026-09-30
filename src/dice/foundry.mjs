@@ -145,6 +145,11 @@ export async function rollPool(
 ) {
   if(groupStateForActor(actor)?.remaining===0)throw new Error("This minion group has no active members to make a check.");
   const rulings=actor&&skillKey?activePoolRulings(actor,skillKey):{boost:0,setback:0,pendingIds:[],notes:[]};
+  if(rulings.pendingIds.length){
+    const {assertLocalTabletopAuthority}=await import('../tabletop-provenance.mjs');
+    const {getDocumentTransactionBroker}=await import('../document-transactions.mjs');
+    assertLocalTabletopAuthority(game.user,getDocumentTransactionBroker());
+  }
   const normalized = normalizePool(addPoolRulings(pool,rulings));
   const { automaticRollCost, performTurnCommand, readTurnBudget } = await import("../turn-economy-foundry.mjs");
   const cost = automaticRollCost(actor,turnCost);

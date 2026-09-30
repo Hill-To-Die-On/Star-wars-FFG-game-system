@@ -22,7 +22,7 @@ test("Foundry roll and movement entry points commit the same actor ledger",async
     settings:{get:(_s,k)=>settings.get(k),set:async(_s,k,v)=>{settings.set(k,v);emit("updateSetting",{});return v;},register:(_s,k,d)=>settings.set(k,d.default)}};
   globalThis.Hooks={callAll:emit,on:(k,f)=>{const a=hooks.get(k)??[];a.push(f);hooks.set(k,a);return f;},off:(k,f)=>hooks.set(k,(hooks.get(k)??[]).filter(row=>row!==f)),once:(k,f)=>globalThis.Hooks.on(k,f)};
   globalThis.ui={notifications:{warn:m=>warnings.push(m)}};
-  globalThis.foundry={dice:{Roll:class {
+  globalThis.foundry={utils:{randomID:()=>"test-roll-id"},dice:{Roll:class {
     constructor(formula) {this.formula=formula;this.options={};this.dice=[];}
     async evaluate(){evaluations++;if(failure) throw new Error("Evaluation failed");if(advanceDuringRoll) combat.round++;return this;}
   }}};
@@ -59,6 +59,19 @@ test("Foundry roll and movement entry points commit the same actor ledger",async
       await rollPool({ability:1},{actor,skillKey:'computers',turnCost:'none'});
       assert.doesNotMatch(messages.at(-1).data.rolls[0].formula,/1ds/);
       actor.flags['star-wars-ffg'].conditions=[];
+    });
+    await t.test("a GM tab without authority cannot roll a pending narrative effect",async()=>{
+      const {getDocumentTransactionBroker}=await import("../src/document-transactions.mjs");
+      actor.flags['star-wars-ffg'].narrativeEffects=[{id:'pending',label:'GM boost',die:'boost',count:1,skillKey:'computers'}];
+      const before=evaluations;
+      settings.set('authoritySession',{userId:gm.id,sessionId:'another-gm-tab'});
+      try {
+        await assert.rejects(rollPool({ability:1},{actor,skillKey:'computers',turnCost:'none'}),/Transaction authority/);
+        assert.equal(evaluations,before);
+      } finally {
+        actor.flags['star-wars-ffg'].narrativeEffects=[];
+        await getDocumentTransactionBroker().takeAuthority('Fixture returns authority to this GM tab');
+      }
     });
     await t.test("failed evaluation never spends",async()=>{
       failure=true;
