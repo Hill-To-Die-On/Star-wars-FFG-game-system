@@ -12,7 +12,7 @@ const BOOKS = {
   aorbg: "Age of Rebellion Beginner Game",
   fadbg: "Force and Destiny Beginner Game",
 };
-const isObject = (value) =>
+export const isObject = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 function swaSkill(label) {
   const lightsaber =
