@@ -1,5 +1,5 @@
 import { CHARACTERISTICS, SKILLS } from "./config.mjs";
-import { RULE_LINES } from "./rules.mjs";
+import { ruleLine } from "./rules.mjs";
 import {
   buildStartingLoadout,
   creationResourcePlan,
@@ -17,7 +17,7 @@ export function creationPlan({
   startingEquipment = [],
   allowRestricted = false,
 }) {
-  const rule = RULE_LINES[line];
+  const rule = ruleLine(line);
   if (
     !rule ||
     species?.type !== "species" ||
