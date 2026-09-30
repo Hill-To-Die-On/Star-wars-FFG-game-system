@@ -42,6 +42,23 @@ Public reference changes must retain creator authorization and the source book/p
 
 Automation should expose unresolved or situational decisions to players, game masters, and Director of Realms rather than silently inventing a rule. Update the relevant coverage or validation document when a change affects a stated capability or gap.
 
+## Pre-push checks and end-to-end tests
+
+The repository includes a pre-push hook that runs `npm test` and `npm run check`, which takes about six seconds. Enable it once per clone. It then applies to every worktree of that clone:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+End-to-end specs in `e2e/` run with Playwright against a licensed Foundry server, so hosted CI does not run them. Point them at an isolated validation world, never a campaign world. Without `FOUNDRY_URL` every spec is skipped:
+
+```sh
+npx playwright install chromium
+FOUNDRY_URL=http://localhost:30000 npx playwright test
+```
+
+Set `FOUNDRY_STORAGE_STATE` to a saved Playwright login for specs that need an authenticated session. `tests/foundry-smoke.mjs` remains the scripted advancement journey and uses the same variables.
+
 ## Security
 
 Do not open a public issue for a vulnerability. Follow [SECURITY.md](SECURITY.md) and use GitHub's private vulnerability reporting form.
