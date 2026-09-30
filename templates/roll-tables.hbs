@@ -1,0 +1,24 @@
+<div class="sf-shell">
+  <header class="sf-header sf-catalogue-header">
+    <span class="sf-eyebrow">STAR WARS FFG / REVIEWED ROLL TABLES</span>
+    <h1>Roll with the book in view.</h1>
+    <p>Only tables with checked dice, ranges and result labels are available. Other rules and special outcomes remain in their source book.</p>
+  </header>
+  {{#if selected}}
+    <div class="sf-catalogue-filters">
+      <label>Table<select name="table">{{#each tables}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{title}} · {{book}}</option>{{/each}}</select></label>
+      <button type="button" data-action="roll">Roll {{selected.die}}</button>
+    </div>
+    <section class="sf-catalogue-results" aria-label="Roll table">
+      <h2>{{selected.title}}</h2>
+      <p class="sf-reference-source">{{selected.book}} · p. {{selected.page}} · {{selected.scope}}</p>
+      {{#if result}}<p class="sf-roll-result" aria-live="polite">{{result.roll}} → {{result.label}}{{#if result.consultSource}} · Consult the book for this compound result.{{/if}}</p>{{/if}}
+      <table><thead><tr><th>{{selected.die}}</th><th>Result</th></tr></thead><tbody>
+      {{#each rows}}<tr class="{{#if matched}}selected{{/if}}"><td>{{range}}</td><td>{{label}}</td></tr>{{/each}}
+      </tbody></table>
+      <p class="sf-roll-source-note">The table supplies the result label. Use the cited page for its explanation and any follow-up roll.</p>
+    </section>
+  {{else}}
+    <section class="sf-catalogue-results"><h2>No roll tables are enabled</h2><p>Ask the GM to select the relevant source book in Owned books.</p></section>
+  {{/if}}
+</div>

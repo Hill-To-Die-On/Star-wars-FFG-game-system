@@ -4,6 +4,7 @@ import {
   buildStartingLoadout,
   creationResourcePlan,
 } from "./creation-resources.mjs";
+import { speciesAbilityEntry, speciesStartingSkills } from "./species-abilities.mjs";
 export function creationPlan({
   species,
   career,
@@ -11,6 +12,7 @@ export function creationPlan({
   line,
   careerRanks = [],
   specializationRanks = [],
+  speciesSkillChoice = "",
   partySize = 4,
   resourceChoices = [],
   ageStartingResource = "lambda",
@@ -93,6 +95,14 @@ export function creationPlan({
       },
     ]),
   );
+  const speciesRules = speciesAbilityEntry(species.name, species.system.source);
+  const speciesSkillGrants = speciesStartingSkills(speciesRules, speciesSkillChoice);
+  const speciesAbilitiesPending = !speciesRules || speciesRules.abilities.some((ability) => ability.application !== "automatic");
+  for (const key of speciesSkillGrants) {
+    if (skills[key].rank >= 2)
+      throw new Error(`${species.name} grants ${SKILLS[key].label}, but that skill would exceed rank 2 during creation. Choose different free skills.`);
+    skills[key].rank += 1;
+  }
   return {
     line,
     phase: "creation",
@@ -137,15 +147,18 @@ export function creationPlan({
       specialization: specialization.system.source,
       careerRanks,
       specializationRanks,
-      speciesAbilitiesPending: true,
+      speciesSkillChoice,
+      speciesSkillGrants,
+      speciesAbilitySource: speciesRules?.source ?? null,
+      speciesAbilitiesPending,
       startingResources: {
         ...resources,
         ...loadout,
       },
       pocketMoneyPending: true,
     },
-    incomplete: [
-      "Verify species abilities and any exceptional creation rules in the source book.",
-    ],
+    incomplete: speciesAbilitiesPending
+      ? ["Verify species abilities and any exceptional creation rules in the source book."]
+      : [],
   };
 }

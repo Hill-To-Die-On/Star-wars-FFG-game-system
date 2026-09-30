@@ -9,6 +9,7 @@ export const TALENT_ACTIVATIONS = Object.freeze([
 ]);
 
 const effectTargets = Object.freeze({
+  turn: new Set(["actions", "freeManeuvers", "maneuverLimit", "strainCost"]),
   pool: new Set(Object.keys(DICE)),
   result: new Set(SYMBOLS),
   attribute: new Set([
@@ -45,7 +46,7 @@ export function validateTalentNodeRules(node) {
     throw new Error("A talent cannot declare more than 20 structured effects.");
   for (const effect of effects) {
     if (!effect || !effectTargets[effect.type])
-      throw new Error("Talent effects must target a dice pool or result.");
+      throw new Error("Talent effects must target a pool, result, attribute or turn allowance.");
     if (!effectTargets[effect.type].has(effect.target))
       throw new Error(`Unsupported talent effect target: ${effect.target}`);
     if (!['add', 'remove'].includes(effect.operation))
@@ -60,11 +61,18 @@ export function validateTalentNodeRules(node) {
       if (value.length > 64)
         throw new Error("Talent effect selectors cannot exceed 64 characters.");
     if (effect.requirements) {
-      const allowed = new Set(["equippedArmor", "minimumSoak"]);
+      const allowed = new Set(effect.type === "turn" ? ["skill", "minimumRank"] : ["equippedArmor", "minimumSoak"]);
       for (const key of Object.keys(effect.requirements))
         if (!allowed.has(key))
           throw new Error(`Unsupported talent requirement: ${key}`);
+      if (effect.type === "turn" && (
+        typeof effect.requirements.skill !== "string" || !effect.requirements.skill.trim() ||
+        effect.requirements.skill.length > 64 || !Number.isInteger(effect.requirements.minimumRank) ||
+        effect.requirements.minimumRank < 0 || effect.requirements.minimumRank > 10
+      )) throw new Error("A turn requirement needs a skill and minimum rank from 0 to 10.");
     }
+    if (effect.type === "turn" && (cleanList(effect.skills).length || cleanList(effect.groups).length))
+      throw new Error("Turn effects use a skill-rank requirement, not roll selectors.");
   }
   return node;
 }

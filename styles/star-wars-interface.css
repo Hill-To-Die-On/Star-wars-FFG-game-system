@@ -425,6 +425,29 @@ body.system-star-wars-ffg[data-star-wars-theme]
   color: var(--sf-ui-signal);
 }
 
+body.system-star-wars-ffg #combat .sf-combat-range-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  margin-inline-start: 7px;
+  padding: 1px 6px;
+  color: #f7f3df;
+  background: #173e47;
+  border: 1px solid #75d6dc;
+  border-radius: 999px;
+  font: 700 11px/1.2 "Star Wars FFG Rajdhani", sans-serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+body.system-star-wars-ffg #combat .sf-combat-range-badge.is-blocked {
+  color: #fff4eb;
+  background: #732c2c;
+  border-color: #ff9f80;
+}
+
 body.system-star-wars-ffg[data-star-wars-theme]
   .application:not(#director-widget):has(> .window-header) {
   overflow: hidden;

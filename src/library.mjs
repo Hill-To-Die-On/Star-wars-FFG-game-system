@@ -91,6 +91,25 @@ export function mergeVehicleEnrichment(existing, incoming) {
     ),
   };
 }
+export function mergeVehicleLoadoutReference(existing, incoming) {
+  if (existing?.type !== "vehicle" || incoming?.type !== "vehicle" ||
+      existing.system?.source?.book !== incoming.system?.source?.book ||
+      String(existing.system?.source?.page) !== String(incoming.system?.source?.page) ||
+      (existing.items ?? []).some(item => item.type === "weapon")) return null;
+  const current = existing.system.metadata ?? {}, next = incoming.system.metadata ?? {};
+  if (!next.Weapons_Status || current.Weapons_Status?.startsWith("source-checked") || current.Weapons_Status === next.Weapons_Status) return null;
+  const checked = next.Weapons_Status.startsWith("source-checked");
+  const update = { "system.incomplete": [...new Set([
+    ...(existing.system.incomplete ?? []).filter(field => field !== "installed weapons"),
+    ...(!checked ? ["installed weapons"] : []),
+  ])] };
+  for (const key of ["Weapons_Status", "Loadout_Pages", "Sensor_Range", "Backup_Hyperdrive", "Navigation", "Consumables",
+    "Candidate_Sensor_Range", "Candidate_Backup_Hyperdrive", "Candidate_Navigation", "Candidate_Consumables"])
+    if (next[key] !== undefined && (current[key] == null || ["Weapons_Status", "Loadout_Pages"].includes(key)))
+      update[`system.metadata.${key}`] = structuredClone(next[key]);
+  if (checked && incoming.items?.length) update.items = [...structuredClone(existing.items ?? []), ...structuredClone(incoming.items)];
+  return update;
+}
 export function validateBundle(bundle) {
   // Version-one libraries keep the same schema across branding changes.
   if (
@@ -266,8 +285,10 @@ export async function importLibrary(bundle, onProgress = () => {}) {
         )) {
           const existing = await pack.getDocument(incoming._id),
             existingObject = existing?.toObject?.() ?? existing,
-            update = mergeVehicleEnrichment(existingObject, incoming);
-          if (update) vehicleUpdates.push({ _id: incoming._id, ...update });
+            update = mergeVehicleEnrichment(existingObject, incoming),
+            loadout = mergeVehicleLoadoutReference(existingObject, incoming);
+          if (update && loadout) loadout["system.incomplete"] = loadout["system.incomplete"].filter(field => !VEHICLE_STAT_FIELDS.includes(field));
+          if (update || loadout) vehicleUpdates.push({ _id: incoming._id, ...update, ...loadout });
         }
         for (let i = 0; i < vehicleUpdates.length; i += 100)
           await pack.documentClass.updateDocuments(

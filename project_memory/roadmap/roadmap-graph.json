@@ -1,0 +1,295 @@
+{
+  "version": 1,
+  "nodes": [
+    {
+      "id": "tighten-the-core-implementat",
+      "normalizedText": "tighten the core implementation around the agreed stack: typescript, react, vite, node, c#.",
+      "imported": {
+        "kind": "markdown",
+        "sourceId": ".local/website-catalogue-review/project_memory/roadmap/improvement-plan.md::tighten the core implementation around the agreed stack typescript react vite node c",
+        "sourceLabel": "2 markdown files",
+        "importedTitleNormalized": "tighten the core implementation around the agreed stack typescript react vite node c",
+        "importedCompleted": false,
+        "importedAt": "2026-09-29T03:15:50.238Z"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "complete-vehicle-statistics",
+      "to": "complete-combat-resolution-workflow",
+      "origin": "declared",
+      "rule": "explicit-reference",
+      "evidence": "“require source adjudication”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "run-release-audit",
+      "to": "restore-hosted-ci",
+      "origin": "declared",
+      "rule": "explicit-reference",
+      "evidence": "“require the validated check on protected promotion branches”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "restore-hosted-ci",
+      "to": "close-dependabot-updates",
+      "origin": "declared",
+      "rule": "explicit-reference",
+      "evidence": "“blocked by the organization billing lock”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "layered-flight-and-vertical-los",
+      "to": "complete-combat-resolution-workflow",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “combat” and “weapon” and “require”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "layered-flight-and-vertical-los",
+      "to": "player-facing-initiative-slots",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “preserve” and “player”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "layered-flight-and-vertical-los",
+      "to": "vehicle-combat-dashboard",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “combat” and “crew” and “vehicle”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "layered-flight-and-vertical-los",
+      "to": "complete-dor-live-acceptance",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “combat” and “native” and “identity”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "rules-coverage-and-explanations",
+      "to": "complete-combat-resolution-workflow",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “rules” and “source” and “unsupported”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "rules-coverage-and-explanations",
+      "to": "vehicle-combat-dashboard",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “rules” and “view” and “combat”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "rules-coverage-and-explanations",
+      "to": "session-wrap-up",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “unsupported” and “mechanics”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "rules-coverage-and-explanations",
+      "to": "complete-dor-live-acceptance",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “campaign” and “combat”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "complete-api-v2-live-acceptance",
+      "to": "rules-coverage-and-explanations",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “rules” and “explicit”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "narrative-result-spending",
+      "to": "complete-vehicle-statistics",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “source” and “remaining”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "preserve-native-roll-facts",
+      "to": "narrative-result-spending",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “narrative” and “advantage”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "complete-api-v2-live-acceptance",
+      "to": "player-facing-initiative-slots",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “player” and “group”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "serialize-xp-purchases",
+      "to": "player-facing-initiative-slots",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “player” and “simultaneous”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "vehicle-combat-dashboard",
+      "to": "complete-vehicle-statistics",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “vehicle” and “reviewed”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "complete-api-v2-live-acceptance",
+      "to": "vehicle-combat-dashboard",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “vehicle” and “rules”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "finish-advancement-source-verification",
+      "to": "complete-dor-live-acceptance",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “request” and “remain”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "finish-advancement-source-verification",
+      "to": "codify-remaining-rules",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “printed” and “request” and “structured”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "finish-advancement-source-verification",
+      "to": "complete-vehicle-statistics",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “printed” and “public” and “listed”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "finish-advancement-source-verification",
+      "to": "close-dependabot-updates",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “contains” and “pending”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "complete-api-v2-live-acceptance",
+      "to": "codify-remaining-rules",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “rules” and “vehicle”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "complete-character-creation-choices",
+      "to": "complete-range-overlay-acceptance",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “foundry” and “covers” and “three”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "complete-character-creation-choices",
+      "to": "restore-hosted-ci",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “lock” and “evidence”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "complete-character-creation-choices",
+      "to": "implement-character-origins",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “character” and “ruleline” and “campaign”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "serialize-xp-purchases",
+      "to": "complete-character-creation-choices",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “unit” and “foundry” and “live”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "publish-advancement-graphs",
+      "to": "add-dor-adventure-art-intake",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “catalogue” and “pass”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "preserve-native-roll-facts",
+      "to": "add-dor-adventure-art-intake",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “director” and “realms” and “pass”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "serialize-xp-purchases",
+      "to": "complete-range-overlay-acceptance",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “acceptance” and “foundry”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "preserve-native-roll-facts",
+      "to": "complete-range-overlay-acceptance",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “acceptance” and “multi” and “foundry”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "serialize-xp-purchases",
+      "to": "complete-dsn-live-acceptance",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “acceptance” and “foundry” and “player”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "preserve-native-roll-facts",
+      "to": "complete-dsn-live-acceptance",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “multi” and “client” and “acceptance”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    },
+    {
+      "from": "publish-advancement-graphs",
+      "to": "close-dependabot-updates",
+      "origin": "declared",
+      "rule": "shared-subject-phase",
+      "evidence": "both mention “merge” and “checks”",
+      "createdAt": "2026-09-29T03:16:08.762Z"
+    }
+  ],
+  "suggestLinks": true,
+  "dismissed": [],
+  "layoutOrientation": "vertical",
+  "updatedAt": "2026-09-29T17:26:15.668Z"
+}

@@ -2,11 +2,15 @@
 
 Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.
 
+For the separate gameplay-instruction and cross-book citation scan, see [gameplay instruction source audit](rule-instruction-audit.md). Catalogue page references and chart checks do not establish complete rules coverage.
+
+Playable species abilities have a separate [book-checked coverage register](species-ability-coverage.md): 38 of 104 playable species are checked against their printed ability pages, with 66 pending. The catalogue's `Special` shorthand alone is not treated as a complete rule.
+
 135 specialization references; 135 structurally validated specialization graphs; 312 vehicles with complete evidence-backed numeric profiles; 298 private motivation guidance matches.
 
 The remaining 87 vehicle profiles are recorded separately in [vehicle source coverage](vehicle-source-coverage.md), including the two conflicting structured profiles and the one held printed page that provides only partial statistics.
 
-A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. 0 connector-only checks and 143 full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.
+A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. 0 connector-only checks and 168 full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.
 
 ## Character-creation source verification
 
@@ -20,33 +24,15 @@ The public implementation records structured values and page citations without c
 
 The source books remain required for their explanations, examples, exceptional species rules and any option not represented as reviewed structured data.
 
-## Partial sourcebook scan requests
+## Sourcebook page availability
 
-These requests record exact page gaps without publishing source text, artwork or private file paths. A database page reference is an index entry, not proof that the complete printed statistics or rule exceptions have been reviewed.
+Source availability is separate from per-rule verification. A database page reference does not prove that every instruction or exception has been captured.
 
-### Age of Rebellion - Cyphers & Masks partial-scan request
+No open partial-scan page requests are recorded.
 
-Held evidence: 50-page image-only scan covering printed pages 7-9, 12-35, 70-89; 6-page text-layer excerpt covering printed pages 90-95.
+### Age of Rebellion - Cyphers & Masks
 
-Please capture printed pages 10-11 and 36-69 as complete pages. The 36-69 block contains the indexed equipment, adversary and vehicle material and should be scanned even where a database row already supplies a name or summary value.
-
-| Indexed collection | Missing printed pages |
-|---|---|
-| `allies_and_adversaries` | 49, 50, 51, 52, 53, 54, 55 |
-| `armour` | 42 |
-| `attachments` | 56, 58, 59, 60 |
-| `equipment` | 42, 43, 44, 45, 46, 47, 48 |
-| `vehicles` | 53, 61 |
-| `vehicle_attachments` | 62, 63 |
-| `weapons` | 39, 40 |
-
-Capture requirements:
-
-- Capture each complete page straight-on with all four page edges visible.
-- Keep printed page numbers, tables, diagrams and connecting lines in frame.
-- Use even light and enough resolution for small statistics and dice symbols to remain legible.
-
-Keep the captured pages private; they are used to verify structured mechanics and citations, not shipped in the public system.
+A complete 100-page PDF is now held. The earlier printed-page gaps 10-11 and 36-69 are present; 94 PDF pages have extractable text. Page images were spot checked, but mechanics still require per-instruction review.
 
 ## Photo request register
 
@@ -57,27 +43,6 @@ These chart sources have neither a matched full PDF nor a recorded private-page 
 | Age of Rebellion - Fully Operational | 24 | Droid Specialist | imported |
 | Age of Rebellion - Fully Operational | 26 | Sapper | imported |
 | Age of Rebellion - Fully Operational | 28 | Shipwright | imported |
-| Collapse of the Republic | 21 | ARC Trooper | imported |
-| Collapse of the Republic | 22 | Clone Commander | imported |
-| Collapse of the Republic | 23 | Clone Veteran | imported |
-| Collapse of the Republic | 28 | Death Watch Warrior | imported |
-| Collapse of the Republic | 26 | General | imported |
-| Collapse of the Republic | 27 | Master | imported |
-| Collapse of the Republic | 30 | Nightsister | imported |
-| Collapse of the Republic | 32 | Senator | imported |
-| Collapse of the Republic | 34 | Separatist Commander | imported |
-| Force & Destiny - Unlimited Power | 26 | Alchemist | imported |
-| Force & Destiny - Unlimited Power | 28 | Magus | imported |
-| Force & Destiny - Unlimited Power | 30 | Prophet | imported |
-| Rise of the Seperatists | 21 | Clone Officer | imported |
-| Rise of the Seperatists | 22 | Clone Pilot | imported |
-| Rise of the Seperatists | 23 | Clone Trooper | imported |
-| Rise of the Seperatists | 29 | Force Sensitive Outcast | imported |
-| Rise of the Seperatists | 26 | Knight | imported |
-| Rise of the Seperatists | 27 | Padawan | imported |
-| Rise of the Seperatists | 30 | Republic Navy Officer | imported |
-| Rise of the Seperatists | 32 | Republic Representative | imported |
-| Rise of the Seperatists | 34 | Scavenger | imported |
 
 ## Complete register
 
@@ -103,9 +68,9 @@ These chart sources have neither a matched full PDF nor a recorded private-page 
 | Slicer (Spy) | Age of Rebellion - Core Book | 99 | Yes | imported | Full chart checked |
 | Squadron Leader | Age of Rebellion - Core Book | 74 | Yes | imported | Full chart checked |
 | Tactician | Age of Rebellion - Core Book | 75 | Yes | imported | Full chart checked |
-| Courier | Age of Rebellion - Cyphers & Masks | 24 | No | imported | Full chart checked |
-| Interrogator | Age of Rebellion - Cyphers & Masks | 26 | No | imported | Full chart checked |
-| Sleeper Agent | Age of Rebellion - Cyphers & Masks | 28 | No | imported | Full chart checked |
+| Courier | Age of Rebellion - Cyphers & Masks | 24 | Yes | imported | Full chart checked |
+| Interrogator | Age of Rebellion - Cyphers & Masks | 26 | Yes | imported | Full chart checked |
+| Sleeper Agent | Age of Rebellion - Cyphers & Masks | 28 | Yes | imported | Full chart checked |
 | Advocate | Age of Rebellion - Desperate Allies | 26 | Yes | imported | Full chart checked |
 | Analyst | Age of Rebellion - Desperate Allies | 28 | Yes | imported | Full chart checked |
 | Propagandist | Age of Rebellion - Desperate Allies | 30 | Yes | imported | Full chart checked |
@@ -121,15 +86,15 @@ These chart sources have neither a matched full PDF nor a recorded private-page 
 | Beast Rider | Age of Rebellion - Stay On Target | 26 | Yes | imported | Full chart checked |
 | Hotshot | Age of Rebellion - Stay On Target | 28 | Yes | imported | Full chart checked |
 | Rigger | Age of Rebellion - Stay On Target | 30 | Yes | imported | Full chart checked |
-| ARC Trooper | Collapse of the Republic | 21 | No | imported | Pending |
-| Clone Commander | Collapse of the Republic | 22 | No | imported | Pending |
-| Clone Veteran | Collapse of the Republic | 23 | No | imported | Pending |
-| Death Watch Warrior | Collapse of the Republic | 28 | No | imported | Pending |
-| General | Collapse of the Republic | 26 | No | imported | Pending |
-| Master | Collapse of the Republic | 27 | No | imported | Pending |
-| Nightsister | Collapse of the Republic | 30 | No | imported | Pending |
-| Senator | Collapse of the Republic | 32 | No | imported | Pending |
-| Separatist Commander | Collapse of the Republic | 34 | No | imported | Pending |
+| ARC Trooper | Collapse of the Republic | 21 | Yes | imported | Full chart checked |
+| Clone Commander | Collapse of the Republic | 22 | Yes | imported | Full chart checked |
+| Clone Veteran | Collapse of the Republic | 23 | Yes | imported | Full chart checked |
+| Death Watch Warrior | Collapse of the Republic | 28 | Yes | imported | Full chart checked |
+| General | Collapse of the Republic | 26 | Yes | imported | Full chart checked |
+| Master | Collapse of the Republic | 27 | Yes | imported | Full chart checked |
+| Nightsister | Collapse of the Republic | 30 | Yes | imported | Full chart checked |
+| Senator | Collapse of the Republic | 32 | Yes | imported | Full chart checked |
+| Separatist Commander | Collapse of the Republic | 34 | Yes | imported | Full chart checked |
 | Force Adherent | Dawn of Rebellion | 98 | Yes | imported | Full chart checked |
 | Imperial Academy Cadet | Dawn of Rebellion | 100 | Yes | imported | Full chart checked |
 | Padawan Survivor | Dawn of Rebellion | 102 | Yes | imported | Full chart checked |
@@ -206,22 +171,22 @@ These chart sources have neither a matched full PDF nor a recorded private-page 
 | Executioner | Force & Destiny - Savage Spirits | 24 | Yes | imported | Full chart checked |
 | Hermit | Force & Destiny - Savage Spirits | 26 | Yes | imported | Full chart checked |
 | Navigator | Force & Destiny - Savage Spirits | 28 | Yes | imported | Full chart checked |
-| Alchemist | Force & Destiny - Unlimited Power | 26 | No | imported | Pending |
-| Magus | Force & Destiny - Unlimited Power | 28 | No | imported | Pending |
-| Prophet | Force & Destiny - Unlimited Power | 30 | No | imported | Pending |
-| Clone Officer | Rise of the Seperatists | 21 | No | imported | Pending |
-| Clone Pilot | Rise of the Seperatists | 22 | No | imported | Pending |
-| Clone Trooper | Rise of the Seperatists | 23 | No | imported | Pending |
-| Force Sensitive Outcast | Rise of the Seperatists | 29 | No | imported | Pending |
-| Knight | Rise of the Seperatists | 26 | No | imported | Pending |
-| Padawan | Rise of the Seperatists | 27 | No | imported | Pending |
-| Republic Navy Officer | Rise of the Seperatists | 30 | No | imported | Pending |
-| Republic Representative | Rise of the Seperatists | 32 | No | imported | Pending |
-| Scavenger | Rise of the Seperatists | 34 | No | imported | Pending |
+| Alchemist | Force & Destiny - Unlimited Power | 26 | Yes | imported | Full chart checked |
+| Magus | Force & Destiny - Unlimited Power | 28 | Yes | imported | Full chart checked |
+| Prophet | Force & Destiny - Unlimited Power | 30 | Yes | imported | Full chart checked |
+| Clone Officer | Rise of the Seperatists | 21 | Yes | imported | Full chart checked |
+| Clone Pilot | Rise of the Seperatists | 22 | Yes | imported | Full chart checked |
+| Clone Trooper | Rise of the Seperatists | 23 | Yes | imported | Full chart checked |
+| Force Sensitive Outcast | Rise of the Seperatists | 29 | Yes | imported | Full chart checked |
+| Knight | Rise of the Seperatists | 26 | Yes | imported | Full chart checked |
+| Padawan | Rise of the Seperatists | 27 | Yes | imported | Full chart checked |
+| Republic Navy Officer | Rise of the Seperatists | 30 | Yes | imported | Full chart checked |
+| Republic Representative | Rise of the Seperatists | 32 | Yes | imported | Full chart checked |
+| Scavenger | Rise of the Seperatists | 34 | Yes | imported | Full chart checked |
 
 ## Signature abilities
 
-38 signature-ability references; 36 structurally validated graphs. The base ability remains locked until the character owns a matching bottom-row talent in the linked career specialization.
+38 signature-ability references; 38 structurally validated graphs. The base ability remains locked until the character owns a matching bottom-row talent in the linked career specialization.
 
 | Signature ability | Career | Book | Page | Graph | Printed comparison | Missing private guidance |
 |---|---|---|---|---|---|---|
@@ -237,8 +202,8 @@ These chart sources have neither a matched full PDF nor a recorded private-page 
 | Unmatched Authority | Commander | Age of Rebellion - Lead By Example | 40 | imported | Full chart checked | 0 |
 | This One Is Mine | Ace | Age of Rebellion - Stay On Target | 36 | imported | Full chart checked | 0 |
 | Unmatched Survivability | Ace | Age of Rebellion - Stay On Target | 36 | imported | Full chart checked | 0 |
-| Peerless Interception | Jedi | Collapse of the Republic | 47 | missing | Pending | 0 |
-| Unmatched Teamwork | Clone Soldier | Collapse of the Republic | 46 | missing | Pending | 0 |
+| Peerless Interception | Jedi | Collapse of the Republic | 47 | imported | Full chart checked | 9 |
+| Unmatched Teamwork | Clone Soldier | Collapse of the Republic | 46 | imported | Full chart checked | 9 |
 | Last One Standing | Hired Gun | Edge of The Empire - Dangerous Covenants | 36 | imported | Full chart checked | 0 |
 | Unmatched Protection | Hired Gun | Edge of The Empire - Dangerous Covenants | 37 | imported | Full chart checked | 0 |
 | Sudden Discovery | Explorer | Edge of The Empire - Enter The Unknown | 34 | imported | Full chart checked | 0 |
@@ -261,8 +226,8 @@ These chart sources have neither a matched full PDF nor a recorded private-page 
 | Unmatched Ferocity | Warrior | Force & Destiny - Knights of Fate | 35 | imported | Full chart checked | 0 |
 | Unexpected Demise | Seeker | Force & Destiny - Savage Spirits | 34 | imported | Full chart checked | 0 |
 | Unmatched Pursuit | Seeker | Force & Destiny - Savage Spirits | 35 | imported | Full chart checked | 0 |
-| Prophecy | Mystic | Force & Destiny - Unlimited Power | 35 | imported | Pending | 4 |
-| Unmatched Destiny | Mystic | Force & Destiny - Unlimited Power | 36 | imported | Pending | 5 |
+| Prophecy | Mystic | Force & Destiny - Unlimited Power | 35 | imported | Full chart checked | 4 |
+| Unmatched Destiny | Mystic | Force & Destiny - Unlimited Power | 36 | imported | Full chart checked | 5 |
 
 ## Signature chart photo requests
 
@@ -272,10 +237,6 @@ These signature charts have no recorded full printed comparison. A structured gr
 |---|---|---|---|
 | The Harder They Fall | Age of Rebellion - Fully Operational | 34 | imported |
 | Unmatched Ingenuity | Age of Rebellion - Fully Operational | 35 | imported |
-| Peerless Interception | Collapse of the Republic | 47 | missing |
-| Unmatched Teamwork | Collapse of the Republic | 46 | missing |
-| Prophecy | Force & Destiny - Unlimited Power | 35 | imported |
-| Unmatched Destiny | Force & Destiny - Unlimited Power | 36 | imported |
 
 ## Coverage limits
 

@@ -41,7 +41,7 @@
             /></label></div><label>Qualities<input
             name="system.qualities"
             value="{{system.qualities}}"
-          /></label>{{/if}}{{#if armor}}<div class="sf-form-grid"><label
+          /></label>{{#if vehicleWeapon}}<label>Firing arcs override<input name="system.metadata.fireArcOverride" value="{{system.metadata.fireArcOverride}}" placeholder="Use recorded arcs" /></label><p class="sf-hint">Leave blank to use imported arcs. Enter fore, aft, port, starboard or all; combine arcs with commas. Dorsal and ventral mounts retain their elevation restriction.</p>{{/if}}{{/if}}{{#if armor}}<div class="sf-form-grid"><label
           >Soak<input
               type="number"
               name="system.soak"
@@ -53,7 +53,7 @@
             /></label></div>{{/if}}<label>Personal notes<textarea
           name="system.description"
           rows="5"
-        >{{system.description}}</textarea></label></section><section
+        >{{system.description}}</textarea></label>{{#if summary}}<p class="sf-hint">{{summary}} Summary from recorded fields; consult the book for descriptions and effects.</p>{{/if}}</section><section
       class="sf-panel"
     ><h2>Look it up</h2><div class="sf-form-grid"><label>Book<input
             name="system.source.book"

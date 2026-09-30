@@ -4,7 +4,7 @@ export const ADVANCEMENT_DATA_FORMAT = "star-wars-ffg-advancement-trees";
 const TYPES = new Set(["specialization", "signatureAbility"]),
   SOURCE_LEVELS = new Set(["full-chart", "connectors-only", "pending"]),
   STRUCTURE_LEVELS = new Set(["validated", "missing"]),
-  ALLOWED_CHECKS = new Set(["node names", "costs", "connectors"]),
+  ALLOWED_CHECKS = new Set(["node names", "costs", "connectors", "attachment slots"]),
   ITEM_KEYS = new Set([
     "_id",
     "name",

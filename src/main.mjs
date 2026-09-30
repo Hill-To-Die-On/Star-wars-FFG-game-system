@@ -1,4 +1,4 @@
-import { SYSTEM_ID, SYSTEM_PATH, THEMES, ITEM_TYPES } from "./config.mjs";
+import { SYSTEM_ID, THEMES, ITEM_TYPES } from "./config.mjs";
 import {
   CharacterData,
   AdversaryData,
@@ -14,8 +14,12 @@ import {
   importDialog,
   importSwaDialog,
   campaignDialog,
+  checkDialog,
 } from "./sheets.mjs";
+import { registerVehicleCrew, crewApi } from "./vehicle-crew-foundry.mjs";
 import { registerDice, registerDiceSoNice, rollPool } from "./dice/foundry.mjs";
+import { registerTurnEconomy, readTurnBudget, performTurnCommand, rotateToken } from "./turn-economy-foundry.mjs";
+import { registerAltitudeShadows } from "./altitude-shadows-foundry.mjs";
 import {
   refreshCompactChatDice,
   registerCompactChatDice,
@@ -54,7 +58,18 @@ import {
   rangeOverlayApi,
   registerRangeOverlay,
 } from "./range-overlay/foundry.mjs";
+import {
+  registerActorArtwork,
+  resetVehicleTokenFootprint,
+} from "./actor-artwork-foundry.mjs";
+import { actorIconDescriptor } from "./actor-icons.mjs";
+import {
+  vehicleFootprintMeters,
+  vehicleTokenDimensions,
+} from "./vehicle-footprints.mjs";
 import { configureXpTransactions } from "./xp-transactions.mjs";
+import { registerMinionGroups } from "./minion-groups-foundry.mjs";
+import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
 class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openReferenceBrowser();
@@ -236,6 +251,7 @@ Hooks.once("init", () => {
     label: "Star Wars FFG group sheet",
   });
   registerDice();
+  registerHomebrewIdentities(refreshThemedSheets);
   game.settings.register(SYSTEM_ID, "campaign", {
     scope: "world",
     config: false,
@@ -308,6 +324,11 @@ Hooks.once("init", () => {
   });
   registerCompactChatDice();
   registerRangeOverlay();
+  registerActorArtwork();
+  registerAltitudeShadows();
+  registerTurnEconomy();
+  registerVehicleCrew({openCheck:checkDialog});
+  registerMinionGroups();
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
     name: "GM source key",
     label: "Backup or restore key",
@@ -399,6 +420,14 @@ Hooks.once("init", () => {
     searchGMSourceNotes,
     integration: integrationApi,
     range: rangeOverlayApi,
+    crew: crewApi,
+    turns: Object.freeze({ read:readTurnBudget, perform:performTurnCommand, rotateToken }),
+    actorIcons: Object.freeze({
+      describe: actorIconDescriptor,
+      vehicleFootprint: vehicleFootprintMeters,
+      vehicleTokenDimensions,
+      resetVehicleTokenFootprint,
+    }),
   });
 });
 Hooks.once("diceSoNiceReady", (dice3d) =>
@@ -406,20 +435,6 @@ Hooks.once("diceSoNiceReady", (dice3d) =>
     ui.notifications.error(`Star Wars FFG dice: ${e.message}`),
   ),
 );
-Hooks.on("preCreateActor", (actor, data) => {
-  const vehicle = data.type === "vehicle";
-  const group = data.type === "group";
-  actor.updateSource({
-    img:
-      data.img ??
-      `${SYSTEM_PATH}/assets/${vehicle ? "vehicle" : "character"}.svg`,
-    prototypeToken: {
-      actorLink: group || data.type === "character",
-      bar1: { attribute: group ? null : vehicle ? "hullTrauma" : "wounds" },
-      bar2: { attribute: group ? null : vehicle ? "systemStrain" : "strain" },
-    },
-  });
-});
 Hooks.on("renderActorDirectory", (_app, html) => {
   if (html.querySelector(".sf-launcher")) return;
   const button = document.createElement("button");
