@@ -4,7 +4,8 @@ import {
   buildStartingLoadout,
   creationResourcePlan,
 } from "./creation-resources.mjs";
-import { speciesAbilityEntry, speciesStartingSkills } from "./species-abilities.mjs";
+import { speciesAbilityEntry, speciesStartingSkills, validateNonCareerSkillChoices } from "./species-abilities.mjs";
+import { defaultOriginBiography } from "./career-story.mjs";
 export function creationPlan({
   species,
   career,
@@ -13,6 +14,7 @@ export function creationPlan({
   careerRanks = [],
   specializationRanks = [],
   speciesSkillChoice = "",
+  nonCareerSkillChoices = [],
   partySize = 4,
   resourceChoices = [],
   ageStartingResource = "lambda",
@@ -55,13 +57,6 @@ export function creationPlan({
       choices: resourceChoices,
       ageStartingResource,
     }),
-    loadout = buildStartingLoadout({
-      options: startingEquipment,
-      selections: startingEquipment.map(({ id, quantity }) => ({ id, quantity })),
-      cashBudget: resources.cashBudget,
-      gearGrant: resources.gearGrant,
-      allowRestricted,
-    }),
     data = species.system.metadata;
   const stat = (key) => {
     const value = Number(data[key]);
@@ -78,6 +73,14 @@ export function creationPlan({
   const characteristics = Object.fromEntries(
     Object.entries(CHARACTERISTICS).map(([key, label]) => [key, stat(label)]),
   );
+  const loadout = buildStartingLoadout({
+    options: startingEquipment,
+    selections: startingEquipment.map(({ id, quantity }) => ({ id, quantity })),
+    cashBudget: resources.cashBudget,
+    gearGrant: resources.gearGrant,
+    allowRestricted,
+    encumbranceLimit: 5 + characteristics.brawn,
+  });
   const allCareer = new Set([
     ...career.system.careerSkills,
     ...specialization.system.careerSkills,
@@ -103,11 +106,14 @@ export function creationPlan({
       throw new Error(`${species.name} grants ${SKILLS[key].label}, but that skill would exceed rank 2 during creation. Choose different free skills.`);
     skills[key].rank += 1;
   }
+  const nonCareerGrants = validateNonCareerSkillChoices(speciesRules, nonCareerSkillChoices, [...allCareer], skills);
+  for (const key of nonCareerGrants) skills[key].rank += 1;
   return {
     line,
     phase: "creation",
     species: species.name,
     career: career.name,
+    biography: defaultOriginBiography(species.name, career.name),
     characteristics,
     skills,
     soak: characteristics.brawn,
@@ -149,6 +155,7 @@ export function creationPlan({
       specializationRanks,
       speciesSkillChoice,
       speciesSkillGrants,
+      nonCareerSkillChoices: nonCareerGrants,
       speciesAbilitySource: speciesRules?.source ?? null,
       speciesAbilitiesPending,
       startingResources: {

@@ -2,6 +2,7 @@ import { CHARACTERISTICS, SKILLS, SYSTEM_ID } from "./config.mjs";
 import { originEntryAllowed, originSelectionUpdate, referenceRuleLine } from "./character-origins.mjs";
 import { bookAllowed } from "./rules.mjs";
 import { characteristicPurchase, skillPurchase } from "./advancement.mjs";
+import { speciesAbilityEntry } from "./species-abilities.mjs";
 
 export const CREATION_ROLES = Object.freeze({
   combat:{label:"Front-line fighter",skills:["rangedLight","rangedHeavy","brawl","melee","gunnery"]},
@@ -74,10 +75,32 @@ export function creationReadiness(system) {
   if(!system.creation?.applied)issues.push("Complete species, career, specialization and free skills.");
   if(system.creation?.speciesAbilitiesPending || system.incomplete?.length)issues.push("Review and apply species abilities and outstanding source checks.");
   if(system.creation?.pocketMoneyPending)issues.push("Finish starting funds.");
+  const speciesRules=speciesAbilityEntry(system.species,system.creation?.species);
+  if(speciesRules?.nonCareerSkillRanks && (system.creation?.nonCareerSkillChoices?.length??0)!==speciesRules.nonCareerSkillRanks)
+    issues.push(`Choose ${speciesRules.nonCareerSkillRanks} non-career species skill ranks.`);
   if(!Number.isInteger(system.xp?.available)||system.xp.available<0||system.xp.available>system.xp.total)issues.push("Reconcile available and total XP.");
   if(Object.values(system.skills??{}).some(s=>s.rank>2))issues.push("Starting skill ranks cannot exceed 2 without a documented species exception.");
   if(Object.values(system.characteristics??{}).some(v=>v>5))issues.push("Starting characteristics cannot exceed 5 without a documented exception.");
   return issues;
+}
+export function reviewGmCharacterBuild(system, {xpIntent, gearIntent} = {}) {
+  if (system?.phase !== "creation" || !system.creation?.applied) throw new Error("Complete character creation before GM review.");
+  const clean = (value, name) => {
+    const note = String(value ?? "").trim();
+    if (note.length < 5 || note.length > 300) throw new Error(`Describe the GM's ${name} choice in 5 to 300 characters.`);
+    return note;
+  };
+  return {
+    ...system.creation,
+    gmBuildReview: {
+      xpIntent: clean(xpIntent, "XP"),
+      gearIntent: clean(gearIntent, "gear"),
+      xpSpent: Number(system.xp.total) - Number(system.xp.available),
+      xpSaved: Number(system.xp.available),
+      creditsSaved: Number(system.credits),
+      encumbrance: Number(system.creation.startingResources?.encumbrance ?? 0),
+    },
+  };
 }
 export function planEnemy(recipe,species,campaign) {
   if(!["minion","rival","nemesis"].includes(recipe.type))throw new Error("Choose minion, rival or nemesis.");

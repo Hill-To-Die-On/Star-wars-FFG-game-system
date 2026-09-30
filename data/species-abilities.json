@@ -3,6 +3,13 @@
   "version": 1,
   "entries": [
     {
+      "species": "Human",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "55", "page": "55" },
+      "startingSkillRanks": [],
+      "nonCareerSkillRanks": 2,
+      "abilities": []
+    },
+    {
       "species": "Clone",
       "source": { "book": "Rise of the Separatists", "cataloguePage": "11", "page": "12" },
       "startingSkillRanks": ["warfare", "resilience"],

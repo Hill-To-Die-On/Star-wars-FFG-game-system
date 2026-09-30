@@ -21,6 +21,52 @@ const prompts = Object.freeze({
   warrior: ["What conflict taught you restraint or resolve?", "Who sees the person behind your fighting reputation?"],
 });
 const clean = (value) => String(value ?? "").trim().slice(0, 80);
+const careerDefaults = Object.freeze({
+  ace: "This pilot learned to trust quick judgment in a cockpit and still answers for a flight that changed someone else's course.",
+  "bounty hunter": "This hunter follows people others cannot find, balancing a contract's reward against a personal line they will not cross.",
+  colonist: "This colonist helped keep a community alive and carries its needs into every new place.",
+  commander: "This commander has learned that orders shape lives and must decide whom to trust when the plan breaks.",
+  consular: "This consular approaches conflict through patience and counsel, though one unresolved dispute still follows them.",
+  diplomat: "This diplomat speaks for others and remembers a negotiation whose result was more complicated than the agreement.",
+  engineer: "This engineer solves problems by building and repairing, with people now depending on what they made.",
+  explorer: "This explorer left a familiar place to follow a discovery and is still searching for what lies beyond the next route.",
+  guardian: "This guardian chose someone to protect and carries the cost of that promise.",
+  "hired gun": "This fighter knows how to survive dangerous work and has learned that payment cannot settle every debt.",
+  jedi: "This Jedi tries to turn training into service while a difficult lesson tests their judgment.",
+  mystic: "This mystic follows a personal understanding of the Force and relies on a grounding bond when instinct pulls too hard.",
+  seeker: "This seeker reads places and tracks before acting, drawn onward by a trail that has not ended.",
+  sentinel: "This sentinel keeps watch where ordinary life hides extraordinary threats and protects someone without recognition.",
+  smuggler: "This smuggler survives by reading routes, people and risk; an unfinished delivery or promise makes the next journey personal.",
+  soldier: "This soldier's training met a real crisis, and a fellow fighter changed how they face danger.",
+  spy: "This spy has lived behind a cover identity and must protect the person who knows the truth.",
+  technician: "This technician earns trust through careful fixes and is called when a working solution matters more than a new part.",
+  warrior: "This warrior's reputation was forged in conflict, but someone close knows the restraint behind it.",
+});
+
+export function careerBackgroundDefault(career) {
+  const name = clean(career);
+  if (!name) return "";
+  return careerDefaults[name.toLowerCase()] ?? `This ${name} followed a distinctive path into their work and carries an unfinished promise into the next adventure.`;
+}
+
+export function speciesBackgroundDefault(species) {
+  const name = clean(species);
+  if (!name) return "";
+  if (name === "Human") return "This Human grew up among many ways of life and learned to adapt, choosing which people and places feel like home.";
+  return `This ${name} was shaped by a particular community and history, but chooses which inherited expectations to keep and which new bonds to build.`;
+}
+
+const appendSection = (biography, heading, content) => {
+  const existing = String(biography ?? "").trim();
+  return existing.includes(heading) ? existing : [existing, `${heading}\n${content}`].filter(Boolean).join("\n\n");
+};
+
+export function defaultOriginBiography(species, career) {
+  let biography = "";
+  if (speciesBackgroundDefault(species)) biography = appendSection(biography, `Species origin · ${clean(species)}`, speciesBackgroundDefault(species));
+  if (careerBackgroundDefault(career)) biography = appendSection(biography, `Career origin · ${clean(career)}`, careerBackgroundDefault(career));
+  return biography;
+}
 
 export function careerStoryPrompts(career) {
   const name = clean(career);
@@ -39,7 +85,7 @@ export function appendCareerStoryPrompts(biography, career) {
   if (!questions.length) return existing;
   const heading = `Career background · ${name}`;
   if (existing.includes(heading)) return existing;
-  return [existing, `${heading}\n${questions.map((question) => `- ${question}`).join("\n")}`]
+  return [existing, `${heading}\n${careerBackgroundDefault(name)}\n${questions.map((question) => `- ${question}`).join("\n")}`]
     .filter(Boolean).join("\n\n");
 }
 
@@ -60,6 +106,6 @@ export function appendSpeciesStoryPrompts(biography, species) {
   if (!questions.length) return existing;
   const heading = `Species background · ${name}`;
   if (existing.includes(heading)) return existing;
-  return [existing, `${heading}\n${questions.map((question) => `- ${question}`).join("\n")}`]
+  return [existing, `${heading}\n${speciesBackgroundDefault(name)}\n${questions.map((question) => `- ${question}`).join("\n")}`]
     .filter(Boolean).join("\n\n");
 }

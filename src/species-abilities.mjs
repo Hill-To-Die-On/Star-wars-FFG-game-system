@@ -17,6 +17,8 @@ export function validateSpeciesAbilityRegistry(data = registry) {
       throw new Error(`Invalid starting skill ranks for ${entry.species}.`);
     if (entry.choiceSkillRank !== undefined && entry.choiceSkillRank !== true)
       throw new Error(`Invalid skill choice for ${entry.species}.`);
+    if (entry.nonCareerSkillRanks !== undefined && (!Number.isInteger(entry.nonCareerSkillRanks) || entry.nonCareerSkillRanks < 1 || entry.nonCareerSkillRanks > 3))
+      throw new Error(`Invalid non-career skill choice count for ${entry.species}.`);
     if (entry.choiceSkillOptions !== undefined && (!entry.choiceSkillRank || !Array.isArray(entry.choiceSkillOptions) || !entry.choiceSkillOptions.length || entry.choiceSkillOptions.some((key) => !SKILLS[key]) || new Set(entry.choiceSkillOptions).size !== entry.choiceSkillOptions.length))
       throw new Error(`Invalid skill choice options for ${entry.species}.`);
     if (!Array.isArray(entry.abilities) || entry.abilities.some((ability) =>
@@ -53,6 +55,20 @@ export function speciesStartingSkills(entry, choice = "") {
   if (!entry.choiceSkillRank && choice)
     throw new Error(`${entry.species} does not grant a starting skill choice.`);
   return [...entry.startingSkillRanks, ...(entry.choiceSkillRank ? [choice] : [])];
+}
+
+export function validateNonCareerSkillChoices(entry, choices = [], careerSkills = [], skills = {}) {
+  const count = entry?.nonCareerSkillRanks ?? 0;
+  if (!Array.isArray(choices) || choices.length !== count)
+    throw new Error(`Choose exactly ${count} non-career skills for ${entry?.species ?? "this species"}.`);
+  if (new Set(choices).size !== choices.length)
+    throw new Error("Choose different non-career skills.");
+  const career = new Set(careerSkills);
+  for (const key of choices) {
+    if (!SKILLS[key] || career.has(key)) throw new Error("Choose only valid non-career skills.");
+    if (skills[key]?.rank >= 2) throw new Error(`${SKILLS[key].label} would exceed rank 2 during creation.`);
+  }
+  return [...choices];
 }
 
 export function speciesCheckBonuses(name, source, skill) {

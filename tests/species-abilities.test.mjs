@@ -21,6 +21,21 @@ test("verified species ability entries have distinct book and printed-page evide
   assert.deepEqual(speciesStartingSkills(speciesAbilityEntry("Geonosian", { book: "Rise of the Separatists", page: "12" }), "mechanics"), ["mechanics"]);
 });
 
+test("Human creation requires two distinct non-career skill ranks", () => {
+  const human = referenceLibrary.documents.Item.find((entry) => entry.type === "species" && entry.name === "Human");
+  const career = { _id: "career", type: "career", name: "Smuggler", system: { careerSkills: ["rangedLight", "pilotingSpace", "deception", "streetwise"], source: { book: "Edge of The Empire - Core Book", page: "1" } } };
+  const specialization = { _id: "spec", type: "specialization", name: "Pilot", system: { career: "Smuggler", careerSkills: ["pilotingSpace", "astrogation", "gunnery", "perception"], source: { book: "Edge of The Empire - Core Book", page: "1" } } };
+  const selection = { species: human, career, specialization, line: "edge", careerRanks: ["rangedLight", "pilotingSpace", "deception", "streetwise"], specializationRanks: ["astrogation", "gunnery"] };
+  assert.equal(speciesAbilityEntry("Human", human.system.source).nonCareerSkillRanks, 2);
+  assert.throws(() => creationPlan(selection), /2 non-career/i);
+  const built = creationPlan({ ...selection, nonCareerSkillChoices: ["skulduggery", "computers"] });
+  assert.equal(built.skills.skulduggery.rank, 1);
+  assert.equal(built.skills.computers.rank, 1);
+  assert.deepEqual(built.creation.nonCareerSkillChoices, ["skulduggery", "computers"]);
+  assert.throws(() => creationPlan({ ...selection, nonCareerSkillChoices: ["skulduggery", "skulduggery"] }), /different/i);
+  assert.throws(() => creationPlan({ ...selection, nonCareerSkillChoices: ["rangedLight", "computers"] }), /non-career/i);
+});
+
 test("only matching verified species and skill receive an automatic check die", () => {
   const source = { book: "Rise of the Seperatists", page: "15" };
   assert.equal(speciesCheckBonuses("Umbaran", source, "charm").boost, 1);

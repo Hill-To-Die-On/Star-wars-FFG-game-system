@@ -5,6 +5,7 @@ import {
   creationResourcePlan,
   finalizePocketMoney,
   startingEquipmentOptions,
+  suggestedStartingEquipment,
 } from "../src/creation-resources.mjs";
 import { DEFAULT_CAMPAIGN } from "../src/rules.mjs";
 
@@ -17,6 +18,8 @@ const item = ({
   book = "Edge of The Empire - Core Book",
   incomplete = [],
   scale = "personal",
+  encumbrance = 1,
+  skill = "rangedLight",
 }) => ({
   _id: id,
   id,
@@ -27,6 +30,8 @@ const item = ({
     restricted,
     incomplete,
     scale,
+    encumbrance,
+    skill,
     source: { book, page: "1" },
   },
 });
@@ -332,4 +337,28 @@ test("starting loadouts stay within the allowance and never overflow the cost", 
     [exact.cost, exact.gearGrantUsed, exact.cashSpent, exact.credits],
     [1500, 1000, 500, 0],
   );
+});
+
+test("starting gear cannot exceed carrying capacity and unused credits remain", () => {
+  const options = startingEquipmentOptions([
+    item({ id: "pack", name: "Field pack", price: 100, encumbrance: 4 }),
+    item({ id: "coat", name: "Travel coat", type: "armor", price: 50, encumbrance: 2 }),
+  ], DEFAULT_CAMPAIGN);
+  assert.deepEqual(options.map(({ encumbrance }) => encumbrance), [4, 2]);
+  const within = buildStartingLoadout({ options, selections: [{ id: "pack", quantity: 1 }], cashBudget: 500, encumbranceLimit: 7 });
+  assert.equal(within.encumbrance, 4);
+  assert.equal(within.credits, 400);
+  assert.throws(() => buildStartingLoadout({ options, selections: [{ id: "pack", quantity: 2 }], cashBudget: 500, encumbranceLimit: 7 }), /encumbrance/i);
+});
+
+test("gear suggestions reflect spent and saved XP without restricting manual choices", () => {
+  const options = startingEquipmentOptions([
+    item({ id: "cheap", name: "Comlink (handheld)", price: 25, encumbrance: 0 }),
+    item({ id: "pistol", name: "Blaster Pistol", type: "weapon", price: 400, encumbrance: 1 }),
+  ], DEFAULT_CAMPAIGN);
+  const system = { xp: { total: 110, available: 110 }, skills: { rangedLight: { rank: 1, career: true } } };
+  assert.deepEqual(suggestedStartingEquipment(options, system, 500, 7).map((entry) => entry.id), ["cheap"]);
+  system.xp.available = 10;
+  assert.ok(suggestedStartingEquipment(options, system, 500, 7).some((entry) => entry.id === "pistol"));
+  assert.equal(options.length, 2);
 });

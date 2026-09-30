@@ -70,6 +70,7 @@ import {
   vehicleTokenDimensions,
 } from "./vehicle-footprints.mjs";
 import { configureXpTransactions } from "./xp-transactions.mjs";
+import { selectTransactionAuthority } from "./document-transactions.mjs";
 import { registerMinionGroups } from "./minion-groups-foundry.mjs";
 import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
 import { renderAboutContent } from "./about.mjs";
@@ -105,6 +106,12 @@ class OwnedBooksMenu extends foundry.applications.api.ApplicationV2 {
 class LibraryMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     importDialog();
+    return this;
+  }
+}
+class TransactionAuthorityMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    selectTransactionAuthority().catch((error) => ui.notifications.error(error.message));
     return this;
   }
 }
@@ -358,6 +365,14 @@ Hooks.once("init", () => {
     icon: "fas fa-circle-info",
     type: AboutMenu,
     restricted: false,
+  });
+  game.settings.registerMenu(SYSTEM_ID, "transactionAuthorityMenu", {
+    name: "Transaction authority",
+    label: "Use this GM tab",
+    hint: "Select the single GM tab that processes XP, turn, crew and tabletop transactions.",
+    icon: "fas fa-shield-halved",
+    type: TransactionAuthorityMenu,
+    restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
     name: "GM source key",

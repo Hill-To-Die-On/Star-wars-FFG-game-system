@@ -588,6 +588,7 @@
   border-radius: 6px;
   font-size: 12px;
   overflow: hidden;
+  gap: 5px;
 }
 .sf-shell .sf-talent.owned {
   background: var(--sf-dark);
@@ -603,14 +604,16 @@
   line-height: 1.15;
 }
 .sf-talent-description {
-  display: -webkit-box;
-  overflow: hidden;
+  display: block;
+  overflow: auto;
   color: var(--sf-muted);
-  font-size: 8.5px;
-  line-height: 1.2;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  font-size: 10.5px;
+  line-height: 1.25;
+  flex: 1;
+  width: 100%;
 }
+.sf-talent-effect { display: block; width: 100%; font-size: 9px; font-weight: 700; color: var(--sf-accent-text); }
+.sf-talent.owned .sf-talent-effect { color: #fff; }
 .sf-talent.owned .sf-talent-description {
   color: #fff;
   opacity: 0.82;
@@ -2944,6 +2947,7 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-catalogue-species-abilities ul { margin:6px 0; padding-left:22px; }
 .sf-creation-entry .sf-button-row { display:flex; gap:10px; }
 .sf-creation-dialog .window-content, .sf-minion-dialog .window-content { overflow:hidden; min-height:0; padding:12px; }
+.sf-creation-dialog { z-index:10000 !important; }
 .sf-creation-dialog .dialog-form, .sf-minion-dialog .dialog-form { display:flex; flex-direction:column; height:100%; min-height:0; }
 .sf-creation-dialog .dialog-content, .sf-minion-dialog .dialog-content { flex:1 1 0; min-height:0; overflow-y:auto; padding-right:6px; scrollbar-gutter:stable; }
 .sf-creation-dialog .form-footer, .sf-minion-dialog .form-footer { flex:0 0 auto; margin-top:10px; }
@@ -2984,7 +2988,11 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-arc-picker-help nav { display:flex; gap:8px; }
 .sf-arc-picker-help button { color:#fff5d5; background:#244751; border:1px solid #9bbdc6; padding:6px 10px; font:inherit; }
 .sf-arc-picker-help button[hidden] { display:none; }
-.sf-career-story { margin: 14px 0; padding: 12px 16px; border: 1px solid var(--sf-accent, #786649); border-radius: 8px; }
+.sf-career-story { margin: 14px 0; padding: 12px 16px; border: 1px solid var(--sf-accent, #786649); border-radius: 8px; color: var(--sf-ink); }
+.star-wars .sf-shell .sf-career-story .sf-section-heading h3 { color: var(--sf-ink); font-weight: 750; }
+.star-wars .sf-shell .sf-panel > h3,
+.star-wars .sf-shell .sf-panel > .sf-section-heading h3 { color: var(--sf-ink); }
+.sf-career-story .sf-background-default { color: var(--sf-ink); font-size: 13px; line-height: 1.5; }
 .sf-career-story ul { margin: 8px 0 0; padding-left: 24px; }
 .sf-career-story li + li { margin-top: 5px; }
 .sf-reference-summary { margin: 12px 0; line-height: 1.5; }
