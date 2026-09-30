@@ -2017,6 +2017,7 @@ function followCombatTurn(combat, turn = null, session = null) {
 
 async function confirmCombatRangeAssistant() {
   return foundry.applications.api.DialogV2.confirm({
+    classes: ["star-wars"],
     window: { title: "Star Wars FFG · Combat range" },
     content:
       '<div class="sf-dialog"><p>Show range bands for this encounter and follow the active combatant?</p><p class="sf-hint">You can still pin multiple origins or hide the overlay from the scene controls.</p></div>',
@@ -2047,6 +2048,7 @@ async function prepareCombatRangeScale(combat, mode) {
     return;
   }
   const calibrate = await foundry.applications.api.DialogV2.confirm({
+    classes: ["star-wars"],
     window: { title: "Calibrate encounter range" },
     content:
       '<div class="sf-dialog"><p>This Theatre-of-the-Mind scene needs one range boundary before the combat assistant can measure it.</p><p>Calibrate it from the active combatant now?</p></div>',

@@ -1,5 +1,6 @@
 import { SYSTEM_ID, SKILLS, skillKey } from "./config.mjs";
 import { skillPool } from "./dice/core.mjs";
+import { impairmentForCheck } from "./enemy-condition.mjs";
 import { rollPool } from "./dice/foundry.mjs";
 import { minionState, damageAfterSoak, weaponDamage } from "./mechanics.mjs";
 import { groupStateForActor } from "./minion-groups.mjs";
@@ -128,9 +129,10 @@ export class StarWarsActor extends Actor {
       species = this.type === "character"
         ? speciesCheckBonuses(this.system.species, this.system.creation?.species, definition.key)
         : { boost: 0, advantage: 0, reasons: [] },
-      effectiveOptions = species.boost
-        ? { ...rollOptions, boost: Number(rollOptions.boost ?? 0) + species.boost }
-        : rollOptions,
+      impairment=impairmentForCheck(this,definition.key),
+      effectiveOptions = { ...rollOptions,
+        boost: Number(rollOptions.boost ?? 0) + species.boost,
+        setback: Number(rollOptions.setback ?? 0) + impairment.setback },
       pool = applyTalentPool(
         skillPool(
           this.system.characteristics[characteristic],
@@ -142,13 +144,14 @@ export class StarWarsActor extends Actor {
     return rollPool(pool, {
       label: label ?? `${this.name} · ${definition.label}`,
       actor: this,
+      skillKey: definition.key,
       ...effectiveOptions,
       turnCost,
       automaticResults: {
         ...rules.automaticResults,
         advantage: (rules.automaticResults?.advantage ?? 0) + species.advantage,
       },
-      ruleNotes: [...rules.reasons, ...species.reasons, ...ruleNotes],
+      ruleNotes: [...rules.reasons, ...species.reasons, ...(impairment.note?[impairment.note]:[]), ...ruleNotes],
     });
   }
   async rollForce(options = {}) {

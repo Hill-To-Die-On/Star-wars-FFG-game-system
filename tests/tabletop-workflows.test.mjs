@@ -1,11 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { remainingSymbols, planSpend, planActorEffect, planUndo, planSlotClaim, planSessionAward } from '../src/tabletop-workflows.mjs';
+import { remainingSymbols, planSpend, planActorEffect, planUndo, planSlotClaim, planSessionAward, weaponForRecordedRoll } from '../src/tabletop-workflows.mjs';
 const gm={id:'gm',isGM:true,active:true};
 const pc={id:'p',isGM:false,active:true};
 const actor=(extra={})=>({id:'a',uuid:'Actor.a',name:'Hero',type:'character',hasPlayerOwner:true,system:{wounds:{value:3,max:12},strain:{value:4,max:10},soak:2,xp:{available:10,total:30},credits:50,criticals:[],obligation:{value:10},duty:{value:2},morality:{value:50,conflict:2}},flags:{},testUserPermission:u=>u.id==='p',...extra});
 const source={book:'Test table ruling',page:'12',verification:'gm-reviewed'};
 const effect={kind:'damage',amount:8,pierce:1,breach:0,scale:'personal',source,note:'Blaster hit'};
+test('a noncombat skill roll never prompts for an owned weapon',()=>{
+ const shooter={name:'Tala',items:[{type:'weapon',name:'Blaster Pistol'}]};
+ assert.equal(weaponForRecordedRoll(shooter,{flavor:'Tala · Computers'}),null);
+ assert.equal(weaponForRecordedRoll(shooter,{flavor:'Tala · Blaster Pistol'}),shooter.items[0]);
+});
 test('symbols preserve Triumph and Despair independently and refund only undone spends',()=>{
  assert.deepEqual(remainingSymbols({advantage:3,threat:0,triumph:1,despair:1},[{cost:{advantage:2}},{cost:{triumph:1},undone:true}]),{advantage:1,threat:0,triumph:1,despair:1});
 });
@@ -21,8 +26,15 @@ test('damage preview respects soak and strain routing and forbids unknown cross-
  assert.throws(()=>planActorEffect(actor(),{...effect,scale:'vehicle'},{user:gm}),/cross-scale/);
  assert.throws(()=>planActorEffect(actor(),effect,{user:pc}),/GM/);
 });
-test('incomplete profiles cannot be damaged and recovery never underflows',()=>{
- assert.throws(()=>planActorEffect(actor({system:{incomplete:['soak']}}),effect,{user:gm}),/missing/);
+test('damage with outstanding source checks requires a documented GM ruling and valid combat stats',()=>{
+ const flagged=actor({type:'minion',system:{...actor().system,incomplete:['soak source review'],groupSize:1,wounds:{value:2,max:11},soak:2}});
+ assert.throws(()=>planActorEffect(flagged,{...effect,note:''},{user:gm}),/GM ruling/);
+ const plan=planActorEffect(flagged,{...effect,amount:7,pierce:0,note:'The GM accepts provisional soak 2 for this encounter.'},{user:gm});
+ assert.equal(plan.after['system.wounds.value'],7);
+ assert.match(plan.warning,/soak source review/);
+ assert.throws(()=>planActorEffect(actor({system:{incomplete:['soak']}}),effect,{user:gm}),/soak|damage|Current/i);
+});
+test('recovery never underflows',()=>{
  assert.equal(planActorEffect(actor(),{kind:'recover',resource:'strain',amount:99,source},{user:gm}).after['system.strain.value'],0);
 });
 test('undo refuses to overwrite later unrelated changes and preserves before values',()=>{
@@ -59,6 +71,14 @@ test('critical, condition and vehicle state changes remain reversible without in
  assert.equal(planActorEffect(ship,{kind:'vehicle-state',speed:2,shields:{fore:2},source},{user:gm}).after['system.speed.value'],2);
  assert.throws(()=>planActorEffect(ship,{kind:'vehicle-state',speed:4,source},{user:gm}),/Speed/);
  assert.throws(()=>planActorEffect(ship,{kind:'vehicle-state',shields:{up:2},source},{user:gm}),/zone/);
+});
+test('a roll-linked GM decision records its source and an explicit ongoing check modifier',()=>{
+ const a=actor(),request={kind:'condition',label:'Damaged optic',note:'The GM rules its ranged targeting is impaired.',entryId:'optic',source,sourceRollUuid:'ChatMessage.attack',modifier:{die:'setback',count:1,skillKey:'rangedLight'}};
+ const plan=planActorEffect(a,request,{user:gm});
+ assert.equal(plan.sourceRollUuid,'ChatMessage.attack');
+ assert.equal(plan.after['flags.star-wars-ffg.conditions'][0].modifier.die,'setback');
+ assert.equal(plan.after['flags.star-wars-ffg.conditions'][0].automation,'pool-modifier');
+ assert.throws(()=>planActorEffect(a,{...request,note:''},{user:gm}),/GM decision/);
 });
 test('filtered source options, malformed amounts, disabled story rules and overflow fail closed',()=>{
  assert.throws(()=>planActorEffect(actor(),effect,{user:gm,campaign:{bookMode:'owned',books:['Different book']}}),/excluded/);

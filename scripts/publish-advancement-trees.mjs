@@ -5,6 +5,7 @@ import {
   ADVANCEMENT_DATA_FORMAT,
   validateAdvancementData,
 } from "../src/advancement-data.mjs";
+import { talentActivation } from "../src/talent-activation.mjs";
 
 const normalize = (value) =>
   String(value ?? "")
@@ -49,7 +50,7 @@ const talentNode = (value) => ({
   col: value.col,
   ...(Number.isSafeInteger(value.span) ? { span: value.span } : {}),
   entry: value.entry === true,
-  ...(value.activation ? { activation: String(value.activation) } : {}),
+  ...(talentActivation(value.name, value.activation) ? { activation: talentActivation(value.name, value.activation) } : {}),
   effects: Array.from(value.effects ?? [], effect),
 });
 const verificationKey = (kind, name) => `${kind}:${normalize(name)}`;

@@ -1,6 +1,7 @@
 import { SYSTEM_ID } from './config.mjs';
 import { ActorTransactionQueue, actorMutationQueue, canSpendXp } from './xp-transactions.mjs';
 import { planActorEffect, planSessionAward, planSlotClaim, planSpend, planUndo, snapshotValues, reviewSnapshot } from './tabletop-workflows.mjs';
+import { activePoolRulings } from './narrative-effects.mjs';
 const flag=(doc,key)=>doc.flags?.[SYSTEM_ID]?.[key];
 const clone=value=>structuredClone(value);
 export const workflowAuthority=users=>Array.from(users??[]).filter(u=>u.active&&u.isGM).sort((a,b)=>String(a.id).localeCompare(String(b.id)))[0];
@@ -27,6 +28,22 @@ export class TabletopWorkflowService {
       const plan=planSlotClaim(combat,actor,args,{user});plan.claim.operationId=operationId;
       this.assertAuthority();await combat.update({[`flags.${SYSTEM_ID}.slotClaims`]:plan.claims});return plan.claim;
     }
+    if(command==='consume-future-effect') {
+      const actor=await this.resolve(args.actorUuid);
+      if(!actor || !canSpendXp(actor,user))throw new Error('Owner permission is required to use a narrative effect.');
+      if(!Array.isArray(args.entryIds)||!args.entryIds.length||args.entryIds.length>16||new Set(args.entryIds).size!==args.entryIds.length||!args.rollId||typeof args.rollId!=='string')throw new Error('Choose valid narrative effects and a roll identity.');
+      return actorMutationQueue.run(actor.uuid??actor.id,async()=>{
+        const effects=clone(flag(actor,'narrativeEffects')??[]),available=new Set(activePoolRulings(actor,args.skillKey).pendingIds);
+        for(const id of args.entryIds){
+          const entry=effects.find(effect=>effect.id===id);
+          if(entry?.consumedBy===args.rollId)continue;
+          if(!available.has(id))throw new Error('This narrative effect was already used or does not apply to the chosen skill.');
+          entry.consumedBy=args.rollId;entry.consumedAt=this.now();
+        }
+        this.assertAuthority();await actor.update({[`flags.${SYSTEM_ID}.narrativeEffects`]:effects});
+        return effects.filter(entry=>args.entryIds.includes(entry.id));
+      });
+    }
     if(!user.isGM)throw new Error('The GM must approve this mechanical change.');
     if(command==='effect'||command==='award') {
       const actor=await this.resolve(args.actorUuid);if(!actor?.system)throw new Error('The actor no longer exists.');
@@ -39,7 +56,9 @@ export class TabletopWorkflowService {
       if(!entry)throw new Error('The effect record no longer exists.');
       if(entry.undone)return entry;
       const changes=planUndo(actor,entry);entry.undone=true;entry.undoneBy=user.id;entry.undoneAt=this.now();
-      this.assertAuthority();await actor.update({...changes,[`flags.${SYSTEM_ID}.workflowHistory`]:entries});return entry;
+      this.assertAuthority();await actor.update({...changes,[`flags.${SYSTEM_ID}.workflowHistory`]:entries});
+      const linkWarning=await this.#touchLinkedRoll(entry.sourceRollUuid,operationId);
+      return linkWarning?{...entry,linkWarning}:entry;
       });
     }
     if(command==='spend'||command==='undo-spend') {
@@ -56,12 +75,31 @@ export class TabletopWorkflowService {
           if(!canProposeSpend(message,roller,requester))throw new Error('The proposer does not own the rolling actor.');
         }
         const entry={...planSpend(facts,entries,args.request,{campaign:this.campaign()}),id:operationId,userId:user.id,at:this.now(),...(args.proposalUuid?{proposalUuid:args.proposalUuid}:{})};
-        entries.push(entry);this.assertAuthority();await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});return entry;
+        entries.push(entry);
+        if(entry.futureEffect){
+          const actor=await this.resolve(entry.futureEffect.actorUuid);
+          if(!actor?.system||actor.type==='group'||actor.uuid!==entry.futureEffect.actorUuid)throw new Error('The future-effect target actor no longer exists.');
+          await actorMutationQueue.run(actor.uuid,async()=>{
+            const previous=clone(flag(actor,'narrativeEffects')??[]);
+            if(previous.some(effect=>effect.id===entry.id))throw new Error('This narrative effect is already attached to the actor.');
+            this.assertAuthority();await actor.update({[`flags.${SYSTEM_ID}.narrativeEffects`]:[...previous,{...entry.futureEffect,id:entry.id,label:entry.label,sourceMessageUuid:message.uuid,at:entry.at}]});
+            try {this.assertAuthority();await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});}
+            catch(error){await actor.update({[`flags.${SYSTEM_ID}.narrativeEffects`]:previous});throw error;}
+          });
+        } else {this.assertAuthority();await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});}
+        return entry;
       }
       const entry=entries.find(e=>e.id===args.entryId);if(!entry)throw new Error('The spending record no longer exists.');
       if(entry.undone)return entry;
-      // Mechanical effects are separate, explicitly reviewed actor-ledger operations.
-      // Undoing narrative spending never silently reverses an actor's later changes.
+      if(entry.futureEffect){
+        const actor=await this.resolve(entry.futureEffect.actorUuid);
+        if(!actor)throw new Error('The future-effect target actor no longer exists.');
+        await actorMutationQueue.run(actor.uuid,async()=>{
+          const effects=clone(flag(actor,'narrativeEffects')??[]),effect=effects.find(row=>row.id===entry.id);
+          if(effect?.consumedBy)throw new Error('This narrative effect was already used. Review the later roll before changing the decision.');
+          this.assertAuthority();await actor.update({[`flags.${SYSTEM_ID}.narrativeEffects`]:effects.filter(row=>row.id!==entry.id)});
+        });
+      }
       entry.undone=true;entry.undoneAt=this.now();entry.undoneBy=user.id;
       this.assertAuthority();await message.update({[`flags.${SYSTEM_ID}.spending`]:entries});return entry;
     }
@@ -80,7 +118,20 @@ export class TabletopWorkflowService {
     }
     // Foundry expands dotted keys inside flag objects. JSON snapshots preserve paths verbatim.
     const entry={...plan,before:JSON.stringify(plan.before),after:JSON.stringify(plan.after),id,userId:context.user.id,at:this.now(),requestFingerprint:fingerprint};
-    this.assertAuthority();await actor.update({...plan.after,[`flags.${SYSTEM_ID}.workflowHistory`]:[...entries,entry]});return entry;
+    this.assertAuthority();await actor.update({...plan.after,[`flags.${SYSTEM_ID}.workflowHistory`]:[...entries,entry]});
+    const linkWarning=await this.#touchLinkedRoll(plan.sourceRollUuid,id);
+    return linkWarning?{...entry,linkWarning}:entry;
+  }
+  async #touchLinkedRoll(sourceRollUuid,operationId) {
+    if(!sourceRollUuid)return '';
+    try {
+      const message=await this.resolve(sourceRollUuid);
+      if(!message?.update)return 'The effect was saved, but its source roll is unavailable. Review the actor history.';
+      this.assertAuthority();await message.update({[`flags.${SYSTEM_ID}.linkedDecisionRevision`]:operationId});
+      return '';
+    } catch {
+      return 'The effect was saved, but the chat card did not refresh. Reopen the chat or review the actor history.';
+    }
   }
 }
 

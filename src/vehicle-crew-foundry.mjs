@@ -124,7 +124,7 @@ export async function boardingDialog(token,vehicle) {
   prompts.add(token.id);
   try {
     const {free}=crewCounts(vehicle),count=occupantCount(token),crewFull=free.crew!==null && free.crew<count,passengerFull=free.passenger!==null && free.passenger<count;
-    const seat=await foundry.applications.api.DialogV2.prompt({window:{title:`Enter ${vehicle.name}?`},
+    const seat=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:`Enter ${vehicle.name}?`},
       content:`<p>Board <strong>${esc(token.name)}</strong>${count>1?` (${count} members)`:""}?</p><div class="form-group"><label>Place</label><select name="seat"><option value="crew" ${crewFull?"disabled":""}>Crew · ${free.crew ?? "unknown"} free</option><option value="passenger" ${passengerFull?"disabled":""} ${crewFull?"selected":""}>Passenger · ${free.passenger ?? "unknown"} free</option></select></div><p>Assigned roles use this character's skills. Boarding keeps their actor, equipment and turn state.</p>`,
       ok:{label:"Yes, enter",callback:(_e,b)=>new FormData(b.form).get("seat")},rejectClose:false});
     if(seat)await requestCrewCommand(token,"board",{vehicleId:vehicle.id,seat});
@@ -133,20 +133,20 @@ export async function boardingDialog(token,vehicle) {
 async function chooseBoarder(vehicle) {
   const candidates=Array.from(sceneTokens(vehicle)).filter(t=>["character","minion","rival","nemesis"].includes(t.actor?.type) && !aboard(t) && (!t.hidden || game.user.isGM) && canManageCrew(t,vehicle,game.user));
   if(!candidates.length)throw new Error("No available character tokens are owned on this scene. Place a character, or ask the GM to board it.");
-  const id=await foundry.applications.api.DialogV2.prompt({window:{title:`Board · ${vehicle.name}`},content:`<label>Character<select name="token">${candidates.map(t=>`<option value="${t.id}">${esc(t.name)}${occupantCount(t)>1?` · ${occupantCount(t)} members`:""}</option>`).join("")}</select></label>`,ok:{label:"Choose",callback:(_e,b)=>new FormData(b.form).get("token")},rejectClose:false});
+  const id=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:`Board · ${vehicle.name}`},content:`<label>Character<select name="token">${candidates.map(t=>`<option value="${t.id}">${esc(t.name)}${occupantCount(t)>1?` · ${occupantCount(t)} members`:""}</option>`).join("")}</select></label>`,ok:{label:"Choose",callback:(_e,b)=>new FormData(b.form).get("token")},rejectClose:false});
   if(id)await boardingDialog(candidates.find(t=>t.id===id),vehicle);
 }
 async function configureSeating(vehicle) {
   if(!game.user.isGM)throw new Error("Only the GM can change seating.");
   const cap=crewCapacities(vehicle);
-  const result=await foundry.applications.api.DialogV2.prompt({window:{title:"Vehicle seating"},content:`<p>Defaults come from the database crew and passenger counts. Set the available places here when a published crew complement differs from usable seats. Named occupants are tracked; unrepresented background crew are not created.</p>${Object.entries(cap).map(([key,value])=>`<label>${key==="crew"?"Crew places":"Passenger places"}<input type="number" name="${key}" min="0" max="1000000" step="1" value="${value ?? ""}" required></label>`).join("")}`,ok:{label:"Save seating",callback:(_e,b)=>Object.fromEntries(Array.from(new FormData(b.form),([k,v])=>[k,Number(v)]))},rejectClose:false});
+  const result=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:"Vehicle seating"},content:`<p>Defaults come from the database crew and passenger counts. Set the available places here when a published crew complement differs from usable seats. Named occupants are tracked; unrepresented background crew are not created.</p>${Object.entries(cap).map(([key,value])=>`<label>${key==="crew"?"Crew places":"Passenger places"}<input type="number" name="${key}" min="0" max="1000000" step="1" value="${value ?? ""}" required></label>`).join("")}`,ok:{label:"Save seating",callback:(_e,b)=>Object.fromEntries(Array.from(new FormData(b.form),([k,v])=>[k,Number(v)]))},rejectClose:false});
   if(result){for(const n of Object.values(result))if(!Number.isSafeInteger(n)||n<0||n>1000000)throw new Error("Seat counts must be whole numbers between 0 and 1,000,000.");await vehicle.actor.update({[`flags.${SYSTEM_ID}.seating`]:result});}
 }
 export async function crewCheckDialog(vehicle,skill,item) {
   const candidates=crewForSkill(vehicle,sceneTokens(vehicle),skill).filter(r=>canManageCrew(r.token,vehicle,game.user));
   if(!candidates.length)throw new Error("Assign an owned crew member to this duty first.");
   let id=candidates[0].id;
-  if(candidates.length>1)id=await foundry.applications.api.DialogV2.prompt({window:{title:"Choose acting crew member"},content:`<label>Crew member<select name="crew">${candidates.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></label>`,ok:{label:"Build pool",callback:(_e,b)=>new FormData(b.form).get("crew")},rejectClose:false});
+  if(candidates.length>1)id=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:"Choose acting crew member"},content:`<label>Crew member<select name="crew">${candidates.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></label>`,ok:{label:"Build pool",callback:(_e,b)=>new FormData(b.form).get("crew")},rejectClose:false});
   if(!id)return;
   const crew=assignedCrewCheck(vehicle,skill,id);
   if(!checkBuilder)throw new Error("The dice pool builder is not ready.");
@@ -167,7 +167,7 @@ async function disembarkDialog(vehicle,members,point,{manage=false,all=false}={}
   if(!members.length)throw new Error("Only an owner or GM can disembark this character.");
   if(members.length===1 && occupantCount(members[0].token)<=1 && !manage && !all)
     return requestCrewCommand(members[0].token,"leave",{point});
-  const result=await foundry.applications.api.DialogV2.prompt({classes:["sf-crew-dialog"],window:{title:manage?`Crew & passengers · ${vehicle.name}`:"Who is disembarking?",resizable:true},position:{width:560,height:560},
+  const result=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:manage?`Crew & passengers · ${vehicle.name}`:"Who is disembarking?",resizable:true},position:{width:560,height:560},
     content:crewManagementHTML(vehicle,members,{manage,point,selectAll:!manage&&!all}),
     render:(_e,dialog)=>bindCrewControls(dialog.element,vehicle),
     ok:{label:"Disembark selected",callback:(_e,b)=>Object.fromEntries(new FormData(b.form))},rejectClose:false});

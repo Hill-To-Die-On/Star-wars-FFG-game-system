@@ -1,6 +1,11 @@
 import {sha256Text} from './browser-crypto.mjs';
 import { SYSTEM_ID } from './config.mjs';
 const userById=(users,id)=>users.get?.(id)??Array.from(users??[]).find(user=>user.id===id);
+/** A GM must select this live tab before it authors a request that requires GM provenance. */
+export function assertLocalTabletopAuthority(user,broker) {
+  if(user?.isGM && !broker.isAuthority())
+    throw new Error('Select Transaction authority in Settings for this GM tab before submitting a tabletop change.');
+}
 export async function messageFingerprint(message,key) {
   const payload=message.flags?.[SYSTEM_ID]?.[key];
   if(!payload || typeof payload!=='object')throw new Error('The workflow payload is missing.');

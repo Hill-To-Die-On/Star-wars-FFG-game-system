@@ -72,11 +72,13 @@ import {
 import { configureXpTransactions } from "./xp-transactions.mjs";
 import { selectTransactionAuthority } from "./document-transactions.mjs";
 import { registerMinionGroups } from "./minion-groups-foundry.mjs";
+import { registerDorDamageEffects } from "./dor-damage-vfx.mjs";
 import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
 import { renderAboutContent } from "./about.mjs";
 class AboutMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     foundry.applications.api.DialogV2.wait({
+      classes: ["star-wars"],
       window: { title: "About Star Wars FFG" },
       position: { width: 420 },
       content: renderAboutContent({
@@ -167,6 +169,7 @@ export async function openConsole() {
   const { DialogV2 } = foundry.applications.api;
   const destiny = game.settings.get(SYSTEM_ID, "destiny");
   await DialogV2.wait({
+    classes: ["star-wars"],
     window: { title: "Star Wars FFG · Session console" },
     position: { width: 540 },
     content: `<div class="sf-dialog"><p>Shared Destiny: <strong>${destiny.light} light · ${destiny.dark} dark</strong></p><div class="sf-form-grid">${Object.entries(
@@ -356,6 +359,7 @@ Hooks.once("init", () => {
   registerTurnEconomy();
   registerVehicleCrew({openCheck:checkDialog});
   registerMinionGroups();
+  registerDorDamageEffects();
   registerTabletopWorkflows();
   registerSupportTools();
   game.settings.registerMenu(SYSTEM_ID, "aboutMenu", {

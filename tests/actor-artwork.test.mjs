@@ -315,4 +315,7 @@ test("facing correction respects rotation locks and separately selected token ar
   token.document.texture.src = "tokens/native-facing-top-down.webp";
   token._refreshRotation();
   assert.equal(token.mesh.angle, 90);
+  token.actor.prototypeToken = { texture: { src: "tokens/native-facing-top-down.webp" }, flags: { "star-wars-ffg": { tokenFacingOffset: 270 } } };
+  token._refreshRotation();
+  assert.equal(token.mesh.angle, 0);
 });

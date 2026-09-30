@@ -51,6 +51,15 @@ test("Foundry roll and movement entry points commit the same actor ledger",async
       combat.started=true;
       assert.equal(readTurnBudget(actor).actionsRemaining,1);
     });
+    await t.test("a recorded GM condition changes the next matching pool and leaves other skills alone",async()=>{
+      actor.flags['star-wars-ffg'].conditions=[{id:'optic',name:'Damaged optic',modifier:{die:'setback',count:1,skillKey:'rangedLight'}}];
+      await rollPool({ability:1},{actor,skillKey:'rangedLight',turnCost:'none'});
+      assert.match(messages.at(-1).data.rolls[0].formula,/1ds/);
+      assert.match(messages.at(-1).data.content,/Damaged optic/);
+      await rollPool({ability:1},{actor,skillKey:'computers',turnCost:'none'});
+      assert.doesNotMatch(messages.at(-1).data.rolls[0].formula,/1ds/);
+      actor.flags['star-wars-ffg'].conditions=[];
+    });
     await t.test("failed evaluation never spends",async()=>{
       failure=true;
       await assert.rejects(rollPool({ability:1},{actor,turnCost:"action"}),/Evaluation failed/);

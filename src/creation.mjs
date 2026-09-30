@@ -5,7 +5,7 @@ import {
   creationResourcePlan,
 } from "./creation-resources.mjs";
 import { speciesAbilityEntry, speciesStartingSkills, validateNonCareerSkillChoices } from "./species-abilities.mjs";
-import { defaultOriginBiography } from "./career-story.mjs";
+import { careerBackgroundDefault, speciesBackgroundDefault } from "./career-story.mjs";
 export function creationPlan({
   species,
   career,
@@ -113,7 +113,7 @@ export function creationPlan({
     phase: "creation",
     species: species.name,
     career: career.name,
-    biography: defaultOriginBiography(species.name, career.name),
+    biography: "",
     characteristics,
     skills,
     soak: characteristics.brawn,
@@ -142,6 +142,8 @@ export function creationPlan({
         }
       : {}),
     creation: {
+      speciesBackground: speciesBackgroundDefault(species.name),
+      careerBackground: careerBackgroundDefault(career.name),
       applied: true,
       speciesId: String(species.id ?? species._id ?? ""),
       careerId: String(career.id ?? career._id ?? ""),

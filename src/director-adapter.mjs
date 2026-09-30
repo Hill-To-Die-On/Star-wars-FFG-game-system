@@ -1,10 +1,12 @@
 import { SYSTEM_ID, SKILLS, CHARACTERISTICS } from "./config.mjs";
 import { bookFilterMode, campaignGuidance, DEFAULT_CAMPAIGN } from "./rules.mjs";
 import { availableTalents } from "./advancement.mjs";
+import { talentActivation } from "./talent-activation.mjs";
 import { minionState } from "./mechanics.mjs";
 import { getGMSourceNotes, searchGMSourceNotes } from "./gm-notes.mjs";
 import { groupSummary } from "./group.mjs";
 import { customSkillKey } from "./custom-skills.mjs";
+import { CHARACTERISTIC_GUIDANCE, SKILL_GUIDANCE } from "./sheet-guidance.mjs";
 import { motivationSummary } from "./motivations.mjs";
 import { signatureAbilityStatus } from "./signature-abilities.mjs";
 import {
@@ -264,11 +266,11 @@ export function actorContext(actor) {
               name: node.name,
               cost: node.cost,
               affordable: node.cost <= s.xp.available,
-              activation: node.activation ?? "",
+              activation: talentActivation(node.name, node.activation),
               summary: node.summary ?? "",
               effects: node.effects ?? [],
               automation: talentAutomation({
-                activation: node.activation ?? "",
+                activation: talentActivation(node.name, node.activation),
                 summary: node.summary ?? "",
                 effects: node.effects ?? [],
               }),
@@ -493,10 +495,12 @@ export const directorAdapter = {
   getNativeCheckRules() {
     return {
       skills: Object.values(SKILLS).map((s) => s.label),
+      skillGuidance: SKILL_GUIDANCE,
+      characteristicGuidance: CHARACTERISTIC_GUIDANCE,
       targetSemantics: "successes",
       defaultTarget: 1,
       guidance:
-        `Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. On scaled maps it includes token elevation, sourceLevelId, targetLevelId, vertical relation and sightBasis when supported. A blocked, unknown or unverified path must stop automated firing: requiresGmRuling takes precedence even when lineOfSightBlocked is false or null. Report sightReason and request an explicit GM ruling. A GM can call executeCheck(actor, skill, {sourceToken, targetToken, sightOverride:{approved:true,reason:"..."}, ...modifiers}) for an adjudicated effect that works without sight; the reason is recorded in the roll. For targeted execution use executeCheck(actor, skill, {sourceToken, targetToken, rangeOptions, difficulty, ...modifiers}); it remeasures the actual path before rolling. Do not pass a precomputed range as authorization. Untargeted skill checks do not authorize an attack. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target. ${RULE_KNOWLEDGE_POLICY.guidance}`,
+        `Choose a skill by its skillGuidance purpose before calling for a check; Astrogation concerns spacecraft routes, not ordinary terminal access. Resolve checks through actor.rollSkill(skill, {difficulty, boost, setback, upgradeDifficulty, selectedTalents}). Difficulty is a count of purple dice, not a DC. Passive structured talent and signature-upgrade effects are applied automatically. Inspect getCheckTalentRules before a roll for active decisions and guidance-only abilities. Use getCombatRange for token-to-token Personal, Battlefield or Ship/vehicle range before assembling an attack. On scaled maps it includes token elevation, sourceLevelId, targetLevelId, vertical relation and sightBasis when supported. A blocked, unknown or unverified path must stop automated firing: requiresGmRuling takes precedence even when lineOfSightBlocked is false or null. Report sightReason and request an explicit GM ruling. A GM can call executeCheck(actor, skill, {sourceToken, targetToken, sightOverride:{approved:true,reason:"..."}, ...modifiers}) for an adjudicated effect that works without sight; the reason is recorded in the roll. For targeted execution use executeCheck(actor, skill, {sourceToken, targetToken, rangeOptions, difficulty, ...modifiers}); it remeasures the actual path before rolling. Do not pass a precomputed range as authorization. Untargeted skill checks do not authorize an attack. Use active motivations to portray priorities, frame hooks and adjudicate source-defined rewards; motivations do not alter a dice pool unless a structured rule explicitly says so. Net success > 0 passes. Read advantage, threat, triumph and despair independently from the returned outcome. Preserve the active adventure's difficulty; never invent a d20 target. ${RULE_KNOWLEDGE_POLICY.guidance}`,
     };
   },
   readNativeCheckRoll(message) {

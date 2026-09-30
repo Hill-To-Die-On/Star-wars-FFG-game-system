@@ -12,6 +12,7 @@ import {
 } from "./config.mjs";
 import { DICE, skillPool } from "./dice/core.mjs";
 import { rollPool } from "./dice/foundry.mjs";
+import { activePoolRulings, addPoolRulings } from "./narrative-effects.mjs";
 import { turnPanelHTML, bindTurnControls, turnCostHTML } from "./turn-economy-foundry.mjs";
 import { crewPanelHTML, bindCrewControls, vehicleForActor, crewCheckDialog } from "./vehicle-crew-foundry.mjs";
 import {
@@ -31,12 +32,16 @@ import {
   bookAllowed,
 } from "./rules.mjs";
 import { escapeHTML, minionState } from "./mechanics.mjs";
+import { renderTalentMarkup, talentMarkupText } from "./talent-markup.mjs";
+import { talentActivationBadge } from "./talent-activation.mjs";
+import { portraitArtworkFacing } from "./facing-calibration.mjs";
+import { bindFacingRing, openTokenFacingEditor } from "./facing-calibration-foundry.mjs";
 import { gmSightRuling } from "./line-of-sight-ruling.mjs";
 import { referenceSummary } from "./reference-summaries.mjs";
 import { speciesAbilityEntry, speciesCheckBonuses, validateNonCareerSkillChoices } from "./species-abilities.mjs";
 import {
-  careerStoryPrompts, appendCareerStoryPrompts,
-  speciesStoryPrompts, appendSpeciesStoryPrompts,
+  careerStoryPrompts,
+  speciesStoryPrompts,
   careerBackgroundDefault, speciesBackgroundDefault,
 } from "./career-story.mjs";
 import { importWithProgress, mergeSpecializationEnrichment } from "./library.mjs";
@@ -59,7 +64,7 @@ import {
   startingEquipmentOptions,
   suggestedStartingEquipment,
 } from "./creation-resources.mjs";
-import { storyRollOptions, rollStoryHook, applyStoryHooks, missingStoryMechanics } from "./story-hooks.mjs";
+import { storyRollOptions, rollStoryHook, applyStoryHooks, missingStoryMechanics, storyHookCards, storyBackgroundParagraph, separateLegacyBiography } from "./story-hooks.mjs";
 import {
   availableOriginOptions,
   ORIGIN_INDEX_FIELDS,
@@ -77,6 +82,10 @@ import {
   signatureLinkState,
 } from "./signature-abilities.mjs";
 import { buildSkillColumns, SKILL_VIEWS } from "./skill-layout.mjs";
+import { bindSheetGuidance, CHARACTERISTIC_GUIDANCE, skillGuidance } from "./sheet-guidance.mjs";
+import { inventoryGroups } from "./inventory-glance.mjs";
+import { impairmentForCheck, DAMAGE_IMPAIRMENTS } from "./enemy-condition.mjs";
+import { themedDialogApi } from "./dialog-theme.mjs";
 import {
   measureActorTargetRange,
   measureTokenRange,
@@ -94,7 +103,8 @@ import {
   vehicleFootprintMeters,
   vehicleTokenDimensions,
 } from "./vehicle-footprints.mjs";
-const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
+const { HandlebarsApplicationMixin, DialogV2: FoundryDialogV2 } = foundry.applications.api;
+const DialogV2 = themedDialogApi(FoundryDialogV2);
 const notifyError = (error) => ui.notifications.error(error.message);
 const optionsHTML = (options, selected) =>
   Object.entries(options)
@@ -159,6 +169,7 @@ const targetContext = (key, meleeOverride, sourceActor, sourceToken, weapon) => 
         : "";
   return {
     name: actor?.name ?? "",
+    actorUuid: actor?.uuid ?? "",
     silhouette: actor?.type === "vehicle" ? actor.system?.silhouette : actor ? actor.system?.silhouette ?? 1 : undefined,
     shields: actor?.type === "vehicle" ? actor.system?.shields : null,
     defense,
@@ -321,6 +332,7 @@ function poolBuilderContext(actor, key, item, skill, characteristic, rank, {crew
           : vehicleScale
             ? "close"
             : "short"),
+    impairment=impairmentForCheck(actor,key),
     context = {
       actorName: actor.name,
       skillKey: key,
@@ -339,7 +351,8 @@ function poolBuilderContext(actor, key, item, skill, characteristic, rank, {crew
       rangeOptions,
       talentRules: actor.talentRulesForCheck(key),
       boost: (crew?.boost ?? 0) + speciesBonuses.boost,
-      setback: crew?.setback ?? 0,
+      setback: (crew?.setback ?? 0)+impairment.setback,
+      impairmentNote: impairment.note,
       speciesReasons: speciesBonuses.reasons,
       speciesAdvantage: speciesBonuses.advantage,
       vehicleAttack: !!crew && combat && !melee,
@@ -424,7 +437,7 @@ function poolBuilderHTML(context) {
       </div>
     </section>
     <section class="sf-pool-preview" aria-live="polite">
-      <span>Dice to roll</span><div data-pool-preview>${poolPreviewHTML(pool)}</div>
+      <span>Dice to roll${context.narrativeRulings.notes.length ? ' · includes GM decisions' : ''}</span><div data-pool-preview>${poolPreviewHTML(addPoolRulings(pool,context.narrativeRulings))}</div>
     </section>
     <div data-mode-panel="auto">
       <section class="sf-pool-section sf-auto-section">
@@ -486,7 +499,7 @@ function attachPoolBuilder(dialog, context) {
     );
   const writePool = (pool) => {
     for (const key of ROLL_DICE) root.querySelector(`[name="${key}"]`).value = pool[key];
-    root.querySelector("[data-pool-preview]").innerHTML = poolPreviewHTML(pool);
+    root.querySelector("[data-pool-preview]").innerHTML = poolPreviewHTML(addPoolRulings(pool,context.narrativeRulings));
     for (const button of root.querySelectorAll("[data-manual-difficulty]"))
       button.classList.toggle(
         "active",
@@ -542,6 +555,7 @@ function attachPoolBuilder(dialog, context) {
       `${context.characteristicLabel} ${context.characteristicValue} + ${context.skillLabel} rank ${context.rank}: ${result.basePool.ability} ability, ${result.basePool.proficiency} proficiency`,
       ...result.reasons.slice(1),
       ...context.speciesReasons,
+      ...context.narrativeRulings.notes,
     ];
     root.querySelector("[data-auto-reasons]").innerHTML = reasons
       .map((reason) => `<li>${escapeHTML(reason)}</li>`)
@@ -637,6 +651,7 @@ export async function checkDialog(actor, key, item, options = {}) {
       rank,
       options,
     );
+  context.narrativeRulings=activePoolRulings(actor,definition.key);
   const form = await DialogV2.prompt({
     window: { title: `${item?.name ?? definition.label} · Build dice pool` },
     classes: ["star-wars", "sf-pool-builder-window"],
@@ -672,13 +687,15 @@ export async function checkDialog(actor, key, item, options = {}) {
   const result = await rollPool(form.pool, {
     label: `${actor.name} · ${item?.name ?? definition.label}`,
     actor,
+    skillKey: definition.key,
+    targetActorUuid: context.target.actorUuid,
     rollMode: form.rollMode,
     turnCost: form.turnCost,
     automaticResults: {
       ...context.talentRules.automaticResults,
       advantage: (context.talentRules.automaticResults?.advantage ?? 0) + context.speciesAdvantage,
     },
-    ruleNotes: [...context.talentRules.reasons, ...context.speciesReasons, ...(form.sightRulingNote ? [form.sightRulingNote] : [])],
+    ruleNotes: [...context.talentRules.reasons, ...context.speciesReasons, ...(context.impairmentNote?[context.impairmentNote]:[]), ...(form.sightRulingNote ? [form.sightRulingNote] : [])],
   });
   if (item && result.outcome.passed) {
     ui.notifications.info(
@@ -708,7 +725,8 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       editCustomSkill: this.editCustomSkill,
       removeCustomSkill: this.removeCustomSkill,
       addMotivation: this.addMotivation,
-      addBackgroundPrompts: this.addBackgroundPrompts,
+      tidyBioNotes: this.tidyBioNotes,
+      editTokenFacing: this.editTokenFacing,
       applySpeciesSkills: this.applySpeciesSkills,
       rollStoryHooks: this.rollStoryHooks,
       refreshTalentGuidance: this.refreshTalentGuidance,
@@ -777,6 +795,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
           key: definition.key,
           id: definition.id,
           label: definition.label,
+          guidance: skillGuidance(definition.key, definition.label),
           characteristic,
           characteristicShort: CHARACTERISTIC_SHORT[characteristic],
           career: state.career,
@@ -894,14 +913,11 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
           nodes: (tree?.nodes ?? []).map((n) => ({
             ...n,
             itemId: item.id,
-            automatic:
-              n.activation === "Passive" && (n.effects?.length ?? 0) > 0,
-            automationLabel:
-              n.activation === "Passive" && (n.effects?.length ?? 0) > 0
-                ? "Auto"
-                : n.summary
-                  ? n.activation || "Guidance"
-                  : "Book reference",
+            automatic: talentActivationBadge(n).automatic,
+            automationLabel: talentActivationBadge(n).label,
+            automationHint: talentActivationBadge(n).hint,
+            summaryHtml: renderTalentMarkup(n.summary || "GM: check the cited book for this talent's effect before using it."),
+            summaryText: talentMarkupText(n.summary || `${n.name} · use ${item.system.source?.book ?? "the cited book"}, p. ${item.system.source?.page ?? "?"}`),
             ruleEffects: (n.effects ?? []).map((effect) => `${effect.operation === "add" ? "+" : "−"}${effect.count} ${effect.target}${effect.skills?.length ? ` on ${effect.skills.map((key) => SKILLS[key]?.label ?? key).join(", ")}` : ""}${effect.groups?.length ? ` on ${effect.groups.join(", ")}` : ""}`).join(" · "),
             owned: owned.includes(n.id),
             knownElsewhere:
@@ -963,6 +979,11 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       crewPanel: crewPanelHTML(actor),
       isVehicle: actor.isVehicle,
       isCharacter: actor.type === "character",
+      isAdversary: ["minion","rival","nemesis"].includes(actor.type),
+      damageVisualOptions: {auto:"Automatic by species",blood:"Blood",sparks:"Sparks",none:"No damage effect"},
+      damageVisualSelected: s.metadata?.damageVisual ?? "auto",
+      damageImpairmentOptions: Object.fromEntries(Object.entries(DAMAGE_IMPAIRMENTS).map(([key,value])=>[key,value.label])),
+      damageImpairmentSelected: s.metadata?.damageImpairment ?? "none",
       careerStoryPrompts: actor.type === "character" ? careerStoryPrompts(s.career) : [],
       speciesStoryPrompts: actor.type === "character" ? speciesStoryPrompts(s.species) : [],
       careerBackgroundDefault: actor.type === "character" ? careerBackgroundDefault(s.career) : "",
@@ -1005,6 +1026,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       vehicleSummary: actor.isVehicle ? referenceSummary("vehicles", s.metadata) : "",
       isMinion: actor.type === "minion",
       portraitSrc: actorPortraitSource(actor),
+      portraitFacingOffset: portraitArtworkFacing(actor),
       portraitFamily: portrait.family,
       portraitCategory: portrait.category,
       portraitProcedural:
@@ -1030,6 +1052,11 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       creationIssues: actor.type === "character" ? creationReadiness(s) : [],
       storyHooksMissing: actor.type === "character" ? missingStoryMechanics(s, campaign) : [],
       storyRolls: actor.type === "character" ? (s.creation?.storyRolls ?? []).map((entry) => ({...entry, label: entry.mechanic[0].toUpperCase() + entry.mechanic.slice(1)})) : [],
+      storyHookCards: actor.type === "character" ? storyHookCards(s) : [],
+      storyBackgroundParagraph: actor.type === "character" ? storyBackgroundParagraph(s) : "",
+      speciesBackground: Object.hasOwn(s.creation ?? {}, "speciesBackground") ? s.creation.speciesBackground : speciesBackgroundDefault(s.species),
+      careerBackground: Object.hasOwn(s.creation ?? {}, "careerBackground") ? s.creation.careerBackground : careerBackgroundDefault(s.career),
+      canTidyBioNotes: actor.type === "character" && this.isEditable && separateLegacyBiography(s).changed,
       canRefreshGuidance: game.user.isGM && this.isEditable && actor.items.some((item) => ["specialization", "signatureAbility"].includes(item.type)),
       canGenerateEnemy: game.user.isGM && this.isEditable && ["minion","rival","nemesis"].includes(actor.type) && !actor.items.size && !s.metadata?.enemyGuideApplied && !groupDefinition(actor),
       originsLocked,
@@ -1096,6 +1123,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
         : Object.entries(CHARACTERISTICS).map(([key, label]) => ({
             key,
             label,
+            guidance: CHARACTERISTIC_GUIDANCE[key],
             value: s.characteristics[key],
           })),
       skills,
@@ -1116,14 +1144,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
         ...s[key],
         exceeded: s[key].value > s[key].max,
       })),
-      items: actor.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        type: item.type,
-        img: item.img,
-        system: item.system,
-        weapon: item.type === "weapon",
-      })),
+      ...inventoryGroups(actor),
       vehicleFields: ["armor", "silhouette", "handling"].map((key) => ({
         key,
         value: s[key],
@@ -1153,11 +1174,14 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
   _onRender(context, options) {
     super._onRender(context, options);
     this.element.dataset.theme = context.themeKey;
+    bindSheetGuidance(this.element);
     bindTurnControls(this.element.querySelector(".sf-turn-panel"),this.actor);
     const crewPanel = this.element.querySelector(".sf-crew-panel");
     if (crewPanel) bindCrewControls(crewPanel,vehicleForActor(this.actor),this.actor);
     this._sfRenderEvents?.abort();
     this._sfRenderEvents = new AbortController();
+    if (this.isEditable) bindFacingRing(this.element.querySelector(".sf-portrait-frame"),
+      (angle) => this.actor.setFlag(SYSTEM_ID, "portraitFacingOffset", angle), this._sfRenderEvents.signal);
     for (const picker of this.element.querySelectorAll("[data-origin-picker]"))
       bindOriginPicker(picker, context[`${picker.dataset.originPicker}Options`] ?? []);
     if (this.activeTab === "skills") {
@@ -1364,25 +1388,26 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       notifyError(error);
     }
   }
-  static async addBackgroundPrompts(_event, target) {
+  static async tidyBioNotes() {
     try {
       if (this.actor.type !== "character" || !this.isEditable)
-        throw new Error("Only an editable character can add background prompts.");
-      const biography = this.element.querySelector('[name="system.biography"]')?.value ??
-        this.actor.system.biography;
-      const updated = target.dataset.kind === "career"
-        ? appendCareerStoryPrompts(biography, this.actor.system.career)
-        : target.dataset.kind === "species"
-          ? appendSpeciesStoryPrompts(biography, this.actor.system.species)
-          : null;
-      if (updated === null) throw new Error("Unknown background prompt type.");
-      if (updated !== biography) {
-        await this.actor.update({ "system.biography": updated });
+        throw new Error("Only an editable character can tidy Bio Notes.");
+      const biography = this.element.querySelector('[name="system.biography"]')?.value ?? this.actor.system.biography;
+      const separated = separateLegacyBiography({ ...this.actor.system, biography });
+      if (separated.changed) {
+        await this.actor.update({ "system.biography": separated.biography });
         this.render();
       }
     } catch (error) {
       notifyError(error);
     }
+  }
+  static async editTokenFacing() {
+    try {
+      if (!this.isEditable) throw new Error("Token artwork requires an editable actor.");
+      await openTokenFacingEditor(this.actor);
+      this.render();
+    } catch (error) { notifyError(error); }
   }
   static async applySpeciesSkills() {
     try {
@@ -1467,6 +1492,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
   }
   static async buyTalent(_event, target) {
     try {
+      if (target.dataset.disabled === "true" || !this.isEditable) return;
       target.disabled = true;
       const node = this.actor.items
         .get(target.dataset.item)
@@ -1881,6 +1907,7 @@ const STARTING_EQUIPMENT_INDEX_FIELDS = [
 
 const STORY_INDEX_FIELDS = [
   "system.source.table", "system.source.book", "system.source.page",
+  "system.description",
   "system.metadata.Career", "system.metadata.Obligation", "system.metadata.Duty_Type",
   "system.metadata.Emotional_Strength", "system.metadata.Emotional_Weakness",
   "system.metadata.d-100_Low", "system.metadata.d-100_High",
@@ -1912,7 +1939,6 @@ async function rollMissingStoryHooks(actor) {
   }
   const updated = applyStoryHooks(actor.toObject().system, hooks);
   await actor.update({
-    "system.biography": updated.biography,
     "system.obligation.label": updated.obligation?.label ?? actor.system.obligation.label,
     "system.duty.label": updated.duty?.label ?? actor.system.duty.label,
     "system.morality.strength": updated.morality?.strength ?? actor.system.morality.strength,

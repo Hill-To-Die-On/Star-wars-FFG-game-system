@@ -272,6 +272,7 @@ export class ItemData extends foundry.abstract.TypeDataModel {
       rank: number(1, 100),
       ranked: bool(),
       activation: text(),
+      abilities: new f.ArrayField(new f.ObjectField(), { initial: [] }),
       effects: new f.ArrayField(new f.ObjectField(), { initial: [] }),
       career: text(),
       careerSkills: list(),
