@@ -744,6 +744,7 @@
   gap: 5px;
   flex-wrap: wrap;
   margin: 10px 0;
+  filter: drop-shadow(0 0 1px #071014) drop-shadow(0 2px 2px #07101499);
 }
 .sf-dice-tray span {
   display: inline-grid;
