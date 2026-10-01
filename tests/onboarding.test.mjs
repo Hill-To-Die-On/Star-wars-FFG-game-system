@@ -32,3 +32,15 @@ test("remembered books survive future worlds without requiring browser storage",
   const denied={getItem(){throw Error("Denied");},setItem(){throw Error("Denied");}};
   assert.equal(readRememberedBooks(denied),null);assert.equal(rememberBooks(denied,{books:[]}),false);
 });
+
+ test("onboarding and general settings share localized groups including welcome and authority", async () => {
+  const shared = await import("../src/settings-groups.mjs");
+  const presentation = await import("../src/window-presentation.mjs");
+  assert.equal(presentation.groupSystemSettings, shared.groupSystemSettings);
+  assert.equal(presentation.SETTINGS_GROUPS, shared.SETTINGS_GROUPS);
+  const keys = shared.SETTINGS_GROUPS.flatMap(group => group.keys);
+  for (const key of ["welcomeMenu", "ownedBooksMenu", "transactionAuthorityMenu", "aboutMenu"]) {
+    assert.equal(keys.filter(value => value === key).length, 1, key);
+  }
+  assert.ok(shared.SETTINGS_GROUPS.every(group => group.key.startsWith("SWFFG.Settings.Groups.")));
+});

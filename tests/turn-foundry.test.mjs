@@ -113,3 +113,23 @@ test("concurrent owners cannot spend the same action and unlinked UUIDs remain d
     assert.equal(await p.request(other,"action"),0);
   } finally {p.stop();g.stop();world.stop();}
 });
+test("queued turn commands recheck activity and ownership before execution",async()=>{
+  const gm={id:"gm",isGM:true,active:true},player={id:"player",active:true},users=[gm,player];
+  let allowed=true,runs=0,release;
+  const held=new Promise(resolve=>{release=resolve;});
+  const actor={uuid:"Scene.one.Token.a.Actor.same",canUserModify:user=>user.id==="player"&&allowed};
+  const world=transactionWorld(users),resolve=uuid=>uuid===actor.uuid?actor:null;
+  const execute=async()=>{runs++;if(runs===1)await held;return "ok";};
+  const coordinator=new TurnTransactionCoordinator({transport:world.client(player).transport,currentUser:()=>player,users:()=>users,getActor:resolve,execute}).start();
+  const authority=new TurnTransactionCoordinator({transport:world.client(gm).transport,currentUser:()=>gm,users:()=>users,getActor:resolve,execute}).start();
+  try {
+    const first=coordinator.request(actor,"action");
+    await world.until(()=>runs===1);
+    const second=coordinator.request(actor,"action");
+    await world.until(()=>Object.values(world.receipts).some(row=>row.status==="queued"));
+    allowed=false;release();
+    assert.equal(await first,"ok");
+    await assert.rejects(second,/Owner permission/);
+    assert.equal(runs,1,"the revoked queued request must not reach the mutation callback");
+  } finally {release?.();coordinator.stop();authority.stop();world.stop();}
+});

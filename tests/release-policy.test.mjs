@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { auditReleaseFiles } from "../scripts/release-policy.mjs";
+import { auditReleaseFiles, validateReleasePath } from "../scripts/release-policy.mjs";
 
 const manifest = {
   id: "star-wars-ffg", version: "0.3.0", compatibility: { minimum: "14", verified: "14.368", maximum: "14" },
@@ -30,6 +30,11 @@ function audit(files=fixture(), options={}) {
 }
 test("a self-contained original runtime package passes and reports its entry count", () => {
   assert.equal(audit().fileCount, 8);
+});
+test("reviewed rules data enters the release but arbitrary data files remain blocked", () => {
+  for (const name of ["roll-tables.json", "species-abilities.json", "book-play-guidance.json"])
+    assert.doesNotThrow(() => validateReleasePath(`data/${name}`));
+  assert.throws(() => validateReleasePath("data/private-rulebook.json"), /allow-list/i);
 });
 test("private paths and disguised source documents are rejected regardless of folder", () => {
   for (const name of ["docs/book.pdf", "docs/backup.SQL", "assets/source.accdb", "assets/.env", "../escape.mjs", "src/../../key", "C:/Users/example/key", "docs/.local/chart.json", "tests/fixture.mjs"]) {

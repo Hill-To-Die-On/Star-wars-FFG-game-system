@@ -21,6 +21,13 @@ const source = {
 
 test("interchange accepts bounded turn allowances and structured talent effects without a spending ledger",()=>{
   const pack=characterPackage();
+  pack.payload.items[0].system.abilities=[{name:"Field calibration",activation:"Passive",summary:"Adds a boost to repair checks.",effects:[
+    {type:"pool",target:"boost",operation:"add",count:1,skills:["mechanics"]},
+  ]}];
+  assert.equal(validateIntegrationPackage(pack).payload.items[0].system.abilities[0].name,"Field calibration");
+  pack.payload.items[0].system.abilities[0].effects[0].target="inventedDie";
+  assert.throws(()=>validateIntegrationPackage(pack),/Unsupported talent effect target/);
+  pack.payload.items[0].system.abilities[0].effects[0].target="boost";
   pack.payload.system.turnEconomy={actions:1,freeManeuvers:2,maneuverLimit:2,strainCost:2};
   pack.payload.items.push({name:"Original training",type:"talent",system:{activation:"Passive",effects:[
     {type:"turn",target:"freeManeuvers",operation:"add",count:1}

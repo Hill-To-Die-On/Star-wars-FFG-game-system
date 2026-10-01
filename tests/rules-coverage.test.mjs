@@ -85,4 +85,3 @@ test("diagnostic version and counts reject paths, credentials and malformed data
  assert.equal(snapshot.counts.actors,0);assert.equal(snapshot.counts.scenes,0);
  assert.equal(snapshot.integrations["dice-so-nice"].version,"unknown");
 });
-

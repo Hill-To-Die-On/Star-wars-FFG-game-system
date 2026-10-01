@@ -32,7 +32,7 @@ export class DocumentTransactionBroker {
   this.#hooks=[['createChatMessage',(message,_options,creatorId)=>{void this.receive(message,creatorId).catch(this.onError);}],['updateSetting',()=>{void this.settle().catch(this.onError);}],['updateUser',()=>{void this.resume().catch(this.onError);}]].map(([name,fn])=>[name,this.hooks.on(name,fn)]);
   return this;
  }
- stop(){for(const [name,handle]of this.#hooks)this.hooks.off(name,handle);this.#hooks=[];for(const p of this.#pending.values()){clearTimeout(p.timer);p.reject(new Error('Transaction service stopped.'));}this.#pending.clear();}
+ stop(){for(const [name,handle]of this.#hooks)this.hooks.off(name,handle);this.#hooks=[];for(const p of this.#pending.values()){clearTimeout(p.timer);clearInterval(p.poll);p.reject(new Error('Transaction service stopped.'));}this.#pending.clear();}
  register(domain,handler){this.#handlers.set(domain,handler);this.start();queueMicrotask(()=>{void this.resume().catch(this.onError);});return ()=>{if(this.#handlers.get(domain)===handler)this.#handlers.delete(domain);};}
  async request(domain,targetUuid,command,args={},id=this.randomId()) {
   this.start();
@@ -43,10 +43,13 @@ export class DocumentTransactionBroker {
   const existing=this.readReceipts()[key];if(existing&&existing.fingerprint!==fingerprint)throw new Error('Request identity was reused with a different payload.');
   if(this.#pending.has(key))throw new Error('This request is already pending.');
   let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});
-  const timer=setTimeout(()=>{this.#pending.delete(key);reject(new Error('Transaction confirmation timed out. The GM should open Settings > Transaction authority, then inspect the request and actor before retrying.'));},this.timeoutMs);
-  this.#pending.set(key,{resolve,reject,timer,fingerprint});
+  const timer=setTimeout(()=>{const pending=this.#pending.get(key);clearInterval(pending?.poll);this.#pending.delete(key);reject(new Error('Transaction confirmation timed out. The GM should open Settings > Transaction authority, then inspect the request and actor before retrying.'));},this.timeoutMs);
+  // Document and world-setting notifications can arrive before the other document is visible locally.
+  // Recheck durable receipts while a request is pending, including when a socket notification was missed.
+  const poll=setInterval(()=>{void this.settle().catch(this.onError);},Math.min(250,Math.max(25,Math.floor(this.timeoutMs/4))));
+  this.#pending.set(key,{resolve,reject,timer,poll,fingerprint});
   try {await this.createMessage({content:'<p>Game transaction submitted for GM authority.</p>',whisper:[...new Set([user.id,...Array.from(this.users()).filter(u=>u.isGM).map(u=>u.id)])],flags:{[SYSTEM_ID]:{[REQUEST]:request}}});await this.settle();}
-  catch(error){clearTimeout(timer);this.#pending.delete(key);reject(error);}
+  catch(error){clearTimeout(timer);clearInterval(poll);this.#pending.delete(key);reject(error);}
   return promise;
  }
  async receive(message,creatorId) {
@@ -107,7 +110,7 @@ export class DocumentTransactionBroker {
    if(receipt.creatorId!==this.currentUser()?.id||receipt.fingerprint!==pending.fingerprint)continue;
    const message=await this.resolveMessage(receipt.responseUuid),response=flag(message,RESPONSE);
    if(!byId(this.users(),authorId(message))?.isGM||!response||response.key!==key||response.creatorId!==receipt.creatorId||await transactionDigest(response)!==receipt.responseFingerprint)continue;
-   if(this.#pending.get(key)!==pending)continue;clearTimeout(pending.timer);this.#pending.delete(key);
+   if(this.#pending.get(key)!==pending)continue;clearTimeout(pending.timer);clearInterval(pending.poll);this.#pending.delete(key);
    response.ok?pending.resolve(clone(response.result)):pending.reject(new Error(response.error));
   }
  }
@@ -139,13 +142,13 @@ export function renderTransactionMessage(message,html,broker){
  const explanation=document.createElement('p');explanation.textContent=response.error;root.querySelector('.message-content')?.append(explanation);
  const button=document.createElement('button');button.type='button';button.dataset.authorityReview='true';button.textContent='Review interrupted transaction';
  button.addEventListener('click',()=>{void (async()=>{
-  const note=await foundry.applications.api.DialogV2.prompt({window:{title:'Review interrupted transaction'},content:'<p>Check the actor and crew state before releasing this lock. This does not apply, undo or repeat the request. Submit a fresh request only after reconciling the state.</p><label>What did you verify?<textarea name="note" required maxlength="500"></textarea></label>',ok:{label:'I checked the state - release lock',callback:(_event,b)=>new FormData(b.form).get('note')},rejectClose:false});
+  const note=await foundry.applications.api.DialogV2.prompt({classes:['star-wars'],window:{title:'Review interrupted transaction'},content:'<p>Check the actor and crew state before releasing this lock. This does not apply, undo or repeat the request. Submit a fresh request only after reconciling the state.</p><label>What did you verify?<textarea name="note" required maxlength="500"></textarea></label>',ok:{label:'I checked the state - release lock',callback:(_event,b)=>new FormData(b.form).get('note')},rejectClose:false});
   if(note){await broker.acknowledge(response.key,note);button.remove();ui.notifications.info('Review recorded. The original request will not run again.');}
  })().catch(error=>ui.notifications.error(error.message));});root.querySelector('.message-content')?.append(button);
 }
 export async function selectTransactionAuthority(){
  const broker=getDocumentTransactionBroker();
- const confirmed=await foundry.applications.api.DialogV2.confirm({window:{title:'Transaction authority'},content:'<p>Use this GM tab to process XP, turn, crew and tabletop changes?</p><p>Close other GM transaction tabs and wait for their work to stop before continuing. After a reload or handover, interrupted requests stay locked until their actor or crew state is reviewed. Do not select authority simultaneously in two tabs.</p>',yes:{label:'Other tabs stopped - use this tab'},no:{label:'Cancel'}});
+ const confirmed=await foundry.applications.api.DialogV2.confirm({classes:['star-wars'],window:{title:'Transaction authority'},content:'<p>Use this GM tab to process XP, turn, crew and tabletop changes?</p><p>Close other GM transaction tabs and wait for their work to stop before continuing. After a reload or handover, interrupted requests stay locked until their actor or crew state is reviewed. Do not select authority simultaneously in two tabs.</p>',yes:{label:'Other tabs stopped - use this tab'},no:{label:'Cancel'}});
  if(confirmed){await broker.takeAuthority('GM confirmed other transaction tabs stopped and will review pending state.');ui.notifications.info('This tab now processes XP, turn, crew and tabletop transactions.');}
 }
 let nativeBroker;

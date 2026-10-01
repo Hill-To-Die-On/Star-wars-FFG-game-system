@@ -39,4 +39,3 @@ Save a world backup and keep private assets plus the source-key backup recoverab
 ## Before adding Director of Realms
 
 Complete the same table workflow without DoR first. Configure a supported provider separately, review what private content may be sent, and retain GM approval for missing mechanics. Fully AI-led campaign acceptance is a separate gate. [DoR integration](director-of-realms.md)
-

@@ -67,7 +67,7 @@ test("published creator database retains every table and row with usable referen
   }
 });
 
-test("reference search exposes corrected printed identities without rewriting source rows", () => {
+test("reference search exposes corrected printed identities", () => {
   const result = findReferences(index, DEFAULT_CAMPAIGN, {
       query: "Unmatched Devastation",
     }),
@@ -75,7 +75,7 @@ test("reference search exposes corrected printed identities without rewriting so
       (row) => row.category === "signature_abilities",
     );
   assert.equal(ability.name, "Unmatched Devastation");
-  assert.equal(ability.fields.signature_abilities, "Unmatched Devistation");
+  assert.equal(ability.fields.signature_abilities, "Unmatched Devastation");
 });
 
 test("owned books distinguishes an empty selection from all books and migrates old settings", () => {

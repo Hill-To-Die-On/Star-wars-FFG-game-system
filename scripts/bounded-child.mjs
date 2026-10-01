@@ -14,6 +14,37 @@ function stopPosixTree(pid) {
   signal(-pid);
 }
 
+function stopWindowsTree(pid) {
+  const powershell = join(
+    process.env.SystemRoot ?? 'C:\\Windows',
+    'System32',
+    'WindowsPowerShell',
+    'v1.0',
+    'powershell.exe',
+  );
+  const script = [
+    '$ErrorActionPreference = "SilentlyContinue";',
+    `$root = ${Number(pid)};`,
+    '$rows = @(Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId);',
+    '$owned = [System.Collections.Generic.HashSet[int]]::new();',
+    '$queue = [System.Collections.Generic.Queue[int]]::new();',
+    '[void]$owned.Add($root); $queue.Enqueue($root);',
+    'while ($queue.Count -gt 0) {',
+    '  $parent = $queue.Dequeue();',
+    '  foreach ($row in $rows) {',
+    '    $child = [int]$row.ProcessId;',
+    '    if ([int]$row.ParentProcessId -eq $parent -and $owned.Add($child)) { $queue.Enqueue($child) }',
+    '  }',
+    '}',
+    '$owned | Sort-Object -Descending | ForEach-Object { if ($_ -ne $PID -and $_ -ne 0) { Stop-Process -Id $_ -Force } }',
+  ].join('\n');
+  execFileSync(powershell, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script], {
+    windowsHide: true,
+    stdio: 'ignore',
+    timeout: 10_000,
+  });
+}
+
 /** Each fixture owns one process tree. Timeout cleanup must include browser descendants. */
 export function runBoundedChild(command,args,{cwd,env,timeout=120_000,maxBuffer=8*1024*1024}={}) {
   return new Promise(resolve=>{
@@ -28,11 +59,25 @@ export function runBoundedChild(command,args,{cwd,env,timeout=120_000,maxBuffer=
       if(stopping||finished)return;stopping=true;result.error=reason;
       // Kill descendants while their owned parent still exists. Never kill by process name.
       try {
-        if(process.platform==='win32')execFileSync(join(process.env.SystemRoot??'C:\\Windows','System32','taskkill.exe'),['/PID',String(child.pid),'/T','/F'],{windowsHide:true,stdio:'ignore',timeout:10_000});
-        else stopPosixTree(child.pid);
+        if(process.platform==='win32') {
+          // taskkill can return success after terminating only the parent when a
+          // detached grandchild has already broken the parent/child link. Snapshot
+          // and terminate the complete owned tree before using it as a fallback.
+          stopWindowsTree(child.pid);
+        } else stopPosixTree(child.pid);
       } catch(error) {
-        result.cleanupFailure=`Could not stop the owned fixture process tree: ${error.message}`;
-        child.kill('SIGKILL');
+        try {
+          if(process.platform==='win32')execFileSync(join(process.env.SystemRoot??'C:\\Windows','System32','taskkill.exe'),['/PID',String(child.pid),'/T','/F'],{windowsHide:true,stdio:'ignore',timeout:10_000});
+          else throw error;
+        } catch(fallbackError) {
+          try {
+            if(process.platform==='win32')stopWindowsTree(child.pid);
+            else throw fallbackError;
+          } catch(lastError) {
+            result.cleanupFailure=`Could not stop the owned fixture process tree: ${lastError.message}`;
+          }
+          child.kill('SIGKILL');
+        }
       }
       fallback=setTimeout(()=>{
         result.cleanupFailure??='Owned fixture did not confirm process exit.';

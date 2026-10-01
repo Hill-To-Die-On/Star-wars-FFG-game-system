@@ -28,6 +28,10 @@ for (const name of [
   "data/vehicle-loadouts.json",
   "data/source-verification.json",
   "data/source-requests.json",
+  "data/roll-tables.json",
+  "data/species-abilities.json",
+  "data/talent-activations.json",
+  "data/book-play-guidance.json",
 ])
   files[name] = new Uint8Array(await readFile(name));
 for (const name of Object.keys(files))

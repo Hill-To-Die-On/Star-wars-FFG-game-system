@@ -1,5 +1,6 @@
 import { SYSTEM_ID, SYSTEM_PATH } from "./config.mjs";
 import { actorRuleCoverage, capabilityCoverage, supportSnapshot } from "./rules-coverage.mjs";
+import { localize as t } from "./localization.mjs";
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const canRead=actor=>Boolean(actor && (game.user.isGM || actor.testUserPermission?.(game.user,"OBSERVER")));
 
@@ -43,7 +44,7 @@ export class SupportWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 export function openSupport(){const app=new SupportWindow();void app.render({force:true});return app;}
 export function registerSupportTools(){
   game.settings.registerMenu(SYSTEM_ID,"supportMenu",{
-    name:"Help & rules coverage",label:"Open help",hint:"Quick starts, automation limits, learned effects and privacy-safe diagnostics.",
+    name:t("SWFFG.UI.HelpRulesCoverage","Help & rules coverage"),label:t("SWFFG.UI.OpenHelp","Open help"),hint:t("SWFFG.UI.HelpRulesCoverageHint","Quick starts, automation limits, learned effects and privacy-safe diagnostics."),
     icon:"fas fa-circle-question",type:SupportWindow,restricted:false
   });
 }
@@ -56,4 +57,3 @@ export const supportApi=Object.freeze({
   },
   diagnostics:()=>supportSnapshot(game)
 });
-

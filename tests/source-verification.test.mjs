@@ -8,17 +8,18 @@ test("public source verification records checks without private prose or paths",
   );
   assert.equal(data.format, "star-wars-ffg-source-verification");
   assert.equal(data.version, 1);
-  assert.equal(data.checks.length, 143);
+  assert.equal(data.checks.length, 168);
   const identities = new Set();
   for (const entry of data.checks) {
     assert.ok(["specialization", "signatureAbility"].includes(entry.kind));
     assert.ok(["full-chart", "connectors"].includes(entry.level));
-    assert.deepEqual(
-      entry.checked,
+    assert.deepEqual(entry.checked,
       entry.level === "full-chart"
-        ? ["node names", "costs", "connectors"]
-        : ["connectors"],
-    );
+        ? ["node names", "costs", "connectors",
+           ...(entry.kind === "signatureAbility" &&
+               ["Prophecy", "Unmatched Destiny", "Unmatched Teamwork", "Peerless Interception"].includes(entry.name)
+             ? ["attachment slots"] : [])]
+        : ["connectors"]);
     assert.match(entry.referencePage, /^\d+$/);
     assert.match(entry.evidencePage, /^\d+$/);
     assert.ok(!("path" in entry));
@@ -53,11 +54,36 @@ test("public source verification records checks without private prose or paths",
     "specialization:sentry",
     "specialization:steel hand adept",
     "specialization:navigator",
+    "specialization:alchemist",
+    "specialization:magus",
+    "specialization:prophet",
+    "specialization:clone officer",
+    "specialization:clone pilot",
+    "specialization:clone trooper",
+    "specialization:knight",
+    "specialization:padawan",
+    "specialization:force sensitive outcast",
+    "specialization:republic navy officer",
+    "specialization:republic representative",
+    "specialization:scavenger",
+    "specialization:arc trooper",
+    "specialization:clone commander",
+    "specialization:clone veteran",
+    "specialization:general",
+    "specialization:master",
+    "specialization:death watch warrior",
+    "specialization:nightsister",
+    "specialization:senator",
+    "specialization:separatist commander",
+    "signatureAbility:prophecy",
+    "signatureAbility:unmatched destiny",
+    "signatureAbility:unmatched teamwork",
+    "signatureAbility:peerless interception",
   ])
     assert.ok(identities.has(identity));
   assert.equal(
     data.checks.filter((entry) => entry.level === "full-chart").length,
-    143,
+    168,
   );
   assert.equal(
     data.checks.filter((entry) => entry.level === "connectors").length,
@@ -73,11 +99,7 @@ test("source coverage requests every unverified signature chart", async () => {
   for (const name of [
     "The Harder They Fall",
     "Unmatched Ingenuity",
-    "Peerless Interception",
-    "Unmatched Teamwork",
-    "Prophecy",
-    "Unmatched Destiny",
   ])
     assert.match(section, new RegExp(name));
-  assert.doesNotMatch(section, /Deadly Reputation|Unmatched Ferocity/);
+  assert.doesNotMatch(section, /Deadly Reputation|Unmatched Ferocity|Peerless Interception|Unmatched Teamwork|Prophecy|Unmatched Destiny/);
 });

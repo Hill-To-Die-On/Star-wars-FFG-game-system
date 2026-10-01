@@ -2,8 +2,31 @@ import { SYSTEM_ID } from './config.mjs';
 import { damageAfterSoak, minionState } from './mechanics.mjs';
 import { canSpendXp } from './xp-transactions.mjs';
 import { bookAllowed } from './rules.mjs';
+import { validateFutureEffect, validatePoolModifier } from './narrative-effects.mjs';
 
 export const SYMBOLS = Object.freeze(['advantage','threat','triumph','despair']);
+export const FORCE_PIPS = Object.freeze(['light','dark']);
+export function spendableSymbols(outcome) {
+  return [...SYMBOLS,...FORCE_PIPS.filter(symbol=>Number(outcome?.[symbol])>0)];
+}
+export function tabletopSourceDefaults(source = {}, sceneName = '') {
+  return {
+    book: String(source.book || 'GM table ruling'),
+    page: String(source.page || sceneName || 'Current session'),
+    verification: source.verification === 'gm-reviewed' ? 'gm-reviewed' : 'gm-ruling',
+  };
+}
+export function weaponForRecordedRoll(attacker,message) {
+  return Array.from(attacker?.items??[]).find(item=>item.type==='weapon' && message?.flavor===`${attacker.name} · ${item.name}`)??null;
+}
+export function damageResolutionDefaults(weapon,targetScale,facts) {
+  if(!['personal','vehicle'].includes(targetScale))throw new Error('Unknown target damage scale.');
+  const sourceScale=weapon?.system?.scale==='vehicle'?'vehicle':weapon?'personal':targetScale;
+  let sourceAmount=0;
+  if(weapon&&facts?.passed)sourceAmount=integer(weapon.damageFor(facts),'Weapon damage');
+  const requiresConversion=Boolean(weapon&&sourceScale!==targetScale);
+  return {sourceScale,sourceAmount,amount:requiresConversion?0:sourceAmount,requiresConversion};
+}
 export const snapshotValues = value => typeof value==='string'?JSON.parse(value):value;
 /** Review includes derived results: unchanged wounds do not imply unchanged soak or threshold. */
 export const reviewSnapshot = plan => ({version:1,before:plan.before,after:plan.after,
@@ -21,37 +44,53 @@ export function reviewedSource(source,campaign={}) {
   return {book:String(source.book).trim().slice(0,200),page:String(source.page).trim().slice(0,80),verification:source.verification};
 }
 export function remainingSymbols(outcome,entries=[]) {
-  const remaining=Object.fromEntries(SYMBOLS.map(s=>[s,integer(outcome?.[s]??0,s,0,1000)]));
-  for (const entry of entries) if (!entry.undone) for (const s of SYMBOLS) remaining[s]-=integer(entry.cost?.[s]??0,s,0,1000);
+  const symbols=spendableSymbols(outcome);
+  const remaining=Object.fromEntries(symbols.map(s=>[s,integer(outcome?.[s]??0,s,0,1000)]));
+  for (const entry of entries) if (!entry.undone) for (const s of symbols) remaining[s]-=integer(entry.cost?.[s]??0,s,0,1000);
   if (Object.values(remaining).some(n=>n<0)) throw new Error('The spending record exceeds the roll. Ask the GM to review it.');
   return remaining;
 }
 export function planSpend(outcome,entries,request,{campaign={}}={}) {
-  const available=remainingSymbols(outcome,entries),cost={};
+  const available=remainingSymbols(outcome,entries),cost={},symbols=spendableSymbols(outcome);
   if (!request.label?.trim()) throw new Error('Describe the narrative result.');
-  if (!request.cost || Object.keys(request.cost).some(key=>!SYMBOLS.includes(key))) throw new Error('Unknown narrative symbol.');
-  for (const s of SYMBOLS) {const n=integer(request.cost[s]??0,s,0,1000);if(n>available[s])throw new Error(`Not enough ${s} remains.`);cost[s]=n;}
+  if (!request.cost || Object.keys(request.cost).some(key=>!symbols.includes(key))) throw new Error('Unknown narrative symbol.');
+  for (const s of symbols) {const n=integer(request.cost[s]??0,s,0,1000);if(n>available[s])throw new Error(`Not enough ${s} remains.`);cost[s]=n;}
   if (!Object.values(cost).some(Boolean)) throw new Error('Spend at least one symbol.');
-  return {label:request.label.trim().slice(0,500),cost,source:reviewedSource(request.source,campaign),note:String(request.note??'').slice(0,2000)};
+  const futureEffect=validateFutureEffect(request.futureEffect);
+  const note=String(request.note??'').trim().slice(0,2000);
+  if(futureEffect&&!note)throw new Error('Describe the GM decision that grants the future effect.');
+  return {label:request.label.trim().slice(0,500),cost,source:reviewedSource(request.source,campaign),note,futureEffect};
 }
 function requireGM(user) {if(!user?.isGM)throw new Error('Only the GM can commit or undo mechanical effects.');}
 function put(plan,actor,path,value) {plan.before[path]=copy(getPath(actor,path)??null);plan.after[path]=copy(value);}
 export function planActorEffect(actor,request,{user,campaign={}}={}) {
   requireGM(user);
   if(!actor || actor.type==='group')throw new Error('Choose a character, adversary or vehicle.');
-  const source=reviewedSource(request.source,campaign),plan={kind:request.kind,label:request.note||request.kind,source,before:{},after:{}},vehicle=actor.type==='vehicle';
+  if(request.sourceRollUuid&&!String(request.note??'').trim())throw new Error('Record the GM decision for this roll.');
+  const source=reviewedSource(request.source,campaign),plan={kind:request.kind,label:request.note||request.kind,source,sourceRollUuid:String(request.sourceRollUuid??''),before:{},after:{}},vehicle=actor.type==='vehicle';
   if(request.kind==='damage') {
-    if(actor.system.incomplete?.length)throw new Error('Verify the missing statistics before applying damage.');
+    const outstanding=Array.isArray(actor.system.incomplete)?actor.system.incomplete.filter(Boolean):[];
+    if(outstanding.length&&!String(request.note??'').trim())throw new Error('Record a GM ruling for this actor’s outstanding source checks before applying damage.');
+    if(outstanding.length)plan.warning=`Outstanding actor source checks: ${outstanding.join(', ').slice(0,500)}. The GM accepted the displayed combat values for this resolution.`;
     const scale=vehicle?'vehicle':'personal';
     if(request.scale!==scale)throw new Error('Resolve cross-scale damage as an explicit GM ruling first.');
     const amount=integer(request.amount,'Damage'),pierce=integer(request.pierce??0,'Pierce'),breach=integer(request.breach??0,'Breach');
-    const soak=request.ignoreSoak?0:vehicle?actor.system.armor:(actor.effectiveTraits?.().soak??actor.system.soak);
+    let crossScale=null;
+    if(request.crossScale) {
+      const sourceScale=request.crossScale.sourceScale;
+      if(!['personal','vehicle'].includes(sourceScale)||sourceScale===scale)throw new Error('Invalid cross-scale damage source.');
+      const sourceAmount=integer(request.crossScale.sourceAmount,'Source damage');
+      if(request.crossScale.reviewed!==true || !String(request.note??'').trim())throw new Error('Cross-scale damage needs an explicit GM review and decision.');
+      crossScale={sourceScale,sourceAmount,targetScale:scale,convertedAmount:amount};
+    }
+    const soak=integer(request.ignoreSoak?0:vehicle?actor.system.armor:(actor.effectiveTraits?.().soak??actor.system.soak),vehicle?'Armour':'Soak');
     const applied=damageAfterSoak(amount,soak,pierce,breach,scale);
     const resource=vehicle?(request.strain?'systemStrain':'hullTrauma'):(request.strain&&!['minion','rival'].includes(actor.type)?'strain':'wounds');
     const value=integer(actor.system[resource]?.value,'Current damage')+applied;
     put(plan,actor,`system.${resource}.value`,value);
-    const threshold=actor.system[resource].max;
+    const threshold=integer(actor.system[resource]?.max,'Damage threshold',1);
     plan.calculation={amount,soak,pierce,breach,applied,resource,threshold,exceedsThreshold:value>threshold};
+    if(crossScale)plan.calculation.crossScale=crossScale;
     if(actor.type==='minion')plan.calculation.minions=minionState(actor.system.groupSize,value,threshold);
   } else if(request.kind==='recover') {
     const valid=vehicle?['hullTrauma','systemStrain']:['wounds',...(['minion','rival'].includes(actor.type)?[]:['strain'])];
@@ -68,10 +107,11 @@ export function planActorEffect(actor,request,{user,campaign={}}={}) {
       const found=entries.findIndex(e=>e.id===id);if(found<0)throw new Error('The recorded effect no longer exists.');entries.splice(found,1);
     } else {
       if(entries.some(e=>e.id===id))throw new Error('The effect already exists.');
-      entries.push({id,name:request.label.trim().slice(0,200),source,note:String(request.note??'').slice(0,2000),automation:'record-only'});
+      const modifier=validatePoolModifier(request.modifier);
+      entries.push({id,name:request.label.trim().slice(0,200),source,note:String(request.note??'').slice(0,2000),modifier,automation:modifier?'pool-modifier':'record-only'});
     }
     put(plan,actor,key,entries);
-    plan.warning='Recorded for GM adjudication. No unverified dice or characteristic modifier is inferred.';
+    plan.warning=request.modifier?'The GM-reviewed dice modifier applies to matching future checks until this condition is removed.':'Recorded for GM adjudication. No unverified dice or characteristic modifier is inferred.';
   } else if(request.kind==='vehicle-state') {
     if(!vehicle)throw new Error('Choose a vehicle.');
     if(request.speed!==undefined)put(plan,actor,'system.speed.value',integer(request.speed,'Speed',0,actor.system.speed.max));

@@ -14,6 +14,22 @@ export const CREW_ROLES = Object.freeze({
 export const CREW_FLAG = `flags.${SYSTEM_ID}.aboard`;
 const doc = value => value?.document ?? value;
 export const aboard = token => doc(token)?.flags?.[SYSTEM_ID]?.aboard ?? null;
+export function travelTokenCopy(token,{x,y,width,height,vehicleId}={}) {
+  const source=doc(token);
+  if(!source?.toObject || !Number.isFinite(x) || !Number.isFinite(y))throw new Error("Scene travel needs a placed token and a destination position.");
+  const data=structuredClone(source.toObject());
+  delete data._id;
+  data.x=x;data.y=y;
+  if(width!==undefined)data.width=width;
+  if(height!==undefined)data.height=height;
+  if(vehicleId){
+    const state=aboard(source);
+    if(!state)throw new Error("Only boarded occupants can travel with a vehicle.");
+    data.flags??={};data.flags[SYSTEM_ID]??={};
+    data.flags[SYSTEM_ID].aboard={...structuredClone(state),vehicleId};
+  }
+  return data;
+}
 const numberCapacity = value => /^\d[\d,]*$/.test(String(value ?? "").trim())
   ? Math.min(1000000,Number(String(value).replaceAll(",",""))) : null;
 
@@ -52,6 +68,10 @@ export function groupCrew(rows) {
 }
 export function canManageCrew(token,vehicle,user,{leaving=false}={}) {
   return canSpendXp(doc(token)?.actor,user) && (leaving || canSpendXp(doc(vehicle)?.actor,user));
+}
+export function canRollCrew(token,vehicle,user) {
+  const t=doc(token),v=doc(vehicle),state=aboard(t);
+  return v?.actor?.type==="vehicle" && state?.vehicleId===v.id && state.seat==="crew" && canSpendXp(t?.actor,user);
 }
 function assertCrewPermission(token,vehicle,user,options) {
   if (!canManageCrew(token,vehicle,user,options)) throw new Error("Owner permission for the character and vehicle is required. The GM can board or assign any crew member.");

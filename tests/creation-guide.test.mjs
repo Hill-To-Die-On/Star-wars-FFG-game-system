@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { creationCandidates, spendCreationXp, creationReadiness, planEnemy, CREATION_ROLES, validateFreeRanks } from "../src/creation-guide.mjs";
+import { creationCandidates, spendCreationXp, creationReadiness, reviewGmCharacterBuild, planEnemy, CREATION_ROLES, validateFreeRanks } from "../src/creation-guide.mjs";
+import { enemySpeciesOptions } from "../src/creation-guide-foundry.mjs";
 import { readFileSync } from "node:fs";
 import { SKILLS } from "../src/config.mjs";
 import { DEFAULT_CAMPAIGN } from "../src/rules.mjs";
@@ -60,4 +61,27 @@ test("enemy guide creates explicit editable NPC presets and minions use group sk
  assert.equal(data.flags["star-wars-ffg"].generatedEnemy.kind,"original-npc-preset");
  assert.throws(()=>planEnemy({type:"character",role:"pilot",rank:2,count:1},species,DEFAULT_CAMPAIGN));
  assert.throws(()=>planEnemy({type:"minion",role:"pilot",rank:2,count:101},species,DEFAULT_CAMPAIGN));
+ assert.throws(()=>planEnemy({name:"Damaged Security Droid",type:"minion",role:"combat",combat:"avoid",rank:0,count:1},null,DEFAULT_CAMPAIGN),/species/i);
+});
+test("enemy species begins unchosen instead of silently assigning Human",()=>{
+ const choices=enemySpeciesOptions([{id:"human",name:"Human"},{id:"droid",name:"Droid"}]);
+ assert.match(choices,/<option value="" selected disabled>Choose species/);
+ assert.doesNotMatch(choices,/<option value="human" selected/);
+ assert.doesNotMatch(choices,/<option value="droid" selected/);
+});
+test("a damaged security droid preset carries its damage into play",()=>{
+ const droid={...species,_id:"droid",name:"Droid",system:{...species.system,metadata:{...species.system.metadata,Brawn:1,Agility:1,Intellect:1,Cunning:1,Willpower:1,Presence:1,XP:175}}};
+ const data=planEnemy({name:"Damaged Security Droid",type:"minion",role:"combat",combat:"melee",rank:0,count:1},droid,DEFAULT_CAMPAIGN);
+ assert.equal(data.system.species,"Droid");
+ assert.equal(data.system.wounds.value,Math.floor(data.system.wounds.max/4));
+ assert.equal(data.system.metadata.damageImpairment,"scanner");
+ assert.equal(data.system.metadata.damageVisual,"auto");
+});
+test("GM controlled builds may reserve XP and credits after recording why",()=>{
+ const current={...base(),credits:375,creation:{...base().creation,startingResources:{encumbrance:3}}};
+ assert.equal(creationReadiness(current).length,0);
+ const reviewed=reviewGmCharacterBuild(current,{xpIntent:"Saving for an expensive talent.",gearIntent:"Cautious traveller; retains emergency credits."});
+ assert.equal(reviewed.gmBuildReview.xpSaved,110);
+ assert.equal(reviewed.gmBuildReview.creditsSaved,375);
+ assert.throws(()=>reviewGmCharacterBuild(current,{xpIntent:"",gearIntent:"Field kit"}),/XP choice/);
 });

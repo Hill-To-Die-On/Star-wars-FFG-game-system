@@ -1,9 +1,9 @@
 import {ActorTransactionQueue,actorMutationQueue,canSpendXp} from './xp-transactions.mjs';
 import {getDocumentTransactionBroker} from './document-transactions.mjs';
-const commands=new Set(['board','leave','role','split','generate','deploy']);
+const commands=new Set(['board','leave','role','split','generate','deploy','travel']);
 const actorOf=target=>target.actor??target;
 const queueKey=target=>target.parent?.tokens?target.parent.id:target.uuid;
-function validate(command,args){if(!commands.has(command)||!args||typeof args!=='object'||Array.isArray(args)||JSON.stringify(args).length>2048)throw new Error('Invalid crew request.');}
+function validate(command,args){if(!commands.has(command)||!args||typeof args!=='object'||Array.isArray(args)||JSON.stringify(args).length>2048||command==='travel'&&(typeof args.destinationSceneId!=='string'||!args.destinationSceneId||args.destinationSceneId.length>128))throw new Error('Invalid crew request.');}
 /** Scene seat changes and actor resources retain their shared critical sections. */
 export class CrewTransactionCoordinator {
  queue=new ActorTransactionQueue();
@@ -12,7 +12,7 @@ export class CrewTransactionCoordinator {
   if(this.unregister)return this;this.transport??=getDocumentTransactionBroker();
   this.unregister=this.transport.register('crew',{resolve:this.getToken,lockKeys:target=>[actorOf(target).uuid,'scene:'+queueKey(target)],
    validate:(target,command,args,user)=>{if(!canSpendXp(actorOf(target),user))throw new Error('Owner permission is required.');validate(command,args);},
-   execute:(target,command,args,user,_id,assertAuthority)=>this.queue.run(queueKey(target),()=>actorMutationQueue.run(actorOf(target).uuid,()=>{assertAuthority();return this.execute(target,command,args,user);} ))});return this;
+   execute:(target,command,args,user,_id,assertAuthority)=>this.queue.run(queueKey(target),()=>actorMutationQueue.run(actorOf(target).uuid,()=>{assertAuthority();if(!user.active||!canSpendXp(actorOf(target),user))throw new Error('Owner permission is required.');return this.execute(target,command,args,user);} ))});return this;
  }
  stop(){this.unregister?.();this.unregister=null;}
  async request(target,command,args={}){

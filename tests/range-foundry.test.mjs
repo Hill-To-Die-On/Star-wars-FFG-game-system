@@ -9,6 +9,7 @@ import {
   endCombatRangeAssistant,
   getSceneRangeProfile,
   getTokenRangeProfile,
+  rangeDisplayOrigin,
   measureTokenRange,
   registerRangeOverlay,
   loadAttackTracePool,
@@ -26,6 +27,16 @@ const token = (id, x, y, elevation = 0) => ({
   id,
   center: { x, y },
   document: { id, elevation, level:"ground", parent: { id: "scene-test" } },
+});
+
+test("a boarded character displays the carrying ship's range rings",()=>{
+  const previousCanvas=globalThis.canvas;
+  const ship={...token("ship",200,300),actor:{type:"vehicle",name:"Wayfarer"}};
+  const crew={...token("crew",200,300),actor:{type:"character",name:"Tala"}};
+  crew.document.flags={"star-wars-ffg":{aboard:{vehicleId:"ship"}}};
+  globalThis.canvas={tokens:{get:id=>id==="ship"?ship:null}};
+  try {assert.equal(rangeDisplayOrigin(crew),ship);}
+  finally {globalThis.canvas=previousCanvas;}
 });
 
 test("embarked crew cannot obstruct their vehicle's targeting line even in the GM view",()=>{

@@ -4,7 +4,7 @@ import { registerTurnEconomy, readTurnBudget, performTurnCommand, turnCostHTML }
 import { rollPool } from "../src/dice/foundry.mjs";
 
 test("Foundry roll and movement entry points commit the same actor ledger",async t=>{
-  const original=Object.fromEntries(["game","Hooks","foundry","ChatMessage","ui","fromUuid"].map(k=>[k,globalThis[k]]));
+  const original=Object.fromEntries(["game","Hooks","foundry","ChatMessage","ui","fromUuid","canvas"].map(k=>[k,globalThis[k]]));
   const hooks=new Map(), settings=new Map(), messages=[], documents=new Map(), warnings=[];
   const emit=(name,...args)=>{for(const fn of hooks.get(name)??[])fn(...args);};
   const until=async test=>{for(let i=0;i<100;i++){if(test())return;await new Promise(resolve=>setTimeout(resolve,2));}throw new Error('Turn receipt did not settle');};
@@ -22,7 +22,7 @@ test("Foundry roll and movement entry points commit the same actor ledger",async
     settings:{get:(_s,k)=>settings.get(k),set:async(_s,k,v)=>{settings.set(k,v);emit("updateSetting",{});return v;},register:(_s,k,d)=>settings.set(k,d.default)}};
   globalThis.Hooks={callAll:emit,on:(k,f)=>{const a=hooks.get(k)??[];a.push(f);hooks.set(k,a);return f;},off:(k,f)=>hooks.set(k,(hooks.get(k)??[]).filter(row=>row!==f)),once:(k,f)=>globalThis.Hooks.on(k,f)};
   globalThis.ui={notifications:{warn:m=>warnings.push(m)}};
-  globalThis.foundry={dice:{Roll:class {
+  globalThis.foundry={utils:{randomID:()=>"test-roll-id"},dice:{Roll:class {
     constructor(formula) {this.formula=formula;this.options={};this.dice=[];}
     async evaluate(){evaluations++;if(failure) throw new Error("Evaluation failed");if(advanceDuringRoll) combat.round++;return this;}
   }}};
@@ -50,6 +50,39 @@ test("Foundry roll and movement entry points commit the same actor ledger",async
       await rollPool({ability:1},{actor,turnCost:"action"});
       combat.started=true;
       assert.equal(readTurnBudget(actor).actionsRemaining,1);
+    });
+    await t.test("free play indicators replenish when the active scene changes",async()=>{
+      combat.started=false;
+      globalThis.canvas={scene:{id:"hangar"}};
+      await performTurnCommand(actor,"action");
+      assert.equal(readTurnBudget(actor).actionsRemaining,0);
+      globalThis.canvas.scene={id:"perimeter"};
+      assert.equal(readTurnBudget(actor).actionsRemaining,1);
+      assert.equal(readTurnBudget(actor).key,"freeplay:perimeter");
+      combat.started=true;
+      delete globalThis.canvas;
+    });
+    await t.test("a recorded GM condition changes the next matching pool and leaves other skills alone",async()=>{
+      actor.flags['star-wars-ffg'].conditions=[{id:'optic',name:'Damaged optic',modifier:{die:'setback',count:1,skillKey:'rangedLight'}}];
+      await rollPool({ability:1},{actor,skillKey:'rangedLight',turnCost:'none'});
+      assert.match(messages.at(-1).data.rolls[0].formula,/1ds/);
+      assert.match(messages.at(-1).data.content,/Damaged optic/);
+      await rollPool({ability:1},{actor,skillKey:'computers',turnCost:'none'});
+      assert.doesNotMatch(messages.at(-1).data.rolls[0].formula,/1ds/);
+      actor.flags['star-wars-ffg'].conditions=[];
+    });
+    await t.test("a GM tab without authority cannot roll a pending narrative effect",async()=>{
+      const {getDocumentTransactionBroker}=await import("../src/document-transactions.mjs");
+      actor.flags['star-wars-ffg'].narrativeEffects=[{id:'pending',label:'GM boost',die:'boost',count:1,skillKey:'computers'}];
+      const before=evaluations;
+      settings.set('authoritySession',{userId:gm.id,sessionId:'another-gm-tab'});
+      try {
+        await assert.rejects(rollPool({ability:1},{actor,skillKey:'computers',turnCost:'none'}),/Transaction authority/);
+        assert.equal(evaluations,before);
+      } finally {
+        actor.flags['star-wars-ffg'].narrativeEffects=[];
+        await getDocumentTransactionBroker().takeAuthority('Fixture returns authority to this GM tab');
+      }
     });
     await t.test("failed evaluation never spends",async()=>{
       failure=true;

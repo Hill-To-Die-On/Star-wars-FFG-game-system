@@ -24,7 +24,7 @@ export async function crewGenerationDialog(target,request) {
     choices=availableOriginOptions(source.documents.Item,campaign).species;
   if(!choices.length)throw new Error("No complete species profiles are available under the campaign's book and ruleset filters.");
   let recipe={speciesId:(choices.find(o=>o.name==="Human")??choices[0]).id,rank:1,counts:crewGenerationDefaults(actor,rowsFor(target))};
-  const Dialog=foundry.applications.api.DialogV2,common={classes:["sf-crew-dialog"],window:{resizable:true},position:{width:610,height:720},rejectClose:false};
+  const Dialog=foundry.applications.api.DialogV2,common={classes:["star-wars","sf-crew-dialog"],window:{resizable:true},position:{width:610,height:720},rejectClose:false};
   while(true) {
     const cap=crewCapacities({actor}),rows=rowsFor(target),used=seat=>rows.filter(r=>r.seat===seat).reduce((n,r)=>n+r.count,0);
     recipe=await Dialog.prompt({...common,window:{...common.window,title:`Generate crew · ${actor.name}`},content:`<div class="sf-crew-generator">

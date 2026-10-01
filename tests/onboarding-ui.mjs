@@ -37,6 +37,7 @@ try {
  await page.setViewportSize({width:420,height:850});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  const artifacts=process.env.TEST_ARTIFACTS_DIR??".local/onboarding-fixture";await mkdir(artifacts,{recursive:true});await page.screenshot({path:resolve(artifacts,"player-welcome-narrow.png")});
  const grouping=await page.evaluate(()=>{
+  game.i18n={localize:key=>key === "SWFFG.Settings.Groups.CampaignSetup" ? "Configuration de la campagne" : key};
   const root=document.createElement('form');root.id='settings-config';root.className='application star-wars';root.innerHTML='<div data-category="system"><div class="form-group"><label>Tray</label><input name="star-wars-ffg.compactChatDice" type="checkbox"></div><div class="form-group"><label>Books</label><button data-key="star-wars-ffg.ownedBooksMenu">Books</button></div></div>';document.body.append(root);
   const input=root.querySelector('input');let calls=0;input.addEventListener('change',()=>calls++);
   fixture.presentation.styleSystemWindow({constructor:{name:'SettingsConfig'}},root);fixture.presentation.groupSystemSettings(root);fixture.presentation.groupSystemSettings(root);input.checked=true;input.dispatchEvent(new Event('change'));
@@ -47,6 +48,6 @@ try {
   const journalOptOut=!journal.classList.contains('star-wars')&&!journal.dataset.theme;
   return {journalThemed,journalOptOut,groups:root.querySelectorAll('.sf-settings-group').length,first:root.querySelector('legend').textContent,native:root.classList.contains('sf-native-settings'),themed:root.classList.contains('star-wars'),same:input===root.querySelector('input'),calls,sidebarThemed:sidebar.classList.contains('sf-themed-window')};
  });
- assert.deepEqual(grouping,{journalThemed:true,journalOptOut:true,groups:2,first:'1 · Campaign setup',native:true,themed:false,same:true,calls:1,sidebarThemed:false});assert.deepEqual(errors,[]);assert.deepEqual(await page.evaluate(()=>fixture.errors),[]);
+ assert.deepEqual(grouping,{journalThemed:true,journalOptOut:true,groups:2,first:'Configuration de la campagne',native:true,themed:false,same:true,calls:1,sidebarThemed:false});assert.deepEqual(errors,[]);assert.deepEqual(await page.evaluate(()=>fixture.errors),[]);
  console.log('Onboarding browser fixture passed: search preserves selection, reload, explicit future-world reuse, forget, player permissions, narrow layout, native settings input identity and sidebar isolation.');
 }finally{await browser?.close();await new Promise(ok=>server.close(ok));}

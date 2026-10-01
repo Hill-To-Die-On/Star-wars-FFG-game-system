@@ -120,8 +120,8 @@ export function automaticCheckPool({
       `Target adversary rating: ${adversary} difficulty upgrade${adversary === 1 ? "" : "s"}`,
     );
   if (talentRules?.reasons?.length) reasons.push(...talentRules.reasons);
-  if (boost) reasons.push(`Vehicle / task modifier: ${boost} boost`);
-  if (setback) reasons.push(`Vehicle / task modifier: ${setback} setback`);
+  if (boost) reasons.push(`Actor / situation modifier: ${boost} boost`);
+  if (setback) reasons.push(`Actor / situation modifier: ${setback} setback`);
   return {
     pool,
     basePool,

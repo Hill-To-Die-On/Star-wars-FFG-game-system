@@ -1,4 +1,5 @@
 import { SYSTEM_ID } from "./config.mjs";
+import { talentActivation } from "./talent-activation.mjs";
 import { validateTree } from "./advancement.mjs";
 import { refreshGMNotes, preparePrivateNotes } from "./gm-notes.mjs";
 import {
@@ -26,8 +27,8 @@ export function mergeSpecializationEnrichment(existing, incoming) {
       return {
         ...node,
         ...(!node.key && source.key ? { key: source.key } : {}),
-        ...(!node.activation && source.activation
-          ? { activation: source.activation }
+        ...(talentActivation(node.name, source.activation ?? node.activation)
+          ? { activation: talentActivation(node.name, source.activation ?? node.activation) }
           : {}),
         ...(!node.summary && source.summary ? { summary: source.summary } : {}),
         ...(!(node.effects?.length) && source.effects?.length

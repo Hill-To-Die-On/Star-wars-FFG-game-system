@@ -27,3 +27,7 @@ World settings are GM-controlled. Client settings affect this browser. Reorderin
 Automatic themes follow the campaign/character rule line. Manual choices are cosmetic. Foundry default restores the standard interface chrome. System sheets and play dialogs retain their own visual language. Reduced-motion preferences suppress supported range/minion animation; cosmetic shadows can be disabled on each client.
 
 Reopen Welcome & interface tour, or use Foundry Tour Management to replay/resume. Missing scene controls or a hidden dice tray produce an explanatory tour step instead of an error.
+
+### Candidate integration note
+
+The onboarding and general settings panels share the same localized grouping, including Welcome, About and Transaction authority. New onboarding labels are registered for translation but currently use English fallbacks in other languages; existing translated labels remain available.

@@ -1,0 +1,67 @@
+{
+  "format": "star-wars-ffg-roll-tables",
+  "version": 1,
+  "tables": [
+    {
+      "id": "aor-cyphers-spy-duties",
+      "title": "Spy Duties",
+      "scope": "Spy career",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "page": "17",
+      "die": "d100",
+      "reviewedFields": ["die", "ranges", "result labels"],
+      "rows": [
+        { "low": 1, "high": 8, "label": "Communications" },
+        { "low": 9, "high": 16, "label": "Anti-ISB Efforts" },
+        { "low": 17, "high": 24, "label": "Countermeasures" },
+        { "low": 25, "high": 32, "label": "Double Agent Recruitment" },
+        { "low": 33, "high": 40, "label": "Droid Retasking" },
+        { "low": 41, "high": 48, "label": "Internal Security" },
+        { "low": 49, "high": 56, "label": "Interrogation Resistance" },
+        { "low": 57, "high": 64, "label": "Legend Crafting" },
+        { "low": 65, "high": 72, "label": "Psychological Warfare" },
+        { "low": 73, "high": 80, "label": "Resource Acquisition" },
+        { "low": 81, "high": 88, "label": "Tactical Insight" },
+        { "low": 89, "high": 96, "label": "Wetwork" },
+        { "low": 97, "high": 100, "label": "Roll Twice" }
+      ]
+    },
+    {
+      "id": "aor-cyphers-spy-motivation",
+      "title": "Random Spy Motivation",
+      "scope": "Spy character creation",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "page": "32",
+      "die": "d10",
+      "reviewedFields": ["die", "ranges", "result labels"],
+      "rows": [
+        { "low": 1, "high": 2, "label": "Belief" },
+        { "low": 3, "high": 4, "label": "Connection" },
+        { "low": 5, "high": 6, "label": "Quest" },
+        { "low": 7, "high": 9, "label": "Secrets" },
+        { "low": 10, "high": 10, "label": "Two Categories" }
+      ]
+    },
+    {
+      "id": "aor-cyphers-specific-secrets",
+      "title": "Specific Secrets",
+      "scope": "Spy Secrets motivation",
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "page": "32",
+      "die": "d100",
+      "reviewedFields": ["die", "ranges", "result labels"],
+      "rows": [
+        { "low": 1, "high": 10, "label": "Falsification" },
+        { "low": 11, "high": 20, "label": "Detection" },
+        { "low": 21, "high": 30, "label": "Extraction" },
+        { "low": 31, "high": 40, "label": "Classification" },
+        { "low": 41, "high": 50, "label": "Analysis" },
+        { "low": 51, "high": 60, "label": "Security" },
+        { "low": 61, "high": 70, "label": "Revelation" },
+        { "low": 71, "high": 80, "label": "Tracking" },
+        { "low": 81, "high": 90, "label": "Preservation" },
+        { "low": 91, "high": 100, "label": "Retrieval" }
+      ]
+    }
+  ]
+}

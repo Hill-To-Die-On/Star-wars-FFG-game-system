@@ -12,6 +12,7 @@ import {
 } from "./config.mjs";
 import { DICE, skillPool } from "./dice/core.mjs";
 import { rollPool } from "./dice/foundry.mjs";
+import { activePoolRulings, addPoolRulings, unspentTalentRemovals } from "./narrative-effects.mjs";
 import { turnPanelHTML, bindTurnControls, turnCostHTML } from "./turn-economy-foundry.mjs";
 import { crewPanelHTML, bindCrewControls, vehicleForActor, crewCheckDialog } from "./vehicle-crew-foundry.mjs";
 import {
@@ -31,7 +32,19 @@ import {
   bookAllowed,
 } from "./rules.mjs";
 import { escapeHTML, minionState } from "./mechanics.mjs";
-import { importWithProgress } from "./library.mjs";
+import { renderTalentMarkup, talentMarkupText } from "./talent-markup.mjs";
+import { talentActivationBadge } from "./talent-activation.mjs";
+import { portraitArtworkFacing } from "./facing-calibration.mjs";
+import { bindFacingRing, openTokenFacingEditor } from "./facing-calibration-foundry.mjs";
+import { gmSightRuling } from "./line-of-sight-ruling.mjs";
+import { referenceSummary } from "./reference-summaries.mjs";
+import { speciesAbilityEntry, speciesCheckBonuses, validateNonCareerSkillChoices } from "./species-abilities.mjs";
+import {
+  careerStoryPrompts,
+  speciesStoryPrompts,
+  careerBackgroundDefault, speciesBackgroundDefault,
+} from "./career-story.mjs";
+import { importWithProgress, mergeSpecializationEnrichment } from "./library.mjs";
 import { sheetLibrary, sheetDocumentData } from "./sheet-catalogue.mjs";
 import { availableVehicleOptions, vehicleSelectionUpdate, VEHICLE_INDEX_FIELDS } from "./vehicle-origins.mjs";
 import { applyVehicleLoadout } from "./vehicle-loadouts.mjs";
@@ -39,7 +52,7 @@ import { HOME_BREW_REVIEW, homebrewIdentityState, homebrewIdentityUpdate, review
 import { convertSwaSource } from "./swa-source.mjs";
 import { openGMSourceNotes } from "./gm-notes.mjs";
 import { creationPlan } from "./creation.mjs";
-import { creationReadiness, validateFreeRanks } from "./creation-guide.mjs";
+import { creationReadiness, reviewGmCharacterBuild, validateFreeRanks } from "./creation-guide.mjs";
 import { groupStateForActor, groupDefinition } from "./minion-groups.mjs";
 import { minionPanelHTML, manageMinionGroup } from "./minion-groups-foundry.mjs";
 import { chooseCharacterOrigins, creationXpDialog, enemyGuideDialog } from "./creation-guide-foundry.mjs";
@@ -49,7 +62,9 @@ import {
   creationResourcePlan,
   finalizePocketMoney,
   startingEquipmentOptions,
+  suggestedStartingEquipment,
 } from "./creation-resources.mjs";
+import { storyRollOptions, rollStoryHook, applyStoryHooks, missingStoryMechanics, storyHookCards, storyBackgroundParagraph, separateLegacyBiography } from "./story-hooks.mjs";
 import {
   availableOriginOptions,
   ORIGIN_INDEX_FIELDS,
@@ -67,6 +82,10 @@ import {
   signatureLinkState,
 } from "./signature-abilities.mjs";
 import { buildSkillColumns, SKILL_VIEWS } from "./skill-layout.mjs";
+import { bindSheetGuidance, CHARACTERISTIC_GUIDANCE, skillGuidance } from "./sheet-guidance.mjs";
+import { inventoryGroups } from "./inventory-glance.mjs";
+import { impairmentForCheck, DAMAGE_IMPAIRMENTS } from "./enemy-condition.mjs";
+import { themedDialogApi } from "./dialog-theme.mjs";
 import {
   measureActorTargetRange,
   measureTokenRange,
@@ -84,7 +103,8 @@ import {
   vehicleFootprintMeters,
   vehicleTokenDimensions,
 } from "./vehicle-footprints.mjs";
-const { HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
+const { HandlebarsApplicationMixin, DialogV2: FoundryDialogV2 } = foundry.applications.api;
+const DialogV2 = themedDialogApi(FoundryDialogV2);
 const notifyError = (error) => ui.notifications.error(error.message);
 const optionsHTML = (options, selected) =>
   Object.entries(options)
@@ -102,6 +122,7 @@ const DIE_HINTS = {
   difficulty: "Task and range",
   challenge: "Upgraded opposition",
   setback: "Defense and hindrances",
+  force: "Force power dice",
 };
 const dieShape = (key) =>
   `<span class="sf-die-shape sf-die-${key}" aria-hidden="true"></span>`;
@@ -148,6 +169,7 @@ const targetContext = (key, meleeOverride, sourceActor, sourceToken, weapon) => 
         : "";
   return {
     name: actor?.name ?? "",
+    actorUuid: actor?.uuid ?? "",
     silhouette: actor?.type === "vehicle" ? actor.system?.silhouette : actor ? actor.system?.silhouette ?? 1 : undefined,
     shields: actor?.type === "vehicle" ? actor.system?.shields : null,
     defense,
@@ -286,10 +308,13 @@ async function motivationDialog(actor, id = "") {
     ? actor.updateMotivation(id, result)
     : actor.createMotivation(result);
 }
-function poolBuilderContext(actor, key, item, skill, characteristic, rank, {crew} = {}) {
+export function poolBuilderContext(actor, key, item, skill, characteristic, rank, {crew} = {}) {
+  const speciesBonuses = actor.type === "character"
+    ? speciesCheckBonuses(actor.system.species, actor.system.creation?.species, key)
+    : { boost: 0, advantage: 0, reasons: [] };
   const combat = skill.group === "Combat",
     melee = skill.melee ?? ["brawl", "melee", "lightsaber"].includes(key),
-    target = targetContext(key, melee, crew?.vehicle?.actor ?? actor, crew?.vehicle, item),
+    target = combat ? targetContext(key, melee, crew?.vehicle?.actor ?? actor, crew?.vehicle, item) : {},
     weaponRange = RANGES.includes(item?.system.range) ? item.system.range : "",
     vehicleScale =
       !!crew || actor.type === "vehicle" || item?.system.scale === "vehicle",
@@ -307,7 +332,9 @@ function poolBuilderContext(actor, key, item, skill, characteristic, rank, {crew
           : vehicleScale
             ? "close"
             : "short"),
+    impairment=impairmentForCheck(actor,key),
     context = {
+      actor,
       actorName: actor.name,
       skillKey: key,
       skillLabel: skill.label,
@@ -324,8 +351,11 @@ function poolBuilderContext(actor, key, item, skill, characteristic, rank, {crew
       rangeBand,
       rangeOptions,
       talentRules: actor.talentRulesForCheck(key),
-      boost: crew?.boost ?? 0,
-      setback: crew?.setback ?? 0,
+      boost: (crew?.boost ?? 0) + speciesBonuses.boost,
+      setback: (crew?.setback ?? 0)+impairment.setback,
+      impairmentNote: impairment.note,
+      speciesReasons: speciesBonuses.reasons,
+      speciesAdvantage: speciesBonuses.advantage,
       vehicleAttack: !!crew && combat && !melee,
       attackerSilhouette: crew?.vehicle?.actor?.system?.silhouette,
       targetSilhouette: target.silhouette,
@@ -348,6 +378,8 @@ function poolBuilderContext(actor, key, item, skill, characteristic, rank, {crew
     attackerSilhouette: context.attackerSilhouette,
     targetSilhouette: context.targetSilhouette,
   });
+  context.talentDecisions = context.talentRules?.decisions ?? [];
+  context.unusedTalentRemovals=unspentTalentRemovals(context.automatic.basePool,context.talentRules);
   return context;
 }
 function automaticContextHTML(context) {
@@ -378,8 +410,17 @@ function automaticContextHTML(context) {
     <div>${target}</div>
   </div>`;
 }
+function sightRulingRequired(context) {
+  return context.combat && !context.melee && !!context.target.name &&
+    (context.target.lineOfSight === "blocked" || context.target.requiresGmRuling);
+}
 function poolBuilderHTML(context) {
   const pool = context.automatic.pool,
+    sightRuling = sightRulingRequired(context)
+      ? `<div class="sf-gm-sight-ruling"><strong>Line of sight needs a GM ruling</strong><p>${escapeHTML(context.target.sightReason || "The target is behind a sight-blocking wall.")}</p>${game.user.isGM
+          ? `<label><input type="checkbox" name="gmSightOverride" value="yes"> Override line of sight for this effect</label><label>Why can it reach the target?<input type="text" name="gmSightReason" maxlength="240" placeholder="Source rule, Force power, or scene ruling"></label>`
+          : `<p>Ask the GM to make and record this ruling.</p>`}<p data-sight-ruling-error hidden></p></div>`
+      : "",
     automaticControl = context.combat
       ? context.melee
         ? `<div class="sf-fixed-range"><span class="sf-eyebrow">Range</span><strong>Engaged</strong><small>Melee attacks use Average difficulty.</small></div>`
@@ -388,6 +429,9 @@ function poolBuilderHTML(context) {
               `<button type="button" data-auto-range="${range}" class="${range === context.rangeBand ? "active" : ""}"><span>${titleCase(range)}</span><small>${context.vehicleAttack ? "Weapon reach" : range === "engaged" ? "Close contact" : `${{ close: 1, short: 1, medium: 2, long: 3, extreme: 4 }[range]} difficulty`}</small></button>`,
           ).join("")}</div>`
       : `<div class="sf-difficulty-presets">${difficultyPresetsHTML(context.difficulty, "data-auto-difficulty")}</div>`;
+  const talentDecisions = context.talentDecisions?.length
+    ? `<section class="sf-pool-section sf-talent-decisions"><div class="sf-pool-section-title"><div><span class="sf-step-number">2</span><h3>Talent decisions</h3><p>Passive rules are already included. Select any active talent you are using for this check.</p></div></div><fieldset><legend>Apply active rules</legend>${context.talentDecisions.map((rule) => `<label class="sf-talent-decision"><input type="checkbox" name="selectedTalent" value="${escapeHTML(rule.id)}"><span><strong>${escapeHTML(rule.name)}</strong><small>${escapeHTML(rule.activation)}${rule.summary ? ` · ${escapeHTML(rule.summary)}` : ""}</small></span></label>`).join("")}</fieldset></section>`
+    : "";
   return `<div class="sf-pool-builder">
     <section class="sf-pool-origin">
       <div><span class="sf-eyebrow">SKILL + CHARACTERISTIC</span>
@@ -399,15 +443,16 @@ function poolBuilderHTML(context) {
       </div>
     </section>
     <section class="sf-pool-preview" aria-live="polite">
-      <span>Dice to roll</span><div data-pool-preview>${poolPreviewHTML(pool)}</div>
+      <span>Dice to roll${context.narrativeRulings.notes.length ? ' · includes GM decisions' : ''}</span><div data-pool-preview>${poolPreviewHTML(addPoolRulings(pool,context.narrativeRulings,context.unusedTalentRemovals))}</div>
     </section>
     <div data-mode-panel="auto">
       <section class="sf-pool-section sf-auto-section">
         <div class="sf-pool-section-title"><div><span class="sf-step-number">1</span><h3>${context.combat ? context.melee ? "Attack at engaged range" : "Choose the range band" : "Choose the task difficulty"}</h3><p>${context.combat ? "The selected target supplies opposition automatically." : "Your characteristic and training are already included."}</p></div></div>
         ${automaticControl}
         ${automaticContextHTML(context)}
-        ${context.target.shields ? `<label>Target defence zone<select data-vehicle-zone><option value="">Choose the agreed zone…</option>${Object.entries(context.target.shields).map(([zone,value])=>`<option value="${zone}">${titleCase(zone)} · ${value} defence</option>`).join("")}</select></label><small>For silhouette 4 or smaller, the defender normally chooses. Larger craft use the established relative position.</small>` : ""}
+        ${context.combat && context.target.shields ? `<label>Target defence zone<select data-vehicle-zone><option value="">Choose the agreed zone…</option>${Object.entries(context.target.shields).map(([zone,value])=>`<option value="${zone}">${titleCase(zone)} · ${value} defence</option>`).join("")}</select></label><small>For silhouette 4 or smaller, the defender normally chooses. Larger craft use the established relative position.</small>` : ""}
       </section>
+      ${talentDecisions}
       <section class="sf-auto-breakdown">
         <div class="sf-auto-explanation"><span class="sf-eyebrow">WHY THIS POOL?</span><ul data-auto-reasons></ul></div>
         <p class="sf-pool-error" data-auto-error hidden></p>
@@ -415,6 +460,7 @@ function poolBuilderHTML(context) {
       </section>
     </div>
     <div data-mode-panel="manual" hidden>
+      ${sightRuling}
       <section class="sf-pool-section">
         <div class="sf-pool-section-title"><div><span class="sf-step-number">1</span><h3>Adjust the automatic pool</h3><p>The automatic dice are already loaded. Change only what the situation requires.</p></div><button type="button" data-pool-reset><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Reset to auto</button></div>
         <div class="sf-difficulty-presets sf-manual-presets">${difficultyPresetsHTML(pool.challenge ? -1 : pool.difficulty, "data-manual-difficulty")}</div>
@@ -433,6 +479,24 @@ function attachPoolBuilder(dialog, context) {
   const root = dialog.element.querySelector(".sf-pool-builder");
   if (!root || root.dataset.ready) return;
   root.dataset.ready = "true";
+  const currentSightRuling = () => gmSightRuling({
+    needsRuling: sightRulingRequired(context),
+    isGM: game.user.isGM,
+    manual: root.dataset.mode === "manual",
+    approved: root.querySelector('[name="gmSightOverride"]')?.checked === true,
+    reason: root.querySelector('[name="gmSightReason"]')?.value ?? "",
+  });
+  const renderSightRuling = () => {
+    if (root.dataset.mode !== "manual") return;
+    const ruling = currentSightRuling();
+    const submit = dialog.element.querySelector('button[data-action="ok"]');
+    if (submit) submit.disabled = !ruling.allowed;
+    const error = root.querySelector("[data-sight-ruling-error]");
+    if (error) {
+      error.hidden = ruling.allowed;
+      error.textContent = ruling.reason ?? "";
+    }
+  };
   const readPool = () =>
     Object.fromEntries(
       ROLL_DICE.map((key) => [
@@ -440,9 +504,16 @@ function attachPoolBuilder(dialog, context) {
         Math.max(0, Math.min(40, Number(root.querySelector(`[name="${key}"]`).value) || 0)),
       ]),
     );
+  const readSelectedTalents = () => Array.from(root.querySelectorAll('[name="selectedTalent"]:checked'), (input) => input.value);
+  const refreshTalentRules = () => {
+    context.talentRules = context.actor?.talentRulesForCheck
+      ? context.actor.talentRulesForCheck(context.skillKey, { selectedTalents: readSelectedTalents() })
+      : context.talentRules;
+    context.talentDecisions = context.talentRules?.decisions ?? context.talentDecisions;
+  };
   const writePool = (pool) => {
     for (const key of ROLL_DICE) root.querySelector(`[name="${key}"]`).value = pool[key];
-    root.querySelector("[data-pool-preview]").innerHTML = poolPreviewHTML(pool);
+    root.querySelector("[data-pool-preview]").innerHTML = poolPreviewHTML(addPoolRulings(pool,context.narrativeRulings,context.unusedTalentRemovals));
     for (const button of root.querySelectorAll("[data-manual-difficulty]"))
       button.classList.toggle(
         "active",
@@ -493,10 +564,13 @@ function attachPoolBuilder(dialog, context) {
   };
   const renderAutomatic = () => {
     const result = automatic();
+    context.unusedTalentRemovals=unspentTalentRemovals(result.basePool,context.talentRules);
     writePool(result.pool);
     const reasons = [
       `${context.characteristicLabel} ${context.characteristicValue} + ${context.skillLabel} rank ${context.rank}: ${result.basePool.ability} ability, ${result.basePool.proficiency} proficiency`,
       ...result.reasons.slice(1),
+      ...context.speciesReasons,
+      ...context.narrativeRulings.notes,
     ];
     root.querySelector("[data-auto-reasons]").innerHTML = reasons
       .map((reason) => `<li>${escapeHTML(reason)}</li>`)
@@ -518,9 +592,8 @@ function attachPoolBuilder(dialog, context) {
     }
     for (const panel of root.querySelectorAll("[data-mode-panel]"))
       panel.hidden = panel.dataset.modePanel !== mode;
-    const submit = dialog.element.querySelector('button[data-action="ok"]');
     if (mode === "auto") renderAutomatic();
-    else if (submit) submit.disabled = false;
+    else renderSightRuling();
   };
   const enterManual = () => {
     writePool(automatic().pool);
@@ -567,8 +640,13 @@ function attachPoolBuilder(dialog, context) {
   });
   root.addEventListener("input", (event) => {
     if (event.target.matches("[data-die] input")) writePool(readPool());
+    if (event.target.matches('[name="gmSightReason"]')) renderSightRuling();
   });
-  root.addEventListener("change",event=>{if(event.target.matches("[data-vehicle-zone]"))renderAutomatic();});
+  root.addEventListener("change",event=>{
+    if(event.target.matches("[data-vehicle-zone]"))renderAutomatic();
+    if(event.target.matches('[name="gmSightOverride"]'))renderSightRuling();
+    if(event.target.matches('[name="selectedTalent"]')) { refreshTalentRules(); renderAutomatic(); }
+  });
   setMode("auto");
 }
 export async function checkDialog(actor, key, item, options = {}) {
@@ -589,6 +667,7 @@ export async function checkDialog(actor, key, item, options = {}) {
       rank,
       options,
     );
+  context.narrativeRulings=activePoolRulings(actor,definition.key);
   const form = await DialogV2.prompt({
     window: { title: `${item?.name ?? definition.label} · Build dice pool` },
     classes: ["star-wars", "sf-pool-builder-window"],
@@ -599,10 +678,22 @@ export async function checkDialog(actor, key, item, options = {}) {
       label: "Roll these dice",
       icon: "fa-solid fa-dice",
       callback: (_event, button) => {
-        const data = Object.fromEntries(new FormData(button.form));
+        const formData = new FormData(button.form),
+          data = Object.fromEntries(formData),
+          selectedTalents = formData.getAll("selectedTalent");
+        const ruling = gmSightRuling({
+          needsRuling: sightRulingRequired(context),
+          isGM: game.user.isGM,
+          manual: data.poolMode === "manual",
+          approved: data.gmSightOverride === "yes",
+          reason: data.gmSightReason,
+        });
+        if (!ruling.allowed) throw new Error(ruling.reason);
         return {
           rollMode: data.rollMode,
           turnCost: data.turnCost ?? "none",
+          sightRulingNote: ruling.note,
+          selectedTalents,
           pool: Object.fromEntries(
             ROLL_DICE.map((die) => [die, Number(data[die])]),
           ),
@@ -612,13 +703,25 @@ export async function checkDialog(actor, key, item, options = {}) {
     rejectClose: false,
   });
   if (!form) return;
+  const finalTalentRules = actor.talentRulesForCheck(definition.key, {
+    selectedTalents: form.selectedTalents ?? [],
+  });
   const result = await rollPool(form.pool, {
     label: `${actor.name} · ${item?.name ?? definition.label}`,
     actor,
+    skillKey: definition.key,
+    unusedTalentRemovals: unspentTalentRemovals(
+      context.automatic.basePool,
+      finalTalentRules,
+    ),
+    targetActorUuid: context.target.actorUuid,
     rollMode: form.rollMode,
     turnCost: form.turnCost,
-    automaticResults: context.talentRules.automaticResults,
-    ruleNotes: context.talentRules.reasons,
+    automaticResults: {
+      ...finalTalentRules.automaticResults,
+      advantage: (finalTalentRules.automaticResults?.advantage ?? 0) + context.speciesAdvantage,
+    },
+    ruleNotes: [...finalTalentRules.reasons, ...context.speciesReasons, ...(context.impairmentNote?[context.impairmentNote]:[]), ...(form.sightRulingNote ? [form.sightRulingNote] : [])],
   });
   if (item && result.outcome.passed) {
     ui.notifications.info(
@@ -648,6 +751,11 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       editCustomSkill: this.editCustomSkill,
       removeCustomSkill: this.removeCustomSkill,
       addMotivation: this.addMotivation,
+      tidyBioNotes: this.tidyBioNotes,
+      editTokenFacing: this.editTokenFacing,
+      applySpeciesSkills: this.applySpeciesSkills,
+      rollStoryHooks: this.rollStoryHooks,
+      refreshTalentGuidance: this.refreshTalentGuidance,
       editMotivation: this.editMotivation,
       removeMotivation: this.removeMotivation,
       buySkill: this.buySkill,
@@ -685,12 +793,19 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
         campaign.lines,
       );
     let originLibraryReady = false,
-      originOptions = { species: [], career: [] };
+      originOptions = { species: [], career: [] },
+      originRecords = [];
     if (actor.type === "character") {
       const library = await sheetLibrary("Item", ORIGIN_INDEX_FIELDS);
+      originRecords = library.index;
       originOptions = availableOriginOptions(library.index, campaign);
       originLibraryReady = true;
     }
+    const selectedSpecies = originRecords.find((entry) =>
+      String(entry.id ?? entry._id ?? "") === String(s.creation?.speciesId ?? ""));
+    const reviewedSpecies = actor.type === "character"
+      ? speciesAbilityEntry(s.species, s.creation?.species)
+      : null;
     const vehicleOptions = actor.type === "vehicle"
       ? availableVehicleOptions((await sheetLibrary("Actor", VEHICLE_INDEX_FIELDS)).index, campaign, this.vehicleManufacturerFilter)
       : { model: [], manufacturer: [] };
@@ -706,6 +821,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
           key: definition.key,
           id: definition.id,
           label: definition.label,
+          guidance: skillGuidance(definition.key, definition.label),
           characteristic,
           characteristicShort: CHARACTERISTIC_SHORT[characteristic],
           career: state.career,
@@ -816,21 +932,19 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
           verified: tree?.verified,
           sourceVerification,
           sourceVerificationLabel,
-          treeHeight: rows * 130,
-          svgHeight: rows * 130,
+          treeHeight: rows * 210,
+          svgHeight: rows * 210,
           linkSpecialization: link?.specialization?.name ?? "",
           linkUnlocked: link?.unlocked ?? false,
           nodes: (tree?.nodes ?? []).map((n) => ({
             ...n,
             itemId: item.id,
-            automatic:
-              n.activation === "Passive" && (n.effects?.length ?? 0) > 0,
-            automationLabel:
-              n.activation === "Passive" && (n.effects?.length ?? 0) > 0
-                ? "Auto"
-                : n.summary
-                  ? n.activation || "Guidance"
-                  : "Book reference",
+            automatic: talentActivationBadge(n).automatic,
+            automationLabel: talentActivationBadge(n).label,
+            automationHint: talentActivationBadge(n).hint,
+            summaryHtml: renderTalentMarkup(n.summary || "GM: check the cited book for this talent's effect before using it."),
+            summaryText: talentMarkupText(n.summary || `${n.name} · use ${item.system.source?.book ?? "the cited book"}, p. ${item.system.source?.page ?? "?"}`),
+            ruleEffects: (n.effects ?? []).map((effect) => `${effect.operation === "add" ? "+" : "−"}${effect.count} ${effect.target}${effect.skills?.length ? ` on ${effect.skills.map((key) => SKILLS[key]?.label ?? key).join(", ")}` : ""}${effect.groups?.length ? ` on ${effect.groups.join(", ")}` : ""}`).join(" · "),
             owned: owned.includes(n.id),
             knownElsewhere:
               !signature &&
@@ -852,9 +966,9 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
               m = tree.nodes.find((n) => n.id === b);
             return {
               x1: (n.col + (Number(n.span) || 1) / 2) * 200,
-              y1: n.row * 130 + 65,
+              y1: n.row * 210 + 105,
               x2: (m.col + (Number(m.span) || 1) / 2) * 200,
-              y2: m.row * 130 + 65,
+              y2: m.row * 210 + 105,
             };
           }),
         };
@@ -891,8 +1005,54 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       crewPanel: crewPanelHTML(actor),
       isVehicle: actor.isVehicle,
       isCharacter: actor.type === "character",
+      isAdversary: ["minion","rival","nemesis"].includes(actor.type),
+      damageVisualOptions: {auto:"Automatic by species",blood:"Blood",sparks:"Sparks",none:"No damage effect"},
+      damageVisualSelected: s.metadata?.damageVisual ?? "auto",
+      damageImpairmentOptions: Object.fromEntries(Object.entries(DAMAGE_IMPAIRMENTS).map(([key,value])=>[key,value.label])),
+      damageImpairmentSelected: s.metadata?.damageImpairment ?? "none",
+      careerStoryPrompts: actor.type === "character" ? careerStoryPrompts(s.career) : [],
+      speciesStoryPrompts: actor.type === "character" ? speciesStoryPrompts(s.species) : [],
+      careerBackgroundDefault: actor.type === "character" ? careerBackgroundDefault(s.career) : "",
+      speciesBackgroundDefault: actor.type === "character" ? speciesBackgroundDefault(s.species) : "",
+      speciesSummary: selectedSpecies ? referenceSummary("species", selectedSpecies.system?.metadata) : "",
+      speciesAbilityView: actor.type === "character" && s.species ? reviewedSpecies
+        ? {
+            verified: true,
+            source: reviewedSpecies.source,
+            startingSkills: reviewedSpecies.startingSkillRanks.map((key) => SKILLS[key].label),
+            startingSkillsApplied: reviewedSpecies.startingSkillRanks.every((key) => s.creation?.speciesSkillGrants?.includes(key)) &&
+              (!reviewedSpecies.choiceSkillRank || !!s.creation?.speciesSkillChoice && s.creation?.speciesSkillGrants?.includes(s.creation.speciesSkillChoice)) &&
+              (!reviewedSpecies.nonCareerSkillRanks || (s.creation?.nonCareerSkillChoices?.length ?? 0) === reviewedSpecies.nonCareerSkillRanks),
+            startingSkillsPendingCreation: s.creation?.applied !== true,
+            nonCareerSkillRanks: reviewedSpecies.nonCareerSkillRanks ?? 0,
+            nonCareerSkillChoices: (s.creation?.nonCareerSkillChoices ?? []).map((key) => SKILLS[key]?.label ?? key).join(", "),
+            canApplySpeciesSkills: this.isEditable && s.creation?.applied === true && !!reviewedSpecies.nonCareerSkillRanks && (s.creation?.nonCareerSkillChoices?.length ?? 0) !== reviewedSpecies.nonCareerSkillRanks,
+            choiceSkill: reviewedSpecies.choiceSkillRank
+              ? SKILLS[s.creation?.speciesSkillChoice]?.label ??
+                (reviewedSpecies.choiceSkillOptions?.map((key) => SKILLS[key].label).join(" or ") ?? "Any skill")
+              : "",
+            abilities: reviewedSpecies.abilities.map((ability) => ({
+              ...ability,
+              applicationLabel: ability.freeManeuvers
+                ? "Included in turn budget"
+                : ability.checkAdvantageSkills
+                  ? "Added to check results"
+                  : ability.checkBoostSkills
+                    ? "Included in matching check pools"
+                    : "Apply when relevant",
+            })),
+            pending: s.creation?.speciesAbilitiesPending === true,
+          }
+        : {
+            verified: false,
+            shorthand: String(selectedSpecies?.system?.metadata?.Special ?? "").trim(),
+            source: s.creation?.species,
+          }
+        : null,
+      vehicleSummary: actor.isVehicle ? referenceSummary("vehicles", s.metadata) : "",
       isMinion: actor.type === "minion",
       portraitSrc: actorPortraitSource(actor),
+      portraitFacingOffset: portraitArtworkFacing(actor),
       portraitFamily: portrait.family,
       portraitCategory: portrait.category,
       portraitProcedural:
@@ -916,6 +1076,14 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       linkedMinions: !!groupStateForActor(actor),
       canFinishCreation: actor.type === "character" && s.phase === "creation" && s.creation?.applied === true && this.isEditable,
       creationIssues: actor.type === "character" ? creationReadiness(s) : [],
+      storyHooksMissing: actor.type === "character" ? missingStoryMechanics(s, campaign) : [],
+      storyRolls: actor.type === "character" ? (s.creation?.storyRolls ?? []).map((entry) => ({...entry, label: entry.mechanic[0].toUpperCase() + entry.mechanic.slice(1)})) : [],
+      storyHookCards: actor.type === "character" ? storyHookCards(s) : [],
+      storyBackgroundParagraph: actor.type === "character" ? storyBackgroundParagraph(s) : "",
+      speciesBackground: Object.hasOwn(s.creation ?? {}, "speciesBackground") ? s.creation.speciesBackground : speciesBackgroundDefault(s.species),
+      careerBackground: Object.hasOwn(s.creation ?? {}, "careerBackground") ? s.creation.careerBackground : careerBackgroundDefault(s.career),
+      canTidyBioNotes: actor.type === "character" && this.isEditable && separateLegacyBiography(s).changed,
+      canRefreshGuidance: game.user.isGM && this.isEditable && actor.items.some((item) => ["specialization", "signatureAbility"].includes(item.type)),
       canGenerateEnemy: game.user.isGM && this.isEditable && ["minion","rival","nemesis"].includes(actor.type) && !actor.items.size && !s.metadata?.enemyGuideApplied && !groupDefinition(actor),
       originsLocked,
       characteristicsLocked:
@@ -981,6 +1149,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
         : Object.entries(CHARACTERISTICS).map(([key, label]) => ({
             key,
             label,
+            guidance: CHARACTERISTIC_GUIDANCE[key],
             value: s.characteristics[key],
           })),
       skills,
@@ -1001,14 +1170,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
         ...s[key],
         exceeded: s[key].value > s[key].max,
       })),
-      items: actor.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        type: item.type,
-        img: item.img,
-        system: item.system,
-        weapon: item.type === "weapon",
-      })),
+      ...inventoryGroups(actor),
       vehicleFields: ["armor", "silhouette", "handling"].map((key) => ({
         key,
         value: s[key],
@@ -1038,11 +1200,14 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
   _onRender(context, options) {
     super._onRender(context, options);
     this.element.dataset.theme = context.themeKey;
+    bindSheetGuidance(this.element);
     bindTurnControls(this.element.querySelector(".sf-turn-panel"),this.actor);
     const crewPanel = this.element.querySelector(".sf-crew-panel");
     if (crewPanel) bindCrewControls(crewPanel,vehicleForActor(this.actor),this.actor);
     this._sfRenderEvents?.abort();
     this._sfRenderEvents = new AbortController();
+    if (this.isEditable) bindFacingRing(this.element.querySelector(".sf-portrait-frame"),
+      (angle) => this.actor.setFlag(SYSTEM_ID, "portraitFacingOffset", angle), this._sfRenderEvents.signal);
     for (const picker of this.element.querySelectorAll("[data-origin-picker]"))
       bindOriginPicker(picker, context[`${picker.dataset.originPicker}Options`] ?? []);
     // Preserve the chosen window size; compact content scrolls instead of enlarging the sheet.
@@ -1235,6 +1400,67 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       notifyError(error);
     }
   }
+  static async tidyBioNotes() {
+    try {
+      if (this.actor.type !== "character" || !this.isEditable)
+        throw new Error("Only an editable character can tidy Bio Notes.");
+      const biography = this.element.querySelector('[name="system.biography"]')?.value ?? this.actor.system.biography;
+      const separated = separateLegacyBiography({ ...this.actor.system, biography });
+      if (separated.changed) {
+        await this.actor.update({ "system.biography": separated.biography });
+        this.render();
+      }
+    } catch (error) {
+      notifyError(error);
+    }
+  }
+  static async editTokenFacing() {
+    try {
+      if (!this.isEditable) throw new Error("Token artwork requires an editable actor.");
+      await openTokenFacingEditor(this.actor);
+      this.render();
+    } catch (error) { notifyError(error); }
+  }
+  static async applySpeciesSkills() {
+    try {
+      this.actor.assertOwner();
+      const s = this.actor.system, rules = speciesAbilityEntry(s.species, s.creation?.species);
+      if (this.actor.type !== "character" || !s.creation?.applied || !rules?.nonCareerSkillRanks)
+        throw new Error("No verified non-career species choices need applying.");
+      if ((s.creation.nonCareerSkillChoices?.length ?? 0) === rules.nonCareerSkillRanks)
+        throw new Error("These species ranks have already been applied.");
+      const careerSkills = Object.keys(SKILLS).filter((key) => s.skills[key]?.career);
+      const choices = await nonCareerSkillDialog(rules,
+        { system: { careerSkills } }, { system: { careerSkills: [] } }, s.skills);
+      if (!choices) return;
+      const pending = rules.abilities.some((ability) => ability.application !== "automatic");
+      const update = Object.fromEntries(choices.map((key) => [`system.skills.${key}.rank`, s.skills[key].rank + 1]));
+      update["system.creation.nonCareerSkillChoices"] = choices;
+      update["system.creation.speciesAbilitySource"] = rules.source;
+      update["system.creation.speciesAbilitiesPending"] = pending;
+      if (!pending) update["system.incomplete"] = Array.from(s.incomplete ?? []).filter((message) =>
+        message !== "Verify species abilities and any exceptional creation rules in the source book.");
+      await this.actor.update(update);
+      this.render();
+    } catch (error) { notifyError(error); }
+  }
+  static async rollStoryHooks() {
+    try {
+      this.actor.assertOwner();
+      const count = await rollMissingStoryHooks(this.actor);
+      if (count) ui.notifications.info(`${count} story ${count === 1 ? "hook" : "hooks"} added to the character.`);
+      this.render();
+    } catch (error) { notifyError(error); }
+  }
+  static async refreshTalentGuidance() {
+    try {
+      if (!game.user.isGM) throw new Error("Only the GM can refresh private talent guidance.");
+      const library = await sheetLibrary("Item", ["type", "system.source.book", "system.source.page"]);
+      const changed = await refreshActorTalentGuidance(this.actor, library);
+      ui.notifications.info(`${changed} owned talent ${changed === 1 ? "tree" : "trees"} refreshed from the local library.`);
+      this.render();
+    } catch (error) { notifyError(error); }
+  }
   static async editMotivation(_event, target) {
     try {
       await motivationDialog(this.actor, target.dataset.motivationId);
@@ -1278,6 +1504,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
   }
   static async buyTalent(_event, target) {
     try {
+      if (target.dataset.disabled === "true" || !this.isEditable) return;
       target.disabled = true;
       const node = this.actor.items
         .get(target.dataset.item)
@@ -1448,9 +1675,22 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       const issues=creationReadiness(this.actor.system);
       if(issues.length)throw new Error(issues.join(" "));
       if(this.actor.system.phase!=="creation")throw new Error("This character is already in play.");
-      if(!await DialogV2.confirm({window:{title:"Ready for play"},content:`<p>Finish creation for ${escapeHTML(this.actor.name)}? ${this.actor.system.xp.available} unspent XP will remain available for advancement. Species, starting career and direct characteristic purchases become locked.</p>`}))return;
+      let gmReview;
+      if (gmControlsCharacter(this.actor)) {
+        const story = missingStoryMechanics(this.actor.system, game.settings.get(SYSTEM_ID, "campaign"));
+        if (story.length) throw new Error(`Roll or enter missing ${story.join(", ")} story values before GM review.`);
+        const s = this.actor.system, spent = s.xp.total - s.xp.available;
+        const notes = await DialogV2.prompt({
+          window: { title: "GM build review · Ready for play", resizable: true },
+          content: `<div class="sf-dialog"><p>${escapeHTML(this.actor.name)}: ${spent} XP spent, ${s.xp.available} saved; ${s.creation?.startingResources?.cost ?? 0} credits spent on gear, ${s.credits} retained; ${s.creation?.startingResources?.encumbrance ?? 0} encumbrance carried.</p><p>Record how the choices fit this character. Saved XP and credits are allowed.</p><label>XP plan<textarea name="xpIntent" rows="3" required>${escapeHTML(s.creation?.gmBuildReview?.xpIntent ?? "")}</textarea></label><label>Gear and credits plan<textarea name="gearIntent" rows="3" required>${escapeHTML(s.creation?.gmBuildReview?.gearIntent ?? "")}</textarea></label></div>`,
+          ok: { label: "Finish GM build", callback: (_event, button) => Object.fromEntries(new FormData(button.form)) },
+          rejectClose: false,
+        });
+        if (!notes) return;
+        gmReview = reviewGmCharacterBuild(s, notes);
+      } else if(!await DialogV2.confirm({window:{title:"Ready for play"},content:`<p>Finish creation for ${escapeHTML(this.actor.name)}? ${this.actor.system.xp.available} unspent XP will remain available for advancement. Species, starting career and direct characteristic purchases become locked.</p>`}))return;
       const recheck=creationReadiness(this.actor.system);if(recheck.length)throw new Error(recheck.join(" "));
-      await this.actor.update({"system.phase":"play","system.creation.finalized":true});
+      await this.actor.update({"system.phase":"play","system.creation.finalized":true,...(gmReview ? {"system.creation.gmBuildReview":gmReview.gmBuildReview} : {})});
     }catch(error){notifyError(error);}
   }
   static async finishStartingFunds(_event, target) {
@@ -1479,11 +1719,14 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
 export class StarWarsItemSheet extends HandlebarsApplicationMixin(
   foundry.applications.sheets.ItemSheetV2,
 ) {
+  static async _onSubmitForm(_event, _form, formData) {
+    await this.item.update(formData.object);
+  }
   static DEFAULT_OPTIONS = {
     tag: "form",
     classes: ["star-wars"],
     position: { width: 650, height: 750 },
-    form: { submitOnChange: true, closeOnSubmit: false },
+    form: { handler: StarWarsItemSheet._onSubmitForm, submitOnChange: true, closeOnSubmit: false },
   };
   static PARTS = { sheet: { template: `${SYSTEM_PATH}/templates/item.hbs` } };
   async _prepareContext(options) {
@@ -1491,6 +1734,7 @@ export class StarWarsItemSheet extends HandlebarsApplicationMixin(
       ...(await super._prepareContext(options)),
       item: this.item,
       system: this.item.system,
+      summary: referenceSummary(this.item.system.source?.table, this.item.system.metadata),
       editable: this.isEditable,
       weapon: this.item.type === "weapon",
       vehicleWeapon: this.item.type === "weapon" && (this.item.actor?.type === "vehicle" || this.item.system.scale === "vehicle"),
@@ -1516,6 +1760,21 @@ export class StarWarsItemSheet extends HandlebarsApplicationMixin(
     };
   }
 }
+async function refreshActorTalentGuidance(actor, library) {
+  const candidates = library.index.filter((entry) => ["specialization", "signatureAbility"].includes(entry.type));
+  const updates = [];
+  for (const item of actor.items.filter((entry) => ["specialization", "signatureAbility"].includes(entry.type))) {
+    const matches = candidates.filter((entry) => entry.type === item.type && entry.name === item.name &&
+      entry.system?.source?.book === item.system.source?.book &&
+      String(entry.system?.source?.page ?? "") === String(item.system.source?.page ?? ""));
+    if (matches.length !== 1) continue;
+    const source = await library.getDocument(String(matches[0].id ?? matches[0]._id));
+    const tree = mergeSpecializationEnrichment(item.toObject(), sheetDocumentData(source));
+    if (tree) updates.push({ _id: item.id, "system.tree": tree });
+  }
+  if (updates.length) await actor.updateEmbeddedDocuments("Item", updates);
+  return updates.length;
+}
 export async function importDialog() {
   try {
     const file = await DialogV2.prompt({
@@ -1530,10 +1789,13 @@ export async function importDialog() {
     });
     if (!file) return;
     const report = await importWithProgress(JSON.parse(await file.text()));
+    const library = await sheetLibrary("Item", ["type", "system.source.book", "system.source.page"]);
+    let refreshed = 0;
+    for (const actor of game.actors) refreshed += await refreshActorTalentGuidance(actor, library);
     ui.notifications.info(
       `Library ready: ${Object.entries(report)
         .map(([key, v]) => `${key} ${v.created} new, ${v.preserved} preserved`)
-        .join("; ")}`,
+        .join("; ")}; ${refreshed} owned talent trees refreshed`,
     );
   } catch (error) {
     notifyError(error);
@@ -1655,7 +1917,52 @@ const STARTING_EQUIPMENT_INDEX_FIELDS = [
   "system.restricted",
   "system.incomplete",
   "system.scale",
+  "system.encumbrance",
+  "system.skill",
 ];
+
+const STORY_INDEX_FIELDS = [
+  "system.source.table", "system.source.book", "system.source.page",
+  "system.description",
+  "system.metadata.Career", "system.metadata.Obligation", "system.metadata.Duty_Type",
+  "system.metadata.Emotional_Strength", "system.metadata.Emotional_Weakness",
+  "system.metadata.d-100_Low", "system.metadata.d-100_High",
+  "system.metadata.d100_Low", "system.metadata.d100_High",
+  "system.metadata.d100-low", "system.metadata.d100-high",
+];
+
+function gmControlsCharacter(actor) {
+  if (!game.user.isGM || actor.type !== "character") return false;
+  const owner = globalThis.CONST?.DOCUMENT_OWNERSHIP_LEVELS?.OWNER ?? 3;
+  return Array.from(game.users ?? []).every((user) => user.isGM ||
+    Number(actor.ownership?.[user.id] ?? actor.ownership?.default ?? 0) < owner);
+}
+
+async function rollMissingStoryHooks(actor) {
+  const campaign = game.settings.get(SYSTEM_ID, "campaign");
+  const missing = missingStoryMechanics(actor.system, campaign);
+  if (!missing.length) return 0;
+  const library = await sheetLibrary("Item", STORY_INDEX_FIELDS);
+  const hooks = [];
+  for (const mechanic of missing) {
+    const options = storyRollOptions(library.index, mechanic, actor.system.career, campaign);
+    if (!options.length) throw new Error(`No enabled ${mechanic} table covers this character; choose a type manually on the sheet.`);
+    hooks.push(await rollStoryHook(options, mechanic, async () => {
+      const roll = await new Roll("1d100").evaluate();
+      await roll.toMessage({ speaker: ChatMessage.getSpeaker({ actor }), flavor: `${actor.name} · ${mechanic} story roll` });
+      return Number(roll.total);
+    }));
+  }
+  const updated = applyStoryHooks(actor.toObject().system, hooks);
+  await actor.update({
+    "system.obligation.label": updated.obligation?.label ?? actor.system.obligation.label,
+    "system.duty.label": updated.duty?.label ?? actor.system.duty.label,
+    "system.morality.strength": updated.morality?.strength ?? actor.system.morality.strength,
+    "system.morality.weakness": updated.morality?.weakness ?? actor.system.morality.weakness,
+    "system.creation.storyRolls": updated.creation.storyRolls,
+  });
+  return hooks.length;
+}
 
 function resourceChoiceHTML(line) {
   const choices = CREATION_RESOURCE_CHOICES[line] ?? [];
@@ -1669,9 +1976,66 @@ function resourceChoiceHTML(line) {
     .join("");
 }
 
-function startingLoadoutHTML({ line, allowRestricted }) {
+async function startingResourceDialog(line, campaign) {
+  return DialogV2.prompt({
+    window: { title: "Character creation · Starting resources", resizable: true },
+    classes: ["star-wars", "sf-creation-dialog"],
+    position: { width: 560, height: 430 },
+    content: `<div class="sf-dialog"><p>Choose a story benefit first. Your XP and equipment choices will follow.</p><div class="sf-starting-choices">${resourceChoiceHTML(line)}</div><p data-resource-feedback aria-live="polite"></p></div>`,
+    render: (_event, dialog) => {
+      const root = dialog.element, button = root.querySelector('[data-action="ok"]');
+      const refresh = () => {
+        const choices = Array.from(root.querySelectorAll('[name="resourceChoice"]:checked'), (input) => input.value).filter((choice) => choice !== "standard");
+        try {
+          const plan = creationResourcePlan({ line, partySize: campaign.partySize ?? 4, choices, ageStartingResource: campaign.ageStartingResource ?? "lambda" });
+          root.querySelector("[data-resource-feedback]").textContent = `${plan.story.mechanic} ${plan.story.value} · ${plan.xpBonus} bonus XP · ${plan.cashBudget} credits for starting gear`;
+          button.disabled = false;
+        } catch (error) {
+          root.querySelector("[data-resource-feedback]").textContent = error.message;
+          button.disabled = true;
+        }
+      };
+      root.addEventListener("change", refresh);
+      refresh();
+    },
+    ok: { label: "Continue to XP", callback: (_event, button) => {
+      const choices = Array.from(button.form.querySelectorAll('[name="resourceChoice"]:checked'), (input) => input.value).filter((choice) => choice !== "standard");
+      return { choices, resources: creationResourcePlan({ line, partySize: campaign.partySize ?? 4, choices, ageStartingResource: campaign.ageStartingResource ?? "lambda" }) };
+    } },
+    rejectClose: false,
+  });
+}
+
+async function nonCareerSkillDialog(speciesRules, career, specialization, skills) {
+  const count = speciesRules?.nonCareerSkillRanks ?? 0;
+  if (!count) return [];
+  const careerSkills = [...career.system.careerSkills, ...specialization.system.careerSkills];
+  const choices = Object.entries(SKILLS).filter(([key]) => !careerSkills.includes(key) && (skills?.[key]?.rank ?? 0) < 2);
+  return DialogV2.prompt({
+    window: { title: `Character creation · ${speciesRules.species} skills`, resizable: true },
+    classes: ["star-wars", "sf-creation-dialog"],
+    position: { width: 560, height: 680 },
+    content: `<div class="sf-dialog"><p>Choose ${count} different non-career skills. Each gains one free starting rank.</p><div class="sf-creation-grid">${choices.map(([key, definition]) => `<label><input type="checkbox" name="nonCareerSkill" value="${key}"> ${escapeHTML(definition.label)}</label>`).join("")}</div><p data-non-career-feedback aria-live="polite"></p></div>`,
+    render: (_event, dialog) => {
+      const root = dialog.element, button = root.querySelector('[data-action="ok"]');
+      const refresh = () => {
+        const selected = Array.from(root.querySelectorAll('[name="nonCareerSkill"]:checked'), (input) => input.value);
+        try { validateNonCareerSkillChoices(speciesRules, selected, careerSkills, skills); button.disabled = false; root.querySelector("[data-non-career-feedback]").textContent = "Starting ranks ready."; }
+        catch (error) { button.disabled = true; root.querySelector("[data-non-career-feedback]").textContent = error.message; }
+      };
+      root.addEventListener("change", refresh); refresh();
+    },
+    ok: { label: "Apply species skills", callback: (_event, button) => validateNonCareerSkillChoices(speciesRules, Array.from(button.form.querySelectorAll('[name="nonCareerSkill"]:checked'), (input) => input.value), careerSkills, skills) },
+    rejectClose: false,
+  });
+}
+
+function startingLoadoutHTML({ line, allowRestricted, system, suggestions, encumbranceLimit }) {
+  const spent = system.xp.total - system.xp.available;
   return `<div class="sf-dialog sf-starting-loadout" data-starting-loadout data-line="${escapeHTML(line)}">
-    <fieldset><legend>Story resource and starting benefit</legend><div class="sf-starting-choices">${resourceChoiceHTML(line)}</div></fieldset>
+    <p>Starting build: ${spent} XP spent · ${system.xp.available} XP saved. Suggested gear reflects those choices; the full allowed catalogue remains searchable.</p>
+    <p>Carrying limit: <strong>${encumbranceLimit}</strong> encumbrance. Credits can be saved for later.</p>
+    <p class="sf-hint">Suggested: ${suggestions.map((item) => escapeHTML(item.name)).join(" · ") || "No matching gear in the current budget."}</p>
     <section class="sf-starting-budget" aria-live="polite"><strong data-resource-summary></strong><span data-budget-summary></span><small data-grant-summary></small></section>
     <div class="sf-starting-equipment-grid">
       <section><h3>Available equipment</h3><label>Find by name, type or book<input type="search" data-equipment-search autocomplete="off"></label><select data-equipment-results size="12" aria-label="Matching starting equipment"></select><button type="button" data-add-starting-item><i class="fa-solid fa-plus" aria-hidden="true"></i> Add selected item</button><p class="sf-hint">Only enabled books and entries with a recorded price appear. ${allowRestricted ? "As GM, you may approve Restricted entries here." : "Restricted entries require the GM to add or approve them."}</p></section>
@@ -1692,20 +2056,9 @@ function attachStartingLoadout(dialog, context) {
     submit = dialog.element.querySelector('button[data-action="ok"]'),
     byId = new Map(context.equipment.map((entry) => [entry.id, entry])),
     basket = new Map();
-  const choices = () =>
-    Array.from(
-      root.querySelectorAll('[name="resourceChoice"]:checked'),
-      (input) => input.value,
-    ).filter((choice) => choice !== "standard");
   const selections = () =>
     Array.from(basket, ([id, quantity]) => ({ id, quantity }));
-  const resources = () =>
-    creationResourcePlan({
-      line: context.line,
-      partySize: context.partySize,
-      choices: choices(),
-      ageStartingResource: context.ageStartingResource,
-    });
+  const resources = () => context.resources;
   const loadout = (plan) =>
     buildStartingLoadout({
       options: context.equipment,
@@ -1713,12 +2066,14 @@ function attachStartingLoadout(dialog, context) {
       cashBudget: plan.cashBudget,
       gearGrant: plan.gearGrant,
       allowRestricted: context.allowRestricted,
+      encumbranceLimit: context.encumbranceLimit,
     });
   const renderResults = () => {
     const terms = String(search.value ?? "")
       .toLowerCase()
       .split(/\s+/)
       .filter(Boolean),
+      suggestions = new Set(context.suggestions.map((entry) => entry.id)),
       matches = context.equipment
         .filter((entry) =>
           terms.every((term) =>
@@ -1727,12 +2082,13 @@ function attachStartingLoadout(dialog, context) {
               .includes(term),
           ),
         )
+        .sort((a,b) => Number(suggestions.has(b.id)) - Number(suggestions.has(a.id)) || a.name.localeCompare(b.name))
         .slice(0, 150);
     results.replaceChildren(
       ...matches.map((entry) => {
         const option = document.createElement("option");
         option.value = entry.id;
-        option.textContent = `${entry.name} · ${entry.price.toLocaleString()} cr · ${entry.type}${entry.restricted ? " · Restricted" : ""}`;
+        option.textContent = `${suggestions.has(entry.id) ? "★ " : ""}${entry.name} · ${entry.price.toLocaleString()} cr · ${entry.encumbrance} enc · ${entry.type}${entry.restricted ? " · Restricted" : ""}`;
         option.disabled = entry.restricted && !context.allowRestricted;
         return option;
       }),
@@ -1749,7 +2105,7 @@ function attachStartingLoadout(dialog, context) {
       root.querySelector("[data-resource-summary]").textContent =
         `${mechanic} ${plan.story.value} · +${plan.xpBonus} XP`;
       root.querySelector("[data-budget-summary]").textContent =
-        `${purchase.cost.toLocaleString()} spent · ${purchase.credits.toLocaleString()} credits retained`;
+        `${purchase.cost.toLocaleString()} spent · ${purchase.credits.toLocaleString()} credits retained · ${purchase.encumbrance}/${context.encumbranceLimit} encumbrance`;
       root.querySelector("[data-grant-summary]").textContent = plan.gearGrant
         ? `${plan.gearGrant.toLocaleString()}-credit base allowance: ${purchase.gearGrantUsed.toLocaleString()} used, ${purchase.gearGrantUnused.toLocaleString()} unused and not converted to cash.`
         : `${plan.cashBudget.toLocaleString()} credits available for gear or later play.`;
@@ -1778,7 +2134,7 @@ function attachStartingLoadout(dialog, context) {
         remove = document.createElement("button");
       row.className = "sf-starting-basket-row";
       row.dataset.basketId = id;
-      description.textContent = `${entry.name} · ${entry.price.toLocaleString()} cr${entry.restricted ? " · Restricted" : ""}`;
+      description.textContent = `${entry.name} · ${entry.price.toLocaleString()} cr · ${entry.encumbrance} enc${entry.restricted ? " · Restricted" : ""}`;
       input.type = "number";
       input.min = "1";
       input.max = "99";
@@ -1833,13 +2189,23 @@ async function startingLoadoutDialog({
   campaign,
   equipment,
   allowRestricted,
+  choices,
+  resources,
+  system,
 }) {
+  const encumbranceLimit = 5 + system.characteristics.brawn;
+  const suggestions = suggestedStartingEquipment(equipment, system, resources.cashBudget + resources.gearGrant, encumbranceLimit);
   const context = {
     line,
     partySize: campaign.partySize ?? 4,
     ageStartingResource: campaign.ageStartingResource ?? "lambda",
     equipment,
     allowRestricted,
+    choices,
+    resources,
+    system,
+    suggestions,
+    encumbranceLimit,
   };
   return DialogV2.prompt({
     window: { title: "Character creation · Resources and equipment", resizable: true },
@@ -1850,26 +2216,17 @@ async function startingLoadoutDialog({
     ok: {
       label: "Continue to starting XP",
       callback: (_event, button) => {
-        const selectedChoices = Array.from(
-            button.form.querySelectorAll('[name="resourceChoice"]:checked'),
-            (input) => input.value,
-          ).filter((choice) => choice !== "standard"),
-          selectedEquipment = JSON.parse(button.form.elements.loadout.value),
-          resources = creationResourcePlan({
-            line,
-            partySize: context.partySize,
-            choices: selectedChoices,
-            ageStartingResource: context.ageStartingResource,
-          }),
+        const selectedEquipment = JSON.parse(button.form.elements.loadout.value),
           loadout = buildStartingLoadout({
             options: equipment,
             selections: selectedEquipment,
             cashBudget: resources.cashBudget,
             gearGrant: resources.gearGrant,
             allowRestricted,
+            encumbranceLimit,
           });
         return {
-          choices: selectedChoices,
+          choices,
           selections: selectedEquipment,
           resources,
           loadout,
@@ -1936,7 +2293,7 @@ async function createCharacterDialog(actor,mode="manual") {
     );
   const data = await DialogV2.prompt({
     window: { title: "Character creation · Starting specialization" },
-    content: `<div class="sf-dialog"><dl class="sf-creation-summary"><dt>Species</dt><dd>${escapeHTML(species.name)}</dd><dt>Career</dt><dd>${escapeHTML(career.name)}</dd><dt>Creation rules</dt><dd>${escapeHTML(RULE_LINES[line].label)} <small>set from the GM's campaign and career source</small></dd></dl><label>Starting specialization<select name="specialization">${optionsHTML(Object.fromEntries(specializationOptions.map((entry) => [entry._id, entry.name])))}</select></label><p>Species-specific abilities and exceptions remain flagged for verification against the cited book.</p></div>`,
+    content: `<div class="sf-dialog"><dl class="sf-creation-summary"><dt>Species</dt><dd>${escapeHTML(species.name)}</dd><dt>Career</dt><dd>${escapeHTML(career.name)}</dd><dt>Creation rules</dt><dd>${escapeHTML(RULE_LINES[line].label)} <small>set from the GM's campaign and career source</small></dd></dl><label>Starting specialization<select name="specialization">${optionsHTML(Object.fromEntries(specializationOptions.map((entry) => [entry._id, entry.name])))}</select></label>${speciesAbilityEntry(species.name, species.system.source)?.choiceSkillRank ? `<label>Species starting skill<select name="speciesSkillChoice">${optionsHTML(Object.fromEntries((speciesAbilityEntry(species.name, species.system.source).choiceSkillOptions ?? Object.keys(SKILLS)).map((key) => [key, SKILLS[key].label])))}</select></label>` : ""}<p>Source-checked starting skill ranks are included. Other species abilities remain visible on the sheet for review.</p></div>`,
     ok: {
       label: "Choose free skills",
       callback: (_e, b) => Object.fromEntries(new FormData(b.form)),
@@ -1950,6 +2307,17 @@ async function createCharacterDialog(actor,mode="manual") {
     throw new Error("Select a specialization belonging to the career.");
   const freeChoices={career:career.system.careerSkills,specialization:specialization.system.careerSkills},
     freeCounts={career:rule.freeCareerRanks,specialization:rule.freeSpecializationRanks};
+  const validateStartingRanks = (selected) => {
+    validateFreeRanks(selected, freeChoices, freeCounts);
+    const speciesRules = speciesAbilityEntry(species.name, species.system.source);
+    for (const skill of [
+      ...(speciesRules?.startingSkillRanks ?? []),
+      ...(speciesRules?.choiceSkillRank ? [data.speciesSkillChoice] : []),
+    ])
+      if (Number(!!selected[`career:${skill}`]) + Number(!!selected[`specialization:${skill}`]) >= 2)
+        throw new Error(`${SKILLS[skill].label} would exceed rank 2 with the species grant. Choose another free skill.`);
+    return selected;
+  };
   const rankForm = await DialogV2.prompt({
     window: { title: "Character creation · Free skill ranks",resizable:true },
     content: `<div class="sf-dialog">${[
@@ -1964,25 +2332,46 @@ async function createCharacterDialog(actor,mode="manual") {
     render:(_event,dialog)=>{
       const root=dialog.element,refresh=()=>{
         const data=Object.fromEntries(new FormData(root.matches("form")?root:root.querySelector("form"))),button=root.querySelector('[data-action="ok"]'),summary=root.querySelector("[data-free-rank-summary]");
-        try{validateFreeRanks(data,freeChoices,freeCounts);summary.textContent="Free ranks selected. Ready for equipment.";button.disabled=false;}
+        try{validateStartingRanks(data);summary.textContent="Free ranks selected. Ready for species skills and XP.";button.disabled=false;}
         catch(error){summary.textContent=error.message;button.disabled=true;}
       };
       root.addEventListener("change",refresh);refresh();
     },
     ok: {
-      label: "Choose resources & equipment",
-      callback: (_e, b) => validateFreeRanks(Object.fromEntries(new FormData(b.form)),freeChoices,freeCounts),
+      label: "Continue to species skills",
+      callback: (_e, b) => validateStartingRanks(Object.fromEntries(new FormData(b.form))),
     },
     rejectClose: false,
   });
   if (!rankForm) return;
+  const speciesRules = speciesAbilityEntry(species.name, species.system.source);
+  const nonCareerSkillChoices = await nonCareerSkillDialog(speciesRules, career, specialization, {});
+  if (nonCareerSkillChoices === null) return;
+  const resourcesChoice = await startingResourceDialog(line, campaign);
+  if (!resourcesChoice) return;
+  let system = creationPlan({
+    species, career, specialization, line,
+    careerRanks: Object.keys(rankForm).filter((k) => k.startsWith("career:")).map((k) => k.slice(7)),
+    specializationRanks: Object.keys(rankForm).filter((k) => k.startsWith("specialization:")).map((k) => k.slice(15)),
+    speciesSkillChoice: data.speciesSkillChoice ?? "",
+    nonCareerSkillChoices,
+    partySize: campaign.partySize ?? 4,
+    resourceChoices: resourcesChoice.choices,
+    ageStartingResource: campaign.ageStartingResource ?? "lambda",
+  });
+  const existingBiography = String(actor.system.biography ?? "").trim();
+  if (existingBiography) system.biography = [existingBiography, system.biography].join("\n\n");
+  system.creation.finalized = false;
+  system.creation.guide = { mode: origins.mode, answers: origins.answers };
+  system = await creationXpDialog(system);
+  if (!system) return;
   const equipment = startingEquipmentOptions(pack.index, campaign),
     allowRestricted = game.user.isGM,
     starting = await startingLoadoutDialog({
-      line,
-      campaign,
-      equipment,
-      allowRestricted,
+      line, campaign, equipment, allowRestricted,
+      choices: resourcesChoice.choices,
+      resources: resourcesChoice.resources,
+      system,
     });
   if (!starting) return;
   const equipmentDocuments = await Promise.all(
@@ -2006,29 +2395,10 @@ async function createCharacterDialog(actor,mode="manual") {
     cashBudget: starting.resources.cashBudget,
     gearGrant: starting.resources.gearGrant,
     allowRestricted,
+    encumbranceLimit: 5 + system.characteristics.brawn,
   });
-  let system = creationPlan({
-    species,
-    career,
-    specialization,
-    line,
-    careerRanks: Object.keys(rankForm)
-      .filter((k) => k.startsWith("career:"))
-      .map((k) => k.slice(7)),
-    specializationRanks: Object.keys(rankForm)
-      .filter((k) => k.startsWith("specialization:"))
-      .map((k) => k.slice(15)),
-    partySize: campaign.partySize ?? 4,
-    resourceChoices: starting.choices,
-    ageStartingResource: campaign.ageStartingResource ?? "lambda",
-    startingEquipment,
-    allowRestricted,
-  });
-  system.creation.finalized=false;
-  system.creation.guide={mode:origins.mode,answers:origins.answers};
-  system=await creationXpDialog(system);
-  if(!system)return;
-  system.creation.startingResources.items = startingEquipment.map((entry) => ({
+  system.credits = starting.loadout.credits;
+  system.creation.startingResources = { ...starting.resources, ...starting.loadout, items: startingEquipment.map((entry) => ({
     id: entry.id,
     name: entry.name,
     type: entry.type,
@@ -2037,7 +2407,7 @@ async function createCharacterDialog(actor,mode="manual") {
     cost: entry.price * entry.quantity,
     restricted: entry.restricted,
     source: entry.source,
-  }));
+  })) };
   const items = [species, career, specialization, ...equipmentDocuments].map(
     (item, index) => {
       const data = sheetDocumentData(item);

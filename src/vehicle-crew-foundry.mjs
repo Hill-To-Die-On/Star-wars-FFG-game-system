@@ -2,7 +2,8 @@ import { SYSTEM_ID, SKILLS } from "./config.mjs";
 import { escapeHTML as esc } from "./mechanics.mjs";
 import { selectXpAuthority } from "./xp-transactions.mjs";
 import { CREW_FLAG, CREW_ROLES, aboard, crewCapacities, crewRoster, occupantCount,
-  canManageCrew, boardingUpdate, departureUpdate, roleUpdate, attachedPosition, crewForSkill, resolveCrewCheck, boardingTargets, crewBadgeLayout } from "./vehicle-crew.mjs";
+  canManageCrew, canRollCrew, boardingUpdate, departureUpdate, roleUpdate, attachedPosition, crewForSkill, resolveCrewCheck, boardingTargets, crewBadgeLayout, travelTokenCopy } from "./vehicle-crew.mjs";
+import { vehicleTokenDimensions } from "./vehicle-footprints.mjs";
 import { CrewTransactionCoordinator } from "./crew-transactions.mjs";
 import { preparedCrew, preparedCrewRows } from "./crew-generation.mjs";
 import { crewGenerationDialog, executeCrewGeneration } from "./crew-generation-foundry.mjs";
@@ -24,7 +25,7 @@ export function vehicleForActor(actor) {
 }
 export function assignedCrewCheck(vehicle,skill,memberId) {
   const v=documentOf(vehicle),result=resolveCrewCheck(v,sceneTokens(v),skill,memberId);
-  if(!canManageCrew(result.token,v,globalThis.game?.user))throw new Error("Owner permission for this crew member and vehicle is required to roll.");
+  if(!canRollCrew(result.token,v,globalThis.game?.user))throw new Error("Owner permission for this assigned crew member is required to roll.");
   return result;
 }
 export function visibleCrew(vehicle) {
@@ -72,7 +73,7 @@ export function crewPanelHTML(actor) {
   return `<section class="sf-panel sf-crew-panel" data-crew-vehicle="${esc(vehicle.id)}"><h2>Crew & passengers</h2>
     <p>${esc(seatingSummary(vehicle))} · ${esc(vehicle.name)}</p><p class="sf-hint">Manage occupants to assign duties or disembark. Crew members use their own skills, talents and turn allowances. The small pilot portrait on the canvas opens the full roster.</p>
     ${rows.map(row=>`<div class="sf-crew-sheet-row" data-crew-sheet data-crew-token="${esc(row.id)}" tabindex="0" title="Double-click to open character sheet">${portrait(row)}<strong>${row.count>1?row.count+" ":""}${esc(row.name)}</strong><span>${esc(row.seat==="passenger"?"Passenger":row.roles.map(r=>CREW_ROLES[r]?.label).filter(Boolean).join(" · ")||"Crew · unassigned")}</span><button type="button" data-crew-command="manage" data-crew-token="${row.id}">Manage / leave</button></div>`).join("") || '<p>No named occupants aboard.</p>'}
-    <div class="sf-button-row"><button type="button" data-crew-command="roster" ${rows.length?"":"disabled"}>Manage all occupants</button><button type="button" data-crew-command="board">Board a character</button>${game.user.isGM?`<button type="button" data-crew-command="generate"><i class="fa-solid fa-users" aria-hidden="true"></i> Generate crew</button><button type="button" data-crew-command="configure">Configure seating</button>${preparedCrew(actor).length?'<button type="button" data-crew-command="deploy">Board prepared crew</button>':""}`:""}</div>
+    <div class="sf-button-row"><button type="button" data-crew-command="roster" ${rows.length?"":"disabled"}>Manage all occupants</button><button type="button" data-crew-command="board">Board a character</button>${game.user.isGM?`<button type="button" data-crew-command="travel">Travel to scene</button><button type="button" data-crew-command="generate"><i class="fa-solid fa-users" aria-hidden="true"></i> Generate crew</button><button type="button" data-crew-command="configure">Configure seating</button>${preparedCrew(actor).length?'<button type="button" data-crew-command="deploy">Board prepared crew</button>':""}`:""}</div>
     <div class="sf-crew-checks">${["pilotingPlanetary","pilotingSpace","gunnery","mechanics","astrogation","computers","leadership"].map(skill=>`<button type="button" data-crew-command="check" data-crew-skill="${skill}" ${crewForSkill(vehicle,sceneTokens(vehicle),skill).length?"":"disabled"}>${esc(SKILLS[skill]?.label ?? skill)}</button>`).join("")}</div></section>`;
 }
 function membersFor(vehicle,id) {
@@ -89,6 +90,7 @@ function departurePoint(token,point) {
 }
 export async function executeCrewCommand(token,command,args,user) {
   if(command==="generate"||command==="deploy")return executeCrewGeneration(token,command,args,user);
+  if(command==="travel")return transferVehicleWithCrew(token,game.scenes.get(args.destinationSceneId),user);
   const scene=token.parent,vehicle=scene.tokens.get(args.vehicleId ?? aboard(token)?.vehicleId);
   if(command==="board")await token.update(boardingUpdate(token,vehicle,scene.tokens,{user,seat:args.seat}),{starWarsCrewMove:true,starWarsFreeMovement:true,animate:false});
   else if(command==="role")await token.update(roleUpdate(token,vehicle,scene.tokens,args.role,{user}));
@@ -114,6 +116,50 @@ async function splitMinionGroup(token,vehicle,args,user) {
   catch(error){await token.update({actorLink:original.actorLink,delta:original.delta},{starWarsCrewMove:true,recursive:false});throw error;}
 }
 const sceneCreateToken=(scene,data)=>scene.createEmbeddedDocuments("Token",[data],{starWarsCrewMove:true});
+
+export async function transferVehicleWithCrew(vehicle,destination,user) {
+  vehicle=documentOf(vehicle);
+  if(!user?.isGM)throw new Error("Only the GM can move a vehicle and its crew to another scene.");
+  if(vehicle?.actor?.type!=="vehicle" || !vehicle.parent?.tokens?.get(vehicle.id))throw new Error("Choose a placed vehicle token for scene travel.");
+  const source=vehicle.parent;
+  if(!destination || destination.id===source.id)throw new Error("Choose a different destination scene.");
+  const occupants=crewRoster(vehicle,source.tokens),size=Number(destination.grid?.size)||100;
+  const bounds=destination.dimensions?.sceneRect;
+  const originX=bounds?.x ?? destination.dimensions?.sceneX ?? 0;
+  const originY=bounds?.y ?? destination.dimensions?.sceneY ?? 0;
+  const dimensions=vehicleTokenDimensions(vehicle.actor,destination);
+  const width=dimensions?.width ?? vehicle.width,height=dimensions?.height ?? vehicle.height;
+  const x=Math.round((originX+Number(destination.width||4000)*.3)/size)*size;
+  const y=Math.round((originY+Number(destination.height||3000)*.55)/size)*size;
+  let newVehicle,createdCrew=[],sourceCrewRemoved=false;
+  try {
+    [newVehicle]=await destination.createEmbeddedDocuments("Token",[travelTokenCopy(vehicle,{x,y,width,height})],{starWarsCrewMove:true,starWarsFreeMovement:true});
+    if(!newVehicle)throw new Error("The destination did not create the vehicle token.");
+    const copies=occupants.map(row=>travelTokenCopy(row.token,{...attachedPosition(row.token,newVehicle),vehicleId:newVehicle.id}));
+    if(copies.length)createdCrew=await destination.createEmbeddedDocuments("Token",copies,{starWarsCrewMove:true,starWarsFreeMovement:true});
+    if(createdCrew.length!==copies.length)throw new Error("The destination did not create every boarded character.");
+    if(occupants.length){await source.deleteEmbeddedDocuments("Token",occupants.map(row=>row.id),{starWarsCrewMove:true});sourceCrewRemoved=true;}
+    await source.deleteEmbeddedDocuments("Token",[vehicle.id],{starWarsCrewMove:true});
+  } catch(error) {
+    if(!sourceCrewRemoved){
+      if(createdCrew.length)await destination.deleteEmbeddedDocuments("Token",createdCrew.map(token=>token.id),{starWarsCrewMove:true});
+      if(newVehicle)await destination.deleteEmbeddedDocuments("Token",[newVehicle.id],{starWarsCrewMove:true});
+    }
+    throw error;
+  }
+  await destination.activate();
+  return {sceneId:destination.id,vehicleId:newVehicle.id,crewIds:createdCrew.map(token=>token.id)};
+}
+
+async function travelVehicleDialog(vehicle) {
+  if(!game.user.isGM)throw new Error("Only the GM can travel with a vehicle.");
+  const destinations=Array.from(game.scenes).filter(scene=>scene.id!==vehicle.parent.id);
+  if(!destinations.length)throw new Error("Create another scene before travelling.");
+  const id=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:`Travel · ${vehicle.name}`},
+    content:`<p>Move this vehicle and all ${crewRoster(vehicle,sceneTokens(vehicle)).length} boarded character tokens together. Their assigned duties and actor state travel with them.</p><label>Destination scene<select name="scene">${destinations.map(scene=>`<option value="${esc(scene.id)}">${esc(scene.name)}</option>`).join("")}</select></label>`,
+    ok:{label:"Travel with crew",callback:(_event,button)=>new FormData(button.form).get("scene")},rejectClose:false});
+  if(id)await requestCrewCommand(vehicle,"travel",{destinationSceneId:id});
+}
 export async function requestCrewCommand(token,command,args={}) {
   if(!coordinator)throw new Error("The crew service is not ready.");
   return coordinator.request(documentOf(token),command,args);
@@ -124,7 +170,7 @@ export async function boardingDialog(token,vehicle) {
   prompts.add(token.id);
   try {
     const {free}=crewCounts(vehicle),count=occupantCount(token),crewFull=free.crew!==null && free.crew<count,passengerFull=free.passenger!==null && free.passenger<count;
-    const seat=await foundry.applications.api.DialogV2.prompt({window:{title:`Enter ${vehicle.name}?`},
+    const seat=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:`Enter ${vehicle.name}?`},
       content:`<p>Board <strong>${esc(token.name)}</strong>${count>1?` (${count} members)`:""}?</p><div class="form-group"><label>Place</label><select name="seat"><option value="crew" ${crewFull?"disabled":""}>Crew · ${free.crew ?? "unknown"} free</option><option value="passenger" ${passengerFull?"disabled":""} ${crewFull?"selected":""}>Passenger · ${free.passenger ?? "unknown"} free</option></select></div><p>Assigned roles use this character's skills. Boarding keeps their actor, equipment and turn state.</p>`,
       ok:{label:"Yes, enter",callback:(_e,b)=>new FormData(b.form).get("seat")},rejectClose:false});
     if(seat)await requestCrewCommand(token,"board",{vehicleId:vehicle.id,seat});
@@ -133,20 +179,20 @@ export async function boardingDialog(token,vehicle) {
 async function chooseBoarder(vehicle) {
   const candidates=Array.from(sceneTokens(vehicle)).filter(t=>["character","minion","rival","nemesis"].includes(t.actor?.type) && !aboard(t) && (!t.hidden || game.user.isGM) && canManageCrew(t,vehicle,game.user));
   if(!candidates.length)throw new Error("No available character tokens are owned on this scene. Place a character, or ask the GM to board it.");
-  const id=await foundry.applications.api.DialogV2.prompt({window:{title:`Board · ${vehicle.name}`},content:`<label>Character<select name="token">${candidates.map(t=>`<option value="${t.id}">${esc(t.name)}${occupantCount(t)>1?` · ${occupantCount(t)} members`:""}</option>`).join("")}</select></label>`,ok:{label:"Choose",callback:(_e,b)=>new FormData(b.form).get("token")},rejectClose:false});
+  const id=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:`Board · ${vehicle.name}`},content:`<label>Character<select name="token">${candidates.map(t=>`<option value="${t.id}">${esc(t.name)}${occupantCount(t)>1?` · ${occupantCount(t)} members`:""}</option>`).join("")}</select></label>`,ok:{label:"Choose",callback:(_e,b)=>new FormData(b.form).get("token")},rejectClose:false});
   if(id)await boardingDialog(candidates.find(t=>t.id===id),vehicle);
 }
 async function configureSeating(vehicle) {
   if(!game.user.isGM)throw new Error("Only the GM can change seating.");
   const cap=crewCapacities(vehicle);
-  const result=await foundry.applications.api.DialogV2.prompt({window:{title:"Vehicle seating"},content:`<p>Defaults come from the database crew and passenger counts. Set the available places here when a published crew complement differs from usable seats. Named occupants are tracked; unrepresented background crew are not created.</p>${Object.entries(cap).map(([key,value])=>`<label>${key==="crew"?"Crew places":"Passenger places"}<input type="number" name="${key}" min="0" max="1000000" step="1" value="${value ?? ""}" required></label>`).join("")}`,ok:{label:"Save seating",callback:(_e,b)=>Object.fromEntries(Array.from(new FormData(b.form),([k,v])=>[k,Number(v)]))},rejectClose:false});
+  const result=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:"Vehicle seating"},content:`<p>Defaults come from the database crew and passenger counts. Set the available places here when a published crew complement differs from usable seats. Named occupants are tracked; unrepresented background crew are not created.</p>${Object.entries(cap).map(([key,value])=>`<label>${key==="crew"?"Crew places":"Passenger places"}<input type="number" name="${key}" min="0" max="1000000" step="1" value="${value ?? ""}" required></label>`).join("")}`,ok:{label:"Save seating",callback:(_e,b)=>Object.fromEntries(Array.from(new FormData(b.form),([k,v])=>[k,Number(v)]))},rejectClose:false});
   if(result){for(const n of Object.values(result))if(!Number.isSafeInteger(n)||n<0||n>1000000)throw new Error("Seat counts must be whole numbers between 0 and 1,000,000.");await vehicle.actor.update({[`flags.${SYSTEM_ID}.seating`]:result});}
 }
-export async function crewCheckDialog(vehicle,skill,item) {
-  const candidates=crewForSkill(vehicle,sceneTokens(vehicle),skill).filter(r=>canManageCrew(r.token,vehicle,game.user));
+export async function crewCheckDialog(vehicle,skill,item,memberId) {
+  const candidates=crewForSkill(vehicle,sceneTokens(vehicle),skill).filter(r=>(!memberId||r.id===memberId)&&canRollCrew(r.token,vehicle,game.user));
   if(!candidates.length)throw new Error("Assign an owned crew member to this duty first.");
   let id=candidates[0].id;
-  if(candidates.length>1)id=await foundry.applications.api.DialogV2.prompt({window:{title:"Choose acting crew member"},content:`<label>Crew member<select name="crew">${candidates.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></label>`,ok:{label:"Build pool",callback:(_e,b)=>new FormData(b.form).get("crew")},rejectClose:false});
+  if(candidates.length>1)id=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:"Choose acting crew member"},content:`<label>Crew member<select name="crew">${candidates.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join("")}</select></label>`,ok:{label:"Build pool",callback:(_e,b)=>new FormData(b.form).get("crew")},rejectClose:false});
   if(!id)return;
   const crew=assignedCrewCheck(vehicle,skill,id);
   if(!checkBuilder)throw new Error("The dice pool builder is not ready.");
@@ -160,14 +206,15 @@ export function crewManagementHTML(vehicle,members,{manage=false,point,selectAll
     seen.set(r.name,(seen.get(r.name)||0)+1);
     const owned=canManageCrew(r.token,vehicle,game.user,{leaving:true}),wounds=r.actor?.system?.wounds;
     const detail=`${r.count} aboard · ${r.seat==="passenger"?"Passenger":"Crew"}${owned&&wounds?` · ${wounds.value ?? 0} wounds`:""}`;
-    return `<fieldset><legend>${esc(r.name)}${duplicates.get(r.name)>1?` · Group ${seen.get(r.name)}`:""}</legend><div class="sf-crew-member-heading">${manage?`<img class="sf-crew-sheet-portrait" data-crew-sheet data-crew-token="${esc(r.id)}" src="${esc(r.img||`systems/${SYSTEM_ID}/assets/character.svg`)}" alt="" role="button" tabindex="0" aria-label="Character sheet: ${esc(r.name)}" title="Double-click to open character sheet" draggable="false">`:r.img?portrait(r):""}<span>${esc(detail)}</span></div>${manage&&r.seat==="crew"?lights(r,vehicle):""}<label>Members to disembark<input name="count-${r.id}" type="number" min="0" max="${r.count}" step="1" value="${selectAll&&owned?r.count:0}" ${owned?"":"disabled"}></label>${owned?"":'<p class="sf-hint">Only an owner or GM can change this occupant.</p>'}</fieldset>`;
+    const rollSkills=manage&&canRollCrew(r.token,vehicle,game.user)?[...new Set(r.roles.flatMap(role=>CREW_ROLES[role]?.skills??[]))]:[];
+    return `<fieldset><legend>${esc(r.name)}${duplicates.get(r.name)>1?` · Group ${seen.get(r.name)}`:""}</legend><div class="sf-crew-member-heading">${manage?`<img class="sf-crew-sheet-portrait" data-crew-sheet data-crew-token="${esc(r.id)}" src="${esc(r.img||`systems/${SYSTEM_ID}/assets/character.svg`)}" alt="" role="button" tabindex="0" aria-label="Character sheet: ${esc(r.name)}" title="Double-click to open character sheet" draggable="false">`:r.img?portrait(r):""}<span>${esc(detail)}</span></div>${manage&&r.seat==="crew"?lights(r,vehicle):""}${rollSkills.length?`<div class="sf-crew-checks" role="group" aria-label="${esc(r.name)} vehicle checks">${rollSkills.map(skill=>`<button type="button" data-crew-command="check" data-crew-skill="${esc(skill)}" data-crew-token="${esc(r.id)}">Roll ${esc(SKILLS[skill]?.label??skill)}</button>`).join("")}</div>`:""}<label>Members to disembark<input name="count-${r.id}" type="number" min="0" max="${r.count}" step="1" value="${selectAll&&owned?r.count:0}" ${owned?"":"disabled"}></label>${owned?"":'<p class="sf-hint">Only an owner or GM can change this occupant.</p>'}</fieldset>`;
   }).join("")}</div>`;
 }
 async function disembarkDialog(vehicle,members,point,{manage=false,all=false}={}) {
   if(!members.length)throw new Error("Only an owner or GM can disembark this character.");
   if(members.length===1 && occupantCount(members[0].token)<=1 && !manage && !all)
     return requestCrewCommand(members[0].token,"leave",{point});
-  const result=await foundry.applications.api.DialogV2.prompt({classes:["sf-crew-dialog"],window:{title:manage?`Crew & passengers · ${vehicle.name}`:"Who is disembarking?",resizable:true},position:{width:560,height:560},
+  const result=await foundry.applications.api.DialogV2.prompt({classes:["star-wars","sf-crew-dialog"],window:{title:manage?`Crew & passengers · ${vehicle.name}`:"Who is disembarking?",resizable:true},position:{width:560,height:560},
     content:crewManagementHTML(vehicle,members,{manage,point,selectAll:!manage&&!all}),
     render:(_e,dialog)=>bindCrewControls(dialog.element,vehicle),
     ok:{label:"Disembark selected",callback:(_e,b)=>Object.fromEntries(new FormData(b.form))},rejectClose:false});
@@ -207,6 +254,7 @@ export function bindCrewControls(root,vehicle,actor=vehicle?.actor) {
     try {
       switch(b.dataset.crewCommand) {
         case "board":await chooseBoarder(vehicle);break;
+        case "travel":await travelVehicleDialog(vehicle);break;
         case "configure":await configureSeating(vehicle??{actor});break;
         case "generate":await crewGenerationDialog(vehicle??actor,requestCrewCommand);break;
         case "deploy":await requestCrewCommand(vehicle,"deploy");refreshCrewSheets();break;
@@ -221,7 +269,7 @@ export function bindCrewControls(root,vehicle,actor=vehicle?.actor) {
         case "manage":await disembarkDialog(vehicle,membersFor(vehicle,id),null,{manage:true});break;
         case "roster":await disembarkDialog(vehicle,visibleCrew(vehicle),null,{manage:true,all:true});break;
         case "sheet":token?.actor?.sheet?.render({force:true});break;
-        case "check":await crewCheckDialog(vehicle,b.dataset.crewSkill);break;
+        case "check":await crewCheckDialog(vehicle,b.dataset.crewSkill,undefined,id);break;
       }
     }catch(error){warn(error);}
   });
@@ -338,6 +386,7 @@ export function registerVehicleCrew({openCheck}={}) {
     if(token.actor?.type==="vehicle")token.updateSource({[`flags.${SYSTEM_ID}.crewPreparedApplied`]:[]});
   });
   Hooks.on("createToken",(token,options,userId)=>{
+    if(options.starWarsCrewMove)return;
     if(token.actor?.type==="vehicle" && preparedCrew(token.actor).length && game.user.isGM && selectXpAuthority(token.actor,game.users)?.id===game.user.id){
       void requestCrewCommand(token,"deploy").then(refreshCrewSheets).catch(warn);return;
     }

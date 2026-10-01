@@ -47,7 +47,7 @@ The audit also found these useful next targets. These are data gaps or review qu
 - Twelve of 618 talent references lack activation metadata. Talent conditions, Force power effects and signature mechanics require their own verified rules coverage; weapon extraction does not supply it.
 - Installed components, attachments, repair effects, weapon fire restrictions and special actions still need evidence and automation beyond the fields in this batch.
 
-The held **Cyphers and Masks** scan omits printed pages 36-69, including the vehicle candidate at page 61. That exact request is included in `data/source-requests.json`. No held scanned page has been added to the public repository.
+A complete **Cyphers and Masks** PDF is now held, including the formerly missing printed pages 10-11 and 36-69. The page 61 vehicle candidate and other entries in that block still need comparison with the printed pages before their mechanics are marked reviewed. No held scanned page has been added to the public repository.
 
 ## Reproduction and review
 

@@ -31,4 +31,3 @@ To operate a vehicle, use its Crew & Passengers tab or crew roster. The assigned
 Do not repeatedly click a purchase or Apply control after a timeout. Check the character, roster or history first, then ask the GM to inspect the request. A later undo may be refused if another change would be overwritten.
 
 For a problem report, include the steps, expected outcome and system version. The Help window can download a small diagnostic JSON for inspection. Avoid attaching private sourcebooks, source keys, provider credentials or unreviewed campaign chat.
-

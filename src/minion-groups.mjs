@@ -18,6 +18,35 @@ export function groupStateForActor(actor) {
   const scene=globalThis.game?.scenes?.get(definition.sceneId);
   return scene?minionGroupState(actor,scene.tokens):null;
 }
+/** Combatants may arrive in one batch, before preCreateCombatant can see a sibling. */
+export function extraMinionCombatantIds(actor,combat) {
+  const definition=groupDefinition(actor);
+  if(!definition||(combat?.scene?.id??combat?.sceneId)!==definition.sceneId)return [];
+  const memberIds=new Set(definition.memberIds),slots=Array.from(combat.combatants??[])
+    .filter(combatant=>combatant.actorId===actor.id&&memberIds.has(combatant.tokenId));
+  if(slots.length<2)return [];
+  const keep=slots.reduce((best,slot)=>(slot.initiative??-Infinity)>(best.initiative??-Infinity)?slot:best);
+  return slots.filter(slot=>slot.id!==keep.id).map(slot=>slot.id);
+}
+/** Keep the tracker in step with pooled casualties while preserving a GM's manual defeat. */
+export function minionCombatantUpdates(actor,tokens,combat) {
+  const definition=groupDefinition(actor);
+  if(!definition||(combat?.scene?.id??combat?.sceneId)!==definition.sceneId)return [];
+  const state=minionGroupState(actor,tokens);
+  if(!state?.members.length)return [];
+  const memberIds=new Set(definition.memberIds);
+  return Array.from(combat.combatants??[]).filter(slot=>slot.actorId===actor.id&&memberIds.has(slot.tokenId)).flatMap(slot=>{
+    const update={_id:slot.id};
+    if(slot.name!==actor.name)update.name=actor.name;
+    const auto=slot.flags?.[SYSTEM_ID]?.autoMinionDefeated===true;
+    if(state.remaining===0&&!slot.defeated){
+      update.defeated=true;update[`flags.${SYSTEM_ID}.autoMinionDefeated`]=true;
+    } else if(state.remaining>0&&auto){
+      update.defeated=false;update[`flags.${SYSTEM_ID}.autoMinionDefeated`]=null;
+    }
+    return Object.keys(update).length>1?[update]:[];
+  });
+}
 /** Remove missing roster slots without charging their wounds against a second survivor. */
 export function reconcileMinionMembers(actor,tokens) {
   const definition=groupDefinition(actor),state=minionGroupState(actor,tokens);
@@ -66,9 +95,13 @@ function profile(actor) {
     soak:s.soak,defense:s.defense,threshold:s.wounds.max,ownership:actor.ownership,
     items:Array.from(actor.items??[],item=>({name:item.name,type:item.type,system:item.toObject?.().system??item.system}))});
 }
-export function validateMinionMembers(values) {
+export function validateMinionMembers(values,{combats=[]}={}) {
   const tokens=Array.from(values??[],doc);
   if(tokens.length<2||tokens.length>100||new Set(tokens.map(t=>t.id)).size!==tokens.length)throw new Error("Select 2 to 100 different minion tokens.");
+  const tokenIds=new Set(tokens.map(t=>t.id)),sceneId=tokens[0].parent?.id;
+  if(Array.from(combats??[]).some(combat=>(combat.scene?.id??combat.sceneId)===sceneId&&
+    Array.from(combat.combatants??[]).some(combatant=>tokenIds.has(combatant.tokenId))))
+    throw new Error("Remove these minions from the combat tracker before linking them into one group turn.");
   const baseline=profile(tokens[0].actor);
   for(const t of tokens) {
     if(t.actor?.type!=="minion"||t.actor.system.groupSize!==1||t.actor.system.wounds.value!==0||t.actor.system.wounds.max<=0)throw new Error("Select unwounded single-member minion tokens with a positive wound threshold.");
@@ -79,16 +112,16 @@ export function validateMinionMembers(values) {
   }
   return tokens;
 }
-export async function createMinionGroup(values,name,{user,createActor,deleteActor}) {
+export async function createMinionGroup(values,name,{user,createActor,deleteActor,combats=[]}) {
   if(!user?.isGM)throw new Error("Only the GM can form a minion group.");
-  const tokens=validateMinionMembers(values),source=tokens[0].actor.toObject();delete source._id;
+  const tokens=validateMinionMembers(values,{combats}),source=tokens[0].actor.toObject();delete source._id;
   source.name=String(name??"").trim()||"Minion group";source.system.groupSize=tokens.length;
   source.flags??={};source.flags[SYSTEM_ID]??={};
   source.flags[SYSTEM_ID].minionGroup={sceneId:tokens[0].parent.id,memberIds:tokens.map(t=>t.id),inactive:[]};
-  const original=tokens.map(t=>({_id:t.id,actorId:t.actorId,actorLink:t.actorLink,delta:t.toObject?.().delta??{},[`flags.${SYSTEM_ID}.minionGroupId`]:null}));
+  const original=tokens.map(t=>({_id:t.id,actorId:t.actorId,actorLink:t.actorLink,x:t.x,y:t.y,delta:t.toObject?.().delta??{},[`flags.${SYSTEM_ID}.minionGroupId`]:null}));
   const actor=await createActor(source);
   try {
-    await tokens[0].parent.updateEmbeddedDocuments("Token",tokens.map(t=>({_id:t.id,actorId:actor.id,actorLink:true,[`flags.${SYSTEM_ID}.minionGroupId`]:actor.id})));
+    await tokens[0].parent.updateEmbeddedDocuments("Token",tokens.map(t=>({_id:t.id,actorId:actor.id,actorLink:true,x:t.x,y:t.y,[`flags.${SYSTEM_ID}.minionGroupId`]:actor.id})));
     return actor;
   } catch(error) {
     // Preserve the new actor if restoring a partially written batch fails: its tokens must not become orphans.

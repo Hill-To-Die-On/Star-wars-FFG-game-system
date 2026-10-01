@@ -1,21 +1,43 @@
-.sf-tabletop-dialog .window-content { overflow: hidden; }
-.sf-tabletop-dialog form { min-height: 0; display: flex; flex-direction: column; }
-.sf-tabletop-dialog .dialog-content { min-height: 0; overflow: auto; flex: 1; }
-.sf-tabletop-body { color: var(--color-text-primary, #ddd); padding: .4rem; overflow-wrap: anywhere; }
-.sf-tabletop-body label { display: flex; gap: .5rem; align-items: center; justify-content: space-between; margin: .5rem 0; }
-.sf-tabletop-body label > input:not([type=checkbox]), .sf-tabletop-body label > select, .sf-tabletop-body label > textarea { flex: 1; min-width: 0; max-width: 68%; }
-.sf-tabletop-body label > input[type=checkbox] { flex: 0; }
-.sf-tabletop-body input[type=number] { max-width: 9rem !important; }
-.sf-tabletop-body fieldset { border: 1px solid var(--color-border-light-primary, #77868c); border-radius: 5px; margin: .8rem 0; padding: .6rem; }
-.sf-tabletop-body legend { padding: 0 .35rem; font-weight: bold; }
-.sf-tabletop-body article { border-top: 1px solid var(--color-border-light-primary, #77868c); padding: .6rem 0; }
-.sf-tabletop-body th, .sf-tabletop-body td { padding: .4rem; text-align: left; }
-.sf-tabletop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .5rem; }
-.sf-slot-claim { display: block; font-size: .8rem; color: var(--color-text-primary, #eee); }
-.sf-spending-summary { border-top: 1px solid currentColor; padding-top: .4rem; }
-.window-header [data-tabletop-button] { flex: 0 1 auto; font-size: .75rem; padding: 0 .5rem; min-width: 0; }
+.sf-tabletop-dialog .window-content { overflow:hidden; }
+.sf-tabletop-dialog form { display:flex; flex-direction:column; min-height:0; }
+.sf-tabletop-dialog .dialog-content { flex:1 1 auto; min-height:0; overflow:auto; }
+.star-wars.sf-tabletop-dialog .sf-tabletop-body { padding:0; color:var(--sf-ink); font:14px/1.5 "Star Wars FFG Roboto",Arial,sans-serif; overflow-wrap:anywhere; }
+.star-wars.sf-tabletop-dialog .sf-tabletop-body > p { color:var(--sf-ink); }
+.sf-tabletop-body .sf-tabletop-lede { margin:0 0 16px; padding:12px 15px; border-left:4px solid var(--sf-accent); border-radius:4px; background:color-mix(in srgb,var(--sf-wash) 45%,var(--sf-paper)); color:var(--sf-ink); }
+.sf-tabletop-body .sf-tabletop-section { margin:0 0 16px; padding:15px 17px; border:1px solid var(--sf-line); border-radius:8px; background:var(--sf-paper); box-shadow:0 2px 7px #1726300d; }
+.sf-tabletop-body .sf-tabletop-section > h2 { margin:0 0 9px; color:var(--sf-ink); font:700 18px/1.25 "Star Wars FFG Signika",Arial,sans-serif; }
+.sf-tabletop-body .sf-tabletop-section > h2 small { margin-left:7px; color:var(--sf-muted); font:500 11px "Star Wars FFG Roboto",Arial,sans-serif; }
+.star-wars.sf-tabletop-dialog .sf-tabletop-body label { display:block; margin:0 0 12px; color:var(--sf-ink); font-size:13px; font-weight:650; }
+.star-wars.sf-tabletop-dialog .sf-tabletop-body label > :is(input:not([type="checkbox"]),select,textarea) { display:block; width:100%; max-width:none; min-width:0; margin-top:5px; color:var(--sf-ink); }
+.star-wars.sf-tabletop-dialog .sf-tabletop-body label:has(> input[type="checkbox"]) { display:flex; align-items:flex-start; gap:9px; font-weight:500; }
+.star-wars.sf-tabletop-dialog .sf-tabletop-body input[type="number"] { max-width:none !important; }
+.sf-tabletop-body fieldset { min-width:0; margin:12px 0; padding:12px 14px; border:1px solid var(--sf-line); border-radius:6px; }
+.sf-tabletop-body legend { padding:0 6px; color:var(--sf-accent-text); font-weight:700; }
+.sf-tabletop-body article { padding:12px 14px; margin:0 0 10px; border:1px solid var(--sf-line); border-radius:6px; background:var(--sf-paper); }
+.sf-tabletop-body th,.sf-tabletop-body td { padding:7px 9px; text-align:left; }
+.sf-tabletop-body table { width:100%; table-layout:fixed; }
+.sf-tabletop-body td { overflow-wrap:anywhere; }
+.sf-review-change { display:grid; gap:5px; margin:12px 0; padding:12px 14px; border:1px solid var(--sf-line); border-radius:6px; background:var(--sf-wash); }
+.sf-review-change strong { color:var(--sf-ink); font:700 17px/1.3 "Star Wars FFG Signika",Arial,sans-serif; }
+.sf-tabletop-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 12px; }
+.sf-symbol-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; }
+.sf-tabletop-body .sf-symbol-grid label { margin:0; text-transform:capitalize; }
+.sf-tabletop-body .sf-symbol-grid input { text-align:center; font-size:17px; font-weight:700; }
+.sf-tabletop-body .sf-roll-context { display:flex; flex-wrap:wrap; gap:7px; margin:10px 0; }
+.sf-tabletop-body .sf-roll-context span { padding:5px 9px; border:1px solid var(--sf-line); border-radius:4px; background:var(--sf-wash); font-weight:650; }
+.sf-tabletop-body .sf-ruling-status { margin-top:6px; color:var(--sf-muted); font-size:12px; }
+.sf-tabletop-body .sf-scale-warning { margin:10px 0 14px; padding:10px 12px; border:1px solid var(--sf-accent); border-left-width:4px; border-radius:5px; background:var(--sf-wash); color:var(--sf-ink); font-weight:600; }
+.sf-tabletop-body .sf-decision-record { border-left:3px solid var(--sf-accent); }
+.sf-tabletop-body .sf-decision-record p { margin:6px 0; }
+.sf-tabletop-body .sf-decision-record small { display:block; color:var(--sf-muted); }
+.sf-slot-claim { display:block; font-size:.8rem; color:var(--sf-ink,#eee); }
+.sf-spending-summary { margin:10px 0 0; padding:9px 11px; border:1px solid #b5aa94; border-radius:5px; background:#f1eadb; color:#263942; font:12px/1.45 "Star Wars FFG Roboto",Arial,sans-serif; }
+.sf-spending-summary strong { display:block; margin-bottom:5px; }
+.sf-spending-summary p { margin:4px 0; }
+.window-header [data-tabletop-button] { flex:0 1 auto; font-size:.75rem; padding:0 .5rem; min-width:0; }
 .sf-tabletop-turn-compact { display:flex; align-items:center; flex-wrap:wrap; gap:.65rem; margin:.25rem 0; padding:.35rem .5rem; }
 .sf-tabletop-turn-compact .sf-turn-indicators { border:0; padding:0; }
 .sf-vehicle-dashboard h3 { margin:.65rem 0 .35rem; }
 .sf-vehicle-dashboard article { padding:.35rem 0; }
 .sf-vehicle-dashboard article p { margin:.25rem 0; }
+@media (max-width:640px) { .sf-symbol-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .sf-tabletop-grid { grid-template-columns:1fr; } .sf-tabletop-body .sf-tabletop-section { padding:12px; } }
