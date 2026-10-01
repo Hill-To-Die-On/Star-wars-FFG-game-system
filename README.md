@@ -6,6 +6,10 @@ Original sheets and interface, with familiar narrative dice symbols from an attr
 
 ## Getting started and support
 
+[GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) · [First launch and settings](docs/onboarding-settings.md)
+
+The unreleased 0.4.1 candidate offers a first-launch copyright reminder, a GM bookshelf saved to the world (with optional browser remembrance), and a skippable/replayable interface tour. Settings use native Foundry controls in six logical groups; play windows and journals use the system presentation. The release manifest below still installs the published release.
+
 [GM quick start](docs/gm-quick-start.md) · [Player quick start](docs/player-quick-start.md) · [Tabletop workflows](docs/tabletop-workflows.md) · [Production gates and limitations](docs/production-readiness.md) · [Backup and recovery](docs/backup-recovery.md) · [Keyboard access and performance](docs/accessibility-performance.md)
 
 In Foundry, open **Configure Settings → Star Wars FFG → Help & rules coverage** for the implementation inventory, campaign-filtered learned effects and an inspectable diagnostic download. The report distinguishes graph verification from effect automation and never changes a character. Diagnostics exclude names, campaign content, settings and credentials; nothing is uploaded.

@@ -735,7 +735,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
 ) {
   static DEFAULT_OPTIONS = {
     tag: "form",
-    classes: ["star-wars"],
+    classes: ["star-wars", "sf-actor-sheet"],
     window: { resizable: true },
     position: { width: 1000, height: 820 },
     form: { submitOnChange: true, closeOnSubmit: false },
@@ -1210,21 +1210,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       (angle) => this.actor.setFlag(SYSTEM_ID, "portraitFacingOffset", angle), this._sfRenderEvents.signal);
     for (const picker of this.element.querySelectorAll("[data-origin-picker]"))
       bindOriginPicker(picker, context[`${picker.dataset.originPicker}Options`] ?? []);
-    if (this.activeTab === "skills") {
-      requestAnimationFrame(() => {
-        if (this.activeTab !== "skills" || !this.element?.isConnected) return;
-        const content = this.element.querySelector(".window-content"),
-          overflow = content
-            ? Math.max(0, content.scrollHeight - content.clientHeight)
-            : 0;
-        const height = Math.min(
-          window.innerHeight - 48,
-          this.position.height + overflow,
-        );
-        if (overflow > 1 && height > this.position.height)
-          this.setPosition({ height });
-      });
-    }
+    // Preserve the chosen window size; compact content scrolls instead of enlarging the sheet.
     this.element.addEventListener("dragover", (event) =>
       event.preventDefault(), {signal:this._sfRenderEvents.signal}
     );
@@ -1873,7 +1859,8 @@ export async function campaignDialog() {
     throw new Error("Only the GM can change campaign rules or adventure state.");
   const c = game.settings.get(SYSTEM_ID, "campaign");
   const data = await DialogV2.prompt({
-    window: { title: "Campaign rulebooks" },
+    classes: ["sf-native-settings"],
+    window: { title: "Campaign rulebooks", resizable: true },
     content: `<div class="sf-dialog"><p>Select every ruleset this adventure uses. All three are enabled in a new world and can be combined.</p><fieldset><legend>Enabled rulesets</legend>${Object.entries(
       RULE_LINES,
     )

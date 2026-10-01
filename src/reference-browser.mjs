@@ -1,9 +1,9 @@
+import { getBookshelfStorage, readRememberedBooks, rememberBooks, bookshelfFromCampaign, applyBookshelf } from "./onboarding.mjs";
 import { SYSTEM_ID, SYSTEM_PATH, SKILLS } from "./config.mjs";
 import {
   bookAllowed,
   bookFilterMode,
   normalizeBookTitle,
-  validateCampaign,
 } from "./rules.mjs";
 import {
   indexReferenceDatabase,
@@ -326,7 +326,7 @@ class OwnedBooks extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: "star-wars-owned-books",
     tag: "form",
-    classes: ["star-wars", "sf-book-picker"],
+    classes: ["sf-native-settings", "sf-book-picker"],
     window: { title: "Star Wars FFG · Owned books", resizable: true },
     position: { width: 780, height: 740 },
     form: { handler: this.save, closeOnSubmit: true },
@@ -339,7 +339,9 @@ class OwnedBooks extends HandlebarsApplicationMixin(ApplicationV2) {
     if (!game.user.isGM) throw new Error("Only the GM can change owned books.");
     const { books } = await referenceIndex(),
       c = campaign();
+    this.expectedBooks ??= bookshelfFromCampaign(c);
     return {
+      remember: !!readRememberedBooks(getBookshelfStorage()),
       owned: bookFilterMode(c) === "owned",
       includeUnreferenced: c.includeUnreferenced === true,
       books: books.map((name) => ({
@@ -383,15 +385,17 @@ class OwnedBooks extends HandlebarsApplicationMixin(ApplicationV2) {
     await game.settings.set(
       SYSTEM_ID,
       "campaign",
-      validateCampaign({
-        ...previous,
+      applyBookshelf(previous, {
         bookMode: String(data.get("bookMode")),
         includeUnreferenced: data.has("includeUnreferenced"),
         books: [
           ...data.getAll("books"),
           ...String(data.get("additional") ?? "").split("\n"),
         ],
-      }),
+      }, this.expectedBooks),
     );
+    const updated = game.settings.get(SYSTEM_ID, "campaign");
+    if (!rememberBooks(getBookshelfStorage(), data.has("remember") ? bookshelfFromCampaign(updated) : null))
+      ui.notifications.warn("Books saved to this world; browser storage is unavailable.");
   }
 }

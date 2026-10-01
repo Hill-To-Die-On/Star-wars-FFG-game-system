@@ -60,6 +60,10 @@ Public reference changes must retain creator authorization and the source book/p
 
 Automation should expose unresolved or situational decisions to players, game masters, and Director of Realms rather than silently inventing a rule. Update the relevant coverage or validation document when a change affects a stated capability or gap.
 
+## Wiki maintenance
+
+Follow the [wiki maintenance instructions in AGENTS.md](AGENTS.md#keep-the-github-wiki-current). Assess documentation impact in every change: update affected `docs/wiki/` pages alongside implementation and release notes, or explain why no wiki change is needed. Verify the guidance against code, validation evidence, and the released version; distinguish candidate features clearly. Publish reviewed pages to the separate wiki repository and verify the public result. Updating this repository alone does not publish the wiki.
+
 ## Pre-push checks and end-to-end tests
 
 The repository includes a pre-push hook that runs `npm test` and `npm run check`, which takes about six seconds. Enable it once per clone. It then applies to every worktree of that clone:
