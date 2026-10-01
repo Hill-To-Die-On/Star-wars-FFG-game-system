@@ -600,6 +600,8 @@ test("private file paths are refused in page references, item names and talent n
     ],
     [({ path }) => (path.source.page = "p. 12"), /needs a safe book and page reference/],
     [({ path }) => (path.name = "C:\\books\\core.pdf"), /Advancement item name is not a safe public value/],
+    [({ path }) => (path.name = "/mnt/private/core"), /Advancement item name is not a safe public value/],
+    [({ path }) => (path.name = "\\\\server\\share\\core"), /Advancement item name is not a safe public value/],
     [
       ({ path }) => (path.tree.nodes[0].name = "../notes/private.xml"),
       /node name is not a safe public value/,

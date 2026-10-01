@@ -19,21 +19,29 @@ test("shared Destiny HUD appears once, updates for every client, and opens the c
       addEventListener(event, callback) { this[event] = callback; },
     }),
   };
-  globalThis.game = { settings: { get: () => ({ light: 2, dark: 3 }) } };
+  const labels = {
+    "SWFFG.UI.SharedDestiny": "Destinée partagée",
+    "SWFFG.HUD.Destiny": "Destinée",
+    "SWFFG.HUD.Light": "Lumière",
+    "SWFFG.HUD.Dark": "Obscurité",
+    "SWFFG.Common.Open": "Ouvrir",
+    "SWFFG.UI.DiceDestiny": "Dés et Destinée",
+  };
+  globalThis.game = { settings: { get: () => ({ light: 2, dark: 3 }) }, i18n: { localize: key => labels[key] ?? key } };
   globalThis.Hooks = { once: (event, fn) => listeners.set(event, fn) };
   try {
     registerDestinyHud(() => opened++);
     listeners.get("ready")();
     const tracker = elements.get("sf-destiny-hud");
     assert.equal(tracker.tag, "button");
-    assert.match(tracker.innerHTML, /Light[^<]*<strong>2<\/strong>/);
-    assert.match(tracker.innerHTML, /Dark[^<]*<strong>3<\/strong>/);
-    assert.match(tracker.getAttribute("aria-label"), /2 light.*3 dark/i);
+    assert.match(tracker.innerHTML, /Lumière[^<]*<strong>2<\/strong>/);
+    assert.match(tracker.innerHTML, /Obscurité[^<]*<strong>3<\/strong>/);
+    assert.match(tracker.getAttribute("aria-label"), /2 Lumière.*3 Obscurité/i);
     tracker.click();
     assert.equal(opened, 1);
     refreshDestinyHud({ light: 1, dark: 4 });
-    assert.match(tracker.innerHTML, /Light[^<]*<strong>1<\/strong>/);
-    assert.match(tracker.innerHTML, /Dark[^<]*<strong>4<\/strong>/);
+    assert.match(tracker.innerHTML, /Lumière[^<]*<strong>1<\/strong>/);
+    assert.match(tracker.innerHTML, /Obscurité[^<]*<strong>4<\/strong>/);
     listeners.get("ready")();
     assert.equal(elements.size, 1);
   } finally {

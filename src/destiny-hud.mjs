@@ -1,4 +1,5 @@
 import { SYSTEM_ID } from "./config.mjs";
+import { localize as t } from "./localization.mjs";
 
 const HUD_ID = "sf-destiny-hud";
 
@@ -12,11 +13,17 @@ export function refreshDestinyHud(pool = globalThis.game?.settings?.get(SYSTEM_I
   if (!hud) return;
   const light = count(pool?.light);
   const dark = count(pool?.dark);
-  hud.setAttribute("aria-label", `Shared Destiny: ${light} light, ${dark} dark. Open Dice and Destiny.`);
-  hud.title = `Shared Destiny · ${light} light · ${dark} dark. Open Dice and Destiny.`;
-  hud.innerHTML = `<span class="sf-destiny-title">Destiny</span>
-    <span class="sf-destiny-light">Light <strong>${light}</strong></span>
-    <span class="sf-destiny-dark">Dark <strong>${dark}</strong></span>`;
+  const shared = t("SWFFG.UI.SharedDestiny", "Shared Destiny");
+  const lightLabel = t("SWFFG.HUD.Light", "Light");
+  const darkLabel = t("SWFFG.HUD.Dark", "Dark");
+  const open = t("SWFFG.Common.Open", "Open");
+  const diceDestiny = t("SWFFG.UI.DiceDestiny", "Dice & Destiny");
+  const destiny = t("SWFFG.HUD.Destiny", "Destiny");
+  hud.setAttribute("aria-label", `${shared}: ${light} ${lightLabel}, ${dark} ${darkLabel}. ${open} ${diceDestiny}.`);
+  hud.title = `${shared} · ${light} ${lightLabel} · ${dark} ${darkLabel}. ${open} ${diceDestiny}.`;
+  hud.innerHTML = `<span class="sf-destiny-title">${destiny}</span>
+    <span class="sf-destiny-light">${lightLabel} <strong>${light}</strong></span>
+    <span class="sf-destiny-dark">${darkLabel} <strong>${dark}</strong></span>`;
 }
 
 export function registerDestinyHud(openConsole) {

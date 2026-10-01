@@ -12,7 +12,7 @@ export class CrewTransactionCoordinator {
   if(this.unregister)return this;this.transport??=getDocumentTransactionBroker();
   this.unregister=this.transport.register('crew',{resolve:this.getToken,lockKeys:target=>[actorOf(target).uuid,'scene:'+queueKey(target)],
    validate:(target,command,args,user)=>{if(!canSpendXp(actorOf(target),user))throw new Error('Owner permission is required.');validate(command,args);},
-   execute:(target,command,args,user,_id,assertAuthority)=>this.queue.run(queueKey(target),()=>actorMutationQueue.run(actorOf(target).uuid,()=>{assertAuthority();return this.execute(target,command,args,user);} ))});return this;
+   execute:(target,command,args,user,_id,assertAuthority)=>this.queue.run(queueKey(target),()=>actorMutationQueue.run(actorOf(target).uuid,()=>{assertAuthority();if(!user.active||!canSpendXp(actorOf(target),user))throw new Error('Owner permission is required.');return this.execute(target,command,args,user);} ))});return this;
  }
  stop(){this.unregister?.();this.unregister=null;}
  async request(target,command,args={}){

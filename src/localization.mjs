@@ -322,6 +322,66 @@ export const UI_PHRASES = Object.freeze({
   "Set homebrew starting statistics, skills, abilities, XP and equipment manually. The GM completes this setup using the Homebrew identity panel above.": "HomebrewAdvancementHelp",
   "Skill order": "SkillOrder",
   "Species abilities": "SpeciesAbilities",
+  "Unreferenced source": "UnreferencedSource",
+  "book verified": "BookVerified",
+  "source review needed": "SourceReviewNeeded",
+  "ability page": "AbilityPage",
+  "applied": "Applied",
+  "group": "GroupLower",
+  "Starting skill ranks": "StartingSkillRanks",
+  "Applied by character creation.": "AppliedByCharacterCreation",
+  "Character creation will apply these ranks.": "CharacterCreationApplyRanks",
+  "Check these ranks on this existing character.": "CheckExistingRanks",
+  "Starting skill choice": "StartingSkillChoice",
+  "Character creation will ask for the choice.": "CharacterCreationAskChoice",
+  "Check this rank on this existing character.": "CheckExistingRank",
+  "different non-career starting skill ranks": "NonCareerStartingSkillRanks",
+  "Character creation will ask for these choices.": "CharacterCreationAskChoices",
+  "Choose and apply these ranks before play.": "ChooseAndApplyRanks",
+  "exact dimensions": "ExactDimensions",
+  "silhouette display estimate": "SilhouetteDisplayEstimate",
+  "active": "Active",
+  "defeated": "Defeated",
+  "group skill rank": "GroupSkillRank",
+  "Complete starting choices and source review before Ready for play": "CompleteStartingChoices",
+  "Signature ability": "SignatureAbility",
+  "Structured graph imported": "StructuredGraphImported",
+  "No structured graph available": "NoStructuredGraph",
+  "Linked to": "LinkedTo",
+  "no specialization": "NoSpecialization",
+  "Base ability unlocked": "BaseAbilityUnlocked",
+  "Learn a marked bottom-row talent to unlock the base ability": "UnlockBaseAbilityHelp",
+  "Purchased": "Purchased",
+  "Learned elsewhere": "LearnedElsewhere",
+  "d100": "D100",
+  "Summary from recorded fields; consult the species source for full creation rules.": "SpeciesSummaryHelp",
+  "Current stats are retained for manual setup. The GM must review characteristics, skills, abilities and resources before completing setup.": "HomebrewPendingStatus",
+  "The GM has reviewed the entered setup. Use these recorded values; custom names do not grant additional rules.": "HomebrewReviewedStatus",
+  "owned world and actor items": "OwnedWorldActorItems",
+  "need review": "NeedReview",
+  "reviewed": "Reviewed",
+  "review items · select one to edit": "ReviewItemsSelect",
+  "No source reference recorded": "NoSourceReferenceRecorded",
+  "/ group": "GroupSuffix",
+  "light": "Light",
+  "dark": "Dark",
+  "Credit balance": "CreditBalance",
+  "Gear quantities below are calculated from recorded gains and uses.": "GearQuantitiesHelp",
+  "database entries": "DatabaseEntries",
+  "results": "Results",
+  "page": "PageLower",
+  "of": "Of",
+  "No book reference": "NoBookReference",
+  "No book reference recorded": "NoBookReferenceRecorded",
+  "Start with one rank in": "StartWithOneRankIn",
+  "a skill of your choice": "SkillOfYourChoice",
+  "Consult the book for this compound result.": "CompoundResultBookHelp",
+  "Automatic": "Automatic",
+  "Requires a choice": "RequiresAChoice",
+  "Manual": "Manual",
+  "Excluded by book filter": "ExcludedByBookFilter",
+  "Source": "Source",
+  "Chart comparison": "ChartComparison",
   "Activation": "Activation",
   "All items": "AllItems",
   "Name / type": "NameType",
@@ -548,8 +608,34 @@ function isSystemUi(element) {
 }
 
 function localizePhrase(value) {
+  if (value === "light") return localize("SWFFG.HUD.Light", value);
+  if (value === "dark") return localize("SWFFG.HUD.Dark", value);
   const key = UI_PHRASE_KEYS[value];
   return key ? localize(key, value) : value;
+}
+
+const EMBEDDED_PHRASES = Object.freeze(
+  Object.keys(UI_PHRASE_KEYS)
+    .filter((phrase) => phrase.length > 2 && !/^[-·×+\d]+$/.test(phrase))
+    .sort((left, right) => right.length - left.length),
+);
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function localizeEmbeddedPhrases(value) {
+  let translatedValue = String(value ?? "");
+  for (const phrase of EMBEDDED_PHRASES) {
+    const translated = localizePhrase(phrase);
+    if (translated === phrase) continue;
+    const pattern = new RegExp(
+      `(^|[\\s·,:;/()])${escapeRegExp(phrase)}(?=$|[\\s·,:;/.()])`,
+      "g",
+    );
+    translatedValue = translatedValue.replace(pattern, (_match, prefix) => `${prefix}${translated}`);
+  }
+  return translatedValue;
 }
 
 function localizeDynamicPhrase(value) {
@@ -598,15 +684,19 @@ export function localizeRenderedUI(root) {
   for (const node of nodes) {
     if (!isSystemUi(node.parentElement)) continue;
     const before = node.nodeValue;
-    const translated = localizeDynamicPhrase(before);
+    const translated = localizeEmbeddedPhrases(localizeDynamicPhrase(before));
     if (translated !== before) node.nodeValue = translated;
   }
-  for (const target of element.querySelectorAll?.("[aria-label], [aria-description], [title], [placeholder]") ?? []) {
+  const attributeSelector = "[aria-label], [aria-description], [title], [placeholder]";
+  const attributeTargets = [];
+  if (element.matches?.(attributeSelector)) attributeTargets.push(element);
+  attributeTargets.push(...(element.querySelectorAll?.(attributeSelector) ?? []));
+  for (const target of attributeTargets) {
     if (!isSystemUi(target)) continue;
     for (const attribute of ["aria-label", "aria-description", "title", "placeholder"]) {
       if (!target.hasAttribute(attribute)) continue;
       const before = target.getAttribute(attribute);
-      const translated = localizeDynamicPhrase(before);
+      const translated = localizeEmbeddedPhrases(localizeDynamicPhrase(before));
       if (translated !== before) target.setAttribute(attribute, translated);
     }
   }

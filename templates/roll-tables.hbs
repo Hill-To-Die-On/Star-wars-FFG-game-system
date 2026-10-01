@@ -7,7 +7,7 @@
   {{#if selected}}
     <div class="sf-catalogue-filters">
       <label>Table<select name="table">{{#each tables}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{title}} · {{book}}</option>{{/each}}</select></label>
-      <button type="button" data-action="roll">Roll {{selected.die}}</button>
+      <button type="button" data-action="roll"><span>Roll</span> {{selected.die}}</button>
     </div>
     <section class="sf-catalogue-results" aria-label="Roll table">
       <h2>{{selected.title}}</h2>

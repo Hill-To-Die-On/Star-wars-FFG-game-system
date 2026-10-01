@@ -130,6 +130,27 @@ test("the GM authority serializes competing last-seat requests and rejects a rol
     await assert.rejects(executeCrewCommand(a,"role",{role:"pilot"},{id:"other"}),/permission/);
   }finally{g.stop();p.stop();world.stop();}
 });
+test("queued crew commands recheck activity and ownership before execution",async()=>{
+  const gm={id:"gm",isGM:true,active:true},player={id:"player",active:true},users=[gm,player];
+  let allowed=true,runs=0,release;
+  const held=new Promise(resolve=>{release=resolve;});
+  const actor={uuid:"Scene.scene.Token.crew.Actor.crew",canUserModify:user=>user.id==="player"&&allowed};
+  const token={uuid:"Scene.scene.Token.crew",actor,parent:{id:"scene",tokens:new Map()}};token.parent.tokens.set("crew",token);
+  const world=transactionWorld(users),getToken=uuid=>uuid===token.uuid?token:null;
+  const execute=async()=>{runs++;if(runs===1)await held;return "ok";};
+  const coordinator=new CrewTransactionCoordinator({transport:world.client(player).transport,currentUser:()=>player,users:()=>users,getToken,execute}).start();
+  const authority=new CrewTransactionCoordinator({transport:world.client(gm).transport,currentUser:()=>gm,users:()=>users,getToken,execute}).start();
+  try {
+    const first=coordinator.request(token,"board",{vehicleId:"ship"});
+    await world.until(()=>runs===1);
+    const second=coordinator.request(token,"board",{vehicleId:"ship"});
+    await world.until(()=>Object.values(world.receipts).some(row=>row.status==="queued"));
+    allowed=false;release();
+    assert.equal(await first,"ok");
+    await assert.rejects(second,/Owner permission/);
+    assert.equal(runs,1,"the revoked queued request must not reach the mutation callback");
+  } finally {release?.();coordinator.stop();authority.stop();world.stop();}
+});
 test("off-canvas crew documents with read-only visibility are never treated as drawable tokens",async()=>{
   const {gm,vehicle,make}=fixture(),p=make("off-canvas pilot");
   await executeCrewCommand(p,"board",{vehicleId:vehicle.id},gm);

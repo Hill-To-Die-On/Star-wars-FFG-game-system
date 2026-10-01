@@ -3,7 +3,7 @@ name: Trusted local CI
 # This file authorises one borrowed machine to run one job.
 #
 # The runner label routes work; the conditions below are what authorise it.
-# Only Hill-To-Die-On's push to develop, or their manual dispatch of that exact
+# Only Hill-To-Die-On's push to dev, or their manual dispatch of that exact
 # ref, can reach this job. It receives no secret and no write permission, and
 # both actions are pinned to reviewed commits rather than moving tags.
 #
@@ -12,7 +12,7 @@ name: Trusted local CI
 # run instead.
 on:
   push:
-    branches: [develop]
+    branches: [dev]
   workflow_dispatch:
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
     if: >-
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
       github.repository == 'Hill-To-Die-On/Star-wars-FFG-game-system' &&
-      github.ref == 'refs/heads/develop' &&
+      github.ref == 'refs/heads/dev' &&
       github.actor == github.repository_owner
     # Register the borrowed runner with --no-default-labels and this one public
     # routing label. Never place this label on a daily-use workstation.
