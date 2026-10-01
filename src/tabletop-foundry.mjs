@@ -2,7 +2,7 @@ import {getDocumentTransactionBroker} from './document-transactions.mjs';
 import { SYSTEM_ID, SKILLS } from './config.mjs';
 import { escapeHTML as esc } from './mechanics.mjs';
 import { ActorTransactionQueue, canSpendXp } from './xp-transactions.mjs';
-import { SYMBOLS, remainingSymbols, planActorEffect, planSessionAward, planSlotClaim, reviewedSource, snapshotValues, reviewSnapshot } from './tabletop-workflows.mjs';
+import { remainingSymbols, spendableSymbols, planActorEffect, planSessionAward, planSlotClaim, planSpend, reviewedSource, snapshotValues, reviewSnapshot, weaponForRecordedRoll, tabletopSourceDefaults, damageResolutionDefaults } from './tabletop-workflows.mjs';
 import { TabletopWorkflowService, workflowAuthority, canProposeSpend } from './tabletop-service.mjs';
 import { crewRoster, CREW_ROLES } from './vehicle-crew.mjs';
 import { vehicleForActor, crewCheckDialog } from './vehicle-crew-foundry.mjs';
@@ -10,7 +10,8 @@ import { readTurnBudget, turnIndicatorHTML, bindTurnControls } from './turn-econ
 import { bookAllowed } from './rules.mjs';
 import { weaponArcProfile } from './range-overlay/arcs.mjs';
 import { watchVehicleDashboard } from './tabletop-dashboard.mjs';
-import { createMessageProvenance, verifyMessageProvenance } from './tabletop-provenance.mjs';
+import { listVehicleAttackTargets, targetVehicleForAttack } from './vehicle-targets.mjs';
+import { assertLocalTabletopAuthority, createMessageProvenance, verifyMessageProvenance } from './tabletop-provenance.mjs';
 
 const flag=(document,key)=>document?.flags?.[SYSTEM_ID]?.[key];
 const campaign=()=>game.settings.get(SYSTEM_ID,'campaign');
@@ -19,11 +20,15 @@ const visibleActors=()=>Array.from(game.actors??[]).filter(a=>canSpendXp(a,game.
 const values=button=>Object.fromEntries(new FormData(button.form));
 const numeric=(name,label,value=0,min=0,max=1000000)=>`<label>${esc(label)}<input name="${name}" type="number" min="${min}" max="${max}" step="1" value="${value}" required></label>`;
 const options=(rows,selected)=>rows.map(r=>`<option value="${esc(r.id??r.uuid)}" ${(r.id??r.uuid)===selected?'selected':''}>${esc(r.name)}</option>`).join('');
-const sourceHTML=(source={})=>`<fieldset><legend>Rule reference / GM decision</legend><label>Book or table decision<input name="book" value="${esc(source.book??'')}" required maxlength="200"></label><label>Page or session reference<input name="page" value="${esc(source.page??'')}" required maxlength="80"></label><label>Verification<select name="verification"><option value="gm-ruling" ${source.verification!=='gm-reviewed'?'selected':''}>Explicit GM ruling</option><option value="gm-reviewed" ${source.verification==='gm-reviewed'?'selected':''}>GM checked the source</option></select></label></fieldset>`;
+const sourceHTML=(source={})=>{const defaults=tabletopSourceDefaults(source,globalThis.canvas?.scene?.name);
+  return `<fieldset><legend>Rule reference / GM decision</legend><label>Book or table decision<input name="book" value="${esc(defaults.book)}" required maxlength="200"></label><label>Page or session reference<input name="page" value="${esc(defaults.page)}" required maxlength="80"></label><label>Verification<select name="verification"><option value="gm-ruling" ${defaults.verification==='gm-ruling'?'selected':''}>Explicit GM ruling</option><option value="gm-reviewed" ${defaults.verification==='gm-reviewed'?'selected':''}>GM checked the source</option></select></label></fieldset>`;};
 const sourceFrom=form=>({book:form.book,page:form.page,verification:form.verification});
-const dialogDefaults={classes:['sf-tabletop-dialog'],window:{resizable:true},position:{width:650,height:650},rejectClose:false};
+const dialogDefaults={classes:['star-wars','sf-tabletop-dialog'],window:{resizable:true},position:{width:650,height:650},rejectClose:false};
 const prompt=(title,content,label='Review',render)=>foundry.applications.api.DialogV2.prompt({...dialogDefaults,window:{...dialogDefaults.window,title},content:`<div class="sf-tabletop-body">${content}</div>`,render,ok:{label,callback:(_e,b)=>values(b)}});
-const handle=work=>Promise.resolve().then(work).catch(error=>ui.notifications.error(error.message));
+const handle=work=>Promise.resolve().then(work).catch(error=>{
+  console.error('Star Wars tabletop workflow failed:',error);
+  ui.notifications.error(error.message);
+});
 let service;
 const provenanceQueue=new ActorTransactionQueue();
 async function authenticatedRequester(message,key,creatorId,{requireActive=true}={}) {
@@ -41,6 +46,7 @@ const pending=new Map(),processing=new Set();
 
 /** Requests are authored Foundry documents; player packets cannot claim a GM userId. */
 export async function requestTabletop(command,args) {
+  assertLocalTabletopAuthority(game.user,getDocumentTransactionBroker());
   const authority=workflowAuthority(game.users);
   if(!authority)throw new Error('An active GM is required for tabletop changes.');
   const operationId=uuid();
@@ -74,35 +80,64 @@ async function processRequest(message,creatorId) {
       content:`<p>${esc(request.command)} · ${result.ok?'Confirmed':esc(result.error)}</p>`});
   } finally {processing.delete(message.id);}
 }
-const reviewHTML=entry=>{const plan={...entry,before:snapshotValues(entry.before),after:snapshotValues(entry.after)};return `<p><strong>${esc(plan.label)}</strong></p><table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${Object.entries(plan.after).map(([path,value])=>`<tr><td>${esc(path.replace(/^system\./,''))}</td><td>${esc(typeof plan.before[path]==='object'?JSON.stringify(plan.before[path]):plan.before[path])}</td><td>${esc(typeof value==='object'?JSON.stringify(value):value)}</td></tr>`).join('')}</tbody></table>${plan.calculation?`<p>Damage ${plan.calculation.amount} · soak/armour ${plan.calculation.soak} · Pierce ${plan.calculation.pierce} · Breach ${plan.calculation.breach} → ${plan.calculation.applied} ${esc(plan.calculation.resource)}.</p>${plan.calculation.exceedsThreshold?'<p>Threshold exceeded. Review incapacitation and critical effects.</p>':''}`:''}${plan.warning?`<p>${esc(plan.warning)}</p>`:''}<p>${esc(plan.source.book)} · ${esc(plan.source.page)} · ${esc(plan.source.verification)}</p>${plan.downtime?`<p>Downtime: ${esc(plan.downtime)}</p>`:''}`;};
+const reviewHTML=entry=>{
+  const plan={...entry,before:snapshotValues(entry.before),after:snapshotValues(entry.after)};
+  const changedList=Object.entries(plan.after).find(([path])=>/\.(?:conditions|criticals|vehicleCriticals)$/.test(path));
+  let change;
+  if(changedList&&Array.isArray(changedList[1])){
+    const [path,after]=changedList,before=Array.isArray(plan.before[path])?plan.before[path]:[];
+    const added=after.find(row=>!before.some(previous=>previous.id===row.id));
+    const removed=before.find(row=>!after.some(next=>next.id===row.id));
+    const named=added??removed;
+    const skillName=added?.modifier?.skillKey==='any'?'any check':SKILLS[added?.modifier?.skillKey]?.label??added?.modifier?.skillKey;
+    change=`<div class="sf-review-change"><strong>${esc(named?.name??plan.kind)}</strong><span>${esc(added?'Added':'Removed')} ${esc(plan.kind)} · ${before.length} before → ${after.length} after</span>${added?.modifier?`<span>Ongoing: ${added.modifier.count} ${esc(added.modifier.die)} on ${esc(skillName)}</span>`:'<span>Record only</span>'}</div>`;
+  } else {
+    change=`<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${Object.entries(plan.after).map(([path,value])=>`<tr><td>${esc(path.replace(/^system\./,''))}</td><td>${esc(typeof plan.before[path]==='object'?JSON.stringify(plan.before[path]):plan.before[path])}</td><td>${esc(typeof value==='object'?JSON.stringify(value):value)}</td></tr>`).join('')}</tbody></table>`;
+  }
+  return `<p><strong>GM decision</strong> · ${esc(plan.label)}</p>${change}${plan.calculation?`<p>Damage ${plan.calculation.amount} · soak/armour ${plan.calculation.soak} · Pierce ${plan.calculation.pierce} · Breach ${plan.calculation.breach} → ${plan.calculation.applied} ${esc(plan.calculation.resource)}.</p>${plan.calculation.crossScale?`<p>Reviewed scale conversion: ${plan.calculation.crossScale.sourceAmount} ${esc(plan.calculation.crossScale.sourceScale)} → ${plan.calculation.crossScale.convertedAmount} ${esc(plan.calculation.crossScale.targetScale)} damage.</p>`:''}${plan.calculation.exceedsThreshold?'<p>Threshold exceeded. Review incapacitation and critical effects.</p>':''}`:''}${plan.warning?`<p>${esc(plan.warning)}</p>`:''}<p>${esc(plan.source.book)} · ${esc(plan.source.page)} · ${esc(plan.source.verification)}</p>${plan.downtime?`<p>Downtime: ${esc(plan.downtime)}</p>`:''}`;
+};
 async function confirmPlan(actor,plan) {
-  return foundry.applications.api.DialogV2.confirm({...dialogDefaults,window:{...dialogDefaults.window,title:`Apply changes · ${actor.name}`},content:reviewHTML(plan),yes:{label:'Apply reviewed changes'},no:{label:'Back'}});
+  return foundry.applications.api.DialogV2.confirm({...dialogDefaults,window:{...dialogDefaults.window,title:'Review combat change'},content:`<div class="sf-tabletop-body"><section class="sf-tabletop-section"><h2>${esc(actor.name)}</h2>${reviewHTML(plan)}</section></div>`,yes:{label:'Apply reviewed changes'},no:{label:'Back'}});
 }
 
 export async function openResolution(actor,{message,weapon}={}) {
   if(!game.user.isGM)throw new Error('The GM reviews combat effects.');
-  if(!actor){const pick=await prompt('Choose affected actor',`<label>Actor<select name="actor">${options(visibleActors().filter(a=>a.type!=='group').map(a=>({id:a.uuid,name:a.name})))}</select></label>`,'Choose');if(!pick)return;actor=await fromUuid(pick.actor);}
+  if(!actor){const pick=await prompt('Choose affected actor',`<section class="sf-tabletop-section"><h2>Who is affected?</h2><p class="sf-ruling-status">Confirm the target before recording damage, recovery or a condition.</p><label>Actor<select name="actor">${options(visibleActors().filter(a=>a.type!=='group').map(a=>({id:a.uuid,name:a.name})),flag(message,'targetActorUuid'))}</select></label></section>`,'Choose');if(!pick)return;actor=await fromUuid(pick.actor);}
   const vehicle=actor.type==='vehicle',facts=flag(message,'outcome'),resources=vehicle?['hullTrauma','systemStrain']:['wounds','strain'];
   if(message&&!weapon&&flag(message,'actorUuid')) {
     const attacker=await fromUuid(flag(message,'actorUuid'));
     const weapons=Array.from(attacker?.items??[]).filter(item=>item.type==='weapon');
-    if(weapons.length) {
-      const picked=await prompt('Weapon used for this roll',`<p>Select the actual weapon used. The roll does not identify a weapon automatically.</p><label>Weapon<select name="weapon"><option value="">Manual / other vehicle mount</option>${options(weapons)}</select></label>`,'Continue');
+    const used=weaponForRecordedRoll(attacker,message);
+    if(used) {
+      const picked=await prompt('Weapon used for this roll',`<section class="sf-tabletop-section"><h2>Attack source</h2><p>Select the actual weapon used for the recorded roll.</p><label>Weapon<select name="weapon"><option value="">Manual / other vehicle mount</option>${options(weapons,used.id)}</select></label></section>`,'Continue');
       if(!picked)return;weapon=weapons.find(w=>w.id===picked.weapon);
     }
   }
-  let amount=0;if(weapon&&facts?.passed)try{amount=weapon.damageFor(facts);}catch{}
-  const form=await prompt(`Combat resolution · ${actor.name}`,`<p>Preview damage after soak, recovery, or a source-checked critical/condition. Criticals and conditions are recorded for adjudication; their unencoded modifiers require the pool's manual controls.</p>
-    ${facts?`<p>Native roll: ${facts.success??0} success · ${facts.advantage??0} advantage · ${facts.threat??0} threat. ${weapon?esc(weapon.name):'Choose the total damage from the weapon and successful roll.'}</p>`:''}
-    <label>Effect<select name="kind"><option value="damage">Damage</option><option value="recover">Recovery</option><option value="critical">Record critical</option><option value="condition">Record condition</option></select></label>
-    ${numeric('amount','Damage / recovery amount',amount)}<label>Recovery resource<select name="resource">${resources.map(r=>`<option>${r}</option>`).join('')}</select></label>
-    <label><input name="strain" type="checkbox"> Inflict strain / system strain</label><label><input name="ignoreSoak" type="checkbox"> Ignore soak / armour (review source)</label>
-    ${numeric('pierce','Pierce',0)}${numeric('breach','Breach',0)}<label>Damage scale<select name="scale"><option value="personal" ${vehicle?'':'selected'}>Personal</option><option value="vehicle" ${vehicle?'selected':''}>Vehicle</option></select></label>
-    <label>Critical / condition name<input name="label" maxlength="200"></label><label>Reason and prerequisites<textarea name="note" maxlength="2000"></textarea></label>${weapon?.system.qualities?`<p>Weapon qualities (review prerequisites before using): ${esc(weapon.system.qualities)}</p>`:''}${sourceHTML(weapon?.system.source)}`);
+  const targetScale=vehicle?'vehicle':'personal';
+  const damageDefaults=damageResolutionDefaults(weapon,targetScale,facts);
+  const form=await prompt('Combat resolution',`<p class="sf-tabletop-lede"><strong>${esc(actor.name)}</strong> · Review the roll, record the GM decision, then apply the shown changes. Linked decisions appear beneath the roll in chat.</p>
+    ${facts?`<section class="sf-tabletop-section"><h2>Roll evidence</h2><div class="sf-roll-context"><span>${facts.success??0} success</span><span>${facts.advantage??0} advantage</span><span>${facts.threat??0} threat</span></div><p>${weapon?`${esc(weapon.name)} · ${damageDefaults.sourceAmount} ${esc(damageDefaults.sourceScale)}-scale damage`:'Enter the reviewed damage total if this is a hit.'}</p></section>`:''}
+    <section class="sf-tabletop-section"><h2>Effect</h2><label>Resolution<select name="kind"><option value="damage">Damage · calculate soak</option><option value="recover">Recovery</option><option value="critical">Critical</option><option value="condition">Condition</option></select></label>
+    <div data-resolution-damage>${damageDefaults.requiresConversion?`<p class="sf-scale-warning">Cross-scale hit: ${damageDefaults.sourceAmount} ${esc(damageDefaults.sourceScale)} damage cannot be applied directly to this ${esc(targetScale)}-scale target. Enter the GM-reviewed ${esc(targetScale)}-scale amount; zero is allowed.</p><label><input name="crossScaleReviewed" type="checkbox" required> I reviewed the scale conversion for this hit</label>`:''}${numeric('amount',damageDefaults.requiresConversion?`Converted ${targetScale}-scale damage before armour`:'Damage before soak / recovery amount',damageDefaults.amount)}<div class="sf-tabletop-grid"><label>Recovery resource<select name="resource">${resources.map(r=>`<option>${r}</option>`).join('')}</select></label><label>Target damage scale<input name="scale" value="${targetScale}" readonly></label></div><label><input name="strain" type="checkbox"> Inflict strain / system strain</label><label><input name="ignoreSoak" type="checkbox"> Ignore soak / armour (source checked)</label><div class="sf-tabletop-grid">${numeric('pierce','Pierce',0)}${numeric('breach','Breach',0)}</div></div>
+    <div data-resolution-condition hidden><label>Critical or condition name<input name="label" maxlength="200"></label><p class="sf-ruling-status">A source-checked modifier can apply automatically to later checks. Leave it at record only when the rule is not encoded.</p><div class="sf-tabletop-grid"><label>Ongoing dice effect<select name="modifierDie"><option value="">Record only</option><option value="boost">Boost</option><option value="setback">Setback</option></select></label>${numeric('modifierCount','Dice per check',1,1,3)}</div><label>Affected skill<select name="modifierSkill"><option value="any">Any check</option>${options(Object.entries(SKILLS).map(([id,skill])=>({id,name:skill.label})))}</select></label></div>
+    ${weapon?.system.qualities?`<p>Weapon qualities to review: ${esc(weapon.system.qualities)}</p>`:''}</section>
+    <section class="sf-tabletop-section"><h2>GM decision</h2><label>What happened and why?<textarea name="note" maxlength="2000" rows="4" required></textarea></label>${sourceHTML(weapon?.system.source)}</section>`,'Review change',(_event,app)=>{
+      const kind=app.element.querySelector('[name="kind"]'),damage=app.element.querySelector('[data-resolution-damage]'),condition=app.element.querySelector('[data-resolution-condition]');
+      const refresh=()=>{const isCondition=['critical','condition'].includes(kind.value);condition.hidden=!isCondition;damage.hidden=isCondition;
+        for(const input of condition.querySelectorAll('input,select,textarea'))input.disabled=!isCondition;
+        for(const input of damage.querySelectorAll('input,select,textarea'))input.disabled=isCondition;};
+      kind.addEventListener('change',refresh);refresh();
+    });
   if(!form)return;
-  const request={...form,amount:Number(form.amount),pierce:Number(form.pierce),breach:Number(form.breach),strain:form.strain==='on',ignoreSoak:form.ignoreSoak==='on',source:sourceFrom(form),entryId:uuid()};
+  const request={...form,amount:Number(form.amount),pierce:Number(form.pierce),breach:Number(form.breach),strain:form.strain==='on',ignoreSoak:form.ignoreSoak==='on',source:sourceFrom(form),entryId:uuid(),sourceRollUuid:message?.uuid??'',
+    crossScale:form.kind==='damage'&&damageDefaults.requiresConversion?{sourceScale:damageDefaults.sourceScale,sourceAmount:damageDefaults.sourceAmount,reviewed:form.crossScaleReviewed==='on'}:null,
+    modifier:['critical','condition'].includes(form.kind)&&form.modifierDie?{die:form.modifierDie,count:Number(form.modifierCount),skillKey:form.modifierSkill}:null};
   const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});
-  if(await confirmPlan(actor,plan)){await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});ui.notifications.info(`Applied to ${actor.name}. Undo is available in Tabletop history.`);}
+  if(await confirmPlan(actor,plan)){
+    const result=await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});
+    ui.notifications.info(`Applied to ${actor.name}. Undo is available in Tabletop history.`);
+    if(result.linkWarning)ui.notifications.warn(result.linkWarning);
+  }
 }
 export async function openWorkflowHistory(actor) {
   if(!canSpendXp(actor,game.user))throw new Error('Owner permission is required.');
@@ -116,20 +151,26 @@ function spendingOptions() {return (game.settings.get(SYSTEM_ID,'narrativeSpendi
 export async function openNarrativeSpending(message) {
   const actor=flag(message,'actorUuid')?await fromUuid(flag(message,'actorUuid')):null;
   if(!canProposeSpend(message,actor,game.user))throw new Error('Only the rolling actor owner or GM can propose spending.');
-  const entries=flag(message,'spending')??[],left=remainingSymbols(flag(message,'outcome'),entries),presets=spendingOptions();
-  const form=await prompt('Spend narrative symbols',`<p>${SYMBOLS.map(s=>`${left[s]} ${s}`).join(' · ')} remain. Success/failure stays unchanged. Narrative decisions are recorded separately from mechanical effects.</p>
-    <label>Reviewed options<select name="preset"><option value="">Custom suggestion / GM ruling</option>${presets.map((p,i)=>`<option value="${i}">${esc(p.label)} · ${esc(p.source.book)} p. ${esc(p.source.page)}</option>`).join('')}</select></label>
-    <label>Outcome<input name="label" required maxlength="500"></label><div class="sf-tabletop-grid">${SYMBOLS.map(s=>numeric(s,s,0,0,left[s])).join('')}</div>
-    <label>Narrative / prerequisites<textarea name="note" maxlength="2000"></textarea></label>${sourceHTML()}
-    ${game.user.isGM?'<label><input name="saveOption" type="checkbox"> Save as a reusable, GM-reviewed option</label>':'<p>The GM must approve this proposal before any symbols are spent.</p>'}
-    <h3>Committed choices</h3>${entries.map(e=>`<p>${esc(e.label)} · ${SYMBOLS.filter(s=>e.cost[s]).map(s=>`${e.cost[s]} ${s}`).join(', ')} ${e.undone?'(undone)':''}${game.user.isGM&&!e.undone?` <button type="button" data-refund="${esc(e.id)}">Undo spending</button>`:''}</p>`).join('')||'<p>None yet.</p>'}`,'Review',(_event,app)=>{
+  const facts=flag(message,'outcome'),symbols=spendableSymbols(facts),entries=flag(message,'spending')??[],left=remainingSymbols(facts,entries),presets=spendingOptions(),actors=visibleActors().filter(a=>a.type!=='group');
+  const history=entries.map(e=>{
+    const target=actors.find(a=>a.uuid===e.futureEffect?.actorUuid),effect=target?.flags?.[SYSTEM_ID]?.narrativeEffects?.find(row=>row.id===e.id),status=e.undone?'Undone':effect?.consumedBy?'Used on a later check':e.futureEffect?'Ready for next matching check':'Narrative ruling';
+    return `<article class="sf-decision-record"><strong>${esc(e.label)}</strong><small>${symbols.filter(s=>e.cost[s]).map(s=>`${e.cost[s]} ${s}`).join(' · ')} · ${esc(status)}</small>${e.note?`<p>${esc(e.note)}</p>`:''}${e.futureEffect?`<p>${esc(target?.name??'Actor')}: ${e.futureEffect.count} ${esc(e.futureEffect.die)} on ${esc(e.futureEffect.skillKey==='any'?'next check':`next ${SKILLS[e.futureEffect.skillKey]?.label??e.futureEffect.skillKey} check`)}</p>`:''}<small>${esc(e.source?.book)} · ${esc(e.source?.page)} · ${esc(e.at??'')}</small>${game.user.isGM&&!e.undone&&!effect?.consumedBy?`<button type="button" data-refund="${esc(e.id)}">Undo spending</button>`:''}</article>`;
+  }).join('')||'<p>No GM decisions have been recorded for this roll.</p>';
+  const form=await prompt(symbols.includes('light')||symbols.includes('dark')?'Spend Force pips':'Spend narrative symbols',`<p class="sf-tabletop-lede">Spend the uncancelled symbols on this roll. Record the GM decision so later checks can apply any granted dice automatically.${symbols.includes('light')||symbols.includes('dark')?' Record any Force alignment, strain or Destiny cost required by the table ruling.':''}</p>
+    <section class="sf-tabletop-section"><h2>Available symbols</h2><div class="sf-roll-context">${symbols.map(s=>`<span>${left[s]} ${s}</span>`).join('')}</div><label>Reviewed option<select name="preset"><option value="">Custom GM ruling</option>${presets.map((p,i)=>`<option value="${i}">${esc(p.label)} · ${esc(p.source.book)} p. ${esc(p.source.page)}</option>`).join('')}</select></label><div class="sf-symbol-grid">${symbols.map(s=>numeric(s,s,0,0,left[s])).join('')}</div></section>
+    <section class="sf-tabletop-section"><h2>GM decision</h2><label>Outcome<input name="label" required maxlength="500" placeholder="What changes in the story?"></label><label>What happened and why?<textarea name="note" maxlength="2000" rows="4" placeholder="Record the interpretation, timing and prerequisites."></textarea></label>${sourceHTML()}</section>
+    <section class="sf-tabletop-section"><h2>Next check <small>optional mechanical effect</small></h2><p class="sf-ruling-status">Choose an actor and skill if this ruling grants or imposes dice on a later check. The effect is used once.</p><label>Dice effect<select name="futureDie"><option value="">No future dice</option><option value="boost">Boost</option><option value="setback">Setback</option></select></label><div data-future-fields hidden><div class="sf-tabletop-grid">${numeric('futureCount','Dice',1,1,3)}<label>Actor<select name="futureActorUuid">${options(actors.map(a=>({id:a.uuid,name:a.name})),actor?.uuid)}</select></label></div><label>Applicable skill<select name="futureSkillKey"><option value="any">Next check of any skill</option>${options(Object.entries(SKILLS).map(([id,skill])=>({id,name:skill.label})))}</select></label></div></section>
+    ${game.user.isGM?'<label><input name="saveOption" type="checkbox"> Save this as a reusable GM option</label>':'<p>The GM must approve this proposal before symbols or future effects are committed.</p>'}
+    <section class="sf-tabletop-section"><h2>Decisions on this roll</h2>${history}</section>`,'Review decision',(_event,app)=>{
+      app.element.querySelector('[name="futureDie"]').addEventListener('change',event=>{app.element.querySelector('[data-future-fields]').hidden=!event.target.value;});
       app.element.querySelector('[name="preset"]').addEventListener('change',event=>{if(event.target.value==='')return;const p=presets[Number(event.target.value)];for(const [name,value]of Object.entries({label:p.label,note:p.note,...p.cost,...p.source})){const input=app.element.querySelector(`[name="${name}"]`);if(input)input.value=value??'';}});
       app.element.addEventListener('click',event=>{const b=event.target.closest('[data-refund]');if(b)void handle(async()=>{await requestTabletop('undo-spend',{messageUuid:message.uuid,entryId:b.dataset.refund});await app.close();await openNarrativeSpending(message);});});
     });
   if(!form)return;
-  const request={label:form.label,note:form.note,cost:Object.fromEntries(SYMBOLS.map(s=>[s,Number(form[s])])),source:sourceFrom(form)};
+  const request={label:form.label,note:form.note,cost:Object.fromEntries(symbols.map(s=>[s,Number(form[s])])),source:sourceFrom(form),futureEffect:form.futureDie?{die:form.futureDie,count:Number(form.futureCount),actorUuid:form.futureActorUuid,skillKey:form.futureSkillKey}:null};
+  planSpend(facts,entries,request,{campaign:campaign()});
   if(game.user.isGM) {
-    if(!await foundry.applications.api.DialogV2.confirm({window:{title:'Confirm narrative spending'},content:`<p>${esc(request.label)} · ${SYMBOLS.filter(s=>request.cost[s]).map(s=>`${request.cost[s]} ${s}`).join(' · ')}</p><p>Confirm the source, timing and prerequisites. Apply any mechanical effects separately through Combat resolution.</p>`}))return;
+    if(!await foundry.applications.api.DialogV2.confirm({...dialogDefaults,window:{title:'Confirm narrative spending'},content:`<div class="sf-tabletop-body"><section class="sf-tabletop-section"><h2>${esc(request.label)}</h2><p>${esc(request.note)}</p><p>${symbols.filter(s=>request.cost[s]).map(s=>`${request.cost[s]} ${s}`).join(' · ')}</p>${request.futureEffect?`<p>Next check: ${request.futureEffect.count} ${esc(request.futureEffect.die)} for ${esc(actors.find(a=>a.uuid===request.futureEffect.actorUuid)?.name??'actor')} · ${esc(request.futureEffect.skillKey)}</p>`:''}<small>${esc(request.source.book)} · ${esc(request.source.page)}</small></section></div>`,yes:{label:'Record GM decision'}}))return;
     await requestTabletop('spend',{messageUuid:message.uuid,request});
     if(form.saveOption==='on') {
       reviewedSource(request.source,campaign());
@@ -137,7 +178,7 @@ export async function openNarrativeSpending(message) {
       await game.settings.set(SYSTEM_ID,'narrativeSpendingOptions',[...stored.filter(o=>o.label!==request.label),request]);
     }
   } else {
-    await ChatMessage.create({content:`<p>Proposed: ${esc(request.label)}</p><p>${SYMBOLS.filter(s=>request.cost[s]).map(s=>`${request.cost[s]} ${s}`).join(' · ')}</p><p>${esc(request.note)}</p>`,whisper:[game.user.id,...Array.from(game.users).filter(u=>u.isGM).map(u=>u.id)],flags:{[SYSTEM_ID]:{spendingProposal:{messageUuid:message.uuid,request}}}});
+    await ChatMessage.create({content:`<p>Proposed: ${esc(request.label)}</p><p>${symbols.filter(s=>request.cost[s]).map(s=>`${request.cost[s]} ${s}`).join(' · ')}</p><p>${esc(request.note)}</p>`,whisper:[game.user.id,...Array.from(game.users).filter(u=>u.isGM).map(u=>u.id)],flags:{[SYSTEM_ID]:{spendingProposal:{messageUuid:message.uuid,request}}}});
     ui.notifications.info('Proposal sent to the GM. Symbols have not been spent.');
   }
 }
@@ -155,10 +196,11 @@ export async function openInitiativeSlots(combat=game.combat) {
   planSlotClaim(combat,actor,args,{user:game.user});await requestTabletop('claim',args);ui.combat?.render({force:true});
 }
 
-function dashboardTurnHTML(actor) {const budget=readTurnBudget(actor);return `<div class="sf-turn-panel sf-tabletop-turn-compact"><small>${esc(budget.roundLabel)}</small>${turnIndicatorHTML(budget,{compact:true})}</div>`;}
+function dashboardTurnHTML(actor) {const budget=readTurnBudget(actor);return `<div class="sf-turn-panel sf-tabletop-turn-compact"><small>${esc(budget.roundLabel)}</small>${turnIndicatorHTML(budget,{compact:true,actor})}</div>`;}
 function vehicleDashboardContent(actor) {
   const vehicle=vehicleForActor(actor),rows=vehicle?crewRoster(vehicle,vehicle.parent.tokens,{visibleOnly:true,user:game.user}):[],s=actor.system;
   const weapons=Array.from(actor.items??[]).filter(i=>i.type==='weapon');
+  const targets=listVehicleAttackTargets(vehicle,game.user),selectedTarget=Array.from(game.user.targets??[])[0]?.id;
   return {vehicle,rows,html:`<div class="sf-tabletop-body sf-vehicle-dashboard">
     <p>Speed ${s.speed.value}/${s.speed.max} · Handling ${s.handling} · Armour ${s.armor} · Silhouette ${s.silhouette}</p>
     <p>Hull ${s.hullTrauma.value}/${s.hullTrauma.max} · System strain ${s.systemStrain.value}/${s.systemStrain.max}</p>
@@ -167,8 +209,9 @@ function vehicleDashboardContent(actor) {
     ${rows.map(r=>`<article><strong>${esc(r.name)}</strong> · ${r.roles.map(role=>esc(CREW_ROLES[role]?.label??role)).join(', ')||esc(r.seat)}<p>${r.roles.flatMap(role=>CREW_ROLES[role]?.skills??[]).filter((key,i,all)=>all.indexOf(key)===i).map(key=>`${esc(SKILLS[key]?.label??key)} ${r.actor?.skillRank?.(key)??0}`).join(' · ')}</p>${dashboardTurnHTML(r.actor)}</article>`).join('')||'<p>No assigned crew.</p>'}
     <div class="sf-tabletop-grid">${['pilotingSpace','pilotingPlanetary','astrogation','mechanics','leadership'].map(key=>`<button type="button" data-duty="${key}" ${vehicle?'':'disabled'}>${esc(SKILLS[key].label)}</button>`).join('')}</div>
     <h3>Weapons and targeting</h3>${weapons.map(w=>`<article><strong>${esc(w.name)}</strong><p>Damage ${esc(w.system.damage)} · Critical ${w.system.critical} · ${esc(w.system.range)} · ${esc(weaponArcProfile(w).error || [...weaponArcProfile(w).arcs,weaponArcProfile(w).vertical].filter(Boolean).join(' / '))}</p><button type="button" data-weapon="${esc(w.id)}" ${vehicle?'':'disabled'}>Build assigned gunner pool</button></article>`).join('')||'<p>No verified weapons installed.</p>'}
-    <p>Select the vehicle and target a token on the canvas to use its firing arcs, shields and measured attack trajectory.</p>
-    <div class="sf-tabletop-grid"><button type="button" data-dashboard="target" ${vehicle?'':'disabled'}>Targeted attack and arcs</button><button type="button" data-dashboard="crew" ${vehicle?'':'disabled'}>Manage crew</button><button type="button" data-dashboard="history">Change history</button>${game.user.isGM?'<button type="button" data-dashboard="state">Adjust speed / shields</button><button type="button" data-dashboard="resolve">Damage / recovery</button>':''}</div>
+    <p>Choose a visible opposing ship to check firing arcs, shields and the measured attack path.</p>
+    <label>Attack target<select data-attack-target>${targets.map(t=>`<option value="${esc(t.id)}" ${t.id===selectedTarget?'selected':''}>${esc(t.name??t.actor.name)}</option>`).join('')}</select></label>
+    <div class="sf-tabletop-grid"><button type="button" data-dashboard="target" ${targets.length?'':'disabled'}>Targeted attack and arcs</button><button type="button" data-dashboard="crew" ${vehicle?'':'disabled'}>Manage crew</button><button type="button" data-dashboard="history">Change history</button>${game.user.isGM?'<button type="button" data-dashboard="state">Adjust speed / shields</button><button type="button" data-dashboard="resolve">Damage / recovery</button>':''}</div>
     </div>`};
 }
 export async function openVehicleDashboard(actor) {
@@ -195,7 +238,7 @@ export async function openVehicleDashboard(actor) {
         if(b.dataset.dashboard==='history')return openWorkflowHistory(actor);
         if(b.dataset.dashboard==='resolve')return openResolution(actor);
         if(b.dataset.dashboard==='crew'){actor.sheet.activeTab='crew';return actor.sheet.render({force:true});}
-        if(b.dataset.dashboard==='target') {const target=Array.from(game.user.targets??[])[0];if(!target)throw new Error('Target a token on the canvas first.');return game.system.api.range.chooseAttackArcs(vehicle.object??vehicle,target);}
+        if(b.dataset.dashboard==='target') {const id=root.querySelector('[data-attack-target]')?.value,target=listVehicleAttackTargets(vehicle,game.user).find(t=>t.id===id);if(!target)throw new Error('Choose a visible opposing ship.');return game.system.api.range.chooseAttackArcs(vehicle.object??vehicle,targetVehicleForAttack(target,game.user));}
         if(b.dataset.dashboard==='state') {
           const form=await prompt(`Vehicle state · ${actor.name}`,`${numeric('speed','Speed',s.speed.value,0,s.speed.max)}${Object.entries(s.shields).map(([z,n])=>numeric(z,`${z} shields`,n,0,4)).join('')}${sourceHTML()}`);if(!form)return;
           const request={kind:'vehicle-state',speed:Number(form.speed),shields:Object.fromEntries(Object.keys(s.shields).map(z=>[z,Number(form[z])])),source:sourceFrom(form),note:'Reviewed speed / shields adjustment'};
@@ -257,22 +300,28 @@ export function registerTabletopWorkflows() {
     const root=html?.querySelector?html:html?.[0];if(!root||message.isContentVisible===false)return;
     const facts=flag(message,'outcome');
     if(facts&&message.rolls?.length){
-      addButton(root,'.message-content','Spend narrative symbols',()=>openNarrativeSpending(message),'spend');
+      addButton(root,'.message-content',Number(facts.light)>0||Number(facts.dark)>0?'Spend Force pips':'Spend narrative symbols',()=>openNarrativeSpending(message),'spend');
       if(game.user.isGM)addButton(root,'.message-content','Combat resolution',()=>openResolution(null,{message}),'resolve');
-      const entries=flag(message,'spending')??[];if(entries.length&&!root.querySelector('.sf-spending-summary')){
-        const summary=document.createElement('p');summary.className='sf-spending-summary';summary.textContent=`Remaining: ${Object.entries(remainingSymbols(facts,entries)).map(([k,v])=>`${v} ${k}`).join(' · ')}`;root.querySelector('.message-content')?.append(summary);
+      const entries=flag(message,'spending')??[],actors=Array.from(game.actors??[]),resolutions=actors.flatMap(actor=>(flag(actor,'workflowHistory')??[]).filter(entry=>entry.sourceRollUuid===message.uuid).map(entry=>({actor,entry})));
+      if((entries.length||resolutions.length)&&!root.querySelector('.sf-spending-summary')){
+        const summary=document.createElement('section');summary.className='sf-spending-summary';
+        const remaining=Object.entries(remainingSymbols(facts,entries)).map(([k,v])=>`${v} ${k}`).join(' · ');
+        summary.innerHTML=`<strong>GM decisions on this roll</strong>${entries.map(entry=>`<p>${esc(entry.label)} · ${spendableSymbols(facts).filter(s=>entry.cost[s]).map(s=>`${entry.cost[s]} ${s}`).join(' · ')}${entry.undone?' · undone':''}${entry.note?`<br>${esc(entry.note)}`:''}${entry.futureEffect?`<br>Next check: ${entry.futureEffect.count} ${esc(entry.futureEffect.die)} for ${esc(actors.find(a=>a.uuid===entry.futureEffect.actorUuid)?.name??'actor')} (${esc(entry.futureEffect.skillKey)})`:''}</p>`).join('')}${resolutions.map(({actor,entry})=>`<p>${esc(actor.name)} · ${esc(entry.kind)}${entry.undone?' · undone':''}: ${esc(entry.label)}${entry.calculation?` · ${entry.calculation.applied} ${esc(entry.calculation.resource)}`:''}</p>`).join('')}<small>Remaining: ${remaining}</small>`;
+        root.querySelector('.message-content')?.append(summary);
       }
     }
     const proposal=flag(message,'spendingProposal');
     if(proposal&&game.user.isGM&&!flag(message,'proposalResolved'))addButton(root,'.message-content','Review spending proposal',async()=>{
       const native=await fromUuid(proposal.messageUuid),actor=flag(native,'actorUuid')?await fromUuid(flag(native,'actorUuid')):null,author=await authenticatedRequester(message,'spendingProposal',undefined,{requireActive:false});
       if(!canProposeSpend(native,actor,author))throw new Error('The proposer does not own the rolling actor.');
-      if(await foundry.applications.api.DialogV2.confirm({window:{title:'Approve narrative spending'},content:`<p>${esc(proposal.request.label)}</p><p>${esc(proposal.request.note)}</p><p>${Object.entries(proposal.request.cost).map(([s,n])=>`${n} ${esc(s)}`).join(' · ')}</p><p>${esc(proposal.request.source.book)} · ${esc(proposal.request.source.page)}. Confirm the source, cost, timing and prerequisites.</p>`})){
+      const futureTarget=proposal.request.futureEffect?await fromUuid(proposal.request.futureEffect.actorUuid):null;
+      if(await foundry.applications.api.DialogV2.confirm({...dialogDefaults,window:{...dialogDefaults.window,title:'Approve narrative spending'},content:`<div class="sf-tabletop-body"><section class="sf-tabletop-section"><h2>${esc(proposal.request.label)}</h2><div class="sf-roll-context">${Object.entries(proposal.request.cost).filter(([,n])=>n).map(([s,n])=>`<span>${n} ${esc(s)}</span>`).join('')}</div><p>${esc(proposal.request.note)}</p>${proposal.request.futureEffect?`<p>Next check: ${proposal.request.futureEffect.count} ${esc(proposal.request.futureEffect.die)} for ${esc(futureTarget?.name??'Missing actor')} · ${esc(proposal.request.futureEffect.skillKey)}</p>`:''}<small>${esc(proposal.request.source.book)} · ${esc(proposal.request.source.page)}. Confirm the source, cost, timing and prerequisites.</small></section></div>`,yes:{label:'Approve GM decision'}})){
         await requestTabletop('spend',{messageUuid:proposal.messageUuid,proposalUuid:message.uuid,request:proposal.request});await message.update({[`flags.${SYSTEM_ID}.proposalResolved`]:true});
       }
     },'proposal');
   };
   Hooks.on('renderChatMessageHTML',renderMessage);
+  Hooks.on('updateActor',(_actor,change)=>{if(change?.flags?.[SYSTEM_ID]?.workflowHistory)ui.chat?.render?.(false);});
   Hooks.on('renderActorDirectory',(_app,html)=>addButton(html,'.directory-footer','Star Wars · Tabletop tools',openTabletopTools,'tools'));
   Hooks.on('renderCombatTracker',(_app,html)=>{
     const root=html?.querySelector?html:html?.[0];addButton(root,'.combat-controls, .directory-footer','Choose initiative slot',()=>openInitiativeSlots(),'slots');

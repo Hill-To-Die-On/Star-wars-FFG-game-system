@@ -71,6 +71,21 @@ test("the full roster shows every visible occupant but only permits owned occupa
     assert.match(html,/data-crew-sheet data-crew-token="own"/);
   }finally{globalThis.game=old;}
 });
+test("a player pilot can roll from a GM-owned skiff without gaining crew-management controls",async()=>{
+  const {gm,player,vehicle,make}=fixture(),pilot=make("pilot"),other=make("other"),old=globalThis.game;
+  await executeCrewCommand(pilot,"board",{vehicleId:vehicle.id},gm);
+  await executeCrewCommand(pilot,"role",{role:"pilot"},gm);
+  await executeCrewCommand(other,"board",{vehicleId:vehicle.id,seat:"passenger"},gm);
+  vehicle.actor.canUserModify=()=>false;
+  other.actor.canUserModify=()=>false;
+  globalThis.game={user:player};
+  try {
+    const html=crewManagementHTML(vehicle,[{id:pilot.id,token:pilot,name:"pilot",roles:["pilot"],seat:"crew",count:1},{id:other.id,token:other,name:"other",roles:[],seat:"passenger",count:1}],{manage:true});
+    assert.match(html,/data-crew-command="check"[^>]*data-crew-skill="pilotingPlanetary"/);
+    assert.doesNotMatch(html,/data-crew-command="check"[^>]*data-crew-token="other"/);
+    assert.match(html,/aria-label="Pilot · pilot"[^>]*disabled/);
+  }finally{globalThis.game=old;}
+});
 test("live command path persists boarding, roles and departure without hiding or resizing original token data",async()=>{
   const {gm,vehicle,make,scene}=fixture(),p=make("pilot");
   await executeCrewCommand(p,"board",{vehicleId:vehicle.id,seat:"crew"},gm);
@@ -78,6 +93,13 @@ test("live command path persists boarding, roles and departure without hiding or
   await executeCrewCommand(p,"role",{role:"pilot"},gm);assert.deepEqual(aboard(p).roles,["pilot"]);
   vehicle.x=600;await executeCrewCommand(p,"leave",{point:{x:1100,y:300}},gm);
   assert.equal(aboard(p),null);assert.equal(p.x,1050);assert.equal(p.y,250);assert.equal(scene.tokens.size,2);
+});
+test("GM scene travel is accepted by the authenticated crew command route",async()=>{
+  const {gm,vehicle}=fixture(),requests=[];
+  const coordinator=new CrewTransactionCoordinator({currentUser:()=>gm,transport:{register:()=>()=>{},request:async(...args)=>{requests.push(args);return {sceneId:'next'};}}});
+  assert.deepEqual(await coordinator.request(vehicle,'travel',{destinationSceneId:'next'}),{sceneId:'next'});
+  assert.deepEqual(requests[0].slice(0,4),['crew',vehicle.uuid,'travel',{destinationSceneId:'next'}]);
+  coordinator.stop();
 });
 test("partial minion departure conserves group size, keeps wounds aboard and gives the new group its own actor delta",async()=>{
   const {gm,vehicle,make,created}=fixture(),p=make("troopers","minion",{groupSize:5,wounds:{value:6,max:5},skills:{gunnery:{group:true}}});

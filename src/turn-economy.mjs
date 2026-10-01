@@ -13,8 +13,9 @@ export function validateTurnConfig(config = {}) {
   return config;
 }
 
-export function turnKey(combat) {
-  return combat?.started && Number(combat.round) > 0 ? `${combat.id}:${combat.round}` : "freeplay";
+export function turnKey(combat, sceneId = "") {
+  return combat?.started && Number(combat.round) > 0 ? `${combat.id}:${combat.round}` :
+    sceneId ? `freeplay:${sceneId}` : "freeplay";
 }
 
 function stateFor(actor, key) {
@@ -160,7 +161,7 @@ export function turnUpdate(actor, command, { key = "freeplay", payment = "free",
       break;
     }
     case "reset":
-      if (key !== "freeplay" && !isGM && !allowPlayerManagement) throw new Error("The GM resets a turn during combat.");
+      if (!key.startsWith("freeplay") && !isGM && !allowPlayerManagement) throw new Error("The GM resets a turn during combat.");
       entries.length = 0; break;
     default: throw new Error("Unknown turn command.");
   }

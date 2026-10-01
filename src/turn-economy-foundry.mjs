@@ -5,6 +5,7 @@ import { TurnTransactionCoordinator } from "./turn-transactions.mjs";
 import { aboard } from "./vehicle-crew.mjs";
 import { groupDefinition, groupStateForActor, hasSharedMinionMove, minionMoveUpdate } from "./minion-groups.mjs";
 import { chooseTurnIndicatorLayout } from "./turn-indicator-layout.mjs";
+import { turnOptionTooltips } from "./turn-options.mjs";
 
 const escape = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const setting = (key, fallback) => {
@@ -77,8 +78,11 @@ export function activeCombatForActor(actor) {
   if (!actor?.uuid) return null;
   const combats = [...(globalThis.game?.combats ?? [])];
   const current = globalThis.game?.combat;
+  const viewedSceneId = globalThis.canvas?.scene?.id ?? globalThis.game?.scenes?.current?.id;
   if (current) combats.unshift(current);
-  return combats.find(combat => combat.started && Array.from(combat.combatants ?? []).some(c => {
+  return combats.find(combat => combat.started &&
+    (!viewedSceneId || !(combat.scene?.id ?? combat.sceneId) || (combat.scene?.id ?? combat.sceneId) === viewedSceneId) &&
+    Array.from(combat.combatants ?? []).some(c => {
     if(c.actor?.uuid === actor.uuid)return true;
     const scene=c.token?.parent ?? combat.scene;
     if(actor.type === "vehicle") {
@@ -103,14 +107,18 @@ export function authorizeTurnRequest(actor, command, options, user, mode = setti
 
 export function readTurnBudget(actor) {
   const combat = activeCombatForActor(actor);
-  return { ...turnBudget(actor,{key:turnKey(combat)}),
+  return { ...turnBudget(actor,{key:currentTurnKey(combat)}),
     roundLabel:combat ? `Round ${combat.round}` : "Outside combat",
     editable:mayManageTurns(actor,globalThis.game?.user), isGM:!!globalThis.game?.user?.isGM };
 }
 
+function currentTurnKey(combat) {
+  return turnKey(combat, globalThis.canvas?.scene?.id ?? globalThis.game?.scenes?.current?.id ?? globalThis.game?.scenes?.active?.id);
+}
+
 export async function performTurnCommand(actor, command, options = {}) {
   if (!coordinator) throw new Error("The turn tracker is not ready.");
-  const args = { expectedKey:turnKey(activeCombatForActor(actor)), ...options };
+  const args = { expectedKey:currentTurnKey(activeCombatForActor(actor)), ...options };
   authorizeTurnRequest(actor,command,args,game.user);
   return coordinator.request(actor,command,args);
 }
@@ -141,16 +149,17 @@ export function tokenLabelPosition(token) {
   return {x:extent.x,y:extent.bottom+12};
 }
 
-export function turnIndicatorHTML(b, {editable = b.editable ?? false, compact = false} = {}) {
+export function turnIndicatorHTML(b, {editable = b.editable ?? false, compact = false, actor = null} = {}) {
   if (!b.supported) return "";
+  const help = turnOptionTooltips(actor,b);
   const button = (command,label,content,enabled,cls="",extra="") =>
     `<button type="button" data-sf-turn="${command}" class="${cls}" title="${escape(label)}" aria-label="${escape(label)}" ${enabled && editable ? "" : "disabled"} ${extra}>${content}</button>`;
   const lights = (entries,command,label) => entries.map((pip,i) => button(command,`Use ${label} ${i+1}`,
     `<span aria-hidden="true"></span>`,pip.available,`sf-turn-light ${pip.available ? "available" : "spent"} ${pip.temporary ? "temporary" : ""}`)).join("");
   const cost = `${b.limits.strainCost} ${b.resourceLabel}`;
   return `<div class="sf-turn-indicators" role="group" aria-label="Turn indicators">
-    ${b.vehicle ? "" : `<span class="sf-turn-pips"><b>${compact ? "ACT" : "Actions"}</b>${lights(b.actions,"action","action")}</span>`}
-    <span class="sf-turn-pips"><b>${compact ? "MAN" : b.vehicle ? "Pilot manoeuvres" : "Manoeuvres"}</b>${lights(b.maneuvers,"maneuver","manoeuvre")}
+    ${b.vehicle ? "" : `<span class="sf-turn-pips" data-turn-help="action" title="${escape(help.action)}" aria-description="${escape(help.action)}"><b tabindex="0" title="${escape(help.action)}">${compact ? "ACT" : "Actions"}</b>${lights(b.actions,"action","action")}</span>`}
+    <span class="sf-turn-pips" data-turn-help="maneuver" title="${escape(help.maneuver)}" aria-description="${escape(help.maneuver)}"><b tabindex="0" title="${escape(help.maneuver)}">${compact ? "MAN" : b.vehicle ? "Pilot manoeuvres" : "Manoeuvres"}</b>${lights(b.maneuvers,"maneuver","manoeuvre")}
     ${button("buyManeuver",`Buy extra manoeuvre · ${cost}`,"+",b.canPayStrain,"sf-turn-add")}</span>
     ${compact ? "" : `<small>${b.freeRemaining} ready · ${b.spent.maneuvers}/${b.limits.maneuverLimit} used</small>`}
   </div>`;
@@ -162,7 +171,7 @@ export function turnPanelHTML(actor) {
   const disabled = value => value && b.editable ? "" : "disabled";
   return `<section class="sf-turn-panel" aria-label="Combat turn">
     <div class="sf-turn-heading"><strong>${b.roundLabel}</strong><small>${b.editable ? "Click a light to spend it" : "GM / automatic control"}</small></div>
-    ${turnIndicatorHTML(b)}
+    ${turnIndicatorHTML(b,{actor})}
     <div class="sf-turn-tools">
       <button type="button" data-sf-turn="tradeManeuver" ${disabled(b.canTradeAction)} title="Spend an action to prepare a manoeuvre">Trade action</button>
       <button type="button" data-sf-turn="undo" ${disabled(b.canUndo)}>Undo</button>
@@ -180,6 +189,7 @@ async function configureAllowances(actor) {
   if (!game.user.isGM) throw new Error("Only the GM can configure allowances.");
   const values = {...TURN_DEFAULTS,...actor.system.turnEconomy};
   const result = await foundry.applications.api.DialogV2.prompt({
+    classes:["star-wars"],
     window:{title:`Turn allowances · ${actor.name}`},
     content:`<p>Base allowances, before learned passive talents and Active Effects.</p>${Object.entries(values).map(([key,value]) => `<div class="form-group"><label>${TURN_LABELS[key]}</label><input name="${key}" type="number" min="0" max="10" step="1" value="${value}"></div>`).join("")}`,
     ok:{label:"Save",callback:(_event,button)=>Object.fromEntries(Object.entries(Object.fromEntries(new FormData(button.form))).map(([k,v])=>[k,Number(v)]))},rejectClose:false,
@@ -200,7 +210,7 @@ export function bindTurnControls(root, actor) {
       if (command === "configure") await configureAllowances(actor);
       else {
         if (command === "activate") {
-          const confirmed = await foundry.applications.api.DialogV2.confirm({window:{title:"Confirm talent activation"},
+          const confirmed = await foundry.applications.api.DialogV2.confirm({classes:["star-wars"],window:{title:"Confirm talent activation"},
             content:"<p>Apply this learned rule for the current turn after checking its source, prerequisites and any action or strain cost. Only its encoded allowance effects are automatic.</p>"});
           if (!confirmed) return;
         }
@@ -250,7 +260,7 @@ export function refreshTurnIndicators() {
       document.body.append(element); bindTurnControls(element,token.actor);
       indicators.set(id,entry={element,html:""});
     }
-    const html = turnIndicatorHTML(readTurnBudget(token.actor),{compact:true});
+    const html = turnIndicatorHTML(readTurnBudget(token.actor),{compact:true,actor:token.actor});
     if (html !== entry.html) { entry.element.innerHTML = html; entry.html = html; changed = true; }
     changed = positionIndicator(token,entry.element,occupied) || changed;
   }
@@ -297,7 +307,7 @@ export function registerTurnEconomy() {
     coordinator = new TurnTransactionCoordinator({socket:game.socket,currentUser:()=>game.user,users:()=>game.users,
       getActor:uuid=>fromUuid(uuid),execute:async(actor,command,options,user)=>{
         authorizeTurnRequest(actor,command,options,user);
-        const key = turnKey(activeCombatForActor(actor));
+        const key = currentTurnKey(activeCombatForActor(actor));
         if (options.expectedKey && options.expectedKey !== key) throw new Error("The combat round changed. Check the new indicators and try again.");
         const turnOptions={key,payment:options.payment,ruleId:options.ruleId,
           operationId:options.operationId,isGM:user.isGM,allowPlayerManagement:setting("turnTrackerControl","gm") === "players"};

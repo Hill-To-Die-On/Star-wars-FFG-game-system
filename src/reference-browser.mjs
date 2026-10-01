@@ -231,6 +231,7 @@ export class ReferenceBrowser extends HandlebarsApplicationMixin(
       if (!game.user.isGM)
         throw new Error("Only the GM can populate compendiums.");
       const proceed = await DialogV2.confirm({
+        classes: ["star-wars"],
         window: { title: "Populate reference compendiums" },
         content:
           "<p>Add all references allowed by the world's owned-book settings to world compendiums? Search text and category filters do not limit this import. Existing entries and permissions are preserved.</p>",

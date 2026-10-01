@@ -1,4 +1,5 @@
 import { DICE, SYMBOLS, normalizePool } from "./dice/core.mjs";
+import { talentActivation } from "./talent-activation.mjs";
 
 export const TALENT_ACTIVATIONS = Object.freeze([
   "Passive",
@@ -6,6 +7,7 @@ export const TALENT_ACTIVATIONS = Object.freeze([
   "OOT Incidental",
   "Maneuver",
   "Action",
+  "Active",
 ]);
 
 const effectTargets = Object.freeze({
@@ -117,7 +119,7 @@ export function learnedTalentRules(actor) {
         key: String(node?.key ?? ""),
         name: String(node?.name ?? entry.name ?? "Unknown talent"),
         ranked: node?.ranked === true || entry.ranked === true,
-        activation: String(node?.activation ?? ""),
+        activation: talentActivation(node?.name ?? entry.name, node?.activation),
         summary: String(node?.summary ?? ""),
         effects,
         source: node?.reference ?? item?.system?.source ?? entry.source ?? {},

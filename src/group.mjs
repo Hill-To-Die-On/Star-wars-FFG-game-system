@@ -1,4 +1,5 @@
 import { motivationSummary } from "./motivations.mjs";
+import { sharedGearBalance } from "./group-resources.mjs";
 
 /** Shared records have no combat statistics; Destiny always comes from world state. */
 export function groupSummary(system, destiny = { light: 0, dark: 0 }) {
@@ -9,6 +10,9 @@ export function groupSummary(system, destiny = { light: 0, dark: 0 }) {
   return {
     base: { ...system.base },
     members,
+    startingAsset: { ...system.startingAsset },
+    resourceLedger: Object.entries(system.resourceLedger ?? {}).map(([id, entry]) => ({ id, ...entry })).reverse(),
+    sharedGear: sharedGearBalance(system.resourceLedger),
     obligationTotal: members.reduce(
       (sum, member) => sum + (Number(member.obligation) || 0),
       0,

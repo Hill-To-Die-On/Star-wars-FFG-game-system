@@ -1,9 +1,9 @@
 import {ActorTransactionQueue,actorMutationQueue,canSpendXp} from './xp-transactions.mjs';
 import {getDocumentTransactionBroker} from './document-transactions.mjs';
-const commands=new Set(['board','leave','role','split','generate','deploy']);
+const commands=new Set(['board','leave','role','split','generate','deploy','travel']);
 const actorOf=target=>target.actor??target;
 const queueKey=target=>target.parent?.tokens?target.parent.id:target.uuid;
-function validate(command,args){if(!commands.has(command)||!args||typeof args!=='object'||Array.isArray(args)||JSON.stringify(args).length>2048)throw new Error('Invalid crew request.');}
+function validate(command,args){if(!commands.has(command)||!args||typeof args!=='object'||Array.isArray(args)||JSON.stringify(args).length>2048||command==='travel'&&(typeof args.destinationSceneId!=='string'||!args.destinationSceneId||args.destinationSceneId.length>128))throw new Error('Invalid crew request.');}
 /** Scene seat changes and actor resources retain their shared critical sections. */
 export class CrewTransactionCoordinator {
  queue=new ActorTransactionQueue();

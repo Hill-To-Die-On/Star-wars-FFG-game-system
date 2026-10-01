@@ -137,6 +137,17 @@ function resolveToken(token) {
   return token;
 }
 
+export function rangeDisplayOrigin(token, scene = currentScene()) {
+  const resolved = resolveToken(token);
+  const vehicleId = resolved?.document?.flags?.[SYSTEM_ID]?.aboard?.vehicleId;
+  if (!vehicleId) return resolved;
+  const vehicle = resolveToken(
+    globalThis.canvas?.tokens?.get?.(vehicleId) ??
+    scene?.tokens?.get?.(vehicleId)?.object,
+  );
+  return vehicle?.actor?.type === "vehicle" ? vehicle : resolved;
+}
+
 function tokenCenter(token) {
   const resolved = resolveToken(token);
   const center =
@@ -1721,9 +1732,12 @@ export function refreshRangeOverlay({ preview = null } = {}) {
     reflowRangeLabels();
     return;
   }
+  const drawn = new Set();
   for (const id of originIds(scene)) {
-    const token = resolveToken(id);
+    const token = rangeDisplayOrigin(id, scene);
     if (!token || !spatialTokenVisible(token)) continue;
+    if (drawn.has(token.id)) continue;
+    drawn.add(token.id);
     const profile = getTokenRangeProfile(token, scene);
     if (token && profile) drawOrigin(container, token, profile);
   }
@@ -2017,6 +2031,7 @@ function followCombatTurn(combat, turn = null, session = null) {
 
 async function confirmCombatRangeAssistant() {
   return foundry.applications.api.DialogV2.confirm({
+    classes: ["star-wars"],
     window: { title: "Star Wars FFG · Combat range" },
     content:
       '<div class="sf-dialog"><p>Show range bands for this encounter and follow the active combatant?</p><p class="sf-hint">You can still pin multiple origins or hide the overlay from the scene controls.</p></div>',
@@ -2047,6 +2062,7 @@ async function prepareCombatRangeScale(combat, mode) {
     return;
   }
   const calibrate = await foundry.applications.api.DialogV2.confirm({
+    classes: ["star-wars"],
     window: { title: "Calibrate encounter range" },
     content:
       '<div class="sf-dialog"><p>This Theatre-of-the-Mind scene needs one range boundary before the combat assistant can measure it.</p><p>Calibrate it from the active combatant now?</p></div>',

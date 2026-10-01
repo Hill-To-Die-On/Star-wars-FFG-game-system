@@ -6,6 +6,75 @@
   font-display: swap;
 }
 
+.sf-destiny-hud {
+  position: fixed;
+  z-index: 75;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 4px 10px;
+  border: 1px solid var(--sf-ui-signal, #79afb2);
+  border-radius: 5px;
+  background: linear-gradient(130deg, var(--sf-ui-dark, #263c3a), #071014);
+  box-shadow: 0 3px 12px #0009, inset 0 1px #ffffff26;
+  color: var(--sf-ui-paper, #faf7ed);
+  font: 600 15px "Star Wars FFG Rajdhani", sans-serif;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sf-destiny-hud:hover,
+.sf-destiny-hud:focus-visible {
+  border-color: var(--sf-ui-accent, #bf6b37);
+  box-shadow: 0 3px 12px #0009, 0 0 10px var(--sf-ui-accent, #bf6b37);
+}
+
+.sf-destiny-title {
+  margin-right: 2px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.sf-destiny-light,
+.sf-destiny-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px;
+  border-radius: 3px;
+}
+
+.sf-destiny-light { background: #e6d9b9; color: #262d2a; }
+.sf-destiny-dark { background: #141f2b; color: #f3f0e9; border: 1px solid #f3f0e966; }
+.sf-destiny-hud strong { min-width: 1ch; font-size: 18px; }
+
+.sf-native-settings .sf-settings-group {
+  margin: 0 0 15px;
+  padding: 12px 16px 6px;
+  border: 1px solid var(--sf-ui-signal, #79afb2);
+  border-left: 4px solid var(--sf-ui-accent, #9d5233);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--sf-ui-dark, #263c3a) 12%, transparent);
+}
+.sf-native-settings .sf-settings-group legend {
+  padding: 0 8px;
+  color: var(--sf-ui-accent-text, #9d5233);
+  font-family: "Star Wars FFG Rajdhani", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+}
+.sf-native-settings .sf-settings-group .form-group { margin-block: 9px; }
+.sf-native-settings .sf-settings-group:not(:has(.form-group:not([hidden]))) { display: none; }
+
+@media (max-width: 640px) {
+  .sf-destiny-hud { top: 54px; gap: 4px; padding: 4px 6px; font-size: 12px; }
+  .sf-destiny-hud strong { font-size: 14px; }
+}
+
 @font-face {
   font-family: "Star Wars FFG Rajdhani";
   src: url("../assets/vendor/rajdhani/Rajdhani-SemiBold.ttf") format("truetype");

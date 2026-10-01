@@ -3,6 +3,7 @@ import { originEntryAllowed, originSelectionUpdate, referenceRuleLine } from "./
 import { bookAllowed } from "./rules.mjs";
 import { characteristicPurchase, skillPurchase } from "./advancement.mjs";
 import { speciesAbilityEntry } from "./species-abilities.mjs";
+import { suggestEnemyCondition } from "./enemy-condition.mjs";
 
 export const CREATION_ROLES = Object.freeze({
   combat:{label:"Front-line fighter",skills:["rangedLight","rangedHeavy","brawl","melee","gunnery"]},
@@ -104,6 +105,7 @@ export function reviewGmCharacterBuild(system, {xpIntent, gearIntent} = {}) {
 }
 export function planEnemy(recipe,species,campaign) {
   if(!["minion","rival","nemesis"].includes(recipe.type))throw new Error("Choose minion, rival or nemesis.");
+  if(species?.type!=="species" || !species.name)throw new Error("Choose an explicit species for this enemy.");
   validChoice(recipe.role,CREATION_ROLES,"role");validChoice(recipe.combat,GUIDE_COMBAT,"combat");
   if(!CREATION_ROLES[recipe.role])throw new Error("Choose the enemy's role.");
   const rank=Number(recipe.rank),count=Number(recipe.count);
@@ -111,8 +113,11 @@ export function planEnemy(recipe,species,campaign) {
   if(!Number.isInteger(count)||count<1||count>100)throw new Error("Choose 1 to 100 minions.");
   const base=originSelectionUpdate("species",species,{},campaign),keys=new Set(CREATION_ROLES[recipe.role].skills);
   if(SKILLS[recipe.combat])keys.add(recipe.combat);
-  return {name:String(recipe.name??"").trim()||`${species.name} ${CREATION_ROLES[recipe.role].label}`,type:recipe.type,
+  const name=String(recipe.name??"").trim()||`${species.name} ${CREATION_ROLES[recipe.role].label}`;
+  const condition=suggestEnemyCondition(name,base.wounds.max);
+  return {name,type:recipe.type,
     system:{...base,phase:"play",groupSize:recipe.type==="minion"?count:1,xp:{available:0,total:0},
+      wounds:{...base.wounds,value:condition.wounds},metadata:{...base.metadata,damageImpairment:condition.impairment,damageVisual:"auto"},
       skills:Object.fromEntries([...keys].map(key=>[key,{rank:recipe.type==="minion"?0:rank,career:false,group:recipe.type==="minion",characteristic:SKILLS[key].characteristic}]))},
     flags:{[SYSTEM_ID]:{generatedEnemy:{kind:"original-npc-preset",role:recipe.role,training:rank,note:"GM-designed NPC; not a published adversary or a PC XP build. Review species abilities, equipment and talents."}}}};
 }

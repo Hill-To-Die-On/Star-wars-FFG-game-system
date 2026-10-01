@@ -10,7 +10,7 @@
       <div><span class="sf-eyebrow">Shared Destiny</span><strong>{{destiny.light}} light · {{destiny.dark}} dark</strong><button type="button" data-action="destiny">Dice & Destiny</button></div>
       {{#if campaign.obligation}}<div><span class="sf-eyebrow">Group obligation</span><strong>{{obligationTotal}}</strong></div>{{/if}}
       {{#if campaign.duty}}<div><span class="sf-eyebrow">Group duty</span><strong>{{dutyTotal}}</strong></div>{{/if}}
-      <label>Shared credits<input type="number" min="0" name="system.credits" value="{{system.credits}}"></label>
+      <div><span class="sf-eyebrow">Shared credits</span><strong>{{credits}} cr</strong></div>
     </div>
     <section class="sf-panel"><h2>Base of Operations</h2>
       <div class="sf-two-col"><label>Name<input name="system.base.name" value="{{system.base.name}}"></label><label>Location<input name="system.base.location" value="{{system.base.location}}"></label></div>
@@ -34,8 +34,21 @@
           {{#if ../editable}}<button type="button" data-action="removeMember" data-member="{{id}}">Remove member</button>{{/if}}</div>
       </fieldset>{{else}}<p>No members recorded yet.</p>{{/each}}
     </section>
-    <div class="sf-two-col"><section class="sf-panel"><h2>Group resources</h2><textarea name="system.resources" aria-label="Group resources" rows="6">{{system.resources}}</textarea></section>
-      <section class="sf-panel"><h2>Group possessions</h2><textarea name="system.possessions" aria-label="Group possessions" rows="6">{{system.possessions}}</textarea></section></div>
+    <section class="sf-panel sf-group-resource-panel">
+      <div class="sf-section-heading"><h2>Starting group asset</h2>{{#if editable}}<button type="button" data-action="chooseAsset">Choose or edit asset</button>{{/if}}</div>
+      {{#if startingAsset.choice}}<div class="sf-group-asset"><span class="sf-eyebrow">{{startingAssetLabel}}</span><strong>{{startingAsset.name}}</strong>
+        <span>{{startingAsset.status}}</span>{{#if startingAsset.description}}<p>{{startingAsset.description}}</p>{{/if}}
+        {{#if linkedAsset}}<button type="button" data-action="openAsset">Open {{linkedAsset}}</button>{{/if}}</div>
+      {{else}}<p class="sf-hint">Choose the party's shared starting ship, base, holocron, or mentor from the enabled campaign line.</p>{{/if}}
+    </section>
+    <section class="sf-panel sf-group-resource-panel">
+      <div class="sf-section-heading"><h2>Shared resource ledger</h2>{{#if editable}}<button type="button" data-action="recordResource">Record change</button>{{/if}}</div>
+      <p class="sf-hint">Credit balance: {{credits}}. Gear quantities below are calculated from recorded gains and uses.</p>
+      {{#if sharedGear.length}}<div class="sf-group-gear">{{#each sharedGear}}<span>{{quantity}} × {{name}}</span>{{/each}}</div>{{/if}}
+      <ol class="sf-group-ledger">{{#each resourceLedger}}<li><span class="sf-eyebrow">{{kind}}{{#if scene}} · {{scene}}{{/if}}</span><strong>{{name}} {{deltaLabel}}</strong>{{#if note}}<p>{{note}}</p>{{/if}}</li>{{else}}<li class="sf-hint">No shared changes recorded yet.</li>{{/each}}</ol>
+    </section>
+    <div class="sf-two-col"><section class="sf-panel"><h2>Other shared resources</h2><textarea name="system.resources" aria-label="Other shared resources" rows="6">{{system.resources}}</textarea></section>
+      <section class="sf-panel"><h2>Group possessions notes</h2><textarea name="system.possessions" aria-label="Group possessions notes" rows="6">{{system.possessions}}</textarea></section></div>
     <section class="sf-panel"><h2>Group contacts</h2><textarea name="system.contacts" aria-label="Group contacts" rows="5">{{system.contacts}}</textarea></section>
     <section class="sf-panel"><h2>Group notes</h2><textarea name="system.notes" aria-label="Group notes" rows="4">{{system.notes}}</textarea></section>
   </main>

@@ -10,6 +10,7 @@ import { SYSTEM_ID, SYSTEM_PATH } from "../config.mjs";
 import { escapeHTML } from "../mechanics.mjs";
 import { registerDiceCompatibility } from "./compatibility.mjs";
 import { groupStateForActor } from "../minion-groups.mjs";
+import { activePoolRulings, addPoolRulings } from "../narrative-effects.mjs";
 const VERSIONED_FACE_SUFFIX = Object.freeze({ ability: "v2", difficulty: "v3" });
 const faceTexture = (key, face) =>
   `${SYSTEM_PATH}/assets/dice/${key}-${face}${VERSIONED_FACE_SUFFIX[key] ? `-${VERSIONED_FACE_SUFFIX[key]}` : ""}.png`;
@@ -138,33 +139,50 @@ export async function rollPool(
     automaticResults = {},
     ruleNotes = [],
     turnCost = "none",
+    skillKey = "",
+    targetActorUuid = "",
+    unusedTalentRemovals = {},
   } = {},
 ) {
   if(groupStateForActor(actor)?.remaining===0)throw new Error("This minion group has no active members to make a check.");
-  const normalized = normalizePool(pool);
+  const rulings=actor&&skillKey?activePoolRulings(actor,skillKey):{boost:0,setback:0,pendingIds:[],notes:[]};
+  if(rulings.pendingIds.length){
+    const {assertLocalTabletopAuthority}=await import('../tabletop-provenance.mjs');
+    const {getDocumentTransactionBroker}=await import('../document-transactions.mjs');
+    assertLocalTabletopAuthority(game.user,getDocumentTransactionBroker());
+  }
+  const normalized = normalizePool(addPoolRulings(pool,rulings,unusedTalentRemovals));
   const { automaticRollCost, performTurnCommand, readTurnBudget } = await import("../turn-economy-foundry.mjs");
   const cost = automaticRollCost(actor,turnCost);
   const expectedKey = cost ? readTurnBudget(actor).key : undefined;
   const roll = await new foundry.dice.Roll(poolFormula(normalized)).evaluate();
   if (cost) await performTurnCommand(actor,cost,{automatic:"roll",expectedKey});
+  if(rulings.pendingIds.length){
+    const {requestTabletop}=await import('../tabletop-foundry.mjs');
+    await requestTabletop('consume-future-effect',{actorUuid:actor.uuid,entryIds:rulings.pendingIds,skillKey,rollId:foundry.utils.randomID(24)});
+  }
   const outcome = applyAutomaticResults(
     resultFromRoll(roll),
     automaticResults,
   );
+  const appliedRuleNotes=[...ruleNotes,...rulings.notes];
   roll.options.starWars = { pool: normalized, outcome, automaticResults };
   if (chatMessage) {
     const data = {
       speaker: ChatMessage.getSpeaker({ actor }),
       flavor: label,
-      content: rollCard(label, outcome, roll, automaticResults, ruleNotes),
+      content: rollCard(label, outcome, roll, automaticResults, appliedRuleNotes),
       rolls: [roll],
       flags: {
         [SYSTEM_ID]: {
           pool: normalized,
           outcome,
           automaticResults,
-          ruleNotes,
+          ruleNotes:appliedRuleNotes,
           actorUuid: actor?.uuid,
+          targetActorUuid,
+          skillKey,
+          appliedRulings:rulings.notes,
         },
       },
     };

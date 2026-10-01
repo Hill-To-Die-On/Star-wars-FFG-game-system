@@ -9,6 +9,7 @@ import {
   ItemData,
 } from "./models.mjs";
 import { GroupSheet, refreshGroupSheets } from "./group-sheet.mjs";
+import { openGroupRecord } from "./group-launcher.mjs";
 import { StarWarsActor, StarWarsItem } from "./documents.mjs";
 import {
   StarWarsActorSheet,
@@ -72,11 +73,15 @@ import {
 import { configureXpTransactions } from "./xp-transactions.mjs";
 import { selectTransactionAuthority } from "./document-transactions.mjs";
 import { registerMinionGroups } from "./minion-groups-foundry.mjs";
+import { registerDorDamageEffects } from "./dor-damage-vfx.mjs";
+import { registerDestinyHud, refreshDestinyHud } from "./destiny-hud.mjs";
+import { registerSettingsGroups } from "./settings-groups.mjs";
 import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
 import { renderAboutContent } from "./about.mjs";
 class AboutMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     foundry.applications.api.DialogV2.wait({
+      classes: ["star-wars"],
       window: { title: "About Star Wars FFG" },
       position: { width: 420 },
       content: renderAboutContent({
@@ -167,6 +172,7 @@ export async function openConsole() {
   const { DialogV2 } = foundry.applications.api;
   const destiny = game.settings.get(SYSTEM_ID, "destiny");
   await DialogV2.wait({
+    classes: ["star-wars"],
     window: { title: "Star Wars FFG · Session console" },
     position: { width: 540 },
     content: `<div class="sf-dialog"><p>Shared Destiny: <strong>${destiny.light} light · ${destiny.dark} dark</strong></p><div class="sf-form-grid">${Object.entries(
@@ -332,8 +338,9 @@ Hooks.once("init", () => {
     config: false,
     type: Object,
     default: { light: 0, dark: 0 },
-    onChange: refreshGroupSheets,
+    onChange: value => { refreshGroupSheets(); refreshDestinyHud(value); },
   });
+  registerDestinyHud(openConsole);
   game.settings.register(SYSTEM_ID, "gmSourceKeys", {
     scope: "client",
     config: false,
@@ -356,6 +363,8 @@ Hooks.once("init", () => {
   registerTurnEconomy();
   registerVehicleCrew({openCheck:checkDialog});
   registerMinionGroups();
+  registerDorDamageEffects();
+  registerSettingsGroups();
   registerTabletopWorkflows();
   registerSupportTools();
   game.settings.registerMenu(SYSTEM_ID, "aboutMenu", {
@@ -452,6 +461,7 @@ Hooks.once("init", () => {
     actorContext,
     directorOfRealms: directorAdapter,
     openConsole,
+    openGroupRecord,
     campaignDialog,
     importDialog,
     importSwaDialog,
@@ -490,6 +500,11 @@ Hooks.on("renderActorDirectory", (_app, html) => {
   button.textContent = "Star Wars FFG · Dice & Destiny";
   button.addEventListener("click", openConsole);
   html.querySelector(".directory-footer")?.append(button);
+  const groupRecord = document.createElement("button");
+  groupRecord.type = "button";
+  groupRecord.textContent = "Star Wars FFG · Open Group Record";
+  groupRecord.addEventListener("click", () => openGroupRecord().catch(error => ui.notifications.error(error.message)));
+  html.querySelector(".directory-footer")?.append(groupRecord);
   const references = document.createElement("button");
   references.type = "button";
   references.textContent = "Star Wars FFG · Reference catalogue";

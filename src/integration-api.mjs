@@ -390,6 +390,7 @@ export async function reviewIntegrationPackage(value, context = {}) {
     hasRulePack = packageContainsRulePack(pkg);
   assertPackagePermissions(pkg);
   const decision = await foundry.applications.api.DialogV2.confirm({
+    classes: ["star-wars"],
     window: { title: "Review external Star Wars FFG import" },
     content: reviewDescription(pkg, context),
     yes: {
@@ -417,6 +418,7 @@ export async function reviewIntegrationPackage(value, context = {}) {
 export async function openIntegrationImport() {
   try {
     const selection = await foundry.applications.api.DialogV2.prompt({
+      classes: ["star-wars"],
       window: { title: "Import external Star Wars FFG data" },
       position: { width: 620 },
       content:
@@ -452,6 +454,7 @@ async function receiveConnectionPackage(request) {
       "The originating site is no longer connected. Use its JSON download instead.",
     );
   const allowed = await foundry.applications.api.DialogV2.confirm({
+    classes: ["star-wars"],
     window: { title: "Connect an external character or rules site" },
     content: `<div class="sf-dialog"><p><strong>${escapeHTML(request.origin)}</strong> wants to send Star Wars FFG data to this world.</p><p>The connection lasts for two minutes, accepts one package from this exact browser window and origin, and still shows a final import review.</p></div>`,
     yes: { label: "Allow one package" },

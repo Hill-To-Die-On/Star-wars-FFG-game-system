@@ -92,6 +92,9 @@ test("the sheet declares its actions and a template that exists", async () => {
     "syncMembers",
     "openMember",
     "destiny",
+    "chooseAsset",
+    "openAsset",
+    "recordResource",
   ]);
   assert.equal(GroupSheet.DEFAULT_OPTIONS.actions.syncMembers, GroupSheet.syncMembers);
   assert.equal(GroupSheet.PARTS.sheet.template, "systems/star-wars-ffg/templates/group.hbs");

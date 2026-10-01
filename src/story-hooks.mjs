@@ -1,4 +1,5 @@
 import { bookAllowed } from "./rules.mjs";
+import { careerBackgroundDefault, speciesBackgroundDefault, appendCareerStoryPrompts, appendSpeciesStoryPrompts } from "./career-story.mjs";
 
 const title = (value) => String(value ?? "").trim();
 const range = (metadata, suffix) => {
@@ -25,15 +26,16 @@ export function resolveStoryRoll(options, value, mechanic) {
   if (!entry) throw new Error(`No ${mechanic} result covers d100 ${roll} in the enabled sources.`);
   const metadata = entry.system.metadata;
   const source = { table: mechanic, book: title(entry.system.source.book), page: title(entry.system.source.page) };
+  const description = title(entry.system.description);
   if (/^roll twice$/i.test(title(entry.name))) return { mechanic, roll, rollTwice: true, source };
   if (mechanic === "morality") {
     const strength = title(metadata.Emotional_Strength), weakness = title(metadata.Emotional_Weakness);
     if (!strength || !weakness) throw new Error("The selected Morality result is incomplete.");
-    return { mechanic, roll, strength, weakness, source };
+    return { mechanic, roll, strength, weakness, source, ...(description ? { description } : {}) };
   }
   const label = title(mechanic === "duty" ? metadata.Duty_Type : metadata.Obligation);
   if (!label) throw new Error(`The selected ${mechanic} result is incomplete.`);
-  return { mechanic, roll, label, source };
+  return { mechanic, roll, label, source, ...(description ? { description } : {}) };
 }
 
 export async function rollStoryHook(options, mechanic, rollD100) {
@@ -60,7 +62,7 @@ export function missingStoryMechanics(system, campaign) {
 }
 
 export function applyStoryHooks(system, hooks) {
-  const result = structuredClone(system), added = [];
+  const result = structuredClone(system);
   result.creation ??= {};
   result.creation.storyRolls ??= [];
   for (const hook of hooks) {
@@ -75,15 +77,75 @@ export function applyStoryHooks(system, hooks) {
       result[mechanic].label ||= title(hook.label);
     }
     if (!result.creation.storyRolls.some((saved) => saved.mechanic === mechanic))
-      result.creation.storyRolls.push({ mechanic, roll: hook.roll, rolls: hook.rolls ?? [hook.roll], source: hook.source });
-    const heading = `Story hook · ${mechanic[0].toUpperCase()}${mechanic.slice(1)}`;
-    if (!String(result.biography ?? "").includes(heading)) {
-      const sentence = mechanic === "morality"
-        ? `${result.morality.strength} guides difficult choices; ${result.morality.weakness} may complicate them under pressure.`
-        : `${result[mechanic].label} can enter a future session as a person, pressure or promise the character must address.`;
-      added.push(`${heading}\n${sentence}`);
-    }
+      result.creation.storyRolls.push({ mechanic, roll: hook.roll, rolls: hook.rolls ?? [hook.roll], source: hook.source,
+        ...(title(hook.description) ? { description: title(hook.description) } : {}) });
   }
-  result.biography = [title(result.biography), ...added].filter(Boolean).join("\n\n");
   return result;
+}
+
+const MECHANICS = ["obligation", "duty", "morality"];
+const hookProse = (mechanic, system) => {
+  if (mechanic === "morality") {
+    const strength = title(system.morality?.strength), weakness = title(system.morality?.weakness);
+    return strength && weakness
+      ? `Their ${strength.toLowerCase()} can guide difficult choices, while ${weakness.toLowerCase()} may complicate them under pressure.`
+      : "No emotional strength and weakness have been chosen yet.";
+  }
+  const label = title(system[mechanic]?.label);
+  if (!label) return `No ${mechanic} has been chosen for this character.`;
+  return mechanic === "obligation"
+    ? `Their ${label.toLowerCase()} obligation remains a source of promises and pressure.`
+    : `Their ${label.toLowerCase()} duty gives them a cause to serve and choices to weigh.`;
+};
+
+export function storyHookCards(system) {
+  const rolls = system?.creation?.storyRolls ?? [];
+  return MECHANICS.map((mechanic) => {
+    const saved = rolls.find((entry) => entry.mechanic === mechanic),
+      chosen = mechanic === "morality"
+        ? [title(system?.morality?.strength), title(system?.morality?.weakness)].filter(Boolean).join(" / ")
+        : title(system?.[mechanic]?.label),
+      value = Number(system?.[mechanic]?.value ?? 0);
+    return {
+      type: mechanic[0].toUpperCase() + mechanic.slice(1),
+      mechanic, chosen: chosen || "Unchosen", value,
+      prose: title(saved?.description) || hookProse(mechanic, system),
+      roll: saved?.roll, source: saved?.source,
+      inactive: !chosen || mechanic === "duty" && value === 0,
+    };
+  });
+}
+
+export function storyBackgroundParagraph(system) {
+  const species = Object.hasOwn(system?.creation ?? {}, "speciesBackground")
+      ? title(system.creation.speciesBackground) : speciesBackgroundDefault(system?.species),
+    career = Object.hasOwn(system?.creation ?? {}, "careerBackground")
+      ? title(system.creation.careerBackground) : careerBackgroundDefault(system?.career),
+    hooks = MECHANICS.filter((mechanic) => mechanic === "morality"
+      ? title(system?.morality?.strength) && title(system?.morality?.weakness)
+      : title(system?.[mechanic]?.label) && Number(system?.[mechanic]?.value) > 0)
+      .map((mechanic) => hookProse(mechanic, system));
+  return [species, career, ...hooks].filter(Boolean).join(" ");
+}
+
+/** Remove only the exact text emitted by earlier generators; keep owner writing untouched. */
+export function separateLegacyBiography(system) {
+  let biography = title(system?.biography), changed = false;
+  const species = title(system?.species), career = title(system?.career);
+  const generated = [
+    species && `Species origin · ${species}\n${speciesBackgroundDefault(species)}`,
+    career && `Career origin · ${career}\n${careerBackgroundDefault(career)}`,
+    species && appendSpeciesStoryPrompts("", species),
+    career && appendCareerStoryPrompts("", career),
+    ...MECHANICS.map((mechanic) => {
+      const sentence = mechanic === "morality"
+        ? `${title(system?.morality?.strength)} guides difficult choices; ${title(system?.morality?.weakness)} may complicate them under pressure.`
+        : `${title(system?.[mechanic]?.label)} can enter a future session as a person, pressure or promise the character must address.`;
+      return `Story hook · ${mechanic[0].toUpperCase()}${mechanic.slice(1)}\n${sentence}`;
+    }),
+  ].filter(Boolean);
+  for (const block of generated) if (biography.includes(block)) {
+    biography = biography.replace(block, "").trim(); changed = true;
+  }
+  return { biography: biography.replace(/\n{3,}/g, "\n\n"), changed };
 }

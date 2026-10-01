@@ -103,6 +103,16 @@ test("round changes refresh allowances and revisiting an earlier round preserves
   assert.throws(() => apply(a, "reset", { key: "combat:2" }), /GM/);
 });
 
+test("free play spending is scoped to a scene so a new scene starts ready", () => {
+  const a = actor();
+  const hangar = turnKey(null, "hangar"), perimeter = turnKey(null, "perimeter");
+  assert.notEqual(hangar, perimeter);
+  apply(a, "action", { key: hangar });
+  assert.equal(turnBudget(a, { key: hangar }).actionsRemaining, 0);
+  assert.equal(turnBudget(a, { key: perimeter }).actionsRemaining, 1);
+  assert.equal(apply(a, "reset", { key: perimeter }).actionsRemaining, 1);
+});
+
 test("GM-awarded manoeuvres respect the cap and cannot be self-awarded by players", () => {
   const a = actor(); apply(a, "maneuver");
   assert.throws(() => apply(a, "grant"), /GM/);
