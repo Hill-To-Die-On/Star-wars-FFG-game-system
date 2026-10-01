@@ -7,10 +7,12 @@ import {resolve,sep} from 'node:path';
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
 const root=resolve(import.meta.dirname,'..'),artifacts=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/browser/tabletop-ui');
+const playtestRun=Number(process.env.PLAYTEST_RUN??0),playtestSeed=Number(process.env.PLAYTEST_SEED??0);
+const playtestMetadata=JSON.stringify({run:Number.isSafeInteger(playtestRun)?playtestRun:0,seed:Number.isSafeInteger(playtestSeed)?playtestSeed:0});
 await mkdir(artifacts,{recursive:true});
 const server=createServer(async(req,res)=>{
  try {
-  if(req.url==='/'){res.setHeader('Content-Type','text/html');return res.end(`<html><head><link rel="stylesheet" href="/styles/tabletop.css"><style>body{background:#13232c;color:#eee;font:16px system-ui}.application{background:#223944;border:1px solid #b8c8cf;max-width:740px;margin:15px auto;padding:14px;max-height:90vh;display:flex;flex-direction:column}h2{font-size:22px}input,select,textarea,button{font:inherit;padding:5px;color:#13232c;background:#f4f0e4;border:1px solid #afbab9}footer{display:flex;gap:12px;padding-top:12px}.window-content{min-height:0}form{max-height:80vh}table{width:100%}article{padding:8px}</style></head><body><script type="module" src="/tests/fixtures/tabletop-browser.mjs"></script></body></html>`);}
+  if(req.url==='/'){res.setHeader('Content-Type','text/html');return res.end(`<html><head><link rel="stylesheet" href="/styles/tabletop.css"><style>body{background:#13232c;color:#eee;font:16px system-ui}.application{background:#223944;border:1px solid #b8c8cf;max-width:740px;margin:15px auto;padding:14px;max-height:90vh;display:flex;flex-direction:column}h2{font-size:22px}input,select,textarea,button{font:inherit;padding:5px;color:#13232c;background:#f4f0e4;border:1px solid #afbab9}footer{display:flex;gap:12px;padding-top:12px}.window-content{min-height:0}form{max-height:80vh}table{width:100%}article{padding:8px}</style></head><body><script>globalThis.__playtest=${playtestMetadata};</script><script type="module" src="/tests/fixtures/tabletop-browser.mjs"></script></body></html>`);}
   const path=resolve(root,decodeURIComponent(req.url).slice(1));if(!path.startsWith(root+sep)||!/^\/(src|styles|tests\/fixtures|data)\//.test(req.url))throw new Error('Outside fixture');
   res.setHeader('Content-Type',path.endsWith('.mjs')?'text/javascript':path.endsWith('.json')?'application/json':'text/css');res.end(await readFile(path));
  }catch{res.statusCode=404;res.end('Missing fixture');}
@@ -67,6 +69,7 @@ try {
  await page.screenshot({path:resolve(artifacts,'vehicle-dashboard-fixture.png'),fullPage:true});
  assert.deepEqual(await page.evaluate(()=>[fixture.hero.system.wounds.value,fixture.hero.system.xp.available,fixture.hero.system.xp.total,fixture.hero.system.credits,fixture.message.flags['star-wars-ffg'].spending.length,game.combat.flags['star-wars-ffg'].slotClaims.length]),[2,10,25,150,1,1]);
  await page.getByRole('button',{name:'Close',exact:true}).click();assert.equal(await page.evaluate(()=>fixture.hookCount()),hooksBeforeDashboard,'closing the dashboard must detach its document hooks');
+ assert.deepEqual(await page.evaluate(()=>fixture.playtest),JSON.parse(playtestMetadata),'the runner metadata must reach the fresh browser world');
  assert.deepEqual(errors,[]);console.log('Browser fixture passed: damage preview/apply/undo, narrative spending, player claim through GM authority, session awards, and unplaced-vehicle fail-closed controls. Live Foundry acceptance remains separate.');
 } catch(error) {await page?.screenshot({path:resolve(artifacts,'failure.png'),fullPage:true}).catch(()=>{});if(errors.length)console.error('Browser page errors:',errors);throw error;}
 finally {await browser?.close();await new Promise(resolve=>server.close(resolve));}

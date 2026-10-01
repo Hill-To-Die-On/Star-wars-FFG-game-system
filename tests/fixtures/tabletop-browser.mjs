@@ -39,4 +39,4 @@ const outcome={passed:true,success:1,advantage:2,threat:0,triumph:1,despair:0};
 const message=documentOf({id:'native',uuid:'ChatMessage.native',author:player,isContentVisible:true,rolls:[{options:{starWars:{outcome}}}],flags:{'star-wars-ffg':{actorUuid:hero.uuid,outcome}}});game.messages.push(message);
 const {registerTurnEconomy}=await import('/src/turn-economy-foundry.mjs');registerTurnEconomy();
 const module=await import('/src/tabletop-foundry.mjs');module.registerTabletopWorkflows();Hooks.callAll('ready');await (await import('/src/document-transactions.mjs')).getDocumentTransactionBroker().takeAuthority('Fixture GM selects the transaction tab');
-globalThis.fixture={hookCount:()=>Array.from(listeners.values()).reduce((n,rows)=>n+rows.length,0),...module,hero,second,ship,message,notices,documents,gm,player};
+globalThis.fixture={hookCount:()=>Array.from(listeners.values()).reduce((n,rows)=>n+rows.length,0),playtest:globalThis.__playtest??{run:0,seed:0},...module,hero,second,ship,message,notices,documents,gm,player};
