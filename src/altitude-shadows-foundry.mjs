@@ -1,4 +1,5 @@
 import { SYSTEM_ID } from "./config.mjs";
+import { localize as t } from "./localization.mjs";
 import { isDefaultActorImage, isProceduralIconSource } from "./actor-icons.mjs";
 import { shadowSettings, projectAltitudeShadow, shadowReceivers, canCastAltitudeShadow, shadowRasterPlan, shadowIntersectsArtwork } from "./altitude-shadows.mjs";
 
@@ -164,13 +165,13 @@ export async function configureAltitudeShadows() {
 
 export function registerAltitudeShadows() {
   const renderer=new AltitudeShadowRenderer();
-  game.settings.register(SYSTEM_ID,"altitudeShadows",{name:"Show altitude shadows",hint:"Project elevated actor artwork onto level surfaces and lower actors. Disable on this device if preferred.",scope:"client",config:true,type:Boolean,default:true,onChange:()=>renderer.schedule()});
+  game.settings.register(SYSTEM_ID,"altitudeShadows",{name:t("SWFFG.UI.ShowAltitudeShadows","Show altitude shadows"),hint:t("SWFFG.UI.AltitudeShadowsHint","Project elevated actor artwork onto level surfaces and lower actors. Disable on this device if preferred."),scope:"client",config:true,type:Boolean,default:true,onChange:()=>renderer.schedule()});
   for(const hook of ["canvasReady","drawToken","refreshToken","createToken","updateToken","deleteToken","updateActor","updateScene","updateLevel","createLevel","deleteLevel"])
     Hooks.on(hook,()=>renderer.schedule());
   Hooks.on("canvasTearDown",()=>renderer.clear());
   Hooks.on("getSceneControlButtons",controls=>{
     const tools=controls.starWarsRange?.tools;
-    if(tools)tools.shadows={name:"shadows",order:25,title:"Altitude shadows",icon:"fa-solid fa-sun",button:true,visible:game.user.isGM,
+    if(tools)tools.shadows={name:"shadows",order:25,title:t("SWFFG.UI.AltitudeShadows","Altitude shadows"),icon:"fa-solid fa-sun",button:true,visible:game.user.isGM,
       onChange:()=>void configureAltitudeShadows().catch(error=>ui.notifications.error(error.message))};
   });
   return renderer;

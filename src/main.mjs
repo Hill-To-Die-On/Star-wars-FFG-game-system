@@ -79,7 +79,7 @@ import { registerSettingsGroups } from "./settings-groups.mjs";
 import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
 import { renderAboutContent } from "./about.mjs";
 import { openDataReview } from "./data-review.mjs";
-import { localize as t } from "./localization.mjs";
+import { localize as t, registerUiLocalisation } from "./localization.mjs";
 class AboutMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     foundry.applications.api.DialogV2.wait({
@@ -181,9 +181,9 @@ export async function openConsole() {
   const destiny = game.settings.get(SYSTEM_ID, "destiny");
   await DialogV2.wait({
     classes: ["star-wars"],
-    window: { title: "Star Wars FFG · Session console" },
+    window: { title: t("SWFFG.UI.SessionConsole", "Star Wars FFG · Session console") },
     position: { width: 540 },
-    content: `<div class="sf-dialog"><p>Shared Destiny: <strong>${destiny.light} light · ${destiny.dark} dark</strong></p><div class="sf-form-grid">${Object.entries(
+    content: `<div class="sf-dialog"><p>${t("SWFFG.UI.SharedDestinyLabel", "Shared Destiny:")} <strong>${destiny.light} light · ${destiny.dark} dark</strong></p><div class="sf-form-grid">${Object.entries(
       DICE,
     )
       .map(
@@ -192,11 +192,11 @@ export async function openConsole() {
       )
       .join(
         "",
-      )}</div><p>These controls persist world state. The GM manages Destiny flips for the table.</p></div>`,
+      )}</div><p>${t("SWFFG.UI.SessionConsoleHelp", "These controls persist world state. The GM manages Destiny flips for the table.")}</p></div>`,
     buttons: [
       {
         action: "roll",
-        label: "Roll pool",
+        label: t("SWFFG.UI.RollPool", "Roll pool"),
         callback: async (_e, b) => {
           try {
             await rollPool(Object.fromEntries(new FormData(b.form)));
@@ -209,15 +209,15 @@ export async function openConsole() {
         ? [
             {
               action: "light",
-              label: "Use light",
+              label: t("SWFFG.UI.UseLight", "Use light"),
               callback: () => flipDestiny("light"),
             },
             {
               action: "dark",
-              label: "Use dark",
+              label: t("SWFFG.UI.UseDark", "Use dark"),
               callback: () => flipDestiny("dark"),
             },
-            { action: "reset", label: "Seed Destiny", callback: seedDestiny },
+            { action: "reset", label: t("SWFFG.UI.SeedDestiny", "Seed Destiny"), callback: seedDestiny },
           ]
         : []),
     ],
@@ -305,8 +305,8 @@ Hooks.once("init", () => {
     },
   });
   game.settings.register(SYSTEM_ID, "sheetTheme", {
-    name: "Default sheet theme",
-    hint: "Automatic matches each character's creation rules and uses the campaign's first enabled ruleset for vehicles and groups. A sheet's own theme control can override this setting.",
+    name: t("SWFFG.UI.DefaultSheetTheme", "Default sheet theme"),
+    hint: t("SWFFG.UI.DefaultSheetThemeHint", "Automatic matches each character's creation rules and uses the campaign's first enabled ruleset for vehicles and groups. A sheet's own theme control can override this setting."),
     scope: "client",
     config: true,
     type: String,
@@ -320,8 +320,8 @@ Hooks.once("init", () => {
     onChange: refreshThemedSheets,
   });
   game.settings.register(SYSTEM_ID, "interfaceTheme", {
-    name: "Foundry interface theme",
-    hint: "Style the space backdrop, sidebar, chat, combat tracker, journals, windows, scene controls, player list and hotbar. Automatic follows the first enabled campaign ruleset; choose a scheme here to override it.",
+    name: t("SWFFG.UI.FoundryInterfaceTheme", "Foundry interface theme"),
+    hint: t("SWFFG.UI.FoundryInterfaceThemeHint", "Style the space backdrop, sidebar, chat, combat tracker, journals, windows, scene controls, player list and hotbar. Automatic follows the first enabled campaign ruleset; choose a scheme here to override it."),
     scope: "client",
     config: true,
     type: String,
@@ -356,8 +356,8 @@ Hooks.once("init", () => {
     default: {},
   });
   game.settings.register(SYSTEM_ID, "compactChatDice", {
-    name: "Compact dice tray by chat",
-    hint: "Show a minimal seven-die pool beside the chat bar. It uses the active chat visibility button for public, GM, blind or self rolls.",
+    name: t("SWFFG.UI.CompactDiceTray", "Compact dice tray by chat"),
+    hint: t("SWFFG.UI.CompactDiceTrayHint", "Show a minimal seven-die pool beside the chat bar. It uses the active chat visibility button for public, GM, blind or self rolls."),
     scope: "client",
     config: true,
     type: Boolean,
@@ -384,33 +384,33 @@ Hooks.once("init", () => {
     restricted: false,
   });
   game.settings.registerMenu(SYSTEM_ID, "transactionAuthorityMenu", {
-    name: "Transaction authority",
-    label: "Use this GM tab",
-    hint: "Select the single GM tab that processes XP, turn, crew and tabletop transactions.",
+    name: t("SWFFG.UI.TransactionAuthority", "Transaction authority"),
+    label: t("SWFFG.UI.UseThisGmTab", "Use this GM tab"),
+    hint: t("SWFFG.UI.TransactionAuthorityHint", "Select the single GM tab that processes XP, turn, crew and tabletop transactions."),
     icon: "fas fa-shield-halved",
     type: TransactionAuthorityMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
-    name: "GM source key",
-    label: "Backup or restore key",
-    hint: "Keep a private backup to unlock encrypted source notes on another GM browser.",
+    name: t("SWFFG.UI.GmSourceKey", "GM source key"),
+    label: t("SWFFG.UI.BackupRestoreKey", "Backup or restore key"),
+    hint: t("SWFFG.UI.GmSourceKeyHint", "Keep a private backup to unlock encrypted source notes on another GM browser."),
     icon: "fas fa-key",
     type: GMSourceKeyMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "gmSourceLibraryMenu", {
-    name: "GM source library",
-    label: "Search private sources",
-    hint: "Search imported descriptions, abilities and rules in this GM browser.",
+    name: t("SWFFG.UI.GmSourceLibrary", "GM source library"),
+    label: t("SWFFG.UI.SearchPrivateSources", "Search private sources"),
+    hint: t("SWFFG.UI.GmSourceLibraryHint", "Search imported descriptions, abilities and rules in this GM browser."),
     icon: "fas fa-book-open",
     type: GMSourceLibraryMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "campaignMenu", {
-    name: "Campaign rules & adventure state",
-    label: "Choose campaign rules",
-    hint: "Enable one or more rule lines, combine their story mechanics, and lock completed character origins when play begins.",
+    name: t("SWFFG.UI.CampaignRulesAdventure", "Campaign rules & adventure state"),
+    label: t("SWFFG.UI.ChooseCampaignRules", "Choose campaign rules"),
+    hint: t("SWFFG.UI.CampaignRulesHint", "Enable one or more rule lines, combine their story mechanics, and lock completed character origins when play begins."),
     icon: "fas fa-book",
     type: CampaignMenu,
     restricted: true,
@@ -440,9 +440,9 @@ Hooks.once("init", () => {
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "libraryMenu", {
-    name: "Private library",
-    label: "Import database",
-    hint: "Populate world compendiums from a local Star Wars FFG library JSON.",
+    name: t("SWFFG.UI.PrivateLibrary", "Private library"),
+    label: t("SWFFG.UI.ImportDatabase", "Import database"),
+    hint: t("SWFFG.UI.PrivateLibraryHint", "Populate world compendiums from a local Star Wars FFG library JSON."),
     icon: "fas fa-file-import",
     type: LibraryMenu,
     restricted: true,
@@ -456,17 +456,17 @@ Hooks.once("init", () => {
     restricted: false,
   });
   game.settings.registerMenu(SYSTEM_ID, "integrationMenu", {
-    name: "External tools & community rules",
-    label: "Import character or rules",
-    hint: "Review a versioned interchange package from a character builder or community-rules site.",
+    name: t("SWFFG.UI.ExternalToolsRules", "External tools & community rules"),
+    label: t("SWFFG.UI.ImportCharacterRules", "Import character or rules"),
+    hint: t("SWFFG.UI.ExternalToolsHint", "Review a versioned interchange package from a character builder or community-rules site."),
     icon: "fas fa-plug",
     type: IntegrationMenu,
     restricted: false,
   });
   game.settings.registerMenu(SYSTEM_ID, "adversariesMenu", {
-    name: "SW Adversaries",
-    label: "Import adversaries",
-    hint: "Read a local swa.stoogoff.com JSON export into this world's actor compendium.",
+    name: t("SWFFG.UI.SwAdversaries", "SW Adversaries"),
+    label: t("SWFFG.UI.ImportAdversaries", "Import adversaries"),
+    hint: t("SWFFG.UI.ImportAdversariesHint", "Read a local swa.stoogoff.com JSON export into this world's actor compendium."),
     icon: "fas fa-file-import",
     type: AdversariesMenu,
     restricted: true,
@@ -535,6 +535,7 @@ Hooks.on("renderActorDirectory", (_app, html) => {
   }
 });
 Hooks.once("ready", () => {
+  registerUiLocalisation();
   configureXpTransactions({
     socket: game.socket,
     currentUser: () => game.user,

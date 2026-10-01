@@ -1,4 +1,5 @@
 import { SYSTEM_ID } from "./config.mjs";
+import { localize as t } from "./localization.mjs";
 
 export const HOME_BREW_REVIEW = "Homebrew identity: GM review of the recorded statistics and abilities is required.";
 export const SPECIES_SOURCE_REVIEW = "Verify species abilities and any exceptional creation rules in the source book.";
@@ -18,8 +19,8 @@ export function vehicleIdentityDefaults(actor, model, suppliedRegistration) {
 
 export function registerHomebrewIdentities(onChange) {
   game.settings.register(SYSTEM_ID, "allowHomebrewIdentities", {
-    name: "Allow homebrew identities",
-    hint: "GM override: let actor owners use custom species, careers, vehicle models and manufacturers. Database search remains available. Custom entries retain the current stats for manual setup and GM review; character-creation locks still apply.",
+    name: t("SWFFG.UI.AllowHomebrewIdentities", "Allow homebrew identities"),
+    hint: t("SWFFG.UI.AllowHomebrewIdentitiesHint", "GM override: let actor owners use custom species, careers, vehicle models and manufacturers. Database search remains available. Custom entries retain the current stats for manual setup and GM review; character-creation locks still apply."),
     scope: "world", config: true, restricted: true, type: Boolean, default: false, onChange,
   });
 }
