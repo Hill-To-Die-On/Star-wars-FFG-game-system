@@ -12,6 +12,7 @@
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node scripts/browser-checks.mjs",
     "test:playtest": "node scripts/browser-checks.mjs --fixture=tabletop-ui.mjs --runs=3",
+    "test:playtest:stateful": "node scripts/browser-checks.mjs --fixture=tabletop-ui.mjs --runs=3 --stateful",
     "test:recovery": "node scripts/foundry-recovery-acceptance.mjs",
     "check": "node scripts/check.mjs",
     "audit:icons": "node scripts/audit-actor-icons.mjs",
