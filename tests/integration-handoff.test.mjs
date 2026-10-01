@@ -326,7 +326,7 @@ test("connector launches carry a fresh nonce and an exact-origin return URL", ()
   assert.equal(site.origin, ORIGIN);
   assert.equal(site.searchParams.get("lang"), "en");
   assert.equal(site.searchParams.get("swffgNonce"), launch.nonce);
-  assert.equal(site.searchParams.get("swffgVersion"), "2");
+  assert.equal(site.searchParams.get("swffgVersion"), "3");
   assert.equal(site.searchParams.get("swffgReturn"), launch.returnUrl);
   assert.ok(
     launch.returnUrl.startsWith("https://foundry.example/game?world=x#star-wars-ffg-connect="),
@@ -352,7 +352,7 @@ test("connector launches carry a fresh nonce and an exact-origin return URL", ()
 test("the public integration API is a frozen, versioned surface", () => {
   assert.ok(Object.isFrozen(integrationApi));
   assert.equal(integrationApi.format, "star-wars-ffg-interchange");
-  assert.equal(integrationApi.version, 2);
+  assert.equal(integrationApi.version, 3);
   assert.equal(integrationApi.importPackage, importIntegrationPackage);
   assert.throws(() => {
     integrationApi.importPackage = null;

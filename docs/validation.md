@@ -1,5 +1,10 @@
 # Validation
 
+## 2026-10-01 actor-group integration reconciliation
+
+PR #15 was reconciled with the current 0.4.1 candidate. All 739 Node tests pass, including GM-only actor-group imports, stable relationship provenance, referential validation, version-three discovery and version-one/two compatibility. TypeScript, syntax, schema and manifest checks pass, and the 394-file package passes the release audit. All six browser fixtures passed; tabletop startup timed out once and passed on a targeted retry. These are local fixture results, not native Foundry or live DoR actor-group acceptance. Hosted CI is a separate gate.
+
+
 ## 2026-09-29 onboarding, settings and wiki
 
 The 0.4.1 candidate has pure-model and browser regressions for book persistence, explicit future-world reuse, storage denial, stale edits, player permission rejection, search preserving selection, narrow layout and native settings grouping without losing input listeners. Isolated Foundry 14.368 with no modules verifies the new-world core-tour handover, GM/player welcome separation, book and skip persistence after reload, six native settings groups, seven tour steps including a hidden-tray fallback, journal presentation, compact sheet resizing/skill-pool access and NASA artwork in the new-world welcome scene. Private native results and screenshots stay under ignored `.local/onboarding-native/`. The public wiki has ten original guides plus navigation, with candidate features labelled. See [onboarding details](onboarding-settings.md).

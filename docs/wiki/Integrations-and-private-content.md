@@ -23,3 +23,7 @@ Use the repository's public API documentation and schemas for the installed syst
 The system includes the creator-authorized reference catalogue. Private libraries are optional. Local imports can contain richer personal reference material, but they must remain within the table's lawful use and permission boundaries.
 
 Export the GM source key before clearing browser data or moving to another browser. Keep that key private and backed up separately. Do not attach PDFs, scans, keys or extracted prose to public bug reports.
+
+## Candidate actor-group imports
+
+PR #15 adds version-three actor-group packages to the unreleased candidate. A GM reviews a batch of actors with stable authored nodes and directional relationships; imported actors retain the graph provenance for connected tools. Version-one character and version-two actor imports remain supported. This does not invent relationship strength or claim live Director of Realms acceptance. See [the integration API](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/blob/dev/docs/integration-api.md) for the contract.
