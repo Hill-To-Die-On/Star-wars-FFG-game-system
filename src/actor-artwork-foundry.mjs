@@ -11,6 +11,7 @@ import {
   vehicleTokenCreationUpdate,
   vehicleTokenDimensions,
 } from "./vehicle-footprints.mjs";
+import { tokenArtworkFacing, tokenMeshAngle } from "./facing-calibration.mjs";
 
 export const PROCEDURAL_ICON_VERSION = 5;
 
@@ -118,6 +119,8 @@ export function actorCreationUpdate(
         texture: { fit: "contain" },
       },
     };
+  if (type === "character")
+    update.prototypeToken.disposition = nested(data, "prototypeToken.disposition") ?? 1;
   if (footprint)
     Object.assign(update.prototypeToken, {
       width: footprint.width,
@@ -310,10 +313,8 @@ export function createStarWarsTokenClass(BaseToken) {
       super._refreshRotation();
       const source = this.document?.texture?.src, actor = this.actor;
       if (!this.mesh || !actor || this.document.lockRotation) return;
-      if (
-        isDefaultActorImage(source, actor.type) || isProceduralIconSource(source) ||
-        tokenFlag(this.document, "proceduralToken.enabled") === true || source === actor.img
-      ) this.mesh.angle = portraitFacingAngle(this.document);
+      if (source) this.mesh.angle = tokenMeshAngle(this.document.rotation, tokenArtworkFacing(actor, this.document,
+        isDefaultActorImage(source, actor.type) || isProceduralIconSource(source) || tokenFlag(this.document, "proceduralToken.enabled") === true));
     }
   };
 }
@@ -567,6 +568,8 @@ export function registerActorArtwork() {
     }
   });
   Hooks.on("updateActor", (actor, changes) => {
+    if (flattenedKeys(changes).some((key) => key.includes("portraitFacingOffset") || key.includes("tokenFacingOffset")))
+      for (const token of globalThis.canvas?.tokens?.placeables ?? []) if (token.actor?.id === actor.id) token.refresh?.();
     if (
       "img" in changes ||
       relevantActorIconChange(changes) ||

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { SYSTEM_ID } from "../src/config.mjs";
 import { crewCapacities, crewRoster, groupCrew, boardingUpdate, departureUpdate, roleUpdate,
-  crewStripPosition, occupantCount, resolveCrewCheck, attachedPosition, boardingTargets, crewVacancyPosition, crewBadgeLayout } from "../src/vehicle-crew.mjs";
+  crewStripPosition, occupantCount, resolveCrewCheck, attachedPosition, boardingTargets, crewVacancyPosition, crewBadgeLayout, canManageCrew, canRollCrew, travelTokenCopy } from "../src/vehicle-crew.mjs";
 
 const owner = { id:"owner" }, gm = { id:"gm", isGM:true };
 const ship = () => ({id:"ship",uuid:"Scene.one.Token.ship",x:500,y:600,width:4,height:6,elevation:20,
@@ -12,6 +12,30 @@ const person = (id="a", type="character") => ({id,uuid:`Scene.one.Token.${id}`,a
   parent:{id:"one",grid:{size:100}},texture:{src:"portrait.svg"},flags:{},
   actor:{id,type,system:{groupSize:1,wounds:{value:0,max:5}},canUserModify:u=>u.id==="owner"}});
 const embark = (p,v,seat="crew") => {const u=boardingUpdate(p,v,[],{user:owner,seat});p.flags[SYSTEM_ID]={aboard:u[`flags.${SYSTEM_ID}.aboard`]};return p;};
+test("an assigned character owner may roll aboard a GM-owned vehicle without changing its crew",()=>{
+  const v=ship(),p=embark(person(),v),passenger=embark(person("passenger"),v,"passenger");
+  v.actor.canUserModify=()=>false;
+  assert.equal(canRollCrew(p,v,owner),true);
+  assert.equal(canManageCrew(p,v,owner),false);
+  assert.equal(canRollCrew(passenger,v,owner),false);
+  assert.equal(canRollCrew(p,v,{id:"stranger"}),false);
+  p.flags[SYSTEM_ID].aboard.vehicleId="different";
+  assert.equal(canRollCrew(p,v,owner),false);
+});
+
+test("scene travel copies the ship and occupied character without changing the source or losing duties",()=>{
+ const v=ship(),p=embark(person(),v);
+ p.flags[SYSTEM_ID].aboard.roles=['pilot','navigator'];
+ p.delta={system:{wounds:{value:2,max:12}}};
+ for(const t of [v,p])t.toObject=()=>({ _id:t.id,actorLink:true,actorId:t.actorId??t.actor.id,x:t.x,y:t.y,width:t.width,height:t.height,flags:structuredClone(t.flags),...(t.delta?{delta:structuredClone(t.delta)}:{}) });
+ const craft=travelTokenCopy(v,{x:1200,y:1400,width:0.5,height:0.5});
+ const crew=travelTokenCopy(p,{x:1150,y:1350,vehicleId:'newShip'});
+ assert.equal(craft._id,undefined);assert.equal(craft.width,0.5);assert.equal(craft.actorLink,true);
+ assert.equal(crew._id,undefined);assert.equal(crew.flags[SYSTEM_ID].aboard.vehicleId,'newShip');
+ assert.deepEqual(crew.flags[SYSTEM_ID].aboard.roles,['pilot','navigator']);
+ assert.equal(crew.delta.system.wounds.value,2);
+ assert.equal(p.flags[SYSTEM_ID].aboard.vehicleId,'ship');
+});
 
 test("native level travel carries the same occupants and disembarks at the vehicle's current level",()=>{
   const v=ship(),p=person();v.level="ground";p.level="ground";p.elevation=v.elevation;

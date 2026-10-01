@@ -24,4 +24,3 @@ test("revoking access after selection immediately removes the actor report",asyn
  assert.equal((await app._prepareContext()).hasActor,false);
  assert.throws(()=>supportApi.actorCoverage(actor),/Observer permission/);
 });
-

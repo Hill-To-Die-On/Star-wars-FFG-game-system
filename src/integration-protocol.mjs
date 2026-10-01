@@ -58,6 +58,7 @@ const ACTOR_SYSTEM_FIELDS = new Set([
 ]);
 const ITEM_SYSTEM_FIELDS = new Set([
   "effects",
+  "abilities",
   "description",
   "quantity",
   "price",
@@ -541,6 +542,32 @@ function validateItemSystem(system, path) {
   if (system.effects !== undefined) {
     if (!Array.isArray(system.effects)) fail(`${path}.effects`,"expected an array");
     validateTalentNodeRules({effects:system.effects});
+  }
+  if (system.abilities !== undefined) {
+    if (!Array.isArray(system.abilities) || system.abilities.length > 100)
+      fail(`${path}.abilities`, "must contain no more than 100 abilities");
+    system.abilities.forEach((ability, index) => {
+      const abilityPath = `${path}.abilities[${index}]`;
+      allowedFields(ability, new Set([
+        "name", "key", "summary", "description", "activation", "source",
+        "effects", "rank", "ranked",
+      ]), abilityPath);
+      stringAt(ability.name, `${abilityPath}.name`, { min: 1, max: 160 });
+      for (const key of ["key", "summary", "description", "activation"])
+        if (ability[key] !== undefined)
+          stringAt(ability[key], `${abilityPath}.${key}`, { max: key === "summary" ? 4000 : 50000 });
+      if (ability.rank !== undefined) integerAt(ability.rank, `${abilityPath}.rank`, 1, 10);
+      if (ability.ranked !== undefined) booleanAt(ability.ranked, `${abilityPath}.ranked`);
+      validateSourceReference(ability.source, `${abilityPath}.source`);
+      if (ability.effects !== undefined) {
+        if (!Array.isArray(ability.effects)) fail(`${abilityPath}.effects`, "expected an array");
+        validateTalentNodeRules({
+          summary: ability.summary,
+          activation: ability.activation,
+          effects: ability.effects,
+        });
+      }
+    });
   }
   if (system.description !== undefined)
     stringAt(system.description, `${path}.description`, { max: 50000 });

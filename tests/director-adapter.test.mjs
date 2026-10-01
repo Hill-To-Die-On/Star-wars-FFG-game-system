@@ -6,6 +6,7 @@ import {
   RULE_KNOWLEDGE_POLICY,
   combatRangeDecision,
 } from "../src/director-adapter.mjs";
+import { DEFAULT_CAMPAIGN } from "../src/rules.mjs";
 
 test("Director range decisions never treat an unverified vertical path as clear", () => {
   const clear = { available: true, lineOfSightBlocked: false, requiresGmRuling: false };
@@ -53,6 +54,66 @@ test("Director targeted checks remeasure and reject blocked, unknown and unverif
   await directorAdapter.executeCheck(actor, "negotiation", { difficulty: 1 });
   assert.equal(calls, 2);
   assert.match(directorAdapter.getNativeCheckRules().guidance, /requiresGmRuling/);
+});
+
+test("targeted Force-style checks require a recorded GM sight override", async () => {
+  const previousGame = globalThis.game;
+  const actor = { uuid: "Actor.force-user", rollSkill: async (_skill, options) => options };
+  const sourceToken = { actor }, targetToken = { id: "target" };
+  const adapter = { ...directorAdapter, getCombatRange: () => ({ available: true, lineOfSightBlocked: true }) };
+  const options = { sourceToken, targetToken, sightOverride: { approved: true, reason: "Sense locates the target beyond the bulkhead" } };
+  try {
+    globalThis.game = { user: { isGM: false } };
+    await assert.rejects(adapter.executeCheck(actor, "discipline", options), /GM/i);
+    globalThis.game.user.isGM = true;
+    await assert.rejects(adapter.executeCheck(actor, "discipline", { ...options, sightOverride: { approved: true, reason: " " } }), /Record|reason/i);
+    const roll = await adapter.executeCheck(actor, "discipline", options);
+    assert.deepEqual(roll.ruleNotes, ["GM line of sight override: Sense locates the target beyond the bulkhead"]);
+    assert.equal(Object.hasOwn(roll, "sightOverride"), false);
+  } finally { globalThis.game = previousGame; }
+});
+
+test("Director receives rolled story hooks and active GM scene decisions", () => {
+  const priorGame = globalThis.game;
+  const systemId = "star-wars-ffg";
+  const actor = {
+    uuid: "Actor.scene-droid", name: "Scene Droid", type: "minion",
+    items: { contents: [] },
+    flags: { [systemId]: {
+      conditions: [{ id: "stand-down", name: "Stand-down command accepted", note: "Ceases hostile targeting until an explicit new trigger.", automation: "record-only", source: { book: "GM scene ruling", page: "Round 2" } }],
+      narrativeEffects: [
+        { id: "pending", label: "Maintenance route", note: "Access to the service bay", die: "boost", count: 1, skillKey: "mechanics" },
+        { id: "used", label: "Spent clue", die: "boost", count: 1, skillKey: "computers", consumedBy: "roll-1" },
+      ],
+      workflowHistory: [
+        { id: "reviewed", kind: "condition", label: "Droid accepts stand-down", at: "2026-09-30T10:00:00Z", source: { book: "GM scene ruling", page: "Round 2" } },
+        { id: "undone", kind: "condition", label: "Removed ruling", undone: true },
+      ],
+    } },
+    system: {
+      species: "Droid", career: "", source: {}, incomplete: [],
+      characteristics: { brawn: 1, agility: 1, intellect: 1, cunning: 1, willpower: 1, presence: 1 },
+      skills: {}, customSkills: [], motivations: [], biography: "Keeps the hangar secure.",
+      wounds: { value: 8, max: 11 }, strain: { value: 0, max: 11 },
+      defense: { melee: 0, ranged: 0 }, soak: 1, xp: { available: 0 },
+      advancement: [], phase: "ready", creation: { storyRolls: [{ mechanic: "obligation", description: "A debt to the hangar operator", roll: 64 }] },
+      obligation: { label: "Family", value: 15 }, duty: { label: "", value: 0 },
+      morality: { strength: "Enthusiasm", weakness: "Recklessness", value: 50 },
+    },
+  };
+  try {
+    globalThis.game = { user: { isGM: true }, settings: { get: () => DEFAULT_CAMPAIGN }, combats: [] };
+    const stats = directorAdapter.getNarrativeSheetStats(actor);
+    const byLabel = (label) => stats.find((entry) => entry.label === label)?.value ?? "";
+    assert.match(byLabel("Story hooks and rolled narrative values"), /A debt to the hangar operator/);
+    assert.match(byLabel("Story hooks and rolled narrative values"), /64/);
+    assert.match(byLabel("Active GM conditions"), /Ceases hostile targeting/);
+    assert.match(byLabel("Pending GM dice effects"), /Maintenance route/);
+    assert.doesNotMatch(byLabel("Pending GM dice effects"), /Spent clue/);
+    assert.match(byLabel("Recent reviewed GM changes"), /Droid accepts stand-down/);
+    assert.doesNotMatch(byLabel("Recent reviewed GM changes"), /Removed ruling/);
+    assert.match(directorAdapter.getNativeCheckRules().guidance, /Honor Active GM conditions/);
+  } finally { globalThis.game = priorGame; }
 });
 
 test("Director targeted checks bind the rolled actor and assigned vehicle crew to the measured source", async () => {
@@ -112,6 +173,8 @@ test("Director of Realms receives every custom skill with its effective rank", (
       items: { contents: [] },
       system: {
         customSkills,
+        species: "Umbaran",
+        creation: { species: { book: "Rise of the Seperatists", page: "15" }, speciesAbilitiesPending: true },
         skills: {},
         source: {},
         incomplete: [],
@@ -149,6 +212,9 @@ test("Director of Realms receives every custom skill with its effective rank", (
   assert.equal(typeof directorAdapter.getRangeProfile, "function");
   assert.equal(context.motivation, "Relationship: Protect the crew");
   assert.equal(context.motivations[0].description.includes("loyalties"), true);
+  assert.equal(context.speciesAbilities.status, "book-verified");
+  assert.equal(context.speciesAbilities.source.page, "16");
+  assert.equal(context.speciesAbilities.remainingReview, true);
 });
 
 test("Director rules knowledge fails closed when no source evidence exists", () => {

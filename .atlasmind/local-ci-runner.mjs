@@ -4,8 +4,10 @@ import { mkdir, readFile, realpath } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import path from 'node:path';
 
-const [configInput, candidateInput] = process.argv.slice(2);
-if (!configInput || !candidateInput) throw new Error('Usage: local-ci-runner.mjs <config> <candidate>');
+const [configInput, candidateInput, prNumberInput, prShaInput, headRepoInput] = process.argv.slice(2);
+if (!configInput || !candidateInput || !prNumberInput || !prShaInput || !headRepoInput) {
+  throw new Error('Usage: local-ci-runner.mjs <config> <candidate> <pr-number> <pr-sha> <head-repo>');
+}
 const configPath = await realpath(path.resolve(configInput));
 const candidateRoot = await realpath(path.resolve(candidateInput));
 const config = JSON.parse(await readFile(configPath, 'utf8'));
@@ -14,6 +16,22 @@ if (config?.schemaVersion !== 1 || config?.managedBy !== 'atlasmind:reviewed-pr-
 }
 if (!Array.isArray(config.commands) || config.commands.length < 1 || config.commands.length > 20) {
   throw new Error('The trusted local-CI contract must declare between 1 and 20 commands.');
+}
+if (!/^[1-9][0-9]*$/.test(prNumberInput) || !/^[a-f0-9]{40}$/.test(prShaInput) || headRepoInput !== config.repository) {
+  throw new Error('The approved pull-request identity is malformed or belongs to another repository.');
+}
+const githubToken = process.env.GITHUB_TOKEN;
+if (!githubToken) throw new Error('GITHUB_TOKEN is required to verify the approved pull request.');
+const apiRoot = process.env.GITHUB_API_URL || 'https://api.github.com';
+const response = await fetch(apiRoot + '/repos/' + config.repository + '/pulls/' + prNumberInput, {
+  headers: { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + githubToken, 'User-Agent': 'AtlasMind-local-CI' },
+});
+if (!response.ok) throw new Error('GitHub refused pull-request verification with HTTP ' + response.status + '.');
+const pull = await response.json();
+if (pull?.state !== 'open' || pull?.draft === true || pull?.base?.ref !== config.trustedBaseBranch
+  || pull?.base?.repo?.full_name !== config.repository || pull?.head?.repo?.full_name !== headRepoInput
+  || pull?.head?.sha !== prShaInput) {
+  throw new Error('The numbered pull request no longer matches the approved repository, base branch, and exact head SHA.');
 }
 const jobTemp = typeof process.env.RUNNER_TEMP === 'string' && process.env.RUNNER_TEMP.length > 0
   ? path.resolve(process.env.RUNNER_TEMP)
@@ -30,7 +48,7 @@ const cleanEnv = {
   ATLASMIND_REVIEWED_PR_LOCAL_CI: 'true',
   NPM_CONFIG_CACHE: path.join(jobTemp, 'npm-cache'),
 };
-for (const key of ['NODE_OPTIONS', 'ATLASMIND_TEST_MAX_WORKERS', 'VITEST_MAX_WORKERS', 'JEST_MAX_WORKERS']) {
+for (const key of ['NODE_OPTIONS', 'ATLASMIND_TEST_MAX_WORKERS', 'VITEST_MAX_WORKERS', 'JEST_MAX_WORKERS', 'pythonLocation', 'LD_LIBRARY_PATH']) {
   const value = process.env[key];
   if (typeof value === 'string' && value.length > 0) cleanEnv[key] = value;
 }

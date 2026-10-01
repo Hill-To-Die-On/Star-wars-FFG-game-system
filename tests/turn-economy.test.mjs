@@ -34,6 +34,25 @@ test("characters have one action, one free manoeuvre and a two-manoeuvre cap", (
   assert.throws(() => apply(a, "maneuver", { payment: "strain" }), /limit/i);
 });
 
+test("book-verified additional limbs grant a second free manoeuvre without increasing the cap", () => {
+  const harch = actor("character", {
+    species: "Harch",
+    creation: { species: { book: "Collapse of the Republic", page: "14" } },
+  });
+  const budget = turnBudget(harch);
+  assert.equal(budget.limits.freeManeuvers, 2);
+  assert.equal(budget.limits.maneuverLimit, 2);
+  assert.match(budget.reasons.join(" "), /Harch.*p\. 15/);
+  assert.equal(apply(harch, "maneuver").freeRemaining, 1);
+  assert.equal(apply(harch, "maneuver").freeRemaining, 0);
+  assert.throws(() => apply(harch, "maneuver"), /limit/i);
+  const unverified = actor("character", {
+    species: "Harch",
+    creation: { species: { book: "Homebrew", page: "14" } },
+  });
+  assert.equal(turnBudget(unverified).limits.freeManeuvers, 1);
+});
+
 test("trading an action supplies the second manoeuvre without strain", () => {
   const a = actor(); apply(a, "maneuver");
   const b = apply(a, "maneuver", { payment: "action" });
@@ -82,6 +101,16 @@ test("round changes refresh allowances and revisiting an earlier round preserves
   apply(a, "action", { key: "combat:2" });
   assert.equal(turnBudget(a, { key: "combat:1" }).actionsRemaining, 0);
   assert.throws(() => apply(a, "reset", { key: "combat:2" }), /GM/);
+});
+
+test("free play spending is scoped to a scene so a new scene starts ready", () => {
+  const a = actor();
+  const hangar = turnKey(null, "hangar"), perimeter = turnKey(null, "perimeter");
+  assert.notEqual(hangar, perimeter);
+  apply(a, "action", { key: hangar });
+  assert.equal(turnBudget(a, { key: hangar }).actionsRemaining, 0);
+  assert.equal(turnBudget(a, { key: perimeter }).actionsRemaining, 1);
+  assert.equal(apply(a, "reset", { key: perimeter }).actionsRemaining, 1);
 });
 
 test("GM-awarded manoeuvres respect the cap and cannot be self-awarded by players", () => {
@@ -155,6 +184,30 @@ test("prepared actor allowances reflect Active Effects; status restrictions rema
   assert.equal(turnBudget(a).actionsRemaining, 0);
   assert.equal(turnBudget(a).maneuversRemaining, 0);
   assert.equal(turnBudget(actor("group")).supported, false);
+});
+
+test("equipped gear abilities contribute turn allowances and stowing the item removes them", () => {
+  const a = actor("character");
+  a.items = [{ id: "thruster", type: "gear", name: "Maneuver thruster", system: {
+    equipped: true,
+    quantity: 1,
+    abilities: [{ name: "Burst movement", activation: "Passive", effects: [effect("freeManeuvers")] }],
+  } }];
+  assert.equal(turnBudget(a).limits.freeManeuvers, 2);
+  a.items[0].system.equipped = false;
+  assert.equal(turnBudget(a).limits.freeManeuvers, 1);
+});
+
+test("equipped-item requirements keep an active gear rule tied to its physical item", () => {
+  const a = actor("character");
+  a.items = [{ id: "relay", type: "gear", name: "Targeting relay", system: {
+    equipped: true,
+    quantity: 1,
+    abilities: [{ name: "Relay calibration", activation: "Maneuver", effects: [effect("freeManeuvers", 1, { equippedItem: true })] }],
+  } }];
+  assert.equal(turnBudget(a).decisions[0].name, "Relay calibration");
+  a.items[0].system.equipped = false;
+  assert.equal(turnBudget(a).decisions.length, 0);
 });
 
 test("turn effect validation rejects invalid counts, selectors and invented targets", () => {

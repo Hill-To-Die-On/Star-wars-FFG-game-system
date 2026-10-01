@@ -1,31 +1,6 @@
-/** Presentation-only grouping: Foundry retains the original inputs, permissions, search and save handler. */
-export const SETTINGS_GROUPS = [
-  {id:"setup",label:"1 · Campaign setup",keys:["welcomeMenu","campaignMenu","ownedBooksMenu","allowHomebrewIdentities"]},
-  {id:"appearance",label:"2 · Appearance & accessibility",keys:["sheetTheme","interfaceTheme","compactChatDice","altitudeShadows"]},
-  {id:"combat",label:"3 · Combat & turn automation",keys:["turnTrackerControl","automaticTurnRolls","automaticTurnMovement","combatRangeAssistant","combatRangeFollowTurn","animatedTargetTrace"]},
-  {id:"play",label:"4 · Play tools & references",keys:["consoleMenu","referenceMenu"]},
-  {id:"imports",label:"5 · Imports & private sources",keys:["integrationMenu","libraryMenu","adversariesMenu","gmSourceLibraryMenu","gmSourceKeyMenu"],advanced:true},
-  {id:"help",label:"6 · Help & diagnostics",keys:["supportMenu"]}
-];
-export function groupSystemSettings(root) {
-  if(root.querySelector(".sf-settings-group"))return;
-  const rows=[...root.querySelectorAll(".form-group")].filter(row=>row.querySelector('[name^="star-wars-ffg."], [data-key^="star-wars-ffg."]'));
-  if(!rows.length)return;
-  const parent=rows[0].parentElement;
-  if(parent.querySelector(":scope > .sf-settings-group"))return;
-  const byKey=new Map(rows.map(row=>{const field=row.querySelector('[name^="star-wars-ffg."], [data-key^="star-wars-ffg."]');return[(field.name||field.dataset.key).split(".").at(-1),row];}));
-  for(const group of SETTINGS_GROUPS) {
-    const members=group.keys.map(key=>byKey.get(key)).filter(Boolean);
-    if(!members.length)continue;
-    // Native search re-renders filtered category content. Never collapse matching results.
-    const container=document.createElement("fieldset");container.className="sf-settings-group";
-    const legend=document.createElement("legend");legend.textContent=group.label;container.append(legend);
-    for(const row of members)container.append(row);
-    for(const key of group.keys)byKey.delete(key);
-    parent.append(container);
-  }
-  for(const row of byKey.values())parent.append(row);
-}
+import { groupSystemSettings } from "./settings-groups.mjs";
+export { SETTINGS_GROUPS, groupSystemSettings } from "./settings-groups.mjs";
+
 export function styleSystemWindow(app, html) {
   const root=html instanceof HTMLElement ? html : app.element;
   if(!root?.classList || !root.matches(".application,.app"))return;

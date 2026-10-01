@@ -3,7 +3,7 @@
   "managedBy": "atlasmind:reviewed-pr-local-ci:v1",
   "enabled": true,
   "repository": "Hill-To-Die-On/Star-wars-FFG-game-system",
-  "trustedBaseBranch": "main",
+  "trustedBaseBranch": "dev",
   "workflowFile": "atlasmind-reviewed-pr-local-ci.yml",
   "runnerLabel": "atlasmind-reviewed-pr-x64",
   "statusContext": "AtlasMind/local-ci",

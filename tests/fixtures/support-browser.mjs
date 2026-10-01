@@ -22,4 +22,3 @@ const actor={id:"hero",name:"Mira",system:{advancement:nodes.map(n=>({itemId:"tr
 globalThis.game={version:"14.368",system:{version:"0.3.0"},user:{isGM:false},actors:Object.assign([actor,{id:"hidden",name:"Secret actor",testUserPermission:()=>false}],{size:2}),settings:{get:()=>({bookMode:"all"})},modules:new Map(),scenes:{size:1},messages:{size:8}};
 const module=await import("/src/support-foundry.mjs");
 globalThis.fixture={...module,app:module.openSupport(),actor};
-

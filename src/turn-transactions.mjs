@@ -8,7 +8,7 @@ export class TurnTransactionCoordinator {
   if(this.unregister)return this;this.transport??=getDocumentTransactionBroker();
   this.unregister=this.transport.register('turn',{resolve:this.getActor,lockKeys:actor=>[actor.uuid],
    validate:(actor,command,args,user)=>{if(!canSpendXp(actor,user))throw new Error('Owner permission is required.');validate(command,args);},
-   execute:(actor,command,args,user,id,assertAuthority)=>actorMutationQueue.run(actor.uuid,()=>{assertAuthority();return this.execute(actor,command,{...args,operationId:id},user);})});return this;
+   execute:(actor,command,args,user,id,assertAuthority)=>actorMutationQueue.run(actor.uuid,()=>{assertAuthority();if(!user.active||!canSpendXp(actor,user))throw new Error('Owner permission is required.');return this.execute(actor,command,{...args,operationId:id},user);})});return this;
  }
  stop(){this.unregister?.();this.unregister=null;}
  async request(actor,command,args={}){

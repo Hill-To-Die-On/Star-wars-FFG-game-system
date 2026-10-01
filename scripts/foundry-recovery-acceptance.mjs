@@ -50,6 +50,7 @@ async function start(stage) {
   if(page.url().includes('/join')){await page.locator('#join-username').fill('Gamemaster');await page.getByRole('button',{name:'Join Game Session'}).click();}
   await page.waitForFunction(()=>globalThis.game?.ready,null,{timeout:60_000});
   await page.waitForFunction(()=>canvas.initialized&&!canvas.loading,null,{timeout:60_000});
+  await page.evaluate(()=>foundry.nue.Tour.activeTour?.exit?.());
   stage.selectedAuthority=await selectAuthority();
   stage.runtime=await page.evaluate(()=>({core:game.version,system:game.system.version,activeModules:[...game.modules.values()].filter(m=>m.active).map(m=>m.id)}));
   assert.equal(stage.runtime.system,stage.version);assert.deepEqual(stage.runtime.activeModules,[]);
@@ -59,12 +60,20 @@ async function selectAuthority() {
   const supported=await page.evaluate(async()=>
     (await fetch('/systems/star-wars-ffg/src/document-transactions.mjs',{method:'HEAD'})).ok);
   if(!supported)return false;
-  await page.evaluate(()=>{ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
+  await page.evaluate(()=>{foundry.nue.Tour.activeTour?.exit?.();ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
   await page.locator('[data-transaction-authority]').click();
   const confirm=page.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true});
   const dialogId=await confirm.evaluate(button=>button.closest('dialog')?.id);
   assert.ok(dialogId,'Native authority confirmation must be a dialog.');
-  await confirm.click();
+  // Foundry can reopen the first-run tour after the Settings app renders.
+  // The tour is unrelated to the recovery scenario and may intercept the
+  // authority dialog, so dismiss its DOM layer and force the reviewed click.
+  await page.evaluate(() => {
+    foundry.nue.Tour.activeTour?.exit?.();
+    for (const selector of ["aside.tour", ".tour-backdrop", ".tour-overlay"])
+      document.querySelectorAll(selector).forEach((node) => node.remove());
+  });
+  await confirm.click({ force: true });
   await page.waitForFunction(async()=>
     (await import('/systems/star-wars-ffg/src/document-transactions.mjs')).getDocumentTransactionBroker().isAuthority());
   await page.waitForFunction(id=>!document.getElementById(id),dialogId);

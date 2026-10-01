@@ -2,6 +2,8 @@ import { CHARACTERISTICS, SKILLS, SYSTEM_ID } from "./config.mjs";
 import { originEntryAllowed, originSelectionUpdate, referenceRuleLine } from "./character-origins.mjs";
 import { bookAllowed } from "./rules.mjs";
 import { characteristicPurchase, skillPurchase } from "./advancement.mjs";
+import { speciesAbilityEntry } from "./species-abilities.mjs";
+import { suggestEnemyCondition } from "./enemy-condition.mjs";
 
 export const CREATION_ROLES = Object.freeze({
   combat:{label:"Front-line fighter",skills:["rangedLight","rangedHeavy","brawl","melee","gunnery"]},
@@ -74,13 +76,36 @@ export function creationReadiness(system) {
   if(!system.creation?.applied)issues.push("Complete species, career, specialization and free skills.");
   if(system.creation?.speciesAbilitiesPending || system.incomplete?.length)issues.push("Review and apply species abilities and outstanding source checks.");
   if(system.creation?.pocketMoneyPending)issues.push("Finish starting funds.");
+  const speciesRules=speciesAbilityEntry(system.species,system.creation?.species);
+  if(speciesRules?.nonCareerSkillRanks && (system.creation?.nonCareerSkillChoices?.length??0)!==speciesRules.nonCareerSkillRanks)
+    issues.push(`Choose ${speciesRules.nonCareerSkillRanks} non-career species skill ranks.`);
   if(!Number.isInteger(system.xp?.available)||system.xp.available<0||system.xp.available>system.xp.total)issues.push("Reconcile available and total XP.");
   if(Object.values(system.skills??{}).some(s=>s.rank>2))issues.push("Starting skill ranks cannot exceed 2 without a documented species exception.");
   if(Object.values(system.characteristics??{}).some(v=>v>5))issues.push("Starting characteristics cannot exceed 5 without a documented exception.");
   return issues;
 }
+export function reviewGmCharacterBuild(system, {xpIntent, gearIntent} = {}) {
+  if (system?.phase !== "creation" || !system.creation?.applied) throw new Error("Complete character creation before GM review.");
+  const clean = (value, name) => {
+    const note = String(value ?? "").trim();
+    if (note.length < 5 || note.length > 300) throw new Error(`Describe the GM's ${name} choice in 5 to 300 characters.`);
+    return note;
+  };
+  return {
+    ...system.creation,
+    gmBuildReview: {
+      xpIntent: clean(xpIntent, "XP"),
+      gearIntent: clean(gearIntent, "gear"),
+      xpSpent: Number(system.xp.total) - Number(system.xp.available),
+      xpSaved: Number(system.xp.available),
+      creditsSaved: Number(system.credits),
+      encumbrance: Number(system.creation.startingResources?.encumbrance ?? 0),
+    },
+  };
+}
 export function planEnemy(recipe,species,campaign) {
   if(!["minion","rival","nemesis"].includes(recipe.type))throw new Error("Choose minion, rival or nemesis.");
+  if(species?.type!=="species" || !species.name)throw new Error("Choose an explicit species for this enemy.");
   validChoice(recipe.role,CREATION_ROLES,"role");validChoice(recipe.combat,GUIDE_COMBAT,"combat");
   if(!CREATION_ROLES[recipe.role])throw new Error("Choose the enemy's role.");
   const rank=Number(recipe.rank),count=Number(recipe.count);
@@ -88,8 +113,11 @@ export function planEnemy(recipe,species,campaign) {
   if(!Number.isInteger(count)||count<1||count>100)throw new Error("Choose 1 to 100 minions.");
   const base=originSelectionUpdate("species",species,{},campaign),keys=new Set(CREATION_ROLES[recipe.role].skills);
   if(SKILLS[recipe.combat])keys.add(recipe.combat);
-  return {name:String(recipe.name??"").trim()||`${species.name} ${CREATION_ROLES[recipe.role].label}`,type:recipe.type,
+  const name=String(recipe.name??"").trim()||`${species.name} ${CREATION_ROLES[recipe.role].label}`;
+  const condition=suggestEnemyCondition(name,base.wounds.max);
+  return {name,type:recipe.type,
     system:{...base,phase:"play",groupSize:recipe.type==="minion"?count:1,xp:{available:0,total:0},
+      wounds:{...base.wounds,value:condition.wounds},metadata:{...base.metadata,damageImpairment:condition.impairment,damageVisual:"auto"},
       skills:Object.fromEntries([...keys].map(key=>[key,{rank:recipe.type==="minion"?0:rank,career:false,group:recipe.type==="minion",characteristic:SKILLS[key].characteristic}]))},
     flags:{[SYSTEM_ID]:{generatedEnemy:{kind:"original-npc-preset",role:recipe.role,training:rank,note:"GM-designed NPC; not a published adversary or a PC XP build. Review species abilities, equipment and talents."}}}};
 }

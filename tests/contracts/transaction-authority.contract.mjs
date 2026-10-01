@@ -98,6 +98,16 @@ test('simultaneous duplicate requests from two owner sessions execute once and r
  try {const results=await Promise.all([f.p.transport.request('xp',f.target.uuid,'buySkill',{},'two-tabs'),other.transport.request('xp',f.target.uuid,'buySkill',{},'two-tabs')]);assert.deepEqual(results[0],results[1]);assert.equal(f.calls.length,1);assert.equal(Object.keys(f.world.receipts).length,1);}finally{f.world.stop();}
 });
 
+test('a player confirms a completed transaction after missing live document and setting notifications',async()=>{
+ const f=setup('turn',{execute:async()=>{await new Promise(resolve=>setTimeout(resolve,20));return {confirmed:true};}});
+ f.p.eventsEnabled=false;
+ try{
+  assert.deepEqual(await f.player.request(f.target,'action',{}),{confirmed:true});
+  assert.equal(f.calls.length,1);
+  assert.equal(Object.values(f.world.receipts)[0].status,'complete');
+ }finally{f.world.stop();}
+});
+
 test('two sessions of the same GM share one executor and preserve distinct receipt records',async()=>{
  const f=setup('xp'),other=f.world.client(f.g.user),second=f.make(other);
  try{

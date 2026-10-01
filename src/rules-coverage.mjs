@@ -78,4 +78,3 @@ export function supportSnapshot(game = {}) {
     counts:{actors:count(game.actors),scenes:count(game.scenes),messages:count(game.messages)}
   };
 }
-

@@ -1,5 +1,11 @@
 import { SYSTEM_ID } from "./config.mjs";
-import { learnedTalentRules, validateTalentNodeRules } from "./talent-rules.mjs";
+import {
+  actorTalentRules,
+  talentEffectRequirementsMet,
+  talentRuleAvailable,
+  validateTalentNodeRules,
+} from "./talent-rules.mjs";
+import { speciesTurnBonuses } from "./species-abilities.mjs";
 
 export const TURN_DEFAULTS = Object.freeze({ actions: 1, freeManeuvers: 1, maneuverLimit: 2, strainCost: 2 });
 export const TURN_LABELS = Object.freeze({ actions: "Actions", freeManeuvers: "Free manoeuvres", maneuverLimit: "Manoeuvre limit", strainCost: "Extra manoeuvre cost" });
@@ -12,8 +18,9 @@ export function validateTurnConfig(config = {}) {
   return config;
 }
 
-export function turnKey(combat) {
-  return combat?.started && Number(combat.round) > 0 ? `${combat.id}:${combat.round}` : "freeplay";
+export function turnKey(combat, sceneId = "") {
+  return combat?.started && Number(combat.round) > 0 ? `${combat.id}:${combat.round}` :
+    sceneId ? `freeplay:${sceneId}` : "freeplay";
 }
 
 function stateFor(actor, key) {
@@ -23,33 +30,16 @@ function stateFor(actor, key) {
 }
 
 function turnRules(actor) {
-  const rules = learnedTalentRules(actor);
-  for (const item of actor.items?.contents ?? actor.items ?? []) {
-    if (item.type !== "talent" || !item.system?.effects?.length) continue;
-    rules.push({ id: `item:${item.id}`, key: item.system.metadata?.talentKey ?? "", name: item.name,
-      activation: item.system.activation, ranked: item.system.ranked === true,
-      rank: Math.max(1, Math.min(10, Number(item.system.rank) || 1)),
-      effects: item.system.effects, source: item.system.source ?? {} });
-  }
+  const rules = actorTalentRules(actor);
   const seen = new Set(), ids = new Set();
   return rules.filter(rule => {
     if (ids.has(rule.id)) return false;
     ids.add(rule.id);
     const identity = String(rule.key || rule.name).toLowerCase();
-    if (!rule.ranked && seen.has(identity)) return false;
-    if (!rule.ranked) seen.add(identity);
+    if (rule.sourceKind === "advancement" && !rule.ranked && seen.has(identity)) return false;
+    if (rule.sourceKind === "advancement" && !rule.ranked) seen.add(identity);
     return true;
   });
-}
-
-function meetsRequirement(actor, effect) {
-  const requirement = effect.requirements;
-  if (!requirement?.skill) return true;
-  let rank;
-  try { rank = actor.skillRank?.(requirement.skill); } catch { return false; }
-  rank ??= actor.system?.skills?.[requirement.skill]?.rank ??
-    actor.system?.customSkills?.find(s => `custom:${s.id}` === requirement.skill)?.rank ?? 0;
-  return Number(rank) >= requirement.minimumRank;
 }
 
 export function turnBudget(actor, { key = "freeplay" } = {}) {
@@ -63,7 +53,7 @@ export function turnBudget(actor, { key = "freeplay" } = {}) {
     const effects = (rule.effects ?? []).filter(e => e.type === "turn");
     if (!effects.length) continue;
     validateTalentNodeRules({ ...rule, effects });
-    const applicable = effects.filter(e => meetsRequirement(actor, e));
+    const applicable = effects.filter(e => talentRuleAvailable(actor, rule) && talentEffectRequirementsMet(actor, e, rule));
     if (!applicable.length) continue;
     if (rule.activation !== "Passive" && !active.has(rule.id)) {
       decisions.push({ id:rule.id, name:rule.name, activation:rule.activation, source:rule.source });
@@ -74,6 +64,11 @@ export function turnBudget(actor, { key = "freeplay" } = {}) {
       limits[effect.target] += count;
       reasons.push(`${rule.name}: ${count > 0 ? "+" : ""}${count} ${TURN_LABELS[effect.target].toLowerCase()}`);
     }
+  }
+  if (actor?.type === "character") {
+    const species = speciesTurnBonuses(actor.system?.species, actor.system?.creation?.species);
+    limits.freeManeuvers += species.freeManeuvers;
+    reasons.push(...species.reasons);
   }
   for (const field of Object.keys(limits)) limits[field] = Math.max(0, Math.min(10, limits[field]));
   if (vehicle) limits.actions = 0;
@@ -144,7 +139,7 @@ export function turnUpdate(actor, command, { key = "freeplay", payment = "free",
     case "activate":
       if (!isGM) throw new Error("The GM must confirm this rule's costs and prerequisites.");
       if (entries.some(e => e.kind === "activate" && e.ruleId === ruleId)) throw new Error("This rule is already active this turn.");
-      if (!b.decisions.some(rule => rule.id === ruleId)) throw new Error("No eligible learned turn rule was found.");
+      if (!b.decisions.some(rule => rule.id === ruleId)) throw new Error("No eligible turn rule was found.");
       entry = { kind:"activate",ruleId }; break;
     case "undo": {
       const last = entries.pop();
@@ -154,7 +149,7 @@ export function turnUpdate(actor, command, { key = "freeplay", payment = "free",
       break;
     }
     case "reset":
-      if (key !== "freeplay" && !isGM && !allowPlayerManagement) throw new Error("The GM resets a turn during combat.");
+      if (!key.startsWith("freeplay") && !isGM && !allowPlayerManagement) throw new Error("The GM resets a turn during combat.");
       entries.length = 0; break;
     default: throw new Error("Unknown turn command.");
   }

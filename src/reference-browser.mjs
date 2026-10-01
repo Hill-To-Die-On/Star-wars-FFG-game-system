@@ -1,5 +1,5 @@
 import { getBookshelfStorage, readRememberedBooks, rememberBooks, bookshelfFromCampaign, applyBookshelf } from "./onboarding.mjs";
-import { SYSTEM_ID, SYSTEM_PATH } from "./config.mjs";
+import { SYSTEM_ID, SYSTEM_PATH, SKILLS } from "./config.mjs";
 import {
   bookAllowed,
   bookFilterMode,
@@ -12,12 +12,17 @@ import {
   fieldLabel,
   filterLibraryByBooks,
 } from "./reference-data.mjs";
+import { filterRollTables, resolveRollTable, validateRollTables } from "./roll-tables.mjs";
+import { referenceSummary } from "./reference-summaries.mjs";
+import { speciesAbilityEntry } from "./species-abilities.mjs";
 import { importWithProgress } from "./library.mjs";
 import { publishedLibrary } from "./published-library.mjs";
 const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } =
   foundry.applications.api;
 let indexPromise;
+let rollTablesPromise;
 const browsers = new Set();
+const rollBrowsers = new Set();
 const campaign = () => game.settings.get(SYSTEM_ID, "campaign");
 async function loadJSON(name) {
   const response = await fetch(`${SYSTEM_PATH}/data/${name}.json`, {
@@ -43,6 +48,17 @@ export async function searchReferences(options = {}) {
 export async function getReference(key) {
   return findReference(await referenceIndex(), campaign(), key);
 }
+async function reviewedRollTables() {
+  return (rollTablesPromise ??= Promise.all([loadJSON("roll-tables"), referenceIndex()])
+    .then(([data, index]) => {
+      validateRollTables(data, index.books);
+      return data.tables;
+    })
+    .catch((error) => {
+      rollTablesPromise = undefined;
+      throw error;
+    }));
+}
 export async function importPublishedLibrary() {
   if (!game.user.isGM) throw new Error("Only the GM can populate compendiums.");
   const bundle = filterLibraryByBooks(await publishedLibrary(), campaign());
@@ -61,6 +77,8 @@ export function refreshReferenceBrowsers() {
       browser.filters.page = 0;
       browser.render();
     }
+  for (const browser of rollBrowsers)
+    if (browser.rendered) browser.render();
 }
 export function openReferenceBrowser() {
   const browser = new ReferenceBrowser();
@@ -70,6 +88,9 @@ export function openReferenceBrowser() {
 export function openOwnedBooks() {
   if (!game.user.isGM) throw new Error("Only the GM can change owned books.");
   return new OwnedBooks().render({ force: true });
+}
+export function openRollTables() {
+  return new RollTableBrowser().render({ force: true });
 }
 export class ReferenceBrowser extends HandlebarsApplicationMixin(
   ApplicationV2,
@@ -86,6 +107,7 @@ export class ReferenceBrowser extends HandlebarsApplicationMixin(
       next: this.next,
       select: this.select,
       ownedBooks: this.ownedBooks,
+      rollTables: this.rollTables,
       populate: this.populate,
     },
   };
@@ -104,6 +126,9 @@ export class ReferenceBrowser extends HandlebarsApplicationMixin(
     const result = findReferences(index, c, this.filters);
     this.filters.page = result.page;
     const detail = findReference(index, c, this.selectedKey);
+    const speciesRules = detail?.category === "species"
+      ? speciesAbilityEntry(detail.name, detail.source)
+      : null;
     return {
       ...this.filters,
       isGM: game.user.isGM,
@@ -130,8 +155,28 @@ export class ReferenceBrowser extends HandlebarsApplicationMixin(
           : `${c.books.length} selected books${c.includeUnreferenced ? " · unreferenced entries included" : ""}`,
       detail: detail && {
         ...detail,
+        summary: referenceSummary(detail.category, detail.fields),
+        isSpecies: detail.category === "species",
+        speciesAbilities: speciesRules && {
+          source: speciesRules.source,
+          startingSkills: speciesRules.startingSkillRanks.map((key) => SKILLS[key].label),
+          choiceSkillRank: speciesRules.choiceSkillRank,
+          choiceSkillOptions: speciesRules.choiceSkillOptions?.map((key) => SKILLS[key].label).join(" or ") ?? "",
+          abilities: speciesRules.abilities.map((ability) => ({
+            ...ability,
+            applicationLabel: ability.freeManeuvers
+              ? "Included in turn budget"
+              : ability.checkAdvantageSkills
+                ? "Added to check results"
+                : ability.checkBoostSkills
+                  ? "Included in matching check pools"
+                  : "Apply when relevant",
+          })),
+        },
         fields: Object.entries(detail.fields).map(([key, value]) => ({
-          label: fieldLabel(key),
+          label: detail.category === "species" && key === "Special"
+            ? "Catalogue shorthand (incomplete)"
+            : fieldLabel(key),
           value: value === null ? "—" : String(value),
         })),
       },
@@ -178,11 +223,15 @@ export class ReferenceBrowser extends HandlebarsApplicationMixin(
   static ownedBooks() {
     openOwnedBooks();
   }
+  static rollTables() {
+    openRollTables();
+  }
   static async populate() {
     try {
       if (!game.user.isGM)
         throw new Error("Only the GM can populate compendiums.");
       const proceed = await DialogV2.confirm({
+        classes: ["star-wars"],
         window: { title: "Populate reference compendiums" },
         content:
           "<p>Add all references allowed by the world's owned-book settings to world compendiums? Search text and category filters do not limit this import. Existing entries and permissions are preserved.</p>",
@@ -197,6 +246,77 @@ export class ReferenceBrowser extends HandlebarsApplicationMixin(
           )
           .join("; "),
       );
+    } catch (error) {
+      ui.notifications.error(error.message);
+    }
+  }
+}
+class RollTableBrowser extends HandlebarsApplicationMixin(ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    id: "star-wars-roll-tables",
+    tag: "section",
+    classes: ["star-wars", "sf-catalogue", "sf-roll-tables"],
+    window: { title: "Star Wars FFG · Roll tables", resizable: true },
+    position: { width: 760, height: 740 },
+    actions: { select: this.select, roll: this.roll },
+  };
+  static PARTS = {
+    body: { template: `${SYSTEM_PATH}/templates/roll-tables.hbs` },
+  };
+  selectedId = "";
+  result = null;
+  constructor(...args) {
+    super(...args);
+    rollBrowsers.add(this);
+  }
+  async _prepareContext() {
+    const tables = filterRollTables(await reviewedRollTables(), campaign());
+    const selected = tables.find((table) => table.id === this.selectedId) ?? tables[0] ?? null;
+    this.selectedId = selected?.id ?? "";
+    if (this.result?.tableId !== this.selectedId) this.result = null;
+    return {
+      tables: tables.map((table) => ({ ...table, selected: table.id === this.selectedId })),
+      selected,
+      rows: selected?.rows.map((row) => ({
+        ...row,
+        range: row.low === row.high ? String(row.low) : `${row.low}–${row.high}`,
+        matched: this.result?.low === row.low,
+      })) ?? [],
+      result: this.result,
+    };
+  }
+  _onRender(context, options) {
+    super._onRender(context, options);
+    this.element.querySelector('[name="table"]')?.addEventListener("change", () => {
+      this.selectedId = this.element.querySelector('[name="table"]').value;
+      this.result = null;
+      this.render();
+    });
+  }
+  async close(options) {
+    rollBrowsers.delete(this);
+    return super.close(options);
+  }
+  static select() {
+    this.selectedId = this.element.querySelector('[name="table"]').value;
+    this.result = null;
+    this.render();
+  }
+  static async roll() {
+    try {
+      const table = filterRollTables(await reviewedRollTables(), campaign())
+        .find((entry) => entry.id === this.selectedId);
+      if (!table) throw new Error("Choose an available roll table.");
+      const roll = await new foundry.dice.Roll(`1${table.die}`).evaluate();
+      const row = resolveRollTable(table, roll.total);
+      this.result = {
+        tableId: table.id,
+        roll: roll.total,
+        label: row.label,
+        low: row.low,
+        consultSource: /^(?:Roll Twice|Two Categories)$/.test(row.label),
+      };
+      this.render();
     } catch (error) {
       ui.notifications.error(error.message);
     }

@@ -1,10 +1,11 @@
 import { validateTree } from "./advancement.mjs";
+import { PRINTED_PAGE, PRIVATE_PATH } from "./public-data.mjs";
 
 export const ADVANCEMENT_DATA_FORMAT = "star-wars-ffg-advancement-trees";
 const TYPES = new Set(["specialization", "signatureAbility"]),
   SOURCE_LEVELS = new Set(["full-chart", "connectors-only", "pending"]),
   STRUCTURE_LEVELS = new Set(["validated", "missing"]),
-  ALLOWED_CHECKS = new Set(["node names", "costs", "connectors"]),
+  ALLOWED_CHECKS = new Set(["node names", "costs", "connectors", "attachment slots"]),
   ITEM_KEYS = new Set([
     "_id",
     "name",
@@ -45,6 +46,7 @@ const safeSource = (source, label) => {
     typeof source?.page !== "string" ||
     source.book.length > 200 ||
     source.page.length > 20 ||
+    (source.page && !PRINTED_PAGE.test(source.page)) ||
     /[\\/]|\.pdf\b/i.test(source.book)
   )
     throw new Error(`${label} needs a safe book and page reference.`);
@@ -97,6 +99,8 @@ export function validateAdvancementData(data) {
       !TYPES.has(item.type)
     )
       throw new Error("Advancement items need unique native identities.");
+    if (PRIVATE_PATH.test(item.name))
+      throw new Error("Advancement item name is not a safe public value.");
     ids.add(item._id);
     safeSource(item.source, `${item.name} source`);
     assertKeys(item.tree, TREE_KEYS, `${item.name} tree`);
@@ -129,8 +133,11 @@ export function validateAdvancementData(data) {
       (!item.tree.verified && (item.tree.nodes.length || item.tree.edges.length))
     )
       throw new Error(`${item.name} structure status contradicts its tree.`);
-    for (const entry of item.tree.nodes)
+    for (const entry of item.tree.nodes) {
       assertKeys(entry, NODE_KEYS, `${item.name} node`);
+      if (PRIVATE_PATH.test(String(entry?.name ?? "")))
+        throw new Error(`${item.name} node name is not a safe public value.`);
+    }
     if (item.tree.verified) validateTree(item.tree);
     if (item.type === "specialization") {
       if (

@@ -2100,13 +2100,148 @@
         "page": "47"
       },
       "tree": {
-        "nodes": [],
-        "edges": [],
-        "verified": false,
+        "nodes": [
+          {
+            "id": "r0c0",
+            "name": "Peerless Interception Base Ability",
+            "ranked": false,
+            "cost": 30,
+            "row": 0,
+            "col": 0,
+            "span": 4,
+            "entry": true,
+            "effects": []
+          },
+          {
+            "id": "r1c0",
+            "name": "Destiny",
+            "ranked": false,
+            "cost": 10,
+            "row": 1,
+            "col": 0,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r1c1",
+            "name": "Increase Duration",
+            "ranked": false,
+            "cost": 10,
+            "row": 1,
+            "col": 1,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r1c2",
+            "name": "Increase Duration",
+            "ranked": false,
+            "cost": 10,
+            "row": 1,
+            "col": 2,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r1c3",
+            "name": "Critical Counter",
+            "ranked": false,
+            "cost": 10,
+            "row": 1,
+            "col": 3,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r2c0",
+            "name": "Reduce Strain",
+            "ranked": false,
+            "cost": 15,
+            "row": 2,
+            "col": 0,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r2c1",
+            "name": "Activate Quality",
+            "ranked": false,
+            "cost": 15,
+            "row": 2,
+            "col": 1,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r2c2",
+            "name": "Effortless Counter",
+            "ranked": false,
+            "cost": 15,
+            "row": 2,
+            "col": 2,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r2c3",
+            "name": "Increase Frequency",
+            "ranked": false,
+            "cost": 15,
+            "row": 2,
+            "col": 3,
+            "entry": false,
+            "effects": []
+          }
+        ],
+        "edges": [
+          [
+            "r0c0",
+            "r1c1"
+          ],
+          [
+            "r0c0",
+            "r1c2"
+          ],
+          [
+            "r1c0",
+            "r1c1"
+          ],
+          [
+            "r1c1",
+            "r2c1"
+          ],
+          [
+            "r1c2",
+            "r1c3"
+          ],
+          [
+            "r1c3",
+            "r2c3"
+          ],
+          [
+            "r2c0",
+            "r2c1"
+          ],
+          [
+            "r2c1",
+            "r2c2"
+          ],
+          [
+            "r2c2",
+            "r2c3"
+          ]
+        ],
+        "verified": true,
         "verification": {
-          "structure": "missing",
-          "source": "pending",
-          "checked": []
+          "structure": "validated",
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors",
+            "attachment slots"
+          ],
+          "evidencePage": "48"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -2117,7 +2252,12 @@
         "Jedi"
       ],
       "abilityCategory": "Defensive",
-      "matchingNodes": []
+      "matchingNodes": [
+        false,
+        true,
+        false,
+        true
+      ]
     },
     {
       "_id": "207d7f84c6825150",
@@ -2143,7 +2283,7 @@
           },
           {
             "id": "r1c0",
-            "name": "PROPHECYSETBACK",
+            "name": "Reduce Setback",
             "key": "PROPHECYSETBACK",
             "ranked": false,
             "cost": 10,
@@ -2155,7 +2295,7 @@
           },
           {
             "id": "r1c1",
-            "name": "PROPHECYFLOW",
+            "name": "Flow of the Universe",
             "key": "PROPHECYFLOW",
             "ranked": false,
             "cost": 10,
@@ -2167,7 +2307,7 @@
           },
           {
             "id": "r1c2",
-            "name": "PROPHECYSHAREV",
+            "name": "Shared Revelation",
             "key": "PROPHECYSHAREV",
             "ranked": false,
             "cost": 10,
@@ -2179,7 +2319,7 @@
           },
           {
             "id": "r1c3",
-            "name": "PROPHECYSETBACK",
+            "name": "Reduce Setback",
             "key": "PROPHECYSETBACK",
             "ranked": false,
             "cost": 10,
@@ -2203,7 +2343,7 @@
           },
           {
             "id": "r2c1",
-            "name": "PROPHECYREDIFF",
+            "name": "Reduce Difficulty",
             "key": "PROPHECYREDIFF",
             "ranked": false,
             "cost": 15,
@@ -2295,8 +2435,14 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors",
+            "attachment slots"
+          ],
+          "evidencePage": "40"
         },
         "source": {
           "book": "Force & Destiny - Unlimited Power",
@@ -4005,7 +4151,7 @@
           },
           {
             "id": "r1c0",
-            "name": "UNMATCHEDDESTINCNUMB",
+            "name": "Increase Number",
             "key": "UNMATCHEDDESTINCNUMB",
             "ranked": false,
             "cost": 10,
@@ -4017,7 +4163,7 @@
           },
           {
             "id": "r1c1",
-            "name": "UNMATCHEDDESTDESTINY",
+            "name": "Destiny",
             "key": "UNMATCHEDDESTDESTINY",
             "ranked": false,
             "cost": 10,
@@ -4029,7 +4175,7 @@
           },
           {
             "id": "r1c2",
-            "name": "UNMATCHEDDESTINCNUMB",
+            "name": "Increase Number",
             "key": "UNMATCHEDDESTINCNUMB",
             "ranked": false,
             "cost": 10,
@@ -4041,7 +4187,7 @@
           },
           {
             "id": "r1c3",
-            "name": "UNMATCHEDDESTSHADEST",
+            "name": "Shared Destiny",
             "key": "UNMATCHEDDESTSHADEST",
             "ranked": false,
             "cost": 10,
@@ -4053,7 +4199,7 @@
           },
           {
             "id": "r2c0",
-            "name": "UNMATCHEDDESTFREQ",
+            "name": "Frequency",
             "key": "UNMATCHEDDESTFREQ",
             "ranked": false,
             "cost": 15,
@@ -4065,7 +4211,7 @@
           },
           {
             "id": "r2c1",
-            "name": "UNMATCHEDDESTINCNUMB",
+            "name": "Increase Number",
             "key": "UNMATCHEDDESTINCNUMB",
             "ranked": false,
             "cost": 15,
@@ -4077,7 +4223,7 @@
           },
           {
             "id": "r2c2",
-            "name": "UNMATCHEDDESTUNPOWER",
+            "name": "Unleashed Power",
             "key": "UNMATCHEDDESTUNPOWER",
             "ranked": false,
             "cost": 15,
@@ -4089,7 +4235,7 @@
           },
           {
             "id": "r2c3",
-            "name": "UNMATCHEDDESTFREQ",
+            "name": "Frequency",
             "key": "UNMATCHEDDESTFREQ",
             "ranked": false,
             "cost": 15,
@@ -4141,8 +4287,14 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors",
+            "attachment slots"
+          ],
+          "evidencePage": "41"
         },
         "source": {
           "book": "Force & Destiny - Unlimited Power",
@@ -6384,13 +6536,148 @@
         "page": "46"
       },
       "tree": {
-        "nodes": [],
-        "edges": [],
-        "verified": false,
+        "nodes": [
+          {
+            "id": "r0c0",
+            "name": "Unmatched Teamwork Base Ability",
+            "ranked": false,
+            "cost": 30,
+            "row": 0,
+            "col": 0,
+            "span": 4,
+            "entry": true,
+            "effects": []
+          },
+          {
+            "id": "r1c0",
+            "name": "Increase Effect",
+            "ranked": false,
+            "cost": 10,
+            "row": 1,
+            "col": 0,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r1c1",
+            "name": "Increase Effect",
+            "ranked": false,
+            "cost": 10,
+            "row": 1,
+            "col": 1,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r1c2",
+            "name": "Remove Setback",
+            "ranked": false,
+            "cost": 10,
+            "row": 1,
+            "col": 2,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r1c3",
+            "name": "Increase Range",
+            "ranked": false,
+            "cost": 10,
+            "row": 1,
+            "col": 3,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r2c0",
+            "name": "Increase Effect",
+            "ranked": false,
+            "cost": 15,
+            "row": 2,
+            "col": 0,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r2c1",
+            "name": "Destiny",
+            "ranked": false,
+            "cost": 15,
+            "row": 2,
+            "col": 1,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r2c2",
+            "name": "Increase Range",
+            "ranked": false,
+            "cost": 15,
+            "row": 2,
+            "col": 2,
+            "entry": false,
+            "effects": []
+          },
+          {
+            "id": "r2c3",
+            "name": "Camaraderie",
+            "ranked": false,
+            "cost": 15,
+            "row": 2,
+            "col": 3,
+            "entry": false,
+            "effects": []
+          }
+        ],
+        "edges": [
+          [
+            "r0c0",
+            "r1c1"
+          ],
+          [
+            "r0c0",
+            "r1c3"
+          ],
+          [
+            "r1c0",
+            "r1c1"
+          ],
+          [
+            "r1c0",
+            "r2c0"
+          ],
+          [
+            "r1c2",
+            "r1c3"
+          ],
+          [
+            "r1c2",
+            "r2c2"
+          ],
+          [
+            "r1c3",
+            "r2c3"
+          ],
+          [
+            "r2c1",
+            "r2c2"
+          ],
+          [
+            "r2c2",
+            "r2c3"
+          ]
+        ],
+        "verified": true,
         "verification": {
-          "structure": "missing",
-          "source": "pending",
-          "checked": []
+          "structure": "validated",
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors",
+            "attachment slots"
+          ],
+          "evidencePage": "47"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -6401,7 +6688,12 @@
         "Clone Soldier"
       ],
       "abilityCategory": "Combat Support",
-      "matchingNodes": []
+      "matchingNodes": [
+        true,
+        false,
+        true,
+        false
+      ]
     },
     {
       "_id": "578e1a4af0dfe204",
@@ -8987,8 +9279,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "30"
         },
         "source": {
           "book": "Force & Destiny - Unlimited Power",
@@ -10698,8 +10995,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "22"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -15157,7 +15459,7 @@
           },
           {
             "id": "r4c3",
-            "name": "Practiced Stragist",
+            "name": "Practiced Strategist",
             "key": "PRACTSTRAT",
             "ranked": false,
             "cost": 25,
@@ -15253,8 +15555,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "23"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -15644,8 +15951,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "22"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -16042,8 +16354,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "23"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -16477,8 +16794,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "24"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -16916,8 +17238,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "24"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -19401,6 +19728,14 @@
             "r4c1"
           ],
           [
+            "r3c2",
+            "r4c2"
+          ],
+          [
+            "r3c3",
+            "r4c3"
+          ],
+          [
             "r4c0",
             "r4c1"
           ]
@@ -19408,8 +19743,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "30"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -25229,8 +25569,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "30"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -26774,7 +27119,7 @@
           },
           {
             "id": "r3c3",
-            "name": "Stand Firm! {Improved}",
+            "name": "Improved Stand Firm!",
             "key": "STANFIRMIMP",
             "ranked": false,
             "cost": 20,
@@ -26933,8 +27278,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "27"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -33066,8 +33416,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "27"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -33457,8 +33812,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "32"
         },
         "source": {
           "book": "Force & Destiny - Unlimited Power",
@@ -35177,7 +35537,7 @@
           },
           {
             "id": "r1c1",
-            "name": "Nobody's Fool {Improved)",
+            "name": "Improved Nobody's Fool",
             "key": "NOBFOOLIMP",
             "ranked": false,
             "cost": 10,
@@ -35460,8 +35820,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "28"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -38310,8 +38675,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "32"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -39850,7 +40220,7 @@
             "name": "Sincerest Flattery",
             "key": "SINFLAT",
             "ranked": false,
-            "cost": 25,
+            "cost": 15,
             "row": 4,
             "col": 2,
             "entry": false,
@@ -39955,8 +40325,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "28"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -44243,8 +44618,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "34"
         },
         "source": {
           "book": "Force & Destiny - Unlimited Power",
@@ -46344,8 +46724,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "32"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -46563,7 +46948,7 @@
           },
           {
             "id": "r3c0",
-            "name": "Consider Our Optioins",
+            "name": "Consider Our Options",
             "key": "CONCOPT",
             "ranked": false,
             "cost": 20,
@@ -46692,6 +47077,10 @@
             "r2c3"
           ],
           [
+            "r2c0",
+            "r3c0"
+          ],
+          [
             "r2c1",
             "r3c1"
           ],
@@ -46702,6 +47091,10 @@
           [
             "r2c3",
             "r3c3"
+          ],
+          [
+            "r3c0",
+            "r4c0"
           ],
           [
             "r3c1",
@@ -46716,6 +47109,10 @@
             "r3c3"
           ],
           [
+            "r3c3",
+            "r4c3"
+          ],
+          [
             "r4c1",
             "r4c2"
           ],
@@ -46727,8 +47124,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "34"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -49113,8 +49515,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "36"
         },
         "source": {
           "book": "Rise of the Seperatists",
@@ -51841,7 +52248,7 @@
           },
           {
             "id": "r3c3",
-            "name": "Nobody's Fool {Improved)",
+            "name": "Improved Nobody's Fool",
             "key": "NOBFOOLIMP",
             "ranked": false,
             "cost": 20,
@@ -51989,8 +52396,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "34"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -52809,8 +53221,13 @@
         "verified": true,
         "verification": {
           "structure": "validated",
-          "source": "pending",
-          "checked": []
+          "source": "full-chart",
+          "checked": [
+            "node names",
+            "costs",
+            "connectors"
+          ],
+          "evidencePage": "36"
         },
         "source": {
           "book": "Collapse of the Republic",
@@ -62608,11 +63025,11 @@
   "report": {
     "specializations": 135,
     "signatureAbilities": 38,
-    "structuralGraphs": 171,
-    "fullChartCompared": 143,
+    "structuralGraphs": 173,
+    "fullChartCompared": 168,
     "connectorCompared": 0,
-    "pendingComparison": 30,
-    "missingGraphs": 2,
-    "nodes": 3024
+    "pendingComparison": 5,
+    "missingGraphs": 0,
+    "nodes": 3042
   }
 }

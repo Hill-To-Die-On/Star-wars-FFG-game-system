@@ -17,6 +17,17 @@ test('stale previews and player effects reject without mutation',async()=>{
  const a=actor(),service=new TabletopWorkflowService({resolve:()=>a}),args={actorUuid:a.uuid,request:{kind:'damage',amount:4,scale:'personal',source},expected:{'system.wounds.value':9}};
  await assert.rejects(service.execute('effect',args,gm,'stale'),/preview/);await assert.rejects(service.execute('effect',args,p,'player'),/GM/);assert.equal(a.system.wounds.value,0);
 });
+test('a roll-linked GM condition refreshes its source card when applied and undone',async()=>{
+ const a=actor(),message=doc({uuid:'ChatMessage.condition',flags:{}}),docs={[a.uuid]:a,[message.uuid]:message};
+ const service=new TabletopWorkflowService({resolve:key=>docs[key]});
+ const request={kind:'condition',label:'Optic sensor feedback',note:'The service port surge disrupts the droid optics.',entryId:'condition-1',source,sourceRollUuid:message.uuid,modifier:{die:'setback',count:1,skillKey:'perception'}};
+ const applied=await service.execute('effect',{actorUuid:a.uuid,request},gm,'apply-linked');
+ assert.equal(applied.linkWarning,undefined);
+ assert.equal(message.flags[id].linkedDecisionRevision,'apply-linked');
+ assert.equal(a.flags[id].conditions[0].modifier.skillKey,'perception');
+ await service.execute('undo-effect',{actorUuid:a.uuid,entryId:'apply-linked'},gm,'undo-linked');
+ assert.equal(message.flags[id].linkedDecisionRevision,'undo-linked');
+});
 test('competing initiative claims have one winner and never replace combatant actor identities',async()=>{
  const a=actor(),b=actor();b.id='b';b.uuid='Actor.b';
  const combat=doc({uuid:'Combat.c',started:true,round:1,flags:{},combatants:[{id:'s1',actor:a,tokenId:'t1',flags:{[id]:{slotSide:'pc'}}},{id:'s2',actor:b,tokenId:'t2',flags:{[id]:{slotSide:'pc'}}}]});
@@ -30,6 +41,21 @@ test('concurrent spending cannot overspend and undo preserves separate Triumph',
  const results=await Promise.allSettled(['s1','s2'].map(n=>service.execute('spend',args,gm,n)));assert.equal(results.filter(r=>r.status==='fulfilled').length,1);
  await service.execute('undo-spend',{messageUuid:message.uuid,entryId:'s1'},gm,'undo');
  await service.execute('spend',args,gm,'s3');assert.equal(message.flags[id].spending.length,2);
+});
+test('GM spending records a next-check boost and the owning actor consumes it once',async()=>{
+ const a=actor(),facts={advantage:2,threat:0,triumph:0,despair:0};
+ const message=doc({uuid:'ChatMessage.future',flags:{[id]:{actorUuid:a.uuid,outcome:facts}},rolls:[{options:{starWars:{outcome:facts}}}]});
+ const docs={[message.uuid]:message,[a.uuid]:a},service=new TabletopWorkflowService({resolve:key=>docs[key]});
+ const request={label:'Found a clear route',note:'The GM grants a boost on the next Computers check.',cost:{advantage:2},source,
+  futureEffect:{die:'boost',count:1,actorUuid:a.uuid,skillKey:'computers'}};
+ await service.execute('spend',{messageUuid:message.uuid,request},gm,'boost-1');
+ assert.equal(message.flags[id].spending[0].futureEffect.actorUuid,a.uuid);
+ assert.equal(a.flags[id].narrativeEffects[0].id,'boost-1');
+ assert.equal(a.flags[id].narrativeEffects[0].note,request.note);
+ await service.execute('consume-future-effect',{actorUuid:a.uuid,entryIds:['boost-1'],skillKey:'computers',rollId:'roll-1'},p,'consume-1');
+ assert.equal(a.flags[id].narrativeEffects[0].consumedBy,'roll-1');
+ await assert.rejects(service.execute('consume-future-effect',{actorUuid:a.uuid,entryIds:['boost-1'],skillKey:'computers',rollId:'roll-2'},p,'consume-2'),/already used/);
+ await assert.rejects(service.execute('undo-spend',{messageUuid:message.uuid,entryId:'boost-1'},gm,'undo-boost'),/already used/);
 });
 test('forged narrative headings cannot be spent and document authorship controls authorization',async()=>{
  const service=new TabletopWorkflowService({resolve:()=>doc({flags:{[id]:{outcome:{advantage:3}}},rolls:[]})});

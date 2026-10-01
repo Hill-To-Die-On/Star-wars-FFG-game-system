@@ -1,20 +1,22 @@
 import { SYSTEM_ID } from "./config.mjs";
 import { escapeHTML as esc } from "./mechanics.mjs";
-import { groupDefinition, groupId, groupStateForActor, minionGroupState, minionLinkEdges, validateMinionMembers, createMinionGroup, reconcileMinionMembers } from "./minion-groups.mjs";
+import { groupDefinition, groupId, groupStateForActor, minionGroupState, minionLinkEdges, validateMinionMembers, createMinionGroup, reconcileMinionMembers, extraMinionCombatantIds, minionCombatantUpdates } from "./minion-groups.mjs";
 import { ActorTransactionQueue, selectXpAuthority } from "./xp-transactions.mjs";
+import { getDocumentTransactionBroker } from "./document-transactions.mjs";
 
 let overlay,scheduled=0,forming=false;
 const rosterQueue=new ActorTransactionQueue();
+const combatQueue=new ActorTransactionQueue();
 const fail=error=>ui.notifications.warn(error.message);
 const options=title=>({window:{title,resizable:true},classes:["star-wars","sf-minion-dialog"],position:{width:600,height:580},rejectClose:false});
 export async function formSelectedMinionGroup() {
   if(forming)return;forming=true;
   try {
     if(!game.user.isGM)throw new Error("Only the GM can form a minion group.");
-    const tokens=validateMinionMembers(canvas.tokens.controlled);
+    const tokens=validateMinionMembers(canvas.tokens.controlled,{combats:game.combats});
     const name=await foundry.applications.api.DialogV2.prompt({...options("Link selected minions"),content:`<div class="sf-dialog"><p>Link ${tokens.length} matching minions into one combat group. Wounds, skill ranks, equipment and turn indicators will be shared. Positions stay separate and the original source actors remain available.</p><label>Group name<input name="name" value="${esc(tokens[0].actor.name)}" required></label><p>Casualties follow the roster order. Recovered members rejoin automatically. Add only one group member to the combat tracker.</p></div>`,ok:{label:"Create minion group",callback:(_e,b)=>b.form.elements.name.value}});
     if(!name)return;
-    const actor=await createMinionGroup(tokens,name,{user:game.user,createActor:data=>Actor.create(data,{renderSheet:false}),deleteActor:a=>a.delete()});
+    const actor=await createMinionGroup(tokens,name,{user:game.user,combats:game.combats,createActor:data=>Actor.create(data,{renderSheet:false}),deleteActor:a=>a.delete()});
     ui.notifications.info(`${actor.name}: ${tokens.length} linked members.`);schedule();
   }finally{forming=false;}
 }
@@ -74,6 +76,24 @@ function schedule() {
   if(!overlay && !(globalThis.canvas?.tokens?.controlled??[]).some(t=>groupId(t)))return;
   scheduled=requestAnimationFrame(()=>{scheduled=0;refreshMinionLinks();});
 }
+function syncMinionCombatant(actor,combat) {
+  if(!groupDefinition(actor)||!combat||!getDocumentTransactionBroker().isAuthority())return;
+  void combatQueue.run(`${combat.id}:${actor.id}`,async()=>{
+    if(!getDocumentTransactionBroker().isAuthority())return;
+    const extra=extraMinionCombatantIds(actor,combat);
+    if(extra.length){
+      await combat.deleteEmbeddedDocuments("Combatant",extra);
+      ui.notifications.info(`${actor.name} uses one shared combat turn; duplicate member slots were removed.`);
+    }
+    const scene=game.scenes.get(groupDefinition(actor)?.sceneId);
+    const updates=scene?minionCombatantUpdates(actor,scene.tokens,combat):[];
+    if(updates.length)await combat.updateEmbeddedDocuments("Combatant",updates);
+  }).catch(fail);
+}
+function syncActorCombats(actor) {
+  if(!groupDefinition(actor))return;
+  for(const combat of game.combats??[])syncMinionCombatant(actor,combat);
+}
 export function registerMinionGroups() {
   Hooks.on("getSceneControlButtons",controls=>{
     const tools=controls.starWarsRange?.tools??Object.values(controls).find(c=>c.title==="Star Wars FFG · Range bands")?.tools;
@@ -81,6 +101,8 @@ export function registerMinionGroups() {
       onChange:()=>{const actor=canvas.tokens.controlled.find(t=>groupId(t))?.actor;void (actor?manageMinionGroup(actor):formSelectedMinionGroup()).catch(fail);}};
   });
   for(const hook of ["controlToken","canvasReady","canvasPan","refreshToken","updateToken","deleteToken","updateActor"])Hooks.on(hook,schedule);
+  Hooks.on("updateActor",syncActorCombats);
+  Hooks.on("starWarsAuthoritySelected",()=>{for(const actor of game.actors??[])syncActorCombats(actor);});
   Hooks.on("canvasTearDown",()=>{if(scheduled)cancelAnimationFrame(scheduled);scheduled=0;overlay?.remove();overlay=null;});
   Hooks.on("renderTokenHUD",(hud,html)=>{
     const root=html?.querySelector?html:html?.[0],column=root?.querySelector(".col.left");
@@ -93,6 +115,10 @@ export function registerMinionGroups() {
     if(groupDefinition(actor)&&Array.from(combatant.parent?.combatants??[]).some(c=>c.actorId===actor.id)){
       ui.notifications.warn("This minion group already has a combat slot. Its members share one turn.");return false;
     }
+  });
+  Hooks.on("createCombatant",combatant=>{
+    const actor=combatant.actor??game.actors.get(combatant.actorId),combat=combatant.parent;
+    syncMinionCombatant(actor,combat);
   });
   Hooks.on("preCreateToken",token=>{
     if(groupDefinition(token.actor)) {ui.notifications.warn("This linked group already has scene members. Drag its original minion template to form another group.");return false;}

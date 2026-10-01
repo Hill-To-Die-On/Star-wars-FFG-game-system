@@ -13,8 +13,8 @@ const server=createServer(async(req,res)=>{
   if(url.pathname==="/"){res.setHeader("Content-Type","text/html");return res.end(html);}
   if(url.pathname==="/handlebars.js"){res.setHeader("Content-Type","text/javascript");return res.end(await readFile("node_modules/handlebars/dist/handlebars.runtime.min.js"));}
   const path=resolve(root,decodeURIComponent(url.pathname).slice(1));
-  if(!path.startsWith(root+sep)||!/^\/(src|styles|tests\/fixtures)\//.test(url.pathname))throw Error("Outside fixture");
-  res.setHeader("Content-Type",path.endsWith(".mjs")?"text/javascript":"text/css");res.end(await readFile(path));
+  if(!path.startsWith(root+sep)||!/^\/(src|styles|data|tests\/fixtures)\//.test(url.pathname))throw Error("Outside fixture");
+  res.setHeader("Content-Type",path.endsWith(".mjs")?"text/javascript":path.endsWith(".json")?"application/json":"text/css");res.end(await readFile(path));
  }catch{res.statusCode=404;res.end("Missing");}
 });
 await new Promise(r=>server.listen(0,"127.0.0.1",r));
@@ -59,4 +59,3 @@ try{
  assert.deepEqual(errors,[]);
  console.log("Support browser fixture passed: actor privacy, keyboard search, status filtering, diagnostic download, escaped content and narrow layout. Native Foundry remains a separate acceptance gate.");
 }finally{await browser?.close();await new Promise(r=>server.close(r));}
-

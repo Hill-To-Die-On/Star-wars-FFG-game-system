@@ -53,7 +53,7 @@
             /></label></div>{{/if}}<label>Personal notes<textarea
           name="system.description"
           rows="5"
-        >{{system.description}}</textarea></label></section><section
+        >{{system.description}}</textarea></label>{{#if summary}}<p class="sf-hint">{{summary}} Summary from recorded fields; consult the book for descriptions and effects.</p>{{/if}}</section><section
       class="sf-panel"
     ><h2>Look it up</h2><div class="sf-form-grid"><label>Book<input
             name="system.source.book"
@@ -69,4 +69,4 @@
           talents.</p>{{/if}}{{/if}}<details><summary>Imported facts</summary><dl
           class="sf-facts"
         >{{#each metadata}}<dt>{{key}}</dt><dd
-            >{{value}}</dd>{{/each}}</dl></details></section></main></div>
+        >{{value}}</dd>{{/each}}</dl></details></section></main><footer class="sf-item-actions"><button type="submit" class="sf-primary">Save item</button></footer></div>

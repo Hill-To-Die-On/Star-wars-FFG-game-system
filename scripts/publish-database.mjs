@@ -7,8 +7,26 @@ import { convertDatabase } from "./import-database.mjs";
 import { indexReferenceDatabase } from "../src/reference-data.mjs";
 import { enrichReferenceDatabase } from "../src/catalogue-enrichment.mjs";
 
+// Short labels checked against the held book's printed roll table.
+export function correctSourceRows(tables) {
+  for (const row of tables.duty ?? []) {
+    if (row.Book !== "Age of Rebellion - Cyphers & Masks" || String(row.Page) !== "17") continue;
+    if (String(row.ID) === "52" && row.Duty_Type === "Communication")
+      row.Duty_Type = "Communications";
+    if (String(row.ID) === "60" && row.Duty_Type === "Psycological Warfare")
+      row.Duty_Type = "Psychological Warfare";
+  }
+  for (const row of tables.species ?? []) {
+    if (String(row.ID) !== "17" || row.Species !== "Aqualish - Ualaq" ||
+      row.Book !== "Edge of The Empire - Dangerous Covenants" || String(row.Page) !== "19") continue;
+    if (row.Special === "Breathe underwater, Brawl +1, Survival +1 OR Perception -1, Darkness +1, Perception -1")
+      row.Special = "Breathe underwater; Brawl +1; Survival or Perception +1; remove 1 darkness Setback; add 1 Perception Setback in bright light";
+  }
+  return tables;
+}
+
 export function publishDatabase(sql, { vehicleStats, vehicleLoadouts } = {}) {
-  const tables = parseSqlDump(sql);
+  const tables = correctSourceRows(parseSqlDump(sql));
   let database = {
     format: "star-wars-reference-database",
     version: 1,
