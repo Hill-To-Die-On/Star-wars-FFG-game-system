@@ -19,6 +19,30 @@ const source = {
   url: "https://builder.example/",
 };
 
+test("interchange accepts bounded turn allowances and structured talent effects without a spending ledger",()=>{
+  const pack=characterPackage();
+  pack.payload.items[0].system.abilities=[{name:"Field calibration",activation:"Passive",summary:"Adds a boost to repair checks.",effects:[
+    {type:"pool",target:"boost",operation:"add",count:1,skills:["mechanics"]},
+  ]}];
+  assert.equal(validateIntegrationPackage(pack).payload.items[0].system.abilities[0].name,"Field calibration");
+  pack.payload.items[0].system.abilities[0].effects[0].target="inventedDie";
+  assert.throws(()=>validateIntegrationPackage(pack),/Unsupported talent effect target/);
+  pack.payload.items[0].system.abilities[0].effects[0].target="boost";
+  pack.payload.system.turnEconomy={actions:1,freeManeuvers:2,maneuverLimit:2,strainCost:2};
+  pack.payload.items.push({name:"Original training",type:"talent",system:{activation:"Passive",effects:[
+    {type:"turn",target:"freeManeuvers",operation:"add",count:1}
+  ]}});
+  assert.equal(validateIntegrationPackage(pack).payload.system.turnEconomy.freeManeuvers,2);
+  pack.payload.system.turnEconomy.actions=999;
+  assert.throws(()=>validateIntegrationPackage(pack),/turn allowance/);
+  pack.payload.system.turnEconomy.actions=1;
+  pack.payload.items.at(-1).system.effects={};
+  assert.throws(()=>validateIntegrationPackage(pack),/expected an array/);
+  pack.payload.items.at(-1).system.effects=[];
+  pack.payload.system.turnEconomy.spent=0;
+  assert.throws(()=>validateIntegrationPackage(pack),/turn allowance/);
+});
+
 function characterPackage() {
   return {
     format: INTEGRATION_FORMAT,
@@ -170,6 +194,7 @@ function actorPackage(type = "vehicle") {
       shields: { fore: 1, aft: 1, port: 0, starboard: 0 },
       model: "YT-1300",
       manufacturer: "Corellian Engineering Corporation",
+      footprint: { mode: "manual", hull: "freighter", length: 35.2, width: 25.6 },
       source: { book: "Edge Core", page: "260", table: "vehicles", id: "1" },
       incomplete: ["source review required"],
     },
@@ -310,6 +335,22 @@ test("version 2 actors validate every supported Foundry actor type", () => {
     items: 1,
     actorType: "vehicle",
   });
+});
+
+test("vehicle interchange validates physical footprint controls", () => {
+  assert.doesNotThrow(() => validateIntegrationPackage(actorPackage("vehicle")));
+  const invalidHull = actorPackage("vehicle");
+  invalidHull.payload.system.footprint.hull = "arbitrary-script";
+  assert.throws(
+    () => validateIntegrationPackage(invalidHull),
+    /footprint\.hull: unsupported hull type/,
+  );
+  const invalidLength = actorPackage("vehicle");
+  invalidLength.payload.system.footprint.length = -1;
+  assert.throws(
+    () => validateIntegrationPackage(invalidLength),
+    /footprint\.length: must be a number from 0 to 100000/,
+  );
 });
 
 test("version boundaries remain explicit and adversary ranks do not widen player limits", () => {

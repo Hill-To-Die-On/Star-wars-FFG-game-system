@@ -25,6 +25,8 @@ on:
 permissions:
   contents: read
 
+  pull-requests: read
+
 concurrency:
   group: atlasmind-reviewed-pr-${{ inputs.pr_sha }}
   cancel-in-progress: false
@@ -35,13 +37,14 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' &&
       github.repository == 'Hill-To-Die-On/Star-wars-FFG-game-system' &&
-      github.ref == 'refs/heads/main' &&
+      github.ref == 'refs/heads/dev' &&
       github.actor == github.repository_owner &&
       inputs.head_repo == github.repository
     runs-on: [atlasmind-reviewed-pr-x64]
     timeout-minutes: 60
     env:
       CI: true
+      GITHUB_TOKEN: ${{ github.token }}
       NODE_EXTRA_CA_CERTS: /etc/ssl/certs/ca-certificates.crt
     steps:
       - name: Check out the trusted controller
@@ -82,9 +85,18 @@ jobs:
         with:
           node-version: 24
 
+      - name: Set up the supported Python floor
+        # v7; immutable reviewed pin.
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.11'
+
       - name: Run the trusted command contract against the approved SHA
         shell: bash
         run: >-
           node atlasmind-controller/.atlasmind/local-ci-runner.mjs
           atlasmind-controller/.atlasmind/local-ci.json
           candidate
+          ${{ inputs.pr_number }}
+          ${{ inputs.pr_sha }}
+          ${{ inputs.head_repo }}

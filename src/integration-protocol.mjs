@@ -4,6 +4,8 @@ import {
   SKILLS,
 } from "./config.mjs";
 import { validateTree } from "./advancement.mjs";
+import { validateTurnConfig } from "./turn-economy.mjs";
+import { validateTalentNodeRules } from "./talent-rules.mjs";
 
 export const INTEGRATION_FORMAT = "star-wars-ffg-interchange";
 export const INTEGRATION_VERSION = 2;
@@ -24,6 +26,7 @@ const ACTOR_TYPES = Object.freeze([
   "group",
 ]);
 const ACTOR_SYSTEM_FIELDS = new Set([
+  "turnEconomy",
   "theme",
   "line",
   "phase",
@@ -54,6 +57,8 @@ const ACTOR_SYSTEM_FIELDS = new Set([
   "incomplete",
 ]);
 const ITEM_SYSTEM_FIELDS = new Set([
+  "effects",
+  "abilities",
   "description",
   "quantity",
   "price",
@@ -88,6 +93,7 @@ const ITEM_SYSTEM_FIELDS = new Set([
   "incomplete",
 ]);
 const VEHICLE_SYSTEM_FIELDS = new Set([
+  "turnEconomy",
   "theme",
   "hullTrauma",
   "systemStrain",
@@ -103,6 +109,7 @@ const VEHICLE_SYSTEM_FIELDS = new Set([
   "hyperdrive",
   "cargo",
   "notes",
+  "footprint",
   "source",
   "incomplete",
   "metadata",
@@ -170,6 +177,12 @@ function stringAt(value, path, { min = 0, max = 1000, pattern } = {}) {
 function integerAt(value, path, min, max) {
   if (!Number.isInteger(value) || value < min || value > max)
     fail(path, `must be an integer from ${min} to ${max}`);
+  return value;
+}
+
+function numberAt(value, path, min, max) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max)
+    fail(path, `must be a number from ${min} to ${max}`);
   return value;
 }
 
@@ -270,6 +283,7 @@ function validateStoryScore(value, path, fields) {
 
 function validateCharacterSystem(system, path, { skillRankMax = 5 } = {}) {
   allowedFields(system, ACTOR_SYSTEM_FIELDS, path);
+  if (system.turnEconomy !== undefined) validateTurnConfig(objectAt(system.turnEconomy,`${path}.turnEconomy`));
   if (system.theme !== undefined && !["auto", "frontier", "rebellion", "mystic"].includes(system.theme))
     fail(`${path}.theme`, "unsupported theme");
   if (system.line !== undefined && !["edge", "age", "force"].includes(system.line))
@@ -398,6 +412,7 @@ function validateTheme(value, path) {
 
 function validateVehicleSystem(system, path) {
   allowedFields(system, VEHICLE_SYSTEM_FIELDS, path);
+  if (system.turnEconomy !== undefined) validateTurnConfig(objectAt(system.turnEconomy,`${path}.turnEconomy`));
   validateTheme(system.theme, `${path}.theme`);
   validateResource(system.hullTrauma, `${path}.hullTrauma`, 100000);
   validateResource(system.systemStrain, `${path}.systemStrain`, 100000);
@@ -415,6 +430,37 @@ function validateVehicleSystem(system, path) {
     );
     for (const [key, value] of Object.entries(system.shields))
       integerAt(value, `${path}.shields.${key}`, 0, 4);
+  }
+  if (system.footprint !== undefined) {
+    const footprintPath = `${path}.footprint`;
+    allowedFields(
+      system.footprint,
+      new Set(["mode", "hull", "length", "width"]),
+      footprintPath,
+    );
+    if (
+      system.footprint.mode !== undefined &&
+      !["automatic", "manual"].includes(system.footprint.mode)
+    )
+      fail(`${footprintPath}.mode`, "unsupported sizing mode");
+    if (
+      system.footprint.hull !== undefined &&
+      ![
+        "auto",
+        "fighter",
+        "freighter",
+        "shuttle",
+        "capital",
+        "tank",
+        "walker",
+        "speeder",
+        "station",
+      ].includes(system.footprint.hull)
+    )
+      fail(`${footprintPath}.hull`, "unsupported hull type");
+    for (const key of ["length", "width"])
+      if (system.footprint[key] !== undefined)
+        numberAt(system.footprint[key], `${footprintPath}.${key}`, 0, 100000);
   }
   for (const key of [
     "model",
@@ -493,6 +539,36 @@ function validateGroupSystem(system, path) {
 
 function validateItemSystem(system, path) {
   allowedFields(system, ITEM_SYSTEM_FIELDS, path);
+  if (system.effects !== undefined) {
+    if (!Array.isArray(system.effects)) fail(`${path}.effects`,"expected an array");
+    validateTalentNodeRules({effects:system.effects});
+  }
+  if (system.abilities !== undefined) {
+    if (!Array.isArray(system.abilities) || system.abilities.length > 100)
+      fail(`${path}.abilities`, "must contain no more than 100 abilities");
+    system.abilities.forEach((ability, index) => {
+      const abilityPath = `${path}.abilities[${index}]`;
+      allowedFields(ability, new Set([
+        "name", "key", "summary", "description", "activation", "source",
+        "effects", "rank", "ranked",
+      ]), abilityPath);
+      stringAt(ability.name, `${abilityPath}.name`, { min: 1, max: 160 });
+      for (const key of ["key", "summary", "description", "activation"])
+        if (ability[key] !== undefined)
+          stringAt(ability[key], `${abilityPath}.${key}`, { max: key === "summary" ? 4000 : 50000 });
+      if (ability.rank !== undefined) integerAt(ability.rank, `${abilityPath}.rank`, 1, 10);
+      if (ability.ranked !== undefined) booleanAt(ability.ranked, `${abilityPath}.ranked`);
+      validateSourceReference(ability.source, `${abilityPath}.source`);
+      if (ability.effects !== undefined) {
+        if (!Array.isArray(ability.effects)) fail(`${abilityPath}.effects`, "expected an array");
+        validateTalentNodeRules({
+          summary: ability.summary,
+          activation: ability.activation,
+          effects: ability.effects,
+        });
+      }
+    });
+  }
   if (system.description !== undefined)
     stringAt(system.description, `${path}.description`, { max: 50000 });
   validateSourceReference(system.source, `${path}.source`);

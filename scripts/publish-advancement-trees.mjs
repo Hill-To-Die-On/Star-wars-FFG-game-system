@@ -5,6 +5,7 @@ import {
   ADVANCEMENT_DATA_FORMAT,
   validateAdvancementData,
 } from "../src/advancement-data.mjs";
+import { talentActivation } from "../src/talent-activation.mjs";
 
 const normalize = (value) =>
   String(value ?? "")
@@ -49,10 +50,58 @@ const talentNode = (value) => ({
   col: value.col,
   ...(Number.isSafeInteger(value.span) ? { span: value.span } : {}),
   entry: value.entry === true,
-  ...(value.activation ? { activation: String(value.activation) } : {}),
+  ...(talentActivation(value.name, value.activation) ? { activation: talentActivation(value.name, value.activation) } : {}),
   effects: Array.from(value.effects ?? [], effect),
 });
 const verificationKey = (kind, name) => `${kind}:${normalize(name)}`;
+const chartShape = (tree) => JSON.stringify({
+  nodes: Array.from(tree.nodes ?? [], (node) => [
+    String(node.id), String(node.name), node.cost, node.row, node.col,
+    node.span ?? 1, node.entry === true,
+  ]).sort((a, b) => a[0].localeCompare(b[0])),
+  edges: Array.from(tree.edges ?? [], (edge) => [...edge].sort().join(":"))
+    .sort(),
+});
+
+function correctedChart(privateTree, checked, structural, itemName) {
+  const nodes = structural ? Array.from(privateTree.nodes, talentNode) : [];
+  const edges = structural
+    ? Array.from(privateTree.edges ?? [], (edge) => [String(edge[0]), String(edge[1])])
+    : [];
+  const corrections = checked?.nodeCorrections ?? [];
+  const additions = checked?.edgeAdds ?? [];
+  if ((!Array.isArray(corrections) || !Array.isArray(additions)) ||
+      ((corrections.length || additions.length) && (!structural || checked.level !== "full-chart")))
+    throw new Error(`${itemName} needs a fully checked chart before correction.`);
+  const ids = new Set(nodes.map((node) => node.id));
+  const correctedIds = new Set();
+  for (const correction of corrections) {
+    const node = nodes.find((value) => value.id === correction.id);
+    const keys = Object.keys(correction).sort().join(",");
+    if (!node || correctedIds.has(correction.id) ||
+        !["id,printedCost,sourceCost", "id,printedName,sourceName"].includes(keys))
+      throw new Error(`Invalid ${itemName} node correction.`);
+    correctedIds.add(correction.id);
+    const field = "printedCost" in correction ? "cost" : "name";
+    const before = correction[field === "cost" ? "sourceCost" : "sourceName"];
+    const after = correction[field === "cost" ? "printedCost" : "printedName"];
+    if ((field === "cost" && (!Number.isInteger(before) || !Number.isInteger(after))) ||
+        (field === "name" && (![before, after].every((value) => typeof value === "string" && value.trim() && value.length <= 80))) ||
+        node[field] !== before && node[field] !== after)
+      throw new Error(`${itemName} node correction does not match the source tree.`);
+    node[field] = after;
+  }
+  for (const pair of additions) {
+    if (!Array.isArray(pair) || pair.length !== 2 || pair[0] === pair[1] ||
+        !pair.every((id) => ids.has(id)))
+      throw new Error(`Invalid ${itemName} edge correction.`);
+    if (!edges.some((edge) => edge[0] === pair[0] && edge[1] === pair[1] ||
+        edge[0] === pair[1] && edge[1] === pair[0]))
+      edges.push([...pair].sort());
+  }
+  edges.sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+  return { nodes, edges };
+}
 
 export function publishAdvancementTrees(catalog, verification) {
   if (
@@ -79,8 +128,6 @@ export function publishAdvancementTrees(catalog, verification) {
       .map((item) => {
         const itemSource = source(item.system?.source),
           privateTree = item.system?.tree ?? {},
-          structural =
-            privateTree.verified === true && privateTree.nodes?.length > 0,
           checked = checks.get(verificationKey(item.type, item.name));
         if (
           checked &&
@@ -88,22 +135,34 @@ export function publishAdvancementTrees(catalog, verification) {
             String(checked.referencePage) !== itemSource.page)
         )
           throw new Error(`Source verification does not match ${item.name}.`);
+        const standalone = checked?.chart;
+        const privateStructural = privateTree.verified === true && privateTree.nodes?.length > 0;
+        if (standalone &&
+            (item.type !== "signatureAbility" || checked.level !== "full-chart" ||
+             !Array.isArray(standalone.nodes) || standalone.nodes.length !== 9 ||
+             !Array.isArray(standalone.edges) ||
+             !Array.isArray(standalone.matchingNodes) ||
+             standalone.matchingNodes.length !== 4 ||
+             !standalone.matchingNodes.every((value) => typeof value === "boolean") ||
+             !standalone.matchingNodes.some(Boolean) ||
+             privateStructural &&
+               (chartShape(privateTree) !== chartShape(standalone) ||
+                JSON.stringify(item.system?.matchingNodes) !== JSON.stringify(standalone.matchingNodes))))
+          throw new Error(`Invalid checked signature chart for ${item.name}.`);
+        const sourceTree = standalone && !privateStructural
+            ? { nodes: standalone.nodes, edges: standalone.edges }
+            : privateTree,
+          structural = Boolean(standalone) || privateStructural;
         const sourceLevel =
             checked?.level === "full-chart"
               ? "full-chart"
               : checked?.level === "connectors"
                 ? "connectors-only"
                 : "pending",
+          chart = correctedChart(sourceTree, checked, structural, item.name),
           tree = {
-            nodes: structural
-              ? Array.from(privateTree.nodes, talentNode)
-              : [],
-            edges: structural
-              ? Array.from(privateTree.edges ?? [], (edge) => [
-                  String(edge[0]),
-                  String(edge[1]),
-                ])
-              : [],
+            nodes: chart.nodes,
+            edges: chart.edges,
             verified: structural,
             verification: {
               structure: structural ? "validated" : "missing",
@@ -145,7 +204,7 @@ export function publishAdvancementTrees(catalog, verification) {
               ),
               abilityCategory: String(item.system?.abilityCategory ?? ""),
               matchingNodes: Array.from(
-                item.system?.matchingNodes ?? [],
+                standalone?.matchingNodes ?? item.system?.matchingNodes ?? [],
                 Boolean,
               ),
             };

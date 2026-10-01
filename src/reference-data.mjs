@@ -43,6 +43,7 @@ export const ROW_NAMES = {
   vehicles: "Name",
   vehicle_attachments: "Attachment",
   vehicle_components: "Component",
+  vehicle_loadouts: "Name",
   vehicle_weapons: "Weapon",
   weapons: "Weapon",
 };

@@ -1,3 +1,4 @@
+import {transactionWorld} from './fixtures/document-transactions.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -19,33 +20,6 @@ function users(...entries) {
   const values = entries;
   values.get = (id) => values.find((entry) => entry.id === id);
   return values;
-}
-
-class SocketBus {
-  #listeners = new Map();
-  endpoint() {
-    return {
-      on: (channel, listener) => {
-        const listeners = this.#listeners.get(channel) ?? [];
-        listeners.push(listener);
-        this.#listeners.set(channel, listeners);
-      },
-      off: (channel, listener) => {
-        const listeners = this.#listeners.get(channel) ?? [];
-        this.#listeners.set(
-          channel,
-          listeners.filter((candidate) => candidate !== listener),
-        );
-      },
-      emit: (channel, message) => {
-        const copy = structuredClone(message);
-        queueMicrotask(() => {
-          for (const listener of this.#listeners.get(channel) ?? [])
-            listener(copy);
-        });
-      },
-    };
-  }
 }
 
 test("the Foundry system manifest enables its transaction socket", async () => {
@@ -112,13 +86,13 @@ test("two clients cannot both spend the same XP", async () => {
     connectedUsers = users(player, gm),
     authoritativeActor = actor(),
     playerActor = actor(),
-    bus = new SocketBus();
+    bus = transactionWorld(connectedUsers);
   authoritativeActor.xp = 10;
   const gmCoordinator = new XpTransactionCoordinator({
-      socket: bus.endpoint(),
+      transport: bus.client(gm).transport,
       currentUser: () => gm,
       users: () => connectedUsers,
-      getActor: (id) => (id === authoritativeActor.id ? authoritativeActor : null),
+      getActor: (id) => (id === authoritativeActor.uuid ? authoritativeActor : null),
       execute: async (target, operation, args) => {
         assert.equal(operation, "buySkill");
         if (target.xp < args.cost) throw new Error("Not enough available XP.");
@@ -131,7 +105,7 @@ test("two clients cannot both spend the same XP", async () => {
       })(),
     }),
     playerCoordinator = new XpTransactionCoordinator({
-      socket: bus.endpoint(),
+      transport: bus.client(player).transport,
       currentUser: () => player,
       users: () => connectedUsers,
       getActor: () => playerActor,
@@ -151,15 +125,15 @@ test("two clients cannot both spend the same XP", async () => {
       playerCoordinator.request(playerActor, "buySkill", { cost: 10 }),
     ]);
     assert.deepEqual(
-      attempts.map((attempt) => attempt.status),
+      attempts.map((attempt) => attempt.status).sort(),
       ["fulfilled", "rejected"],
     );
-    assert.equal(attempts[0].value.xp, 0);
-    assert.match(attempts[1].reason.message, /not enough available XP/i);
+    assert.equal(attempts.find(attempt => attempt.status === "fulfilled").value.xp, 0);
+    assert.match(attempts.find(attempt => attempt.status === "rejected").reason.message, /not enough available XP/i);
     assert.equal(authoritativeActor.xp, 0);
   } finally {
     playerCoordinator.stop();
-    gmCoordinator.stop();
+    gmCoordinator.stop();bus.stop();
   }
 });
 
@@ -173,9 +147,9 @@ test("coordinator rejects an XP request from a user without actor ownership", as
     },
     connectedUsers = users(stranger, gm),
     target = actor(),
-    bus = new SocketBus(),
+    bus = transactionWorld(connectedUsers),
     gmCoordinator = new XpTransactionCoordinator({
-      socket: bus.endpoint(),
+      transport: bus.client(gm).transport,
       currentUser: () => gm,
       users: () => connectedUsers,
       getActor: () => target,
@@ -183,7 +157,7 @@ test("coordinator rejects an XP request from a user without actor ownership", as
       randomId: () => "gm-request",
     }),
     strangerCoordinator = new XpTransactionCoordinator({
-      socket: bus.endpoint(),
+      transport: bus.client(gm).transport,
       currentUser: () => stranger,
       users: () => connectedUsers,
       getActor: () => target,
@@ -199,6 +173,6 @@ test("coordinator rejects an XP request from a user without actor ownership", as
     );
   } finally {
     strangerCoordinator.stop();
-    gmCoordinator.stop();
+    gmCoordinator.stop();bus.stop();
   }
 });

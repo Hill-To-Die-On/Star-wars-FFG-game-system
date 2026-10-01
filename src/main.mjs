@@ -1,4 +1,6 @@
-import { SYSTEM_ID, SYSTEM_PATH, THEMES, ITEM_TYPES } from "./config.mjs";
+import { registerSupportTools, supportApi } from "./support-foundry.mjs";
+import { SYSTEM_ID, THEMES, ITEM_TYPES } from "./config.mjs";
+import { registerTabletopWorkflows, tabletopApi } from "./tabletop-foundry.mjs";
 import {
   CharacterData,
   AdversaryData,
@@ -7,6 +9,7 @@ import {
   ItemData,
 } from "./models.mjs";
 import { GroupSheet, refreshGroupSheets } from "./group-sheet.mjs";
+import { openGroupRecord } from "./group-launcher.mjs";
 import { StarWarsActor, StarWarsItem } from "./documents.mjs";
 import {
   StarWarsActorSheet,
@@ -14,8 +17,12 @@ import {
   importDialog,
   importSwaDialog,
   campaignDialog,
+  checkDialog,
 } from "./sheets.mjs";
+import { registerVehicleCrew, crewApi } from "./vehicle-crew-foundry.mjs";
 import { registerDice, registerDiceSoNice, rollPool } from "./dice/foundry.mjs";
+import { registerTurnEconomy, readTurnBudget, performTurnCommand, rotateToken } from "./turn-economy-foundry.mjs";
+import { registerAltitudeShadows } from "./altitude-shadows-foundry.mjs";
 import {
   refreshCompactChatDice,
   registerCompactChatDice,
@@ -54,10 +61,52 @@ import {
   rangeOverlayApi,
   registerRangeOverlay,
 } from "./range-overlay/foundry.mjs";
+import {
+  registerActorArtwork,
+  resetVehicleTokenFootprint,
+} from "./actor-artwork-foundry.mjs";
+import { actorIconDescriptor } from "./actor-icons.mjs";
+import {
+  vehicleFootprintMeters,
+  vehicleTokenDimensions,
+} from "./vehicle-footprints.mjs";
 import { configureXpTransactions } from "./xp-transactions.mjs";
+import { selectTransactionAuthority } from "./document-transactions.mjs";
+import { registerMinionGroups } from "./minion-groups-foundry.mjs";
+import { registerDorDamageEffects } from "./dor-damage-vfx.mjs";
+import { registerDestinyHud, refreshDestinyHud } from "./destiny-hud.mjs";
+import { registerSettingsGroups } from "./settings-groups.mjs";
+import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
+import { renderAboutContent } from "./about.mjs";
+import { openDataReview } from "./data-review.mjs";
+import { localize as t, registerUiLocalisation } from "./localization.mjs";
+class AboutMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    foundry.applications.api.DialogV2.wait({
+      classes: ["star-wars"],
+      window: { title: t("SWFFG.System.About", "About Star Wars FFG") },
+      position: { width: 420 },
+      content: renderAboutContent({
+        systemTitle: game.system?.title,
+        systemId: game.system?.id,
+        systemVersion: game.system?.version,
+        foundryVersion: game.version,
+      }),
+      buttons: [{ action: "close", label: t("SWFFG.Common.Close", "Close") }],
+      rejectClose: false,
+    }).catch((error) => ui.notifications.error(error.message));
+    return this;
+  }
+}
 class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openReferenceBrowser();
+    return this;
+  }
+}
+class DataReviewMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    openDataReview();
     return this;
   }
 }
@@ -70,6 +119,12 @@ class OwnedBooksMenu extends foundry.applications.api.ApplicationV2 {
 class LibraryMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     importDialog();
+    return this;
+  }
+}
+class TransactionAuthorityMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    selectTransactionAuthority().catch((error) => ui.notifications.error(error.message));
     return this;
   }
 }
@@ -125,9 +180,10 @@ export async function openConsole() {
   const { DialogV2 } = foundry.applications.api;
   const destiny = game.settings.get(SYSTEM_ID, "destiny");
   await DialogV2.wait({
-    window: { title: "Star Wars FFG · Session console" },
+    classes: ["star-wars"],
+    window: { title: t("SWFFG.UI.SessionConsole", "Star Wars FFG · Session console") },
     position: { width: 540 },
-    content: `<div class="sf-dialog"><p>Shared Destiny: <strong>${destiny.light} light · ${destiny.dark} dark</strong></p><div class="sf-form-grid">${Object.entries(
+    content: `<div class="sf-dialog"><p>${t("SWFFG.UI.SharedDestinyLabel", "Shared Destiny:")} <strong>${destiny.light} light · ${destiny.dark} dark</strong></p><div class="sf-form-grid">${Object.entries(
       DICE,
     )
       .map(
@@ -136,11 +192,11 @@ export async function openConsole() {
       )
       .join(
         "",
-      )}</div><p>These controls persist world state. The GM manages Destiny flips for the table.</p></div>`,
+      )}</div><p>${t("SWFFG.UI.SessionConsoleHelp", "These controls persist world state. The GM manages Destiny flips for the table.")}</p></div>`,
     buttons: [
       {
         action: "roll",
-        label: "Roll pool",
+        label: t("SWFFG.UI.RollPool", "Roll pool"),
         callback: async (_e, b) => {
           try {
             await rollPool(Object.fromEntries(new FormData(b.form)));
@@ -153,15 +209,15 @@ export async function openConsole() {
         ? [
             {
               action: "light",
-              label: "Use light",
+              label: t("SWFFG.UI.UseLight", "Use light"),
               callback: () => flipDestiny("light"),
             },
             {
               action: "dark",
-              label: "Use dark",
+              label: t("SWFFG.UI.UseDark", "Use dark"),
               callback: () => flipDestiny("dark"),
             },
-            { action: "reset", label: "Seed Destiny", callback: seedDestiny },
+            { action: "reset", label: t("SWFFG.UI.SeedDestiny", "Seed Destiny"), callback: seedDestiny },
           ]
         : []),
     ],
@@ -236,6 +292,7 @@ Hooks.once("init", () => {
     label: "Star Wars FFG group sheet",
   });
   registerDice();
+  registerHomebrewIdentities(refreshThemedSheets);
   game.settings.register(SYSTEM_ID, "campaign", {
     scope: "world",
     config: false,
@@ -248,8 +305,8 @@ Hooks.once("init", () => {
     },
   });
   game.settings.register(SYSTEM_ID, "sheetTheme", {
-    name: "Default sheet theme",
-    hint: "Automatic matches each character's creation rules and uses the campaign's first enabled ruleset for vehicles and groups. A sheet's own theme control can override this setting.",
+    name: t("SWFFG.UI.DefaultSheetTheme", "Default sheet theme"),
+    hint: t("SWFFG.UI.DefaultSheetThemeHint", "Automatic matches each character's creation rules and uses the campaign's first enabled ruleset for vehicles and groups. A sheet's own theme control can override this setting."),
     scope: "client",
     config: true,
     type: String,
@@ -263,8 +320,8 @@ Hooks.once("init", () => {
     onChange: refreshThemedSheets,
   });
   game.settings.register(SYSTEM_ID, "interfaceTheme", {
-    name: "Foundry interface theme",
-    hint: "Style the space backdrop, sidebar, chat, combat tracker, journals, windows, scene controls, player list and hotbar. Automatic follows the first enabled campaign ruleset; choose a scheme here to override it.",
+    name: t("SWFFG.UI.FoundryInterfaceTheme", "Foundry interface theme"),
+    hint: t("SWFFG.UI.FoundryInterfaceThemeHint", "Style the space backdrop, sidebar, chat, combat tracker, journals, windows, scene controls, player list and hotbar. Automatic follows the first enabled campaign ruleset; choose a scheme here to override it."),
     scope: "client",
     config: true,
     type: String,
@@ -289,8 +346,9 @@ Hooks.once("init", () => {
     config: false,
     type: Object,
     default: { light: 0, dark: 0 },
-    onChange: refreshGroupSheets,
+    onChange: value => { refreshGroupSheets(); refreshDestinyHud(value); },
   });
+  registerDestinyHud(openConsole);
   game.settings.register(SYSTEM_ID, "gmSourceKeys", {
     scope: "client",
     config: false,
@@ -298,8 +356,8 @@ Hooks.once("init", () => {
     default: {},
   });
   game.settings.register(SYSTEM_ID, "compactChatDice", {
-    name: "Compact dice tray by chat",
-    hint: "Show a minimal seven-die pool beside the chat bar. It uses the active chat visibility button for public, GM, blind or self rolls.",
+    name: t("SWFFG.UI.CompactDiceTray", "Compact dice tray by chat"),
+    hint: t("SWFFG.UI.CompactDiceTrayHint", "Show a minimal seven-die pool beside the chat bar. It uses the active chat visibility button for public, GM, blind or self rolls."),
     scope: "client",
     config: true,
     type: Boolean,
@@ -308,74 +366,107 @@ Hooks.once("init", () => {
   });
   registerCompactChatDice();
   registerRangeOverlay();
+  registerActorArtwork();
+  registerAltitudeShadows();
+  registerTurnEconomy();
+  registerVehicleCrew({openCheck:checkDialog});
+  registerMinionGroups();
+  registerDorDamageEffects();
+  registerSettingsGroups();
+  registerTabletopWorkflows();
+  registerSupportTools();
+  game.settings.registerMenu(SYSTEM_ID, "aboutMenu", {
+    name: t("SWFFG.Settings.About.Name", "About Star Wars FFG"),
+    label: t("SWFFG.Settings.About.Label", "About"),
+    hint: t("SWFFG.Settings.About.Hint", "Show the system and Foundry versions loaded in this game session."),
+    icon: "fas fa-circle-info",
+    type: AboutMenu,
+    restricted: false,
+  });
+  game.settings.registerMenu(SYSTEM_ID, "transactionAuthorityMenu", {
+    name: t("SWFFG.UI.TransactionAuthority", "Transaction authority"),
+    label: t("SWFFG.UI.UseThisGmTab", "Use this GM tab"),
+    hint: t("SWFFG.UI.TransactionAuthorityHint", "Select the single GM tab that processes XP, turn, crew and tabletop transactions."),
+    icon: "fas fa-shield-halved",
+    type: TransactionAuthorityMenu,
+    restricted: true,
+  });
   game.settings.registerMenu(SYSTEM_ID, "gmSourceKeyMenu", {
-    name: "GM source key",
-    label: "Backup or restore key",
-    hint: "Keep a private backup to unlock encrypted source notes on another GM browser.",
+    name: t("SWFFG.UI.GmSourceKey", "GM source key"),
+    label: t("SWFFG.UI.BackupRestoreKey", "Backup or restore key"),
+    hint: t("SWFFG.UI.GmSourceKeyHint", "Keep a private backup to unlock encrypted source notes on another GM browser."),
     icon: "fas fa-key",
     type: GMSourceKeyMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "gmSourceLibraryMenu", {
-    name: "GM source library",
-    label: "Search private sources",
-    hint: "Search imported descriptions, abilities and rules in this GM browser.",
+    name: t("SWFFG.UI.GmSourceLibrary", "GM source library"),
+    label: t("SWFFG.UI.SearchPrivateSources", "Search private sources"),
+    hint: t("SWFFG.UI.GmSourceLibraryHint", "Search imported descriptions, abilities and rules in this GM browser."),
     icon: "fas fa-book-open",
     type: GMSourceLibraryMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "campaignMenu", {
-    name: "Campaign rules & adventure state",
-    label: "Choose campaign rules",
-    hint: "Enable one or more rule lines, combine their story mechanics, and lock completed character origins when play begins.",
+    name: t("SWFFG.UI.CampaignRulesAdventure", "Campaign rules & adventure state"),
+    label: t("SWFFG.UI.ChooseCampaignRules", "Choose campaign rules"),
+    hint: t("SWFFG.UI.CampaignRulesHint", "Enable one or more rule lines, combine their story mechanics, and lock completed character origins when play begins."),
     icon: "fas fa-book",
     type: CampaignMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "referenceMenu", {
-    name: "Reference catalogue",
-    label: "Search database",
-    hint: "Find names, statistics, notes and book pages in the bundled database.",
+    name: t("SWFFG.Settings.Reference.Name", "Reference catalogue"),
+    label: t("SWFFG.Settings.Reference.Label", "Search database"),
+    hint: t("SWFFG.Settings.Reference.Hint", "Find names, statistics, notes and book pages in the bundled database."),
     icon: "fas fa-magnifying-glass",
     type: ReferenceMenu,
     restricted: false,
   });
+  game.settings.registerMenu(SYSTEM_ID, "dataReviewMenu", {
+    name: t("SWFFG.Settings.DataReview.Name", "Rule data review"),
+    label: t("SWFFG.Settings.DataReview.Label", "Review missing data"),
+    hint: t("SWFFG.Settings.DataReview.Hint", "Edit and validate missing source references, paraphrases and declarative talent or equipment rules."),
+    icon: "fas fa-clipboard-check",
+    type: DataReviewMenu,
+    restricted: true,
+  });
   game.settings.registerMenu(SYSTEM_ID, "ownedBooksMenu", {
-    name: "Owned books",
-    label: "Choose available books",
-    hint: "Apply one reference filter for the GM and players.",
+    name: t("SWFFG.Settings.OwnedBooks.Name", "Owned books"),
+    label: t("SWFFG.Settings.OwnedBooks.Label", "Choose available books"),
+    hint: t("SWFFG.Settings.OwnedBooks.Hint", "Apply one reference filter for the GM and players."),
     icon: "fas fa-book-open",
     type: OwnedBooksMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "libraryMenu", {
-    name: "Private library",
-    label: "Import database",
-    hint: "Populate world compendiums from a local Star Wars FFG library JSON.",
+    name: t("SWFFG.UI.PrivateLibrary", "Private library"),
+    label: t("SWFFG.UI.ImportDatabase", "Import database"),
+    hint: t("SWFFG.UI.PrivateLibraryHint", "Populate world compendiums from a local Star Wars FFG library JSON."),
     icon: "fas fa-file-import",
     type: LibraryMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "consoleMenu", {
-    name: "Session console",
-    label: "Dice & Destiny",
-    hint: "Roll custom dice and manage the shared Destiny pool.",
+    name: t("SWFFG.Settings.Console.Name", "Session console"),
+    label: t("SWFFG.Settings.Console.Label", "Dice & Destiny"),
+    hint: t("SWFFG.Settings.Console.Hint", "Roll custom dice and manage the shared Destiny pool."),
     icon: "fas fa-dice",
     type: ConsoleMenu,
     restricted: false,
   });
   game.settings.registerMenu(SYSTEM_ID, "integrationMenu", {
-    name: "External tools & community rules",
-    label: "Import character or rules",
-    hint: "Review a versioned interchange package from a character builder or community-rules site.",
+    name: t("SWFFG.UI.ExternalToolsRules", "External tools & community rules"),
+    label: t("SWFFG.UI.ImportCharacterRules", "Import character or rules"),
+    hint: t("SWFFG.UI.ExternalToolsHint", "Review a versioned interchange package from a character builder or community-rules site."),
     icon: "fas fa-plug",
     type: IntegrationMenu,
     restricted: false,
   });
   game.settings.registerMenu(SYSTEM_ID, "adversariesMenu", {
-    name: "SW Adversaries",
-    label: "Import adversaries",
-    hint: "Read a local swa.stoogoff.com JSON export into this world's actor compendium.",
+    name: t("SWFFG.UI.SwAdversaries", "SW Adversaries"),
+    label: t("SWFFG.UI.ImportAdversaries", "Import adversaries"),
+    hint: t("SWFFG.UI.ImportAdversariesHint", "Read a local swa.stoogoff.com JSON export into this world's actor compendium."),
     icon: "fas fa-file-import",
     type: AdversariesMenu,
     restricted: true,
@@ -386,6 +477,7 @@ Hooks.once("init", () => {
     actorContext,
     directorOfRealms: directorAdapter,
     openConsole,
+    openGroupRecord,
     campaignDialog,
     importDialog,
     importSwaDialog,
@@ -399,6 +491,16 @@ Hooks.once("init", () => {
     searchGMSourceNotes,
     integration: integrationApi,
     range: rangeOverlayApi,
+    crew: crewApi,
+    tabletop: tabletopApi,
+    support: supportApi,
+    turns: Object.freeze({ read:readTurnBudget, perform:performTurnCommand, rotateToken }),
+    actorIcons: Object.freeze({
+      describe: actorIconDescriptor,
+      vehicleFootprint: vehicleFootprintMeters,
+      vehicleTokenDimensions,
+      resetVehicleTokenFootprint,
+    }),
   });
 });
 Hooks.once("diceSoNiceReady", (dice3d) =>
@@ -406,20 +508,6 @@ Hooks.once("diceSoNiceReady", (dice3d) =>
     ui.notifications.error(`Star Wars FFG dice: ${e.message}`),
   ),
 );
-Hooks.on("preCreateActor", (actor, data) => {
-  const vehicle = data.type === "vehicle";
-  const group = data.type === "group";
-  actor.updateSource({
-    img:
-      data.img ??
-      `${SYSTEM_PATH}/assets/${vehicle ? "vehicle" : "character"}.svg`,
-    prototypeToken: {
-      actorLink: group || data.type === "character",
-      bar1: { attribute: group ? null : vehicle ? "hullTrauma" : "wounds" },
-      bar2: { attribute: group ? null : vehicle ? "systemStrain" : "strain" },
-    },
-  });
-});
 Hooks.on("renderActorDirectory", (_app, html) => {
   if (html.querySelector(".sf-launcher")) return;
   const button = document.createElement("button");
@@ -428,18 +516,31 @@ Hooks.on("renderActorDirectory", (_app, html) => {
   button.textContent = "Star Wars FFG · Dice & Destiny";
   button.addEventListener("click", openConsole);
   html.querySelector(".directory-footer")?.append(button);
+  const groupRecord = document.createElement("button");
+  groupRecord.type = "button";
+  groupRecord.textContent = "Star Wars FFG · Open Group Record";
+  groupRecord.addEventListener("click", () => openGroupRecord().catch(error => ui.notifications.error(error.message)));
+  html.querySelector(".directory-footer")?.append(groupRecord);
   const references = document.createElement("button");
   references.type = "button";
   references.textContent = "Star Wars FFG · Reference catalogue";
   references.addEventListener("click", openReferenceBrowser);
   html.querySelector(".directory-footer")?.append(references);
+  if (game.user.isGM) {
+    const review = document.createElement("button");
+    review.type = "button";
+    review.textContent = "Star Wars FFG · Review rule data";
+    review.addEventListener("click", () => openDataReview());
+    html.querySelector(".directory-footer")?.append(review);
+  }
 });
 Hooks.once("ready", () => {
+  registerUiLocalisation();
   configureXpTransactions({
     socket: game.socket,
     currentUser: () => game.user,
     users: () => game.users,
-    getActor: (id) => game.actors.get(id),
+    getActor: (uuid) => fromUuid(uuid),
     execute: (actor, operation, args) =>
       actor._executeXpTransaction(operation, args),
   });

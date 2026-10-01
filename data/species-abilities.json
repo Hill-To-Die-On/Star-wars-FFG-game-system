@@ -1,0 +1,351 @@
+{
+  "format": "star-wars-species-abilities",
+  "version": 1,
+  "entries": [
+    {
+      "species": "Human",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "55", "page": "55" },
+      "startingSkillRanks": [],
+      "nonCareerSkillRanks": 2,
+      "abilities": []
+    },
+    {
+      "species": "Clone",
+      "source": { "book": "Rise of the Separatists", "cataloguePage": "11", "page": "12" },
+      "startingSkillRanks": ["warfare", "resilience"],
+      "abilities": [
+        { "name": "Kamino Training", "summary": "Begin with one rank of Physical Training.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Geonosian",
+      "source": { "book": "Rise of the Separatists", "cataloguePage": "12", "page": "13" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "abilities": [
+        { "name": "Industrious", "summary": "When assisting, add one Boost die to the assisted check and recover one strain yourself.", "application": "manual" },
+        { "name": "Winged", "summary": "Can fly under the core flying rules.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Umbaran",
+      "source": { "book": "Rise of the Separatists", "cataloguePage": "15", "page": "16" },
+      "startingSkillRanks": ["deception"],
+      "abilities": [
+        { "name": "Entrancing Gaze", "summary": "Add one Boost die to Charm, Deception and Negotiation checks.", "application": "automatic", "checkBoostSkills": ["charm", "deception", "negotiation"] },
+        { "name": "Shadow Dweller", "summary": "Remove up to two darkness Setback dice on skill checks; add one Setback die to checks in bright natural light.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Dathomirian",
+      "source": { "book": "Collapse of the Republic", "cataloguePage": "12", "page": "13" },
+      "startingSkillRanks": ["coercion", "survival"],
+      "abilities": [
+        { "name": "Harsh Upbringing", "summary": "Begin with one rank of Outdoorsman.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Harch",
+      "source": { "book": "Collapse of the Republic", "cataloguePage": "14", "page": "15" },
+      "startingSkillRanks": ["perception"],
+      "abilities": [
+        { "name": "Additional Limbs", "summary": "Gain another free maneuver each turn, while keeping the two-maneuver limit.", "application": "automatic", "freeManeuvers": 1 },
+        { "name": "Venomous Fangs", "summary": "Damaging Brawl attacks gain Stun 3.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Karkarodon",
+      "source": { "book": "Collapse of the Republic", "cataloguePage": "15", "page": "16" },
+      "startingSkillRanks": ["athletics"],
+      "abilities": [
+        { "name": "Amphibious", "summary": "Can breathe underwater and ignores movement penalties from travelling through water.", "application": "manual" },
+        { "name": "Jaws", "summary": "Damaging Brawl attacks deal one more damage and have critical rating 3.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Balosar",
+      "source": { "book": "Age of Rebellion - Cyphers & Masks", "cataloguePage": "18", "page": "20" },
+      "startingSkillRanks": ["streetwise"],
+      "abilities": [
+        { "name": "Antennapalps", "summary": "Vigilance checks gain two automatic Advantage.", "application": "automatic", "checkAdvantageSkills": ["vigilance"], "automaticAdvantage": 2 }
+      ]
+    },
+    {
+      "species": "Kubaz",
+      "source": { "book": "Age of Rebellion - Cyphers & Masks", "cataloguePage": "20", "page": "21" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["stealth", "survival"],
+      "abilities": [
+        { "name": "Enhanced Vision", "summary": "Remove up to two Setback dice from Ranged combat or Perception checks caused by concealment or the environment, excluding defense.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Melittos",
+      "source": { "book": "Age of Rebellion - Cyphers & Masks", "cataloguePage": "21", "page": "23" },
+      "startingSkillRanks": ["perception"],
+      "abilities": [
+        { "name": "Sightless Vision", "summary": "Needs no light to perceive surroundings; combat and Perception checks ignore penalties from darkness and other vision-limiting conditions.", "application": "manual" },
+        { "name": "Reliant on Toxins", "summary": "Needs a supplied respirator away from home; ordinary planetary air counts as a rating 6 corrosive atmosphere.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Thisspiasian",
+      "source": { "book": "Force & Destiny - Unlimited Power", "cataloguePage": "18", "page": "20" },
+      "startingSkillRanks": ["discipline"],
+      "abilities": [
+        { "name": "Rest and Meditation", "summary": "Two hours of sleep heals all strain, at most once daily. Once per session, ten minutes of meditation heals twice the Discipline rank in strain.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Tholothian",
+      "source": { "book": "Force & Destiny - Unlimited Power", "cataloguePage": "20", "page": "22" },
+      "startingSkillRanks": ["xenology"],
+      "abilities": [
+        { "name": "Cultural Adopters", "summary": "Social checks with non-Tholothians gain one automatic Advantage.", "application": "manual" },
+        { "name": "Natural Roots", "summary": "Checks that heal strain restore one extra strain in a natural or wild setting.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Vurk",
+      "source": { "book": "Force & Destiny - Unlimited Power", "cataloguePage": "22", "page": "24" },
+      "startingSkillRanks": ["negotiation"],
+      "abilities": [
+        { "name": "Amphibious", "summary": "Can breathe underwater and ignores movement penalties while travelling through water.", "application": "manual" },
+        { "name": "Cold Blooded", "summary": "Add one Setback die to all checks made in a cold environment, alongside other penalties.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Arcona",
+      "source": { "book": "Edge of the Empire - Far Horizons", "cataloguePage": "19", "page": "20" },
+      "startingSkillRanks": ["vigilance"],
+      "abilities": [
+        { "name": "Arid Adaptation", "summary": "Remove one Setback die caused by hot or arid conditions on skill checks.", "application": "manual" },
+        { "name": "Mood Readers", "summary": "Charm and Negotiation checks gain one automatic Advantage.", "application": "automatic", "checkAdvantageSkills": ["charm", "negotiation"], "automaticAdvantage": 1 }
+      ]
+    },
+    {
+      "species": "Chevin",
+      "source": { "book": "Edge of the Empire - Far Horizons", "cataloguePage": "21", "page": "22" },
+      "startingSkillRanks": ["negotiation"],
+      "abilities": [
+        { "name": "Advanced Olfaction", "summary": "Add one Boost die to Perception checks that use smell.", "application": "manual" },
+        { "name": "Thick Hide", "summary": "Begin with one rank of Durable.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Anx",
+      "source": { "book": "Force & Destiny - Savage Spirits", "cataloguePage": "18", "page": "19" },
+      "startingSkillRanks": [],
+      "abilities": [
+        { "name": "Starting Talent", "summary": "Begin with one rank of Kill with Kindness.", "application": "manual" },
+        { "name": "Anatomical Knowledge", "summary": "Begin with one rank of Lethal Blows.", "application": "manual" },
+        { "name": "Mood Indicator", "summary": "If the head crest is uncovered, upgrade the difficulty of Deception checks once.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Quermian",
+      "source": { "book": "Force & Destiny - Savage Spirits", "cataloguePage": "21", "page": "23" },
+      "startingSkillRanks": ["perception"],
+      "abilities": [
+        { "name": "Additional Limbs", "summary": "Gain another free maneuver each turn, while keeping the two-maneuver limit.", "application": "automatic", "freeManeuvers": 1 },
+        { "name": "Kinetic Intuition", "summary": "Can communicate simple ideas through body language; the GM may add a Boost die to observed-intent checks when appropriate.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Aleena",
+      "source": { "book": "Force & Destiny - Nexus of Power", "cataloguePage": "98", "page": "98" },
+      "startingSkillRanks": ["coordination"],
+      "abilities": [
+        { "name": "Small Stature", "summary": "Count as silhouette 0.", "application": "manual" },
+        { "name": "Sturdy Frame", "summary": "Begin with one rank of Durable.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Bardotan",
+      "source": { "book": "Force & Destiny - Nexus of Power", "cataloguePage": "98", "page": "100" },
+      "startingSkillRanks": ["lore"],
+      "abilities": []
+    },
+    {
+      "species": "Chadra-Fan",
+      "source": { "book": "Age of Rebellion - Stay On Target", "cataloguePage": "20", "page": "22" },
+      "startingSkillRanks": ["mechanics"],
+      "abilities": [
+        { "name": "Small Stature", "summary": "Count as silhouette 0.", "application": "manual" },
+        { "name": "Acute Senses", "summary": "Remove up to two Setback dice from Perception checks.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Dressellian",
+      "source": { "book": "Age of Rebellion - Stay On Target", "cataloguePage": "22", "page": "23" },
+      "startingSkillRanks": ["survival"],
+      "abilities": [
+        { "name": "Primitive", "summary": "Upgrade the difficulty of checks involving technology unavailable on Dressel. The GM may waive this for familiar gear; spending 10 starting XP removes the penalty permanently.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Xexto",
+      "source": { "book": "Age of Rebellion - Stay On Target", "cataloguePage": "24", "page": "25" },
+      "startingSkillRanks": [],
+      "abilities": [
+        { "name": "Starting Talent", "summary": "Begin with one rank of Confidence.", "application": "manual" },
+        { "name": "Additional Limbs", "summary": "Gain another free maneuver each turn, while keeping the two-maneuver limit.", "application": "automatic", "freeManeuvers": 1 }
+      ]
+    },
+    {
+      "species": "Chagrian",
+      "source": { "book": "Age of Rebellion - Lead By Example", "cataloguePage": "19", "page": "20" },
+      "startingSkillRanks": ["resilience"],
+      "abilities": [
+        { "name": "Amphibious", "summary": "Can breathe underwater and travel through water without movement penalties.", "application": "manual" },
+        { "name": "Knowledge Specialization", "summary": "Begin with one rank of Knowledge Specialization.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Ishi Tib",
+      "source": { "book": "Age of Rebellion - Lead By Example", "cataloguePage": "21", "page": "22" },
+      "startingSkillRanks": ["discipline"],
+      "abilities": [
+        { "name": "Amphibious", "summary": "Can breathe underwater and travel through water without movement penalties.", "application": "manual" },
+        { "name": "Water Dependence", "summary": "If not doused in salt water within the last day, reduce wound threshold by two until doused.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Muun",
+      "source": { "book": "Force & Destiny - Endless Vigil", "cataloguePage": "20", "page": "21" },
+      "startingSkillRanks": ["education", "coreWorlds"],
+      "abilities": [
+        { "name": "Deep Pockets", "summary": "Begin play with 1,000 extra credits, unavailable during character creation.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Pantoran",
+      "source": { "book": "Force & Destiny - Endless Vigil", "cataloguePage": "22", "page": "23" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["cool", "negotiation"],
+      "abilities": [
+        { "name": "Tundra Dwellers", "summary": "Remove one Setback die from skill checks caused by cold conditions.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Elom",
+      "source": { "book": "Age of Rebellion - Forged In Battle", "cataloguePage": "18", "page": "21" },
+      "startingSkillRanks": ["resilience"],
+      "abilities": [
+        { "name": "Digging Claws", "summary": "Spend a maneuver to dig before moving, allowing that move through loose soil or similar ground; the GM may leave a narrow tunnel.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Elomin",
+      "source": { "book": "Age of Rebellion - Forged In Battle", "cataloguePage": "18", "page": "21" },
+      "startingSkillRanks": ["charm", "education"],
+      "abilities": []
+    },
+    {
+      "species": "Kyuzo",
+      "source": { "book": "Age of Rebellion - Forged In Battle", "cataloguePage": "22", "page": "24" },
+      "startingSkillRanks": ["coordination"],
+      "abilities": [
+        { "name": "Dense Musculature", "summary": "Once per round, spend a maneuver and suffer three strain to leap horizontally or vertically to a place within medium range.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Shistavanen",
+      "source": { "book": "Age of Rebellion - Forged In Battle", "cataloguePage": "24", "page": "26" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["brawl", "survival"],
+      "abilities": [
+        { "name": "Hunter's Instincts", "summary": "May roll Survival instead of Discipline or Cool for initiative.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Chiss",
+      "source": { "book": "Edge of The Empire - Enter The Unknown", "cataloguePage": "20", "page": "21" },
+      "startingSkillRanks": ["cool"],
+      "abilities": [
+        { "name": "Infravision", "summary": "Remove up to one Setback die caused by lighting conditions from checks.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Toydarian",
+      "source": { "book": "Edge of The Empire - Enter The Unknown", "cataloguePage": "22", "page": "23" },
+      "startingSkillRanks": [],
+      "abilities": [
+        { "name": "Small Stature", "summary": "Count as silhouette 0.", "application": "manual" },
+        { "name": "Hover", "summary": "Hover just above the ground, crossing difficult terrain without an extra maneuver; other movement works like walking.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Aqualish - Aquala",
+      "source": { "book": "Edge of The Empire - Dangerous Covenants", "cataloguePage": "19", "page": "20" },
+      "startingSkillRanks": ["brawl", "resilience"],
+      "abilities": [
+        { "name": "Underwater Breathing", "summary": "Can breathe underwater.", "application": "manual" },
+        { "name": "Aquala Adaptation", "summary": "Remove one Setback die caused by cold or wet conditions.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Aqualish - Quara",
+      "source": { "book": "Edge of The Empire - Dangerous Covenants", "cataloguePage": "19", "page": "20" },
+      "startingSkillRanks": ["brawl"],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["athletics", "coercion"],
+      "abilities": [
+        { "name": "Underwater Breathing", "summary": "Can breathe underwater.", "application": "manual" },
+        { "name": "Quara Tracking", "summary": "Remove one Setback die when tracking through a natural environment.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Aqualish - Ualaq",
+      "source": { "book": "Edge of The Empire - Dangerous Covenants", "cataloguePage": "19", "page": "20" },
+      "startingSkillRanks": ["brawl"],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["survival", "perception"],
+      "abilities": [
+        { "name": "Underwater Breathing", "summary": "Can breathe underwater.", "application": "manual" },
+        { "name": "Ualaq Vision", "summary": "Remove one darkness Setback die, but add one Setback die to Perception checks in bright light.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Klatooinian",
+      "source": { "book": "Edge of The Empire - Dangerous Covenants", "cataloguePage": "21", "page": "22" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["brawl", "rangedHeavy", "rangedLight"],
+      "abilities": [
+        { "name": "Additional Training", "summary": "Choose another starting rank in any non-career skill, observing the creation rank cap; apply this second choice with the GM.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Weequay",
+      "source": { "book": "Edge of The Empire - Dangerous Covenants", "cataloguePage": "22", "page": "23" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["resilience", "athletics"],
+      "abilities": [
+        { "name": "Pheromone Communication", "summary": "Can communicate silently with another Weequay within short range; other nearby species cannot detect this exchange.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Polis Massan",
+      "source": { "book": "Age of Rebellion - Stongholds of Resistance", "cataloguePage": "98", "page": "99" },
+      "startingSkillRanks": ["medicine"],
+      "abilities": [
+        { "name": "No Vocal Chords", "summary": "Ordinarily cannot speak aloud; spending 10 starting XP allows the character to have vocal chords.", "application": "manual" },
+        { "name": "Telepathy", "summary": "Can broadcast speech telepathically to all within short range, but can speak privately only to an engaged being.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Verpine",
+      "source": { "book": "Age of Rebellion - Stongholds of Resistance", "cataloguePage": "102", "page": "103" },
+      "startingSkillRanks": ["mechanics"],
+      "abilities": [
+        { "name": "Microvision", "summary": "Add one Boost die to Perception when closely examining an object.", "application": "manual" },
+        { "name": "Radio-wave Communication", "summary": "Communicate silently with other Verpine or tuned comlinks within 100 kilometres.", "application": "manual" }
+      ]
+    }
+  ]
+}

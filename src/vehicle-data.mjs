@@ -1,3 +1,5 @@
+import { PRINTED_PAGE, PRIVATE_PATH } from "./public-data.mjs";
+
 export const VEHICLE_DATA_FORMAT = "star-wars-ffg-vehicle-stats";
 
 const STAT_FIELDS = Object.freeze([
@@ -36,9 +38,7 @@ const safeText = (value, max, label) => {
     typeof value !== "string" ||
     !value.trim() ||
     value.length > max ||
-    /(?:[a-z]:[\\/]|(?:^|[\\/])\.\.(?:[\\/]|$)|\.(?:xml|pdf)\b)/i.test(
-      value,
-    )
+    PRIVATE_PATH.test(value)
   )
     throw new Error(`${label} is not a safe public value.`);
 };
@@ -49,7 +49,7 @@ const safeSource = (source, label) => {
   if (
     typeof source?.page !== "string" ||
     source.page.length > 20 ||
-    (source.page && !/^\d+(?:[-–]\d+)?$/.test(source.page))
+    (source.page && !PRINTED_PAGE.test(source.page))
   )
     throw new Error(`${label} needs a safe printed page reference.`);
 };
@@ -60,6 +60,7 @@ const integer = (value, min, max, label) => {
 };
 
 const validateStats = (stats, label) => {
+  if (!stats || typeof stats !== "object") throw new Error(`${label} are missing.`);
   assertKeys(
     stats,
     new Set([
@@ -134,9 +135,7 @@ const validateEvidence = (evidence, label) => {
           typeof value !== "string" ||
           !value.trim() ||
           value.length > max ||
-          /(?:[a-z]:[\\/]|(?:^|[\\/])\.\.(?:[\\/]|$)|\.(?:xml|pdf)\b)/i.test(
-            value,
-          ),
+          PRIVATE_PATH.test(value),
       )
     )
       throw new Error(`${label} has invalid ${key}.`);
@@ -185,8 +184,11 @@ export function validateVehicleData(data) {
   )
     throw new Error("Vehicle data needs the public copyright boundary.");
   const ids = new Set();
-  for (const record of [...data.records, ...data.unresolved]) {
-    const matched = Object.hasOwn(record, "stats");
+  // A record's list, not its fields, decides whether it must carry stats.
+  for (const [record, matched] of [
+    ...data.records.map((record) => [record, true]),
+    ...data.unresolved.map((record) => [record, false]),
+  ]) {
     assertKeys(
       record,
       new Set(

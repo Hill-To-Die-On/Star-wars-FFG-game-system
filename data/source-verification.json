@@ -1860,6 +1860,313 @@
         "costs",
         "connectors"
       ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Alchemist",
+      "book": "Force & Destiny - Unlimited Power",
+      "referencePage": "26",
+      "evidencePage": "30",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Magus",
+      "book": "Force & Destiny - Unlimited Power",
+      "referencePage": "28",
+      "evidencePage": "32",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Prophet",
+      "book": "Force & Destiny - Unlimited Power",
+      "referencePage": "30",
+      "evidencePage": "34",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Clone Officer",
+      "book": "Rise of the Seperatists",
+      "referencePage": "21",
+      "evidencePage": "22",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Clone Pilot",
+      "book": "Rise of the Seperatists",
+      "referencePage": "22",
+      "evidencePage": "23",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Clone Trooper",
+      "book": "Rise of the Seperatists",
+      "referencePage": "23",
+      "evidencePage": "24",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Knight",
+      "book": "Rise of the Seperatists",
+      "referencePage": "26",
+      "evidencePage": "27",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Padawan",
+      "book": "Rise of the Seperatists",
+      "referencePage": "27",
+      "evidencePage": "28",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"],
+      "nodeCorrections": [
+        { "id": "r4c2", "sourceCost": 25, "printedCost": 15 }
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Force Sensitive Outcast",
+      "book": "Rise of the Seperatists",
+      "referencePage": "29",
+      "evidencePage": "30",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Republic Navy Officer",
+      "book": "Rise of the Seperatists",
+      "referencePage": "30",
+      "evidencePage": "32",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Republic Representative",
+      "book": "Rise of the Seperatists",
+      "referencePage": "32",
+      "evidencePage": "34",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"],
+      "nodeCorrections": [
+        { "id": "r3c0", "sourceName": "Consider Our Optioins", "printedName": "Consider Our Options" }
+      ],
+      "edgeAdds": [
+        ["r2c0", "r3c0"],
+        ["r3c0", "r4c0"],
+        ["r3c3", "r4c3"]
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Scavenger",
+      "book": "Rise of the Seperatists",
+      "referencePage": "34",
+      "evidencePage": "36",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "ARC Trooper",
+      "book": "Collapse of the Republic",
+      "referencePage": "21",
+      "evidencePage": "22",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Clone Commander",
+      "book": "Collapse of the Republic",
+      "referencePage": "22",
+      "evidencePage": "23",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"],
+      "nodeCorrections": [
+        { "id": "r4c3", "sourceName": "Practiced Stragist", "printedName": "Practiced Strategist" }
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Clone Veteran",
+      "book": "Collapse of the Republic",
+      "referencePage": "23",
+      "evidencePage": "24",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "General",
+      "book": "Collapse of the Republic",
+      "referencePage": "26",
+      "evidencePage": "27",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"],
+      "nodeCorrections": [
+        { "id": "r3c3", "sourceName": "Stand Firm! {Improved}", "printedName": "Improved Stand Firm!" }
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Master",
+      "book": "Collapse of the Republic",
+      "referencePage": "27",
+      "evidencePage": "28",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"],
+      "nodeCorrections": [
+        { "id": "r1c1", "sourceName": "Nobody's Fool {Improved)", "printedName": "Improved Nobody's Fool" }
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Death Watch Warrior",
+      "book": "Collapse of the Republic",
+      "referencePage": "28",
+      "evidencePage": "30",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"],
+      "edgeAdds": [
+        ["r3c2", "r4c2"],
+        ["r3c3", "r4c3"]
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Nightsister",
+      "book": "Collapse of the Republic",
+      "referencePage": "30",
+      "evidencePage": "32",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "specialization",
+      "name": "Senator",
+      "book": "Collapse of the Republic",
+      "referencePage": "32",
+      "evidencePage": "34",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"],
+      "nodeCorrections": [
+        { "id": "r3c3", "sourceName": "Nobody's Fool {Improved)", "printedName": "Improved Nobody's Fool" }
+      ]
+    },
+    {
+      "kind": "specialization",
+      "name": "Separatist Commander",
+      "book": "Collapse of the Republic",
+      "referencePage": "34",
+      "evidencePage": "36",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors"]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Prophecy",
+      "book": "Force & Destiny - Unlimited Power",
+      "referencePage": "35",
+      "evidencePage": "40",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors", "attachment slots"],
+      "nodeCorrections": [
+        { "id": "r1c0", "sourceName": "PROPHECYSETBACK", "printedName": "Reduce Setback" },
+        { "id": "r1c1", "sourceName": "PROPHECYFLOW", "printedName": "Flow of the Universe" },
+        { "id": "r1c2", "sourceName": "PROPHECYSHAREV", "printedName": "Shared Revelation" },
+        { "id": "r1c3", "sourceName": "PROPHECYSETBACK", "printedName": "Reduce Setback" },
+        { "id": "r2c1", "sourceName": "PROPHECYREDIFF", "printedName": "Reduce Difficulty" }
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Destiny",
+      "book": "Force & Destiny - Unlimited Power",
+      "referencePage": "36",
+      "evidencePage": "41",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors", "attachment slots"],
+      "nodeCorrections": [
+        { "id": "r1c0", "sourceName": "UNMATCHEDDESTINCNUMB", "printedName": "Increase Number" },
+        { "id": "r1c1", "sourceName": "UNMATCHEDDESTDESTINY", "printedName": "Destiny" },
+        { "id": "r1c2", "sourceName": "UNMATCHEDDESTINCNUMB", "printedName": "Increase Number" },
+        { "id": "r1c3", "sourceName": "UNMATCHEDDESTSHADEST", "printedName": "Shared Destiny" },
+        { "id": "r2c0", "sourceName": "UNMATCHEDDESTFREQ", "printedName": "Frequency" },
+        { "id": "r2c1", "sourceName": "UNMATCHEDDESTINCNUMB", "printedName": "Increase Number" },
+        { "id": "r2c2", "sourceName": "UNMATCHEDDESTUNPOWER", "printedName": "Unleashed Power" },
+        { "id": "r2c3", "sourceName": "UNMATCHEDDESTFREQ", "printedName": "Frequency" }
+      ]
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Unmatched Teamwork",
+      "book": "Collapse of the Republic",
+      "referencePage": "46",
+      "evidencePage": "47",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors", "attachment slots"],
+      "chart": {
+        "matchingNodes": [true, false, true, false],
+        "nodes": [
+          { "id": "r0c0", "name": "Unmatched Teamwork Base Ability", "cost": 30, "row": 0, "col": 0, "span": 4, "entry": true },
+          { "id": "r1c0", "name": "Increase Effect", "cost": 10, "row": 1, "col": 0 },
+          { "id": "r1c1", "name": "Increase Effect", "cost": 10, "row": 1, "col": 1 },
+          { "id": "r1c2", "name": "Remove Setback", "cost": 10, "row": 1, "col": 2 },
+          { "id": "r1c3", "name": "Increase Range", "cost": 10, "row": 1, "col": 3 },
+          { "id": "r2c0", "name": "Increase Effect", "cost": 15, "row": 2, "col": 0 },
+          { "id": "r2c1", "name": "Destiny", "cost": 15, "row": 2, "col": 1 },
+          { "id": "r2c2", "name": "Increase Range", "cost": 15, "row": 2, "col": 2 },
+          { "id": "r2c3", "name": "Camaraderie", "cost": 15, "row": 2, "col": 3 }
+        ],
+        "edges": [
+          ["r0c0", "r1c1"], ["r0c0", "r1c3"], ["r1c0", "r1c1"],
+          ["r1c2", "r1c3"], ["r1c0", "r2c0"], ["r1c2", "r2c2"],
+          ["r1c3", "r2c3"], ["r2c1", "r2c2"], ["r2c2", "r2c3"]
+        ]
+      }
+    },
+    {
+      "kind": "signatureAbility",
+      "name": "Peerless Interception",
+      "book": "Collapse of the Republic",
+      "referencePage": "47",
+      "evidencePage": "48",
+      "level": "full-chart",
+      "checked": ["node names", "costs", "connectors", "attachment slots"],
+      "chart": {
+        "matchingNodes": [false, true, false, true],
+        "nodes": [
+          { "id": "r0c0", "name": "Peerless Interception Base Ability", "cost": 30, "row": 0, "col": 0, "span": 4, "entry": true },
+          { "id": "r1c0", "name": "Destiny", "cost": 10, "row": 1, "col": 0 },
+          { "id": "r1c1", "name": "Increase Duration", "cost": 10, "row": 1, "col": 1 },
+          { "id": "r1c2", "name": "Increase Duration", "cost": 10, "row": 1, "col": 2 },
+          { "id": "r1c3", "name": "Critical Counter", "cost": 10, "row": 1, "col": 3 },
+          { "id": "r2c0", "name": "Reduce Strain", "cost": 15, "row": 2, "col": 0 },
+          { "id": "r2c1", "name": "Activate Quality", "cost": 15, "row": 2, "col": 1 },
+          { "id": "r2c2", "name": "Effortless Counter", "cost": 15, "row": 2, "col": 2 },
+          { "id": "r2c3", "name": "Increase Frequency", "cost": 15, "row": 2, "col": 3 }
+        ],
+        "edges": [
+          ["r0c0", "r1c1"], ["r0c0", "r1c2"], ["r1c0", "r1c1"],
+          ["r1c1", "r2c1"], ["r1c2", "r1c3"], ["r1c3", "r2c3"],
+          ["r2c0", "r2c1"], ["r2c1", "r2c2"], ["r2c2", "r2c3"]
+        ]
+      }
     }
   ]
 }

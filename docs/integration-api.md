@@ -313,3 +313,16 @@ Hooks.once("starWarsFFGReady", (api) => {
 Successful imports call `Hooks.callAll("starWarsFFGIntegrationImported", result, package)`. Connector registration calls `starWarsFFGConnectorRegistered`. The existing `starWarsFFGReady` hook receives the complete system API.
 
 The protocol is client-mediated by design. It does not expose a public unauthenticated HTTP or socket write endpoint, store website credentials or let imported data execute JavaScript. See [ADR 0001](adr/0001-public-integration-api.md) for the decision record.
+
+## Read-only support and rules inventory
+
+```js
+game.system.api.support.capabilities();
+game.system.api.support.capabilities("cross-scale");
+game.system.api.support.actorCoverage(actor, { query: "", status: "" });
+game.system.api.support.diagnostics();
+```
+
+Unknown capability IDs return unsupported with a GM ruling required. Actor coverage requires observer access and applies the campaign book filter without changing learned mechanics. The diagnostic v1 format returns only versions, two known integration states and document counts; it is not an upload API.
+
+The existing DoR getCheckTalentRules result now includes cloned structured contributions (rule ID, activation status, source and effect). Check-pool results retain basePool separately from the adjusted pool. Structured-effect metadata identifies what code applies; it does not certify book interpretation or turn prose into executable rules.
