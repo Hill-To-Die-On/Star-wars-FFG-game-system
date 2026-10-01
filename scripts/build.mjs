@@ -30,6 +30,7 @@ for (const name of [
   "data/source-requests.json",
   "data/roll-tables.json",
   "data/species-abilities.json",
+  "data/talent-activations.json",
   "data/book-play-guidance.json",
 ])
   files[name] = new Uint8Array(await readFile(name));

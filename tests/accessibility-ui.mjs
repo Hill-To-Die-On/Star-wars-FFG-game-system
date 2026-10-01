@@ -17,8 +17,8 @@ const server=createServer(async(req,res)=>{
   try {
     if(req.url==='/')return res.end(`<!doctype html><html><head><meta charset="utf-8"><title>Star Wars accessibility fixture</title><link rel="stylesheet" href="/styles/star-wars.css"><style>body{margin:24px;background:#142a34}.star-wars{max-width:1000px;margin:auto}.sf-header{margin-bottom:24px}.sf-header-meta{display:grid;grid-template-columns:1fr 1fr;gap:24px}.sf-origin-menu{max-height:240px}button,input{font:inherit}#results,#crew{color:white}.sf-arc-picker-help{top:40px;left:40px}</style></head><body><main class="star-wars"><div class="sf-shell" data-theme="edge">${headings}</div><button id="after">Continue</button><button id="arcs">Choose arcs</button><div id="crew"></div><div id="results" role="status"></div><svg class="sf-minion-links"><path class="sf-minion-link" d="M10 10 L100 10"/></svg></main><script type="module" src="/tests/fixtures/accessibility-browser.mjs"></script></body></html>`);
     const pathname=decodeURIComponent(req.url.split('?')[0]),path=resolve(root,pathname.slice(1));
-    if(!path.startsWith(root+sep)||!/^\/(src|styles|assets|tests\/fixtures)\//.test(pathname))throw Error('Outside fixture');
-    res.setHeader('Content-Type',path.endsWith('.mjs')?'text/javascript':path.endsWith('.svg')?'image/svg+xml':path.endsWith('.woff2')?'font/woff2':'text/css');res.end(await readFile(path));
+    if(!path.startsWith(root+sep)||!/^\/(src|styles|assets|data|tests\/fixtures)\//.test(pathname))throw Error('Outside fixture');
+    res.setHeader('Content-Type',path.endsWith('.mjs')?'text/javascript':path.endsWith('.json')?'application/json':path.endsWith('.svg')?'image/svg+xml':path.endsWith('.woff2')?'font/woff2':'text/css');res.end(await readFile(path));
   } catch {res.statusCode=404;res.end('Missing fixture');}
 });
 await new Promise(done=>server.listen(0,'127.0.0.1',done));

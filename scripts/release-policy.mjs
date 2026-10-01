@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 const ROOT_FILES = new Set(["system.json", "README.md", "LICENSE", "CHANGELOG.md", "THIRD_PARTY_NOTICES.md"]);
-const DATA_FILES = new Set(["reference-database.json", "reference-library.json", "advancement-trees.json", "vehicle-stats.json", "vehicle-loadouts.json", "source-verification.json", "source-requests.json", "roll-tables.json", "species-abilities.json", "book-play-guidance.json"]);
+const DATA_FILES = new Set(["reference-database.json", "reference-library.json", "advancement-trees.json", "vehicle-stats.json", "vehicle-loadouts.json", "source-verification.json", "source-requests.json", "roll-tables.json", "species-abilities.json", "talent-activations.json", "book-play-guidance.json"]);
 const RUNTIME_DIRS = new Set(["src", "templates", "styles", "assets", "lang", "docs"]);
 const REPOSITORY = "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system";
 const decoder = new TextDecoder();

@@ -79,11 +79,12 @@ import { registerSettingsGroups } from "./settings-groups.mjs";
 import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
 import { renderAboutContent } from "./about.mjs";
 import { openDataReview } from "./data-review.mjs";
+import { localize as t } from "./localization.mjs";
 class AboutMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     foundry.applications.api.DialogV2.wait({
       classes: ["star-wars"],
-      window: { title: "About Star Wars FFG" },
+      window: { title: t("SWFFG.System.About", "About Star Wars FFG") },
       position: { width: 420 },
       content: renderAboutContent({
         systemTitle: game.system?.title,
@@ -91,7 +92,7 @@ class AboutMenu extends foundry.applications.api.ApplicationV2 {
         systemVersion: game.system?.version,
         foundryVersion: game.version,
       }),
-      buttons: [{ action: "close", label: "Close" }],
+      buttons: [{ action: "close", label: t("SWFFG.Common.Close", "Close") }],
       rejectClose: false,
     }).catch((error) => ui.notifications.error(error.message));
     return this;
@@ -375,9 +376,9 @@ Hooks.once("init", () => {
   registerTabletopWorkflows();
   registerSupportTools();
   game.settings.registerMenu(SYSTEM_ID, "aboutMenu", {
-    name: "About Star Wars FFG",
-    label: "About",
-    hint: "Show the system and Foundry versions loaded in this game session.",
+    name: t("SWFFG.Settings.About.Name", "About Star Wars FFG"),
+    label: t("SWFFG.Settings.About.Label", "About"),
+    hint: t("SWFFG.Settings.About.Hint", "Show the system and Foundry versions loaded in this game session."),
     icon: "fas fa-circle-info",
     type: AboutMenu,
     restricted: false,
@@ -415,25 +416,25 @@ Hooks.once("init", () => {
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "referenceMenu", {
-    name: "Reference catalogue",
-    label: "Search database",
-    hint: "Find names, statistics, notes and book pages in the bundled database.",
+    name: t("SWFFG.Settings.Reference.Name", "Reference catalogue"),
+    label: t("SWFFG.Settings.Reference.Label", "Search database"),
+    hint: t("SWFFG.Settings.Reference.Hint", "Find names, statistics, notes and book pages in the bundled database."),
     icon: "fas fa-magnifying-glass",
     type: ReferenceMenu,
     restricted: false,
   });
   game.settings.registerMenu(SYSTEM_ID, "dataReviewMenu", {
-    name: "Rule data review",
-    label: "Review missing data",
-    hint: "Edit and validate missing source references, paraphrases and declarative talent or equipment rules.",
+    name: t("SWFFG.Settings.DataReview.Name", "Rule data review"),
+    label: t("SWFFG.Settings.DataReview.Label", "Review missing data"),
+    hint: t("SWFFG.Settings.DataReview.Hint", "Edit and validate missing source references, paraphrases and declarative talent or equipment rules."),
     icon: "fas fa-clipboard-check",
     type: DataReviewMenu,
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "ownedBooksMenu", {
-    name: "Owned books",
-    label: "Choose available books",
-    hint: "Apply one reference filter for the GM and players.",
+    name: t("SWFFG.Settings.OwnedBooks.Name", "Owned books"),
+    label: t("SWFFG.Settings.OwnedBooks.Label", "Choose available books"),
+    hint: t("SWFFG.Settings.OwnedBooks.Hint", "Apply one reference filter for the GM and players."),
     icon: "fas fa-book-open",
     type: OwnedBooksMenu,
     restricted: true,
@@ -447,9 +448,9 @@ Hooks.once("init", () => {
     restricted: true,
   });
   game.settings.registerMenu(SYSTEM_ID, "consoleMenu", {
-    name: "Session console",
-    label: "Dice & Destiny",
-    hint: "Roll custom dice and manage the shared Destiny pool.",
+    name: t("SWFFG.Settings.Console.Name", "Session console"),
+    label: t("SWFFG.Settings.Console.Label", "Dice & Destiny"),
+    hint: t("SWFFG.Settings.Console.Hint", "Roll custom dice and manage the shared Destiny pool."),
     icon: "fas fa-dice",
     type: ConsoleMenu,
     restricted: false,

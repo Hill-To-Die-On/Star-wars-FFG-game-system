@@ -11,6 +11,7 @@ import { validateSpeciesAbilityRegistry } from "../src/species-abilities.mjs";
 import { validateBookPlayGuidance } from "../src/book-play-guidance.mjs";
 import { normalizeBookTitle } from "../src/rules.mjs";
 import { auditOriginData } from "../src/origin-data-audit.mjs";
+import { validateLocaleManifest } from "../src/localization.mjs";
 const typecheck = spawnSync(process.execPath, ["node_modules/typescript/bin/tsc", "--project", "tsconfig.json", "--pretty", "false"], { encoding: "utf8" });
 if (typecheck.error || typecheck.status !== 0) throw new Error("TypeScript checks failed.\n" + (typecheck.error?.message ?? "") + typecheck.stdout + typecheck.stderr);
 async function walk(dir) {
@@ -36,6 +37,15 @@ for (const file of [
 for (const file of await walk("templates"))
   Handlebars.precompile(await readFile(file, "utf8"));
 const manifest = JSON.parse(await readFile("system.json", "utf8"));
+const translations = Object.fromEntries(
+  await Promise.all(
+    manifest.languages.map(async (language) => [
+      language.path,
+      JSON.parse(await readFile(language.path, "utf8")),
+    ]),
+  ),
+);
+validateLocaleManifest(manifest.languages, translations);
 
 for (const version of [1, 2])
   JSON.parse(
