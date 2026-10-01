@@ -1,0 +1,34 @@
+<div class="sf-shell">
+  <header class="sf-header sf-catalogue-header sf-data-review-header">
+    <span class="sf-eyebrow">STAR WARS FFG / GM DATA REVIEW</span>
+    <h1>Validate the rules that play</h1>
+    <p>{{total}} owned world and actor items · {{missing}} need review · {{reviewed}} reviewed</p>
+    <div class="sf-catalogue-actions"><button type="button" data-action="refresh">Refresh</button><label class="sf-data-review-filter">Show<select name="filter"><option value="missing" {{#if missingSelected}}selected{{/if}}>Needs review</option><option value="all" {{#if allSelected}}selected{{/if}}>All items</option></select></label></div>
+  </header>
+  <div class="sf-data-review-layout">
+    <section class="sf-data-review-results" aria-label="Items needing data review">
+      <div class="sf-catalogue-count">{{missing}} review items · select one to edit</div>
+      <table><thead><tr><th>Name / type</th><th>Owner</th><th>Status</th></tr></thead><tbody>
+      {{#each records}}<tr class="{{#if selected}}selected{{/if}}"><td><button type="button" data-action="select" data-id="{{id}}">{{name}}</button><small>{{type}}</small></td><td>{{ownerName}}</td><td>{{status}}{{#if gaps.length}}<small>{{#each gaps}}{{this}}{{#unless @last}} · {{/unless}}{{/each}}</small>{{/if}}</td></tr>{{else}}<tr><td colspan="3">No items match this filter.</td></tr>{{/each}}
+      </tbody></table>
+    </section>
+    <aside class="sf-data-review-detail" aria-label="Rule data editor">
+      {{#if selected}}
+      <form>
+        <span class="sf-eyebrow">{{selected.itemTypeLabel}} · {{selected.ownerName}}</span>
+        <h2>{{selected.name}}</h2>
+        <p class="sf-reference-source">{{#if selected.sourceLabel}}{{selected.sourceLabel}}{{else}}No source reference recorded{{/if}}</p>
+        <div class="sf-data-review-gaps"><strong>Review points</strong><ul>{{#each selected.gaps}}<li>{{this}}</li>{{else}}<li>No missing points detected.</li>{{/each}}</ul></div>
+        <div class="sf-data-review-grid"><label>Source book<input name="sourceBook" value="{{selected.sourceBook}}" placeholder="Book title"></label><label>Page<input name="sourcePage" value="{{selected.sourcePage}}" placeholder="Page"></label><label>Activation<input name="activation" value="{{selected.activation}}" placeholder="Passive, Action, Maneuver…"></label></div>
+        {{#if selected.isWeapon}}<label>Weapon qualities<input name="qualities" value="{{selected.qualities}}" placeholder="Stun, Pierce, Accurate…"></label>{{/if}}
+        <label>GM paraphrase / description<textarea name="description" rows="5" placeholder="Record a concise, original rule summary for this item.">{{selected.description}}</textarea></label>
+        <label>Structured effects JSON<small>Declarative effects only; no scripts or executable text.</small><textarea name="effectsJSON" rows="7">{{{selected.effectsJSON}}}</textarea></label>
+        <label>Abilities JSON<small>Each ability needs a name; add summary, activation and structured effects when verified.</small><textarea name="abilitiesJSON" rows="7">{{{selected.abilitiesJSON}}}</textarea></label>
+        <label>Review flags JSON<small>Remove a flag only after the corresponding source point has been checked.</small><textarea name="incompleteJSON" rows="3">{{{selected.incompleteJSON}}}</textarea></label>
+        {{#if selected.treeEnabled}}<label>Talent tree JSON<small>Use the source reference and validate the whole tree before saving.</small><textarea name="treeJSON" rows="10">{{{selected.treeJSON}}}</textarea></label>{{/if}}
+        <div class="sf-data-review-actions"><button type="button" data-action="validate">Validate fields</button><button type="button" data-action="save">Save reviewed data</button></div>
+      </form>
+      {{else}}<h2>Select an item</h2><p>World items and actor-owned talents, specializations and equipment appear here when they have missing or unverified data.</p>{{/if}}
+    </aside>
+  </div>
+</div>

@@ -78,6 +78,7 @@ import { registerDestinyHud, refreshDestinyHud } from "./destiny-hud.mjs";
 import { registerSettingsGroups } from "./settings-groups.mjs";
 import { registerHomebrewIdentities } from "./homebrew-identities.mjs";
 import { renderAboutContent } from "./about.mjs";
+import { openDataReview } from "./data-review.mjs";
 class AboutMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     foundry.applications.api.DialogV2.wait({
@@ -99,6 +100,12 @@ class AboutMenu extends foundry.applications.api.ApplicationV2 {
 class ReferenceMenu extends foundry.applications.api.ApplicationV2 {
   render() {
     openReferenceBrowser();
+    return this;
+  }
+}
+class DataReviewMenu extends foundry.applications.api.ApplicationV2 {
+  render() {
+    openDataReview();
     return this;
   }
 }
@@ -415,6 +422,14 @@ Hooks.once("init", () => {
     type: ReferenceMenu,
     restricted: false,
   });
+  game.settings.registerMenu(SYSTEM_ID, "dataReviewMenu", {
+    name: "Rule data review",
+    label: "Review missing data",
+    hint: "Edit and validate missing source references, paraphrases and declarative talent or equipment rules.",
+    icon: "fas fa-clipboard-check",
+    type: DataReviewMenu,
+    restricted: true,
+  });
   game.settings.registerMenu(SYSTEM_ID, "ownedBooksMenu", {
     name: "Owned books",
     label: "Choose available books",
@@ -510,6 +525,13 @@ Hooks.on("renderActorDirectory", (_app, html) => {
   references.textContent = "Star Wars FFG · Reference catalogue";
   references.addEventListener("click", openReferenceBrowser);
   html.querySelector(".directory-footer")?.append(references);
+  if (game.user.isGM) {
+    const review = document.createElement("button");
+    review.type = "button";
+    review.textContent = "Star Wars FFG · Review rule data";
+    review.addEventListener("click", () => openDataReview());
+    html.querySelector(".directory-footer")?.append(review);
+  }
 });
 Hooks.once("ready", () => {
   configureXpTransactions({

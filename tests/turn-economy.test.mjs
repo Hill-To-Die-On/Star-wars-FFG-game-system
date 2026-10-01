@@ -186,6 +186,30 @@ test("prepared actor allowances reflect Active Effects; status restrictions rema
   assert.equal(turnBudget(actor("group")).supported, false);
 });
 
+test("equipped gear abilities contribute turn allowances and stowing the item removes them", () => {
+  const a = actor("character");
+  a.items = [{ id: "thruster", type: "gear", name: "Maneuver thruster", system: {
+    equipped: true,
+    quantity: 1,
+    abilities: [{ name: "Burst movement", activation: "Passive", effects: [effect("freeManeuvers")] }],
+  } }];
+  assert.equal(turnBudget(a).limits.freeManeuvers, 2);
+  a.items[0].system.equipped = false;
+  assert.equal(turnBudget(a).limits.freeManeuvers, 1);
+});
+
+test("equipped-item requirements keep an active gear rule tied to its physical item", () => {
+  const a = actor("character");
+  a.items = [{ id: "relay", type: "gear", name: "Targeting relay", system: {
+    equipped: true,
+    quantity: 1,
+    abilities: [{ name: "Relay calibration", activation: "Maneuver", effects: [effect("freeManeuvers", 1, { equippedItem: true })] }],
+  } }];
+  assert.equal(turnBudget(a).decisions[0].name, "Relay calibration");
+  a.items[0].system.equipped = false;
+  assert.equal(turnBudget(a).decisions.length, 0);
+});
+
 test("turn effect validation rejects invalid counts, selectors and invented targets", () => {
   validateTalentNodeRules({ activation:"Passive",effects:[effect("actions",1,{skill:"athletics",minimumRank:2})] });
   for (const invalid of [effect("teleport"), effect("actions",99), effect("actions",1,{minimumRank:2})])

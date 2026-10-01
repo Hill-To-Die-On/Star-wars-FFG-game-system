@@ -1532,6 +1532,118 @@ body[data-star-wars-theme] #pause figcaption {
   justify-content: space-between;
   margin-top: 12px;
 }
+.sf-data-review .sf-shell {
+  min-height: 100%;
+  background: var(--sf-bg);
+}
+.sf-data-review-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px 18px;
+}
+.sf-data-review-header > p { flex: 1 1 100%; }
+.sf-data-review-filter {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: #f7f3e9;
+  font-size: 11px;
+}
+.sf-data-review-filter select { min-height: 30px; padding: 4px 8px; }
+.sf-data-review-layout {
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) minmax(480px, 1.25fr);
+  min-height: 650px;
+}
+.sf-data-review-results,
+.sf-data-review-detail {
+  min-width: 0;
+  padding: 18px 22px;
+  background: var(--sf-paper);
+}
+.sf-data-review-results { border-right: 1px solid var(--sf-line); }
+.sf-data-review-results table { width: 100%; border-collapse: collapse; }
+.sf-data-review-results th,
+.sf-data-review-results td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--sf-line);
+  text-align: left;
+  vertical-align: top;
+}
+.sf-data-review-results tr.selected { background: #efe5d3; }
+.sf-data-review-results td:first-child { width: 45%; }
+.sf-data-review-results td button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sf-ink);
+  font: 750 13px/1.2 "Star Wars FFG Signika", Arial, sans-serif;
+  text-align: left;
+}
+.sf-data-review-results td button:hover,
+.sf-data-review-results td button:focus-visible { color: var(--sf-accent); text-decoration: underline; }
+.sf-data-review-results small {
+  display: block;
+  margin-top: 3px;
+  color: var(--sf-muted);
+  font-size: 10px;
+}
+.sf-data-review-detail { overflow: auto; }
+.sf-data-review-detail h2 {
+  margin: 5px 0 2px;
+  color: var(--sf-ink);
+  font: 750 23px/1.15 "Star Wars FFG Signika", Arial, sans-serif;
+}
+.sf-data-review-detail form > label,
+.sf-data-review-grid label {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0;
+  color: var(--sf-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+.sf-data-review-grid { display: grid; grid-template-columns: 1fr 110px 1fr; gap: 10px; }
+.sf-data-review-detail input,
+.sf-data-review-detail textarea,
+.sf-data-review-detail select {
+  width: 100%;
+  border: 1px solid var(--sf-line);
+  border-radius: 4px;
+  padding: 7px 8px;
+  background: #fffdf7;
+  color: var(--sf-ink);
+  font: 400 12px/1.4 "Star Wars FFG Roboto", Arial, sans-serif;
+}
+.sf-data-review-detail textarea { resize: vertical; font-family: Consolas, "SFMono-Regular", monospace; white-space: pre; }
+.sf-data-review-detail form > label:first-of-type textarea { font-family: "Star Wars FFG Roboto", Arial, sans-serif; }
+.sf-data-review-detail input:focus,
+.sf-data-review-detail textarea:focus,
+.sf-data-review-detail select:focus { outline: 2px solid var(--sf-accent); outline-offset: 1px; }
+.sf-data-review-detail label small { color: var(--sf-muted); font-size: 10px; font-weight: 400; }
+.sf-data-review-gaps {
+  margin: 14px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--sf-accent);
+  border-radius: 6px;
+  background: #fff8eb;
+  color: var(--sf-ink);
+}
+.sf-data-review-gaps strong { font-size: 11px; }
+.sf-data-review-gaps ul { margin: 5px 0 0; padding-left: 20px; }
+.sf-data-review-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.sf-data-review-actions button {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--sf-line);
+  border-radius: 5px;
+  background: var(--sf-paper);
+  color: var(--sf-ink);
+  font-weight: 700;
+}
+.sf-data-review-actions button:last-child { border-color: var(--sf-accent); background: var(--sf-accent); color: var(--sf-on-accent); }
 .sf-roll-tables .sf-catalogue-filters {
   grid-template-columns: minmax(0, 1fr) auto;
 }
@@ -2339,6 +2451,49 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-pool-section {
   padding: 19px 24px 21px;
   border-bottom: 1px solid var(--sf-line);
+}
+.sf-talent-decisions fieldset {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--sf-line);
+  border-radius: 7px;
+  background: var(--sf-paper);
+}
+.sf-talent-decisions legend {
+  padding: 0 5px;
+  color: var(--sf-muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.sf-talent-decision {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.sf-talent-decision:hover,
+.sf-talent-decision:focus-within {
+  border-color: var(--sf-accent);
+  background: #fffaf0;
+}
+.sf-talent-decision input {
+  margin-top: 3px;
+  accent-color: var(--sf-accent);
+}
+.sf-talent-decision span {
+  display: grid;
+  gap: 2px;
+}
+.sf-talent-decision small {
+  color: var(--sf-muted);
+  font-size: 10px;
 }
 .sf-pool-section-title {
   display: flex;

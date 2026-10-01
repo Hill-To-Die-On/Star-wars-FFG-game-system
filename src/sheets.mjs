@@ -334,6 +334,7 @@ export function poolBuilderContext(actor, key, item, skill, characteristic, rank
             : "short"),
     impairment=impairmentForCheck(actor,key),
     context = {
+      actor,
       actorName: actor.name,
       skillKey: key,
       skillLabel: skill.label,
@@ -377,6 +378,7 @@ export function poolBuilderContext(actor, key, item, skill, characteristic, rank
     attackerSilhouette: context.attackerSilhouette,
     targetSilhouette: context.targetSilhouette,
   });
+  context.talentDecisions = context.talentRules?.decisions ?? [];
   context.unusedTalentRemovals=unspentTalentRemovals(context.automatic.basePool,context.talentRules);
   return context;
 }
@@ -427,6 +429,9 @@ function poolBuilderHTML(context) {
               `<button type="button" data-auto-range="${range}" class="${range === context.rangeBand ? "active" : ""}"><span>${titleCase(range)}</span><small>${context.vehicleAttack ? "Weapon reach" : range === "engaged" ? "Close contact" : `${{ close: 1, short: 1, medium: 2, long: 3, extreme: 4 }[range]} difficulty`}</small></button>`,
           ).join("")}</div>`
       : `<div class="sf-difficulty-presets">${difficultyPresetsHTML(context.difficulty, "data-auto-difficulty")}</div>`;
+  const talentDecisions = context.talentDecisions?.length
+    ? `<section class="sf-pool-section sf-talent-decisions"><div class="sf-pool-section-title"><div><span class="sf-step-number">2</span><h3>Talent decisions</h3><p>Passive rules are already included. Select any active talent you are using for this check.</p></div></div><fieldset><legend>Apply active rules</legend>${context.talentDecisions.map((rule) => `<label class="sf-talent-decision"><input type="checkbox" name="selectedTalent" value="${escapeHTML(rule.id)}"><span><strong>${escapeHTML(rule.name)}</strong><small>${escapeHTML(rule.activation)}${rule.summary ? ` · ${escapeHTML(rule.summary)}` : ""}</small></span></label>`).join("")}</fieldset></section>`
+    : "";
   return `<div class="sf-pool-builder">
     <section class="sf-pool-origin">
       <div><span class="sf-eyebrow">SKILL + CHARACTERISTIC</span>
@@ -447,6 +452,7 @@ function poolBuilderHTML(context) {
         ${automaticContextHTML(context)}
         ${context.combat && context.target.shields ? `<label>Target defence zone<select data-vehicle-zone><option value="">Choose the agreed zone…</option>${Object.entries(context.target.shields).map(([zone,value])=>`<option value="${zone}">${titleCase(zone)} · ${value} defence</option>`).join("")}</select></label><small>For silhouette 4 or smaller, the defender normally chooses. Larger craft use the established relative position.</small>` : ""}
       </section>
+      ${talentDecisions}
       <section class="sf-auto-breakdown">
         <div class="sf-auto-explanation"><span class="sf-eyebrow">WHY THIS POOL?</span><ul data-auto-reasons></ul></div>
         <p class="sf-pool-error" data-auto-error hidden></p>
@@ -498,6 +504,13 @@ function attachPoolBuilder(dialog, context) {
         Math.max(0, Math.min(40, Number(root.querySelector(`[name="${key}"]`).value) || 0)),
       ]),
     );
+  const readSelectedTalents = () => Array.from(root.querySelectorAll('[name="selectedTalent"]:checked'), (input) => input.value);
+  const refreshTalentRules = () => {
+    context.talentRules = context.actor?.talentRulesForCheck
+      ? context.actor.talentRulesForCheck(context.skillKey, { selectedTalents: readSelectedTalents() })
+      : context.talentRules;
+    context.talentDecisions = context.talentRules?.decisions ?? context.talentDecisions;
+  };
   const writePool = (pool) => {
     for (const key of ROLL_DICE) root.querySelector(`[name="${key}"]`).value = pool[key];
     root.querySelector("[data-pool-preview]").innerHTML = poolPreviewHTML(addPoolRulings(pool,context.narrativeRulings,context.unusedTalentRemovals));
@@ -632,6 +645,7 @@ function attachPoolBuilder(dialog, context) {
   root.addEventListener("change",event=>{
     if(event.target.matches("[data-vehicle-zone]"))renderAutomatic();
     if(event.target.matches('[name="gmSightOverride"]'))renderSightRuling();
+    if(event.target.matches('[name="selectedTalent"]')) { refreshTalentRules(); renderAutomatic(); }
   });
   setMode("auto");
 }
@@ -664,7 +678,9 @@ export async function checkDialog(actor, key, item, options = {}) {
       label: "Roll these dice",
       icon: "fa-solid fa-dice",
       callback: (_event, button) => {
-        const data = Object.fromEntries(new FormData(button.form));
+        const formData = new FormData(button.form),
+          data = Object.fromEntries(formData),
+          selectedTalents = formData.getAll("selectedTalent");
         const ruling = gmSightRuling({
           needsRuling: sightRulingRequired(context),
           isGM: game.user.isGM,
@@ -677,6 +693,7 @@ export async function checkDialog(actor, key, item, options = {}) {
           rollMode: data.rollMode,
           turnCost: data.turnCost ?? "none",
           sightRulingNote: ruling.note,
+          selectedTalents,
           pool: Object.fromEntries(
             ROLL_DICE.map((die) => [die, Number(data[die])]),
           ),
@@ -686,19 +703,25 @@ export async function checkDialog(actor, key, item, options = {}) {
     rejectClose: false,
   });
   if (!form) return;
+  const finalTalentRules = actor.talentRulesForCheck(definition.key, {
+    selectedTalents: form.selectedTalents ?? [],
+  });
   const result = await rollPool(form.pool, {
     label: `${actor.name} · ${item?.name ?? definition.label}`,
     actor,
     skillKey: definition.key,
-    unusedTalentRemovals: context.unusedTalentRemovals,
+    unusedTalentRemovals: unspentTalentRemovals(
+      context.automatic.basePool,
+      finalTalentRules,
+    ),
     targetActorUuid: context.target.actorUuid,
     rollMode: form.rollMode,
     turnCost: form.turnCost,
     automaticResults: {
-      ...context.talentRules.automaticResults,
-      advantage: (context.talentRules.automaticResults?.advantage ?? 0) + context.speciesAdvantage,
+      ...finalTalentRules.automaticResults,
+      advantage: (finalTalentRules.automaticResults?.advantage ?? 0) + context.speciesAdvantage,
     },
-    ruleNotes: [...context.talentRules.reasons, ...context.speciesReasons, ...(context.impairmentNote?[context.impairmentNote]:[]), ...(form.sightRulingNote ? [form.sightRulingNote] : [])],
+    ruleNotes: [...finalTalentRules.reasons, ...context.speciesReasons, ...(context.impairmentNote?[context.impairmentNote]:[]), ...(form.sightRulingNote ? [form.sightRulingNote] : [])],
   });
   if (item && result.outcome.passed) {
     ui.notifications.info(

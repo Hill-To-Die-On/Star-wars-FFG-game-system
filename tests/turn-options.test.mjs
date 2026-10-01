@@ -20,6 +20,11 @@ function actor() {
       { id: "pivot", type: "talent", name: "Practice Pivot", system: { activation: "Maneuver" } },
       { id: "career", type: "career", name: "Smuggler", system: { abilities: [{ name: "Career feint", activation: "Action" }] } },
       { id: "sense", type: "forcePower", name: "Sense", system: {} },
+      { id: "scanner", type: "gear", name: "Tactical scanner", system: { equipped: true, quantity: 1, abilities: [
+        { name: "Scan weakness", activation: "Action", summary: "Find an opening.", effects: [{ type: "pool", operation: "add", target: "boost", count: 1, skills: ["vigilance"] }] },
+        { name: "Quiet readout", activation: "Passive", summary: "The scanner stays ready.", effects: [{ type: "pool", operation: "add", target: "boost", count: 1, skills: ["vigilance"] }] },
+      ] } },
+      { id: "rifle", type: "weapon", name: "Shock rifle", system: { quantity: 1, equipped: false, qualities: "Stun 3" } },
     ],
   };
 }
@@ -35,6 +40,10 @@ test("live Action and Manoeuvre help includes actor sources and current allowanc
   assert.match(help.maneuver, /Harch/);
   assert.match(help.action, /Sense.*timing.*GM/i);
   assert.match(help.maneuver, /Sense.*timing.*GM/i);
+  assert.match(help.action, /Scan weakness/);
+  assert.match(help.action, /Passive rules currently in force/);
+  assert.match(help.action, /Weapon qualities on Shock rifle/);
+  assert.match(help.action, /Shock rifle.*ready it first/i);
   assert.doesNotMatch(help.action, /Practice Pivot/);
   assert.doesNotMatch(help.maneuver, /Full Throttle/);
 });
