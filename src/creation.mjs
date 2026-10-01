@@ -1,5 +1,11 @@
 import { CHARACTERISTICS, SKILLS } from "./config.mjs";
-import { RULE_LINES } from "./rules.mjs";
+import { ruleLine } from "./rules.mjs";
+import {
+  buildStartingLoadout,
+  creationResourcePlan,
+} from "./creation-resources.mjs";
+import { speciesAbilityEntry, speciesStartingSkills, validateNonCareerSkillChoices } from "./species-abilities.mjs";
+import { careerBackgroundDefault, speciesBackgroundDefault } from "./career-story.mjs";
 export function creationPlan({
   species,
   career,
@@ -7,8 +13,15 @@ export function creationPlan({
   line,
   careerRanks = [],
   specializationRanks = [],
+  speciesSkillChoice = "",
+  nonCareerSkillChoices = [],
+  partySize = 4,
+  resourceChoices = [],
+  ageStartingResource = "lambda",
+  startingEquipment = [],
+  allowRestricted = false,
 }) {
-  const rule = RULE_LINES[line];
+  const rule = ruleLine(line);
   if (
     !rule ||
     species?.type !== "species" ||
@@ -38,7 +51,13 @@ export function creationPlan({
     specialization.system.careerSkills,
     rule.freeSpecializationRanks,
   );
-  const data = species.system.metadata;
+  const resources = creationResourcePlan({
+      line,
+      partySize,
+      choices: resourceChoices,
+      ageStartingResource,
+    }),
+    data = species.system.metadata;
   const stat = (key) => {
     const value = Number(data[key]);
     if (
@@ -54,6 +73,14 @@ export function creationPlan({
   const characteristics = Object.fromEntries(
     Object.entries(CHARACTERISTICS).map(([key, label]) => [key, stat(label)]),
   );
+  const loadout = buildStartingLoadout({
+    options: startingEquipment,
+    selections: startingEquipment.map(({ id, quantity }) => ({ id, quantity })),
+    cashBudget: resources.cashBudget,
+    gearGrant: resources.gearGrant,
+    allowRestricted,
+    encumbranceLimit: 5 + characteristics.brawn,
+  });
   const allCareer = new Set([
     ...career.system.careerSkills,
     ...specialization.system.careerSkills,
@@ -71,29 +98,76 @@ export function creationPlan({
       },
     ]),
   );
+  const speciesRules = speciesAbilityEntry(species.name, species.system.source);
+  const speciesSkillGrants = speciesStartingSkills(speciesRules, speciesSkillChoice);
+  const speciesAbilitiesPending = !speciesRules || speciesRules.abilities.some((ability) => ability.application !== "automatic");
+  for (const key of speciesSkillGrants) {
+    if (skills[key].rank >= 2)
+      throw new Error(`${species.name} grants ${SKILLS[key].label}, but that skill would exceed rank 2 during creation. Choose different free skills.`);
+    skills[key].rank += 1;
+  }
+  const nonCareerGrants = validateNonCareerSkillChoices(speciesRules, nonCareerSkillChoices, [...allCareer], skills);
+  for (const key of nonCareerGrants) skills[key].rank += 1;
   return {
     line,
     phase: "creation",
     species: species.name,
     career: career.name,
+    biography: "",
     characteristics,
     skills,
     soak: characteristics.brawn,
-    xp: { total: stat("XP"), available: stat("XP") },
+    credits: loadout.credits,
+    xp: {
+      total: stat("XP") + resources.xpBonus,
+      available: stat("XP") + resources.xpBonus,
+    },
     wounds: { value: 0, max: stat("Wound_Base") + characteristics.brawn },
     strain: { value: 0, max: stat("Strain_Base") + characteristics.willpower },
     forceRating: line === "force" ? 1 : 0,
+    ...(resources.story.mechanic === "obligation"
+      ? { obligation: { value: resources.story.value, label: "" } }
+      : {}),
+    ...(resources.story.mechanic === "duty"
+      ? { duty: { value: resources.story.value, label: "", contribution: 0 } }
+      : {}),
+    ...(resources.story.mechanic === "morality"
+      ? {
+          morality: {
+            value: resources.story.value,
+            conflict: 0,
+            strength: "",
+            weakness: "",
+          },
+        }
+      : {}),
     creation: {
+      speciesBackground: speciesBackgroundDefault(species.name),
+      careerBackground: careerBackgroundDefault(career.name),
       applied: true,
+      speciesId: String(species.id ?? species._id ?? ""),
+      careerId: String(career.id ?? career._id ?? ""),
+      specializationId: String(
+        specialization.id ?? specialization._id ?? "",
+      ),
       species: species.system.source,
       career: career.system.source,
       specialization: specialization.system.source,
       careerRanks,
       specializationRanks,
-      speciesAbilitiesPending: true,
+      speciesSkillChoice,
+      speciesSkillGrants,
+      nonCareerSkillChoices: nonCareerGrants,
+      speciesAbilitySource: speciesRules?.source ?? null,
+      speciesAbilitiesPending,
+      startingResources: {
+        ...resources,
+        ...loadout,
+      },
+      pocketMoneyPending: true,
     },
-    incomplete: [
-      "Verify species abilities and any exceptional creation rules in the source book.",
-    ],
+    incomplete: speciesAbilitiesPending
+      ? ["Verify species abilities and any exceptional creation rules in the source book."]
+      : [],
   };
 }

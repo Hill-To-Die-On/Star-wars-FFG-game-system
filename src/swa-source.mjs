@@ -1,4 +1,4 @@
-import { convertSwa } from "./swa-import.mjs";
+import { convertSwa, isObject } from "./swa-import.mjs";
 import { SYSTEM_ID, SYSTEM_PATH } from "./config.mjs";
 import { escapeHTML } from "./mechanics.mjs";
 export function sourceId(key) {
@@ -165,6 +165,15 @@ export async function convertSwaSource(
     collections.adversaries.length > 2000
   )
     throw new Error("Unsupported SW Adversaries source bundle.");
+  if (!collections.adversaries.every(isObject))
+    throw new Error("Each adversary must be a JSON object.");
+  // Adversary conversion looks rules up in these collections, so check them first.
+  const ruleKinds = ["weapons", "talents", "qualities", "skills", "vehicles"];
+  for (const kind of ruleKinds) {
+    const rows = collections[kind] ?? [];
+    if (!Array.isArray(rows) || rows.length > 2000 || !rows.every(isObject))
+      throw new Error(`Invalid ${kind} source collection.`);
+  }
   const source = full
     ? `https://swa.stoogoff.com/ (${input.siteVersion})`
     : "SW Adversaries local export";
@@ -226,16 +235,8 @@ export async function convertSwaSource(
       bundle.report.rejected.push({ name: record.name, reason: error.message });
     }
   }
-  for (const kind of [
-    "weapons",
-    "talents",
-    "qualities",
-    "skills",
-    "vehicles",
-  ]) {
+  for (const kind of ruleKinds) {
     const rows = collections[kind] ?? [];
-    if (!Array.isArray(rows) || rows.length > 2000)
-      throw new Error(`Invalid ${kind} source collection.`);
     for (const [index, record] of rows.entries()) {
       const noteId = sourceId(`swa:source:${kind}:${record.name}:${index}`);
       if (includePrivateNotes)

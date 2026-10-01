@@ -95,7 +95,7 @@ try {
       .nth(1)
       .locator('[data-node="entry"]')
       .innerText(),
-    /Learned in another tree/,
+    /Learned elsewhere/,
   );
   assert.equal(
     await page

@@ -161,6 +161,7 @@ export async function openGMSourceNotes(actor) {
 }
 function showNote(note) {
   return foundry.applications.api.DialogV2.wait({
+    classes: ["star-wars"],
     window: { title: `${note.name} · GM source notes` },
     position: { width: 800 },
     content: `<p>${escapeHTML(note.source)}</p><pre style="white-space:pre-wrap;max-height:65vh;overflow:auto">${escapeHTML(note.text)}</pre>`,
@@ -183,6 +184,7 @@ export async function gmSourceLibrary() {
   assertGM();
   await refreshGMNotes();
   const query = await foundry.applications.api.DialogV2.prompt({
+    classes: ["star-wars"],
     window: { title: "GM source library" },
     content:
       '<label>Find an adversary, vehicle or rule<input name="query" type="search"></label>',
@@ -197,6 +199,7 @@ export async function gmSourceLibrary() {
   if (!matches.length)
     return ui.notifications.info("No matching GM source notes.");
   const selected = await foundry.applications.api.DialogV2.prompt({
+    classes: ["star-wars"],
     window: { title: "GM source library · Results" },
     content: `<p>Up to 50 matching records. Use a more specific search to narrow the results.</p><select name="note">${matches.map((note, index) => `<option value="${index}">${escapeHTML(note.name)} · ${escapeHTML(note.kind)}</option>`).join("")}</select>`,
     ok: {
@@ -212,6 +215,7 @@ export async function gmSourceKeyDialog() {
   assertGM();
   const pack = getLibraryPack("GMNotes");
   return foundry.applications.api.DialogV2.wait({
+    classes: ["star-wars", "sf-native-settings"],
     window: { title: "GM source key · Backup and restore" },
     content:
       '<p>Source prose is encrypted in the world. Its key stays in this browser. Keep a private backup to unlock notes on another GM browser or after clearing browser data. Share it only with a trusted GM.</p><label>Restore key from backup<input type="file" name="keyFile" accept=".json"></label>',

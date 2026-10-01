@@ -43,6 +43,7 @@ export const ROW_NAMES = {
   vehicles: "Name",
   vehicle_attachments: "Attachment",
   vehicle_components: "Component",
+  vehicle_loadouts: "Name",
   vehicle_weapons: "Weapon",
   weapons: "Weapon",
 };
@@ -54,9 +55,17 @@ export const fieldLabel = (field) =>
   field.replaceAll("_", " ").replace(/^./, (c) => c.toUpperCase());
 export const referenceKey = (table, row, index) =>
   `${table}:${row.ID ?? index}:${index}`;
-export const referenceName = (table, row) =>
-  String(row[ROW_NAMES[table]] ?? row.Name ?? row.name ?? "").trim() ||
-  `${tableLabel(table)} reference ${row.ID ?? ""}`.trim();
+const REFERENCE_NAME_CORRECTIONS = new Map([
+  ["signature_abilities:Unmatched Devistation", "Unmatched Devastation"],
+]);
+export const correctReferenceName = (table, name) =>
+  REFERENCE_NAME_CORRECTIONS.get(`${table}:${name}`) ?? name;
+export const referenceName = (table, row) => {
+  const name =
+    String(row[ROW_NAMES[table]] ?? row.Name ?? row.name ?? "").trim() ||
+    `${tableLabel(table)} reference ${row.ID ?? ""}`.trim();
+  return correctReferenceName(table, name);
+};
 export const referenceSource = (table, row) => ({
   table,
   id: String(row.ID ?? ""),

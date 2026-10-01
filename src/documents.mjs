@@ -1,7 +1,9 @@
 import { SYSTEM_ID, SKILLS, skillKey } from "./config.mjs";
 import { skillPool } from "./dice/core.mjs";
+import { impairmentForCheck } from "./enemy-condition.mjs";
 import { rollPool } from "./dice/foundry.mjs";
 import { minionState, damageAfterSoak, weaponDamage } from "./mechanics.mjs";
+import { groupStateForActor } from "./minion-groups.mjs";
 import {
   talentPurchase,
   skillPurchase,
@@ -34,6 +36,9 @@ import {
   signatureAttachmentCandidates,
   validateSignatureAttachment,
 } from "./signature-abilities.mjs";
+import { requestXpTransaction } from "./xp-transactions.mjs";
+import { assignedCrewCheck, vehicleForActor } from "./vehicle-crew-foundry.mjs";
+import { speciesCheckBonuses } from "./species-abilities.mjs";
 export class StarWarsActor extends Actor {
   assertOwner() {
     if (!this.isOwner) throw new Error("Owner permission is required.");
@@ -85,11 +90,11 @@ export class StarWarsActor extends Actor {
       ? skill.group
         ? Math.min(
             5,
-            minionState(
+            (groupStateForActor(this) ?? minionState(
               this.system.groupSize,
               this.system.wounds.value,
               this.system.wounds.max,
-            ).rank,
+            )).rank,
           )
         : 0
       : skill.rank;
@@ -107,27 +112,46 @@ export class StarWarsActor extends Actor {
   }
   async rollSkill(key, options = {}) {
     this.assertOwner();
+    if (this.isVehicle) {
+      const {vehicleToken,crewTokenId,...crewOptions}=options, vehicle=vehicleToken ?? vehicleForActor(this);
+      if(!vehicle) throw new Error("Select this vehicle's token to use its crew.");
+      const crew=assignedCrewCheck(vehicle,key,crewTokenId);
+      return crew.actor.rollSkill(key,{...crewOptions,boost:(options.boost ?? 0)+crew.boost,setback:(options.setback ?? 0)+crew.setback,
+        label:options.label ?? `${this.name} · ${crew.name} · ${key}`});
+    }
     const definition = this.skillDefinition(key);
     if (!definition || this.isVehicle || this.type === "group")
       throw new Error("Choose a character's native skill.");
     const characteristic =
       definition.state.characteristic || definition.characteristic;
-    const { selectedTalents = [], label, ...rollOptions } = options,
+    const { selectedTalents = [], label, turnCost = "action", ruleNotes = [], ...rollOptions } = options,
       rules = this.talentRulesForCheck(definition.key, { selectedTalents }),
+      species = this.type === "character"
+        ? speciesCheckBonuses(this.system.species, this.system.creation?.species, definition.key)
+        : { boost: 0, advantage: 0, reasons: [] },
+      impairment=impairmentForCheck(this,definition.key),
+      effectiveOptions = { ...rollOptions,
+        boost: Number(rollOptions.boost ?? 0) + species.boost,
+        setback: Number(rollOptions.setback ?? 0) + impairment.setback },
       pool = applyTalentPool(
         skillPool(
           this.system.characteristics[characteristic],
           this.skillRank(definition.key),
-          rollOptions,
+          effectiveOptions,
         ),
         rules,
       );
     return rollPool(pool, {
       label: label ?? `${this.name} · ${definition.label}`,
       actor: this,
-      ...rollOptions,
-      automaticResults: rules.automaticResults,
-      ruleNotes: rules.reasons,
+      skillKey: definition.key,
+      ...effectiveOptions,
+      turnCost,
+      automaticResults: {
+        ...rules.automaticResults,
+        advantage: (rules.automaticResults?.advantage ?? 0) + species.advantage,
+      },
+      ruleNotes: [...rules.reasons, ...species.reasons, ...(impairment.note?[impairment.note]:[]), ...ruleNotes],
     });
   }
   async rollForce(options = {}) {
@@ -189,10 +213,21 @@ export class StarWarsActor extends Actor {
       applied,
       resource,
       value,
-      exceedsThreshold: value > this.system[resource].max,
+      exceedsThreshold: this.type === "minion"
+        ? (groupStateForActor(this) ?? minionState(this.system.groupSize,value,this.system.wounds.max)).remaining === 0
+        : value > this.system[resource].max,
     };
   }
   async buyTalent(itemId, nodeId, { characteristic } = {}) {
+    this.assertOwner();
+    return requestXpTransaction(
+      this,
+      "buyTalent",
+      { itemId, nodeId, characteristic },
+      () => this._buyTalentNow(itemId, nodeId, { characteristic }),
+    );
+  }
+  async _buyTalentNow(itemId, nodeId, { characteristic } = {}) {
     this.assertOwner();
     const item = this.items.get(itemId);
     if (!item?.system.tree?.verified)
@@ -276,6 +311,12 @@ export class StarWarsActor extends Actor {
   }
   async buySkill(key) {
     this.assertOwner();
+    return requestXpTransaction(this, "buySkill", { key }, () =>
+      this._buySkillNow(key),
+    );
+  }
+  async _buySkillNow(key) {
+    this.assertOwner();
     const definition = this.skillDefinition(key),
       skill = definition?.state;
     if (!skill) throw new Error("Unknown skill.");
@@ -303,6 +344,7 @@ export class StarWarsActor extends Actor {
       updates["system.customSkills"] = customSkills;
     } else updates[`system.skills.${definition.key}.rank`] = purchase.rank;
     await this.update(updates);
+    return purchase;
   }
   async createCustomSkill(data) {
     this.assertOwner();
@@ -358,6 +400,12 @@ export class StarWarsActor extends Actor {
   }
   async buyCharacteristic(key) {
     this.assertOwner();
+    return requestXpTransaction(this, "buyCharacteristic", { key }, () =>
+      this._buyCharacteristicNow(key),
+    );
+  }
+  async _buyCharacteristicNow(key) {
+    this.assertOwner();
     const purchase = characteristicPurchase(
       this.system.characteristics[key],
       this.system.xp.available,
@@ -382,6 +430,7 @@ export class StarWarsActor extends Actor {
     if (key === "willpower")
       updates["system.strain.max"] = this.system.strain.max + 1;
     await this.update(updates);
+    return purchase;
   }
   specializationPrice(item) {
     const current = this.items.filter((i) => i.type === "specialization");
@@ -405,6 +454,15 @@ export class StarWarsActor extends Actor {
     );
   }
   async acquireSpecialization(item) {
+    this.assertOwner();
+    return requestXpTransaction(
+      this,
+      "acquireSpecialization",
+      { itemUuid: String(item?.uuid ?? "") },
+      () => this._acquireSpecializationNow(item),
+    );
+  }
+  async _acquireSpecializationNow(item) {
     this.assertOwner();
     const cost = this.specializationPrice(item);
     if (cost > this.system.xp.available)
@@ -433,6 +491,28 @@ export class StarWarsActor extends Actor {
       updates["system.forceRating"] = item.system.grantedForceRating;
     await this.update(updates);
     return { cost, itemId: copy._id };
+  }
+  async _executeXpTransaction(operation, args) {
+    switch (operation) {
+      case "buyTalent":
+        return this._buyTalentNow(args.itemId, args.nodeId, {
+          characteristic: args.characteristic,
+        });
+      case "buySkill":
+        return this._buySkillNow(args.key);
+      case "buyCharacteristic":
+        return this._buyCharacteristicNow(args.key);
+      case "acquireSpecialization": {
+        if (!args.itemUuid)
+          throw new Error("The specialization source is no longer available.");
+        const item = await fromUuid(args.itemUuid);
+        if (!item || item.documentName !== "Item" || item.type !== "specialization")
+          throw new Error("Choose a valid specialization from the library.");
+        return this._acquireSpecializationNow(item);
+      }
+      default:
+        throw new Error("Unsupported XP transaction.");
+    }
   }
   signatureAttachmentCandidates(item) {
     return signatureAttachmentCandidates(this, item);
@@ -467,7 +547,7 @@ export class StarWarsActor extends Actor {
 }
 export class StarWarsItem extends Item {
   async roll(options = {}) {
-    if (this.type !== "weapon" || !this.actor || this.actor.isVehicle)
+    if (this.type !== "weapon" || !this.actor)
       throw new Error(
         "Roll a weapon from its character or choose the vehicle's gunner.",
       );

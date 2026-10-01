@@ -29,6 +29,8 @@ import {
   DEFAULT_CAMPAIGN,
   resolveSheetTheme,
   resolveInterfaceTheme,
+  bookAllowed,
+  normalizeBookTitle,
 } from "../src/rules.mjs";
 test("all seven physical distributions match their independent symbol totals", () => {
   const expected = {
@@ -161,8 +163,19 @@ test("mixed campaigns retain three mechanics independently", () => {
   const c = validateCampaign(DEFAULT_CAMPAIGN);
   assert.equal(c.lines.length, 3);
   assert.ok(c.obligation && c.duty && c.morality);
+  assert.equal(c.adventureStarted, false);
+  assert.equal(c.partySize, 4);
+  assert.equal(c.ageStartingResource, "lambda");
   assert.match(campaignGuidance(c), /Do not grant a second starting package/);
+  assert.match(
+    campaignGuidance({ ...c, adventureStarted: true }),
+    /completed character origins are locked/i,
+  );
   assert.throws(() => validateCampaign({ lines: [] }));
+  assert.throws(() => validateCampaign({ ...DEFAULT_CAMPAIGN, partySize: 1 }));
+  assert.throws(() =>
+    validateCampaign({ ...DEFAULT_CAMPAIGN, ageStartingResource: "unknown" }),
+  );
 });
 test("automatic themes follow the actor line and campaign lead", () => {
   assert.equal(resolveSheetTheme("auto", "edge"), "frontier");
@@ -188,5 +201,81 @@ test("initiative prioritizes success, then advantage, then PC tie", () => {
   assert.ok(
     initiativeScore({ netSuccess: 1, netAdvantage: 1 }, true) >
       initiativeScore({ netSuccess: 1, netAdvantage: 1 }, false),
+  );
+});
+test("themes fall back to Edge of the Empire when no known rule line applies", () => {
+  assert.equal(resolveSheetTheme(), "frontier");
+  assert.equal(resolveSheetTheme("auto", undefined, ["unknown"]), "frontier");
+  assert.equal(
+    resolveSheetTheme("classic", undefined, ["force"]),
+    "mystic",
+    "an unknown manual choice follows the campaign ruleset",
+  );
+  assert.equal(resolveInterfaceTheme("auto", null), "frontier");
+});
+test("campaigns saved before party, resource and book settings take the defaults", () => {
+  assert.deepEqual(validateCampaign({ lines: ["age", "age"], duty: true }), {
+    lines: ["age"],
+    obligation: false,
+    duty: true,
+    morality: false,
+    books: [],
+    bookMode: "all",
+    includeUnreferenced: false,
+    beginnerMode: false,
+    adventureStarted: false,
+    partySize: 4,
+    ageStartingResource: "lambda",
+  });
+});
+test("campaign guidance describes beginner mode, untracked resources and owned books", () => {
+  const owned = {
+    ...DEFAULT_CAMPAIGN,
+    bookMode: "owned",
+    books: ["Far Horizons", "Stay on Target"],
+  };
+  const guidance = campaignGuidance({
+    ...owned,
+    obligation: false,
+    duty: false,
+    morality: false,
+    beginnerMode: true,
+    includeUnreferenced: true,
+  });
+  assert.match(guidance, /Track separately: none\./);
+  assert.match(guidance, /Beginner mode: follow the active adventure's staged rules/);
+  assert.match(guidance, /Book filter: Far Horizons; Stay on Target\./);
+  assert.match(guidance, /Entries without a book reference are included\./);
+  assert.match(
+    campaignGuidance({ ...owned, books: [] }),
+    /Book filter: No books selected\. Entries without a book reference are excluded\./,
+  );
+});
+test("owned books match corrected titles and treat a missing book as unreferenced", () => {
+  const owned = {
+    bookMode: "owned",
+    books: ["Rise of the Separatists", "Force and Destiny: Core Book"],
+  };
+  assert.ok(bookAllowed("Rise of the Seperatists", owned));
+  assert.ok(bookAllowed("Force & Destiny - Core Book", owned));
+  assert.equal(bookAllowed(undefined, owned), false);
+  assert.equal(bookAllowed(null, { ...owned, includeUnreferenced: true }), true);
+  assert.equal(bookAllowed("Rise of the Seperatists", { bookMode: "owned" }), false);
+  assert.equal(normalizeBookTitle(undefined), "");
+});
+test("campaigns refuse built-in object names as rule lines and drop missing book titles", () => {
+  for (const lines of [["toString"], ["edge", "constructor"], ["__proto__"]])
+    assert.throws(
+      () => validateCampaign({ ...DEFAULT_CAMPAIGN, lines }),
+      /Select at least one supported rule line/,
+    );
+  assert.equal(resolveSheetTheme("auto", "constructor", ["force"]), "mystic");
+  assert.deepEqual(
+    validateCampaign({
+      ...DEFAULT_CAMPAIGN,
+      lines: ["edge"],
+      books: [null, undefined, " Far Horizons "],
+    }).books,
+    ["Far Horizons"],
   );
 });

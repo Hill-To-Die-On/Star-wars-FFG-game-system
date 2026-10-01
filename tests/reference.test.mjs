@@ -37,9 +37,10 @@ test("native prices retain formatted whole-credit amounts and flag unknown price
 });
 
 test("published creator database retains every table and row with usable reference identities", () => {
-  assert.equal(Object.keys(database.tables).length, 44);
-  assert.equal(index.records.length, 6662);
-  assert.equal(index.byKey.size, 6662);
+  assert.equal(Object.keys(database.tables).length, 45);
+  assert.equal(database.tables.vehicle_loadouts.length, 288);
+  assert.equal(index.records.length, 6662 + 288);
+  assert.equal(index.byKey.size, 6662 + 288);
   assert.equal(index.books.length, 45);
   assert.equal(validateBundle(library), library);
   assert.deepEqual(
@@ -66,10 +67,21 @@ test("published creator database retains every table and row with usable referen
   }
 });
 
+test("reference search exposes corrected printed identities", () => {
+  const result = findReferences(index, DEFAULT_CAMPAIGN, {
+      query: "Unmatched Devastation",
+    }),
+    ability = result.records.find(
+      (row) => row.category === "signature_abilities",
+    );
+  assert.equal(ability.name, "Unmatched Devastation");
+  assert.equal(ability.fields.signature_abilities, "Unmatched Devastation");
+});
+
 test("owned books distinguishes an empty selection from all books and migrates old settings", () => {
   const none = { ...DEFAULT_CAMPAIGN, bookMode: "owned", books: [] };
   assert.equal(findReferences(index, none).total, 0);
-  assert.equal(findReferences(index, DEFAULT_CAMPAIGN).total, 6662);
+  assert.equal(findReferences(index, DEFAULT_CAMPAIGN).total, 6662 + 288);
   assert.equal(bookAllowed("Unlisted", none), false);
   assert.equal(bookAllowed("", none), false);
   assert.equal(bookAllowed("", { ...none, includeUnreferenced: true }), true);

@@ -27,20 +27,59 @@ Node.js 24 or later is required.
 
 ```sh
 npm ci
+npm run typecheck
 npm test
+npx playwright install chromium
+npm run test:browser
 npm run check
 npm run build
+npm run audit:release
 ```
 
 `npm run build` creates `dist/star-wars-ffg.zip`, `dist/system.json`, and `dist/contents.json`. The `dist` directory is ignored and should not be committed. The build uses a positive allow-list so private local imports do not enter a release.
 
+The browser command builds the current package first so packaged tests cannot use a missing or stale ZIP. Browser fixtures run sequentially with per-process timeouts and write screenshots/logs under ignored `test-results/browser/`. Hosted validation installs Chromium and retains these artifacts. Native licensed Foundry recovery is a separate opt-in command described in [backup and recovery](docs/backup-recovery.md); it must use an isolated port and disposable world.
+
 Follow the testing protocols in `AGENTS.md`. Add focused assertions for changed logic, then run the full test, check, and build commands before requesting review. A passing automated check does not replace Foundry runtime verification for sheets, settings, migrations, multi-client behaviour, Dice So Nice rendering, or Director of Realms integration.
+
+## Candidate and release versions
+
+Git commits identify changes; they do not increment the Foundry package version. When starting a new candidate after a release, or preparing a separately installable test build, set its version explicitly:
+
+```sh
+npm run version:set -- 0.4.1
+```
+
+Choose the intended next version for the change. This command synchronizes `package.json`, both root version fields in `package-lock.json`, `system.json` and its release download URL, and the first changelog section. It retains previous release notes and dependency versions, rejects backwards versions, and does not commit, tag, install or publish anything. Use three numeric parts: Foundry's version comparison does not support SemVer prerelease or build suffixes. Keep candidate status in the changelog as **Unreleased**.
+
+Both `npm run check` and `npm run build` reject mismatched version metadata. When publishing, replace **Unreleased** with the release date, run the normal validation and protected promotion flow, and publish the matching `v<version>` tag with the audited ZIP and manifest. Do not overwrite an existing release tag or imply that an unreleased download URL is already available. Code-only commits can share a candidate version while it is being developed; distinguish those revisions by their Git commit.
 
 ## Data and rules automation
 
 Public reference changes must retain creator authorization and the source book/page fields used to locate the corresponding print or PDF entry. Describe corrections in original words. Private specialization guidance, signature-ability guidance, adventure passages, and similar source text stay in local imports and must not enter Git history or release assets.
 
 Automation should expose unresolved or situational decisions to players, game masters, and Director of Realms rather than silently inventing a rule. Update the relevant coverage or validation document when a change affects a stated capability or gap.
+
+## Wiki maintenance
+
+Follow the [wiki maintenance instructions in AGENTS.md](AGENTS.md#keep-the-github-wiki-current). Assess documentation impact in every change: update affected `docs/wiki/` pages alongside implementation and release notes, or explain why no wiki change is needed. Verify the guidance against code, validation evidence, and the released version; distinguish candidate features clearly. Publish reviewed pages to the separate wiki repository and verify the public result. Updating this repository alone does not publish the wiki.
+
+## Pre-push checks and end-to-end tests
+
+The repository includes a pre-push hook that runs `npm test` and `npm run check`, which takes about six seconds. Enable it once per clone. It then applies to every worktree of that clone:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+End-to-end specs in `e2e/` run with Playwright against a licensed Foundry server, so hosted CI does not run them. Point them at an isolated validation world, never a campaign world. Without `FOUNDRY_URL` every spec is skipped:
+
+```sh
+npx playwright install chromium
+FOUNDRY_URL=http://localhost:30000 npx playwright test
+```
+
+Set `FOUNDRY_STORAGE_STATE` to a saved Playwright login for specs that need an authenticated session. `tests/foundry-smoke.mjs` remains the scripted advancement journey and uses the same variables.
 
 ## Security
 

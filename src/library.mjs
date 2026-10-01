@@ -1,4 +1,5 @@
 import { SYSTEM_ID } from "./config.mjs";
+import { talentActivation } from "./talent-activation.mjs";
 import { validateTree } from "./advancement.mjs";
 import { refreshGMNotes, preparePrivateNotes } from "./gm-notes.mjs";
 import {
@@ -6,6 +7,7 @@ import {
   libraryPackName,
   libraryPackLabel,
 } from "./library-packs.mjs";
+import { VEHICLE_STAT_FIELDS } from "./vehicle-data.mjs";
 export { refreshLibraryLabels } from "./library-packs.mjs";
 export function mergeSpecializationEnrichment(existing, incoming) {
   if (
@@ -25,8 +27,8 @@ export function mergeSpecializationEnrichment(existing, incoming) {
       return {
         ...node,
         ...(!node.key && source.key ? { key: source.key } : {}),
-        ...(!node.activation && source.activation
-          ? { activation: source.activation }
+        ...(talentActivation(node.name, source.activation ?? node.activation)
+          ? { activation: talentActivation(node.name, source.activation ?? node.activation) }
           : {}),
         ...(!node.summary && source.summary ? { summary: source.summary } : {}),
         ...(!(node.effects?.length) && source.effects?.length
@@ -43,8 +45,71 @@ export function mergeSpecializationEnrichment(existing, incoming) {
       ...(!current.verified && incoming.system.tree.verified
         ? { verified: true }
         : {}),
+      ...(!current.verification && incoming.system.tree.verification
+        ? { verification: structuredClone(incoming.system.tree.verification) }
+        : {}),
     };
   return JSON.stringify(merged) === JSON.stringify(current) ? null : merged;
+}
+
+const emptyVehicleProfile = (system = {}) =>
+  Number(system.hullTrauma?.max ?? 0) === 0 &&
+  Number(system.systemStrain?.max ?? 0) === 0 &&
+  Number(system.armor ?? 0) === 0 &&
+  Number(system.silhouette ?? 0) === 0 &&
+  Number(system.speed?.max ?? 0) === 0 &&
+  Number(system.handling ?? 0) === 0 &&
+  ["fore", "aft", "port", "starboard"].every(
+    (side) => Number(system.shields?.[side] ?? 0) === 0,
+  );
+
+export function mergeVehicleEnrichment(existing, incoming) {
+  if (
+    existing?.type !== "vehicle" ||
+    incoming?.type !== "vehicle" ||
+    incoming.system?.incomplete?.some((entry) =>
+      VEHICLE_STAT_FIELDS.includes(entry),
+    ) ||
+    !VEHICLE_STAT_FIELDS.every((entry) =>
+      existing.system?.incomplete?.includes(entry),
+    ) ||
+    !emptyVehicleProfile(existing.system)
+  )
+    return null;
+  return {
+    "system.hullTrauma.max": incoming.system.hullTrauma.max,
+    "system.systemStrain.max": incoming.system.systemStrain.max,
+    "system.armor": incoming.system.armor,
+    "system.silhouette": incoming.system.silhouette,
+    "system.speed.max": incoming.system.speed.max,
+    "system.handling": incoming.system.handling,
+    "system.shields": structuredClone(incoming.system.shields),
+    "system.incomplete": Array.from(existing.system.incomplete).filter(
+      (entry) => !VEHICLE_STAT_FIELDS.includes(entry),
+    ),
+    "system.metadata.vehicleStatEvidence": structuredClone(
+      incoming.system.metadata?.vehicleStatEvidence ?? {},
+    ),
+  };
+}
+export function mergeVehicleLoadoutReference(existing, incoming) {
+  if (existing?.type !== "vehicle" || incoming?.type !== "vehicle" ||
+      existing.system?.source?.book !== incoming.system?.source?.book ||
+      String(existing.system?.source?.page) !== String(incoming.system?.source?.page) ||
+      (existing.items ?? []).some(item => item.type === "weapon")) return null;
+  const current = existing.system.metadata ?? {}, next = incoming.system.metadata ?? {};
+  if (!next.Weapons_Status || current.Weapons_Status?.startsWith("source-checked") || current.Weapons_Status === next.Weapons_Status) return null;
+  const checked = next.Weapons_Status.startsWith("source-checked");
+  const update = { "system.incomplete": [...new Set([
+    ...(existing.system.incomplete ?? []).filter(field => field !== "installed weapons"),
+    ...(!checked ? ["installed weapons"] : []),
+  ])] };
+  for (const key of ["Weapons_Status", "Loadout_Pages", "Sensor_Range", "Backup_Hyperdrive", "Navigation", "Consumables",
+    "Candidate_Sensor_Range", "Candidate_Backup_Hyperdrive", "Candidate_Navigation", "Candidate_Consumables"])
+    if (next[key] !== undefined && (current[key] == null || ["Weapons_Status", "Loadout_Pages"].includes(key)))
+      update[`system.metadata.${key}`] = structuredClone(next[key]);
+  if (checked && incoming.items?.length) update.items = [...structuredClone(existing.items ?? []), ...structuredClone(incoming.items)];
+  return update;
 }
 export function validateBundle(bundle) {
   // Version-one libraries keep the same schema across branding changes.
@@ -215,6 +280,23 @@ export async function importLibrary(bundle, onProgress = () => {}) {
         enriched = updates.length;
       }
       if (type === "Actor") {
+        const vehicleUpdates = [];
+        for (const incoming of documents.filter(
+          (doc) => doc.type === "vehicle" && !createdIds.has(doc._id),
+        )) {
+          const existing = await pack.getDocument(incoming._id),
+            existingObject = existing?.toObject?.() ?? existing,
+            update = mergeVehicleEnrichment(existingObject, incoming),
+            loadout = mergeVehicleLoadoutReference(existingObject, incoming);
+          if (update && loadout) loadout["system.incomplete"] = loadout["system.incomplete"].filter(field => !VEHICLE_STAT_FIELDS.includes(field));
+          if (update || loadout) vehicleUpdates.push({ _id: incoming._id, ...update, ...loadout });
+        }
+        for (let i = 0; i < vehicleUpdates.length; i += 100)
+          await pack.documentClass.updateDocuments(
+            vehicleUpdates.slice(i, i + 100),
+            { pack: pack.collection, render: false },
+          );
+        enriched = vehicleUpdates.length;
         const links = documents
           .filter(
             (doc) =>

@@ -65,7 +65,7 @@ Version 3 uses `kind: "actorGroup"` and is GM-only. Its `actors` array contains 
 
 Relationships use stable node IDs and one of 131 allow-listed directed kinds. Each relationship reads as a `fromNodeId → kind → toNodeId` sentence, and several facts may connect the same pair in either direction. The vocabulary covers authority/service, alliance/conflict, explicit personal attitudes, family/mentorship, leverage/intelligence, organisation/assignment, ownership/custody/acquisition, vehicles/travel and bases/territory/logistics. A commander can therefore `commands` a minion while that minion is `loyal-to` the commander; legal `owns` can coexist with `steals`, `stolen-from` and `borrowed-by`; and a ship can be `piloted-by`, `docked-at`, `refuels-at` or `repaired-by` without those meanings being conflated. The optional creator label remains separate from the kind. Runtime validation rejects dangling references, reused Actor references, self-links, duplicate IDs and unknown fields before any Actor is created. Capability discovery publishes the same vocabulary as the public v3 JSON Schema, with a contract test preventing drift.
 
-The importer creates the Actors as one batch and stores system-owned provenance sufficient to reconstruct each node's incident relationships. It then emits one `starWarsFFGIntegrationImported` result with the stable-reference-to-Foundry-Actor mapping. Director of Realms consumes this result as explicit authored context; it does not convert structural links into invented trust, fear or hostility scores. See [ADR 0002](adr/0002-authored-actor-group-interchange.md).
+The importer creates the Actors as one batch and stores system-owned provenance sufficient to reconstruct each node's incident relationships. It then emits one `starWarsFFGIntegrationImported` result with the stable-reference-to-Foundry-Actor mapping. Connected tools such as Director of Realms can consume this result as explicit authored context. Consumers must not convert structural links into invented trust, fear or hostility scores; live DoR consumption is a separate acceptance check. See [ADR 0002](adr/0002-authored-actor-group-interchange.md).
 
 ## Interchange envelope
 
@@ -204,6 +204,8 @@ await game.system.api.integration.importRulePack(rulePack, {
 
 Use `replace` only after an explicit user choice. Talent-tree automation is limited to the declarative effect types already supported by the system. Macro bodies, callbacks, arbitrary Active Effects and unknown fields are rejected. A publisher must have permission to distribute every description and asset in its package.
 
+The Foundry review dialog applies the same policy to file, direct-link and connected-site imports. A rule pack or bundle defaults to **Keep current community rules** and offers **Replace matching community rules** as an explicit choice. Matching uses the publisher, rule-pack and rule keys, updates the existing Item in place and leaves unrelated world content untouched.
+
 ### Bundle
 
 A bundle contains 1–20 complete character or rule-pack envelopes in `payload.packages`. Bundles cannot contain other bundles. Permission checks run for the full bundle before its first document is written.
@@ -320,3 +322,16 @@ Hooks.once("starWarsFFGReady", (api) => {
 Successful imports call `Hooks.callAll("starWarsFFGIntegrationImported", result, package)`. Connector registration calls `starWarsFFGConnectorRegistered`. The existing `starWarsFFGReady` hook receives the complete system API.
 
 The protocol is client-mediated by design. It does not expose a public unauthenticated HTTP or socket write endpoint, store website credentials or let imported data execute JavaScript. See [ADR 0001](adr/0001-public-integration-api.md) for the decision record.
+
+## Read-only support and rules inventory
+
+```js
+game.system.api.support.capabilities();
+game.system.api.support.capabilities("cross-scale");
+game.system.api.support.actorCoverage(actor, { query: "", status: "" });
+game.system.api.support.diagnostics();
+```
+
+Unknown capability IDs return unsupported with a GM ruling required. Actor coverage requires observer access and applies the campaign book filter without changing learned mechanics. The diagnostic v1 format returns only versions, two known integration states and document counts; it is not an upload API.
+
+The existing DoR getCheckTalentRules result now includes cloned structured contributions (rule ID, activation status, source and effect). Check-pool results retain basePool separately from the adjusted pool. Structured-effect metadata identifies what code applies; it does not certify book interpretation or turn prose into executable rules.

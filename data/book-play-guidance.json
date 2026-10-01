@@ -1,0 +1,160 @@
+{
+  "format": "star-wars-ffg-book-play-guidance",
+  "version": 1,
+  "entries": [
+    {
+      "id": "aor-cyphers-spy-campaigns",
+      "kind": "adventure-guidance",
+      "title": "Preparing a Spy campaign",
+      "scope": "Spy-focused play",
+      "source": {
+        "book": "Age of Rebellion - Cyphers & Masks",
+        "pages": [86]
+      },
+      "review": "page-image-reviewed",
+      "automatic": false,
+      "beats": [
+        { "phase": "prepare", "prompt": "Choose an espionage goal and decide which organization or location the party will investigate over several missions." },
+        { "phase": "prepare", "prompt": "Give characters outside the Spy career useful support roles in the operation." },
+        { "phase": "during-play", "prompt": "Use the book's example campaigns as starting structures; adapt the mission path to the party's choices." }
+      ]
+    },
+    {
+      "id": "fnd-unlimited-mystic-adventures",
+      "kind": "adventure-guidance",
+      "title": "Preparing a Mystic adventure",
+      "scope": "Mystic-focused play",
+      "source": {
+        "book": "Force & Destiny - Unlimited Power",
+        "pages": [75]
+      },
+      "review": "page-image-reviewed",
+      "automatic": false,
+      "beats": [
+        { "phase": "prepare", "prompt": "Include problems the party can address through insight, influence or other indirect action." },
+        { "phase": "during-play", "prompt": "Give the Mystic a meaningful part in the challenge without forcing the character into the spotlight." },
+        { "phase": "during-play", "prompt": "Let the players' inventive use of established abilities change how an obstacle is resolved." }
+      ]
+    },
+    {
+      "id": "aor-cyphers-spy-xp-rewards",
+      "kind": "reward-guidance",
+      "title": "Spy mission XP review",
+      "scope": "Spy-focused mission wrap-up",
+      "source": {
+        "book": "Age of Rebellion - Cyphers & Masks",
+        "pages": [93]
+      },
+      "review": "page-image-reviewed",
+      "automatic": false,
+      "reward": {
+        "amount": null,
+        "decisionPoints": [
+          "Recognize successful covert work even when the characters avoided a fight.",
+          "Choose whether XP is awarded each session or at mission completion; account for every session when an award is deferred.",
+          "Review any milestone or Motivation bonus in the context of the whole assignment.",
+          "Treat spending banked XP during a mission as an exceptional GM decision and record it explicitly."
+        ]
+      }
+    },
+    {
+      "id": "aor-cyphers-spy-other-rewards",
+      "kind": "reward-guidance",
+      "title": "Spy non-XP reward review",
+      "scope": "Spy-focused mission wrap-up",
+      "source": {
+        "book": "Age of Rebellion - Cyphers & Masks",
+        "pages": [94, 95]
+      },
+      "review": "page-image-reviewed",
+      "automatic": false,
+      "reward": {
+        "amount": null,
+        "decisionPoints": [
+          "Decide whether requested resources are temporary mission support or a lasting reward.",
+          "Consider new training or responsibilities as alternatives to public recognition.",
+          "For special equipment, decide whether it is reusable or limited to the current operation before granting it."
+        ]
+      }
+    },
+    {
+      "id": "eote-dangerous-hired-gun-rewards",
+      "kind": "reward-guidance",
+      "title": "Hired Gun mission reward review",
+      "scope": "Hired Gun focused play",
+      "source": {
+        "book": "Edge of The Empire - Dangerous Covenants",
+        "pages": [89, 90, 91]
+      },
+      "review": "page-image-reviewed",
+      "automatic": false,
+      "reward": {
+        "amount": null,
+        "decisionPoints": [
+          "Keep XP awards grounded in the mission and the party's contribution, rather than a count of defeated enemies.",
+          "If combat dominates play, review when XP is granted and which skills are plausible to improve; revisit any temporary restriction between major fights.",
+          "When setting job pay, consider risk, location, legality, employer resources and expenses before consulting the book's pay scale.",
+          "Distinguish equipment loaned for an assignment from a lasting reward."
+        ]
+      }
+    },
+    {
+      "id": "aor-stay-on-target-ace-rewards",
+      "kind": "reward-guidance",
+      "title": "Ace mission reward review",
+      "scope": "Ace focused play",
+      "source": {
+        "book": "Age of Rebellion - Stay On Target",
+        "pages": [92, 93]
+      },
+      "review": "page-image-reviewed",
+      "automatic": false,
+      "reward": {
+        "amount": null,
+        "decisionPoints": [
+          "Keep routine XP comparable with the rest of the party; consider a modest bonus for an exceptional use of Ace abilities without making it automatic each session.",
+          "Review mission complexity and the Ace's contribution instead of awarding XP simply for enemy losses.",
+          "Select suitable credits, equipment, ships, reputation, Duty or promotion rewards according to the character's affiliation and the mission outcome."
+        ]
+      }
+    },
+    {
+      "id": "fnd-savage-seeker-companion-guidance",
+      "kind": "adventure-guidance",
+      "title": "Preparing a Seeker companion arc",
+      "scope": "Seeker-focused play",
+      "source": {
+        "book": "Force & Destiny - Savage Spirits",
+        "pages": [80, 81]
+      },
+      "review": "page-image-reviewed",
+      "automatic": false,
+      "beats": [
+        { "phase": "prepare", "prompt": "Pair physical travel or a creature encounter with a choice that lets the character reflect on the bond they want to build." },
+        { "phase": "prepare", "prompt": "Adapt the creature, habitat and other party roles to the campaign before planning the search." },
+        { "phase": "during-play", "prompt": "Let the search, first meeting, later test and trial run respond to the party's choices; use ordinary check rules for cooperation." }
+      ]
+    },
+    {
+      "id": "fnd-savage-seeker-rewards",
+      "kind": "reward-guidance",
+      "title": "Seeker adventure reward review",
+      "scope": "Seeker-focused adventure wrap-up",
+      "source": {
+        "book": "Force & Destiny - Savage Spirits",
+        "pages": [92, 93, 94]
+      },
+      "review": "page-image-reviewed",
+      "automatic": false,
+      "reward": {
+        "amount": null,
+        "decisionPoints": [
+          "Use the normal XP award as the baseline; review any extra for personal goals, Motivation or Morality in light of the whole party's contributions.",
+          "Decide whether a creature or mount is temporary help or a lasting companion, and account for its care and usefulness in the campaign setting.",
+          "Treat training, talents and Force upgrades as exceptional awards with a clear eligibility and advancement decision.",
+          "For knowledge, insight or standing, record the concrete story consequence before applying any mechanical effect."
+        ]
+      }
+    }
+  ]
+}

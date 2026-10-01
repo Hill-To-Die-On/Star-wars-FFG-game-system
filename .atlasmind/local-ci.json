@@ -3,7 +3,7 @@
   "managedBy": "atlasmind:reviewed-pr-local-ci:v1",
   "enabled": true,
   "repository": "Hill-To-Die-On/Star-wars-FFG-game-system",
-  "trustedBaseBranch": "main",
+  "trustedBaseBranch": "dev",
   "workflowFile": "atlasmind-reviewed-pr-local-ci.yml",
   "runnerLabel": "atlasmind-reviewed-pr-x64",
   "statusContext": "AtlasMind/local-ci",
@@ -20,18 +20,44 @@
       "timeoutMinutes": 20
     },
     {
-      "label": "Run check",
+      "label": "Run unit and contract tests",
+      "command": "npm",
+      "args": [
+        "test"
+      ],
+      "timeoutMinutes": 20
+    },
+    {
+      "label": "Run syntax, template and data checks",
       "command": "npm",
       "args": [
         "run",
         "check"
       ],
-      "timeoutMinutes": 45
+      "timeoutMinutes": 20
+    },
+    {
+      "label": "Build the public system package",
+      "command": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "timeoutMinutes": 20
+    },
+    {
+      "label": "Audit the actual public release archive",
+      "command": "npm",
+      "args": [
+        "run",
+        "audit:release"
+      ],
+      "timeoutMinutes": 10
     }
   ],
   "detection": {
     "kind": "node",
     "packageManager": "npm",
-    "detail": "Detected npm with a lockfile and the aggregate check script."
+    "detail": "Reviewed Star Wars system matrix: tests, check, build and archive audit."
   }
 }

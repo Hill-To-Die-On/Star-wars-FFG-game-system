@@ -9,11 +9,11 @@ checks required to pass before anything changes.
 
 ## Stages
 
-### 1. Local — `local`
+### 1. Development — `dev`
 
-Your own machine. Where you write and run code day to day. Data here is disposable — nothing your users see lives at this stage.
+The integration branch and local development environment. Feature branches merge here after review and local validation.
 
-- **Branch:** — (working tree)
+- **Branch:** `dev`
 - **Hosting:** localhost
 - **Config source:** — (location only — secret values stay in your secret store)
 - **Data:** No application database
@@ -23,7 +23,7 @@ Your own machine. Where you write and run code day to day. Data here is disposab
 
 A production-like rehearsal environment. Changes land here first so they can be tested against realistic data and settings before any real users are affected.
 
-- **Branch:** `main`
+- **Branch:** `staging`
 - **Hosting:** —
 - **Config source:** — (location only — secret values stay in your secret store)
 - **Data:** No application database
@@ -41,13 +41,13 @@ The live environment your real users depend on. Every change here is treated as 
 
 ## Promotions
 
-### Local → Staging
+### Development → Staging
 
 Every promotion runs the same guarded sequence:
 
 1. **Preflight gate** — the required checks below must all pass, or the promotion aborts.
 2. **Backup** — optional for this target.
-3. **Promote via Pull Request** — open a PR into `main` (a protected branch); the required status checks must be green and the PR merged. AtlasMind never force-pushes or pushes directly.
+3. **Promote via Pull Request** — open a PR into `staging` (a protected branch); the required status checks must be green and the PR merged. AtlasMind never force-pushes or pushes directly.
 4. **Verify** — the target is health-checked after deploy.
 
 - **Required checks:** `Working tree clean`, `Compile/build passes`, `Tests pass`
@@ -75,4 +75,4 @@ Every promotion runs the same guarded sequence:
 
 ---
 
-_Last updated: 2026-09-25T04:03:33.444Z._
+_Last updated: 2026-09-26._

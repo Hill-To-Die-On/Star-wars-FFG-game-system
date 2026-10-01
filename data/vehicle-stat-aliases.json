@@ -1,0 +1,281 @@
+{
+  "format": "star-wars-ffg-vehicle-stat-aliases",
+  "version": 1,
+  "matches": [
+    {
+      "recordId": "3",
+      "databaseName": "Nen-Carvon R-444 Imperial Sky Swooper",
+      "datasetName": "R-444 Imperial Sky Swooper"
+    },
+    {
+      "recordId": "4",
+      "databaseName": "Hydrospeare Corp Explorer Submersible",
+      "datasetName": "Explorer Submersible"
+    },
+    {
+      "recordId": "5",
+      "databaseName": "Mon Calamari Keelkana-Class Attack Submarine",
+      "datasetName": "Keelkana-Class Attack Submersible"
+    },
+    {
+      "recordId": "11",
+      "databaseName": "74-Z Speeder Bike",
+      "datasetName": "Aratech 74-Z Speeder Bike"
+    },
+    {
+      "recordId": "15",
+      "databaseName": "Flare-S Swoop",
+      "datasetName": "Mobquet Flare-S Swoop"
+    },
+    {
+      "recordId": "23",
+      "databaseName": "T-16 Skyhopper",
+      "datasetName": "Incom T-16 Skyhopper"
+    },
+    {
+      "recordId": "24",
+      "databaseName": "T-47 Airspeeder",
+      "datasetName": "Alliance T-47 Airspeeder"
+    },
+    {
+      "recordId": "27",
+      "databaseName": "48 Roller Wheel Bike",
+      "datasetName": "Gallis-Tech 48 Roller"
+    },
+    {
+      "recordId": "36",
+      "databaseName": "Digger Crawler",
+      "datasetName": "CMC Digger Crawler"
+    },
+    {
+      "recordId": "48",
+      "databaseName": "Firespray System Patrol Craft",
+      "datasetName": "Firespray Patrol Craft"
+    },
+    {
+      "recordId": "57",
+      "databaseName": "Sentinel-Class Landing Craft",
+      "datasetName": "Sentinel-Class Landing Shuttle"
+    },
+    {
+      "recordId": "59",
+      "databaseName": "Starviper-Class Attack Platform",
+      "datasetName": "StarViper M-2"
+    },
+    {
+      "recordId": "71",
+      "databaseName": "TIE/RP \"Reaper\" Assault Transport",
+      "datasetName": "TIE/RP \"Reaper\" Attack Lander"
+    },
+    {
+      "recordId": "75",
+      "databaseName": "T-65B X-Wing Multi-Tole Starfighter",
+      "datasetName": "T-65B X-Wing Starfighter"
+    },
+    {
+      "recordId": "84",
+      "databaseName": "CEC Deep Space Recovery Vessel L-2783",
+      "datasetName": "L-2783 Deep Space Recovery Vessel"
+    },
+    {
+      "recordId": "90",
+      "databaseName": "Jumpmaster 5000",
+      "datasetName": "JM-5000 Jumpmaster Long Range Scout"
+    },
+    {
+      "recordId": "117",
+      "databaseName": "C90 Corvette !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+      "datasetName": "CR90 Corvette"
+    },
+    {
+      "recordId": "121",
+      "databaseName": "EF76 Nebulon-B Frigate",
+      "datasetName": "EF76 Nebulon-B Escort Frigate"
+    },
+    {
+      "recordId": "131",
+      "databaseName": "Rendili Stardrive Netron Star-Class Bulk Cruiser",
+      "datasetName": "Neutron Star-Class Bulk Cruiser"
+    },
+    {
+      "recordId": "143",
+      "databaseName": "MC80 Liberty Type Heavy Star Cruiser",
+      "datasetName": "MC80 Liberty Type Star Cruiser"
+    },
+    {
+      "recordId": "150",
+      "databaseName": "CEC WUD-500 Star Yacht",
+      "datasetName": "WUD-500 Star Yacht"
+    },
+    {
+      "recordId": "157",
+      "databaseName": "CEC HWK-1000 Light Freighter",
+      "datasetName": "HWK-1000 Light Freighter"
+    },
+    {
+      "recordId": "168",
+      "databaseName": "Superhaul II Model Cargo Skiff",
+      "datasetName": "Superhaul Model II Cargo Skiff"
+    },
+    {
+      "recordId": "170",
+      "databaseName": "I-C2 Civil-Industrial Droid Vehicle",
+      "datasetName": "I-C2 Civil-Industrial Droid"
+    },
+    {
+      "recordId": "183",
+      "databaseName": "Hutt Repulsorsled (Hutt Floater)",
+      "datasetName": "Hutt Repulsorsled"
+    },
+    {
+      "recordId": "207",
+      "databaseName": "Delta-7 Aethersprite Interceptor",
+      "datasetName": "Delta-7/7B Aethersprite Light Interceptor"
+    },
+    {
+      "recordId": "209",
+      "databaseName": "Pathfiner Scout Ship",
+      "datasetName": "Civilian Pathfinder Scout Ship"
+    },
+    {
+      "recordId": "217",
+      "databaseName": "1-L Imperial-Series Repulsor Tanks",
+      "datasetName": "1-L Imperial-Series Repulsor Tank"
+    },
+    {
+      "recordId": "223",
+      "databaseName": "BTS-A2 \"H-Wing\" Long-Strike Starfighter",
+      "datasetName": "BTS-A2 \"H-Wing\" Long-Range Strike Starfighter"
+    },
+    {
+      "recordId": "237",
+      "databaseName": "Low Altitude Assault Transport/i",
+      "datasetName": "LAAT/i Infantry Transport"
+    },
+    {
+      "recordId": "238",
+      "databaseName": "Low Altitude Assault Transport/c",
+      "datasetName": "LAAT/c Carrier Transport"
+    },
+    {
+      "recordId": "242",
+      "databaseName": "Guardian E2 Escape Speeder",
+      "datasetName": "Guardian E2 Escape Speeder Bike"
+    },
+    {
+      "recordId": "245",
+      "databaseName": "Overwatch MC-2 Mobile Command Speeder",
+      "datasetName": "MC-2 Moble Command Speeder"
+    },
+    {
+      "recordId": "247",
+      "databaseName": "The Superflare - Modified Mobquet Flare-S Swoop",
+      "datasetName": "Superflare/Modified Flare-S Swoop"
+    },
+    {
+      "recordId": "251",
+      "databaseName": "Surronian Conqueror-Class Assault Ship",
+      "datasetName": "Conqueror-class Assault Ship"
+    },
+    {
+      "recordId": "275",
+      "databaseName": "Ithorian Herd Ship",
+      "datasetName": "Herd Ship"
+    },
+    {
+      "recordId": "293",
+      "databaseName": "Baktoid UH-TX",
+      "datasetName": "UH-XH Heavy Work Platform"
+    },
+    {
+      "recordId": "294",
+      "databaseName": "Portable Store KRI-80",
+      "datasetName": "KRI-80 Portable Store"
+    },
+    {
+      "recordId": "298",
+      "databaseName": "Cybershop Ship",
+      "datasetName": "Cybershop Ship (CR90)"
+    },
+    {
+      "recordId": "299",
+      "databaseName": "Deep Space Recovery Vessel L-2783",
+      "datasetName": "L-2783 Deep Space Recovery Vessel"
+    },
+    {
+      "recordId": "302",
+      "databaseName": "I-C4A Combat Construction Droid Vehicle",
+      "datasetName": "I-C4a Combat Construction Droid"
+    },
+    {
+      "recordId": "352",
+      "databaseName": "V-19 Torrent",
+      "datasetName": "V-19 Torrent Starfighter"
+    },
+    {
+      "recordId": "360",
+      "databaseName": "57-D Speeder Bike",
+      "datasetName": "Aratech 57-D Speeder Bike"
+    },
+    {
+      "recordId": "364",
+      "databaseName": "A-36 Pathfinder-Class Force Reconnaissance Vessel",
+      "datasetName": "A-36 Pathfinder-class Force Recon Vessel"
+    },
+    {
+      "recordId": "365",
+      "databaseName": "E-9 Explorer-Class Armed Long-Range Scout Vessel",
+      "datasetName": "Loronar E-9 Explorer-class Long Range Scout"
+    },
+    {
+      "recordId": "366",
+      "databaseName": "720 Light Freighter",
+      "datasetName": "Ghtroc 720 Light Freighter"
+    },
+    {
+      "recordId": "376",
+      "databaseName": "Delta-7 Aethersprite-Class Interceptor",
+      "datasetName": "Delta-7/7B Aethersprite Light Interceptor"
+    },
+    {
+      "recordId": "380",
+      "databaseName": "Sheathipede-Class Shuttle",
+      "datasetName": "Sheathipede-Class Transport Shuttle"
+    },
+    {
+      "recordId": "384",
+      "databaseName": "Charger C70 Consular-Class Light Cruiser",
+      "datasetName": "Consular-Class Light Cruiser"
+    },
+    {
+      "recordId": "388",
+      "databaseName": "A-A5 Heavy Speeder Truck",
+      "datasetName": "Trast A-A5 Heavy Speeder Truck"
+    },
+    {
+      "recordId": "390",
+      "databaseName": "AT-PT Personal Transport",
+      "datasetName": "All-Terrain Personal Transport"
+    },
+    {
+      "recordId": "395",
+      "databaseName": "Luxury 3000 Space Yacht",
+      "datasetName": "SoroSuub Luxury 3000 Space Yacht"
+    },
+    {
+      "recordId": "400",
+      "databaseName": "V-35 Courier",
+      "datasetName": "V-35 Courier Military Landspeeder"
+    },
+    {
+      "recordId": "401",
+      "databaseName": "Hyperfoil 1000-XTC",
+      "datasetName": "Hyperfoil 1000-XTC (Airspeeder)"
+    },
+    {
+      "recordId": "407",
+      "databaseName": "Kappa-Class Shuttle",
+      "datasetName": "Kappa-Class Shuttle (Rebellion)"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "format": "star-wars-ffg-source-requests",
+  "version": 1,
+  "captureGuidance": [
+    "Capture each complete page straight-on with all four page edges visible.",
+    "Keep printed page numbers, tables, diagrams and connecting lines in frame.",
+    "Use even light and enough resolution for small statistics and dice symbols to remain legible."
+  ],
+  "partialSources": [],
+  "resolvedSources": [
+    {
+      "book": "Age of Rebellion - Cyphers & Masks",
+      "status": "complete-pdf-held",
+      "assetPages": 100,
+      "textLayerPages": 94,
+      "previouslyRequestedPrintedPageRanges": ["10-11", "36-69"],
+      "spotCheckedPrintedPages": [11, 17, 32, 38, 69],
+      "mechanicsReview": "pending-per-instruction"
+    }
+  ]
+}
