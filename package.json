@@ -16,6 +16,7 @@
     "test:playtest:stateful": "node scripts/browser-checks.mjs --fixture=tabletop-ui.mjs --runs=3 --stateful",
     "test:recovery": "node scripts/foundry-recovery-acceptance.mjs",
     "check": "node scripts/check.mjs",
+    "audit:origins": "node scripts/audit-origin-data.mjs",
     "audit:icons": "node scripts/audit-actor-icons.mjs",
     "build": "node scripts/build.mjs",
     "audit:release": "node scripts/audit-release.mjs",

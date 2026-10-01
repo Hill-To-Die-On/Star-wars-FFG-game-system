@@ -4,7 +4,7 @@ Generated from the locally supplied SQL and structured dataset. No book text or 
 
 For the separate gameplay-instruction and cross-book citation scan, see [gameplay instruction source audit](rule-instruction-audit.md). Catalogue page references and chart checks do not establish complete rules coverage.
 
-Playable species abilities have a separate [book-checked coverage register](species-ability-coverage.md): 38 of 104 playable species are checked against their printed ability pages, with 66 pending. The catalogue's `Special` shorthand alone is not treated as a complete rule.
+Playable species abilities have a separate [book-checked coverage register](species-ability-coverage.md): 39 of 104 playable species are checked against their printed ability pages, with 65 pending. The catalogue's `Special` shorthand alone is not treated as a complete rule.
 
 135 specialization references; 135 structurally validated specialization graphs; 312 vehicles with complete evidence-backed numeric profiles; 298 private motivation guidance matches.
 

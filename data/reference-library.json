@@ -21340,7 +21340,7 @@
             "Force_Sensitive": "FALSE",
             "Primary_Career_Type": "Combat",
             "Secondary_Career_Type": "Defensive",
-            "Bonus_Career_Skills": "Gunnery, Perception, Ranged - Light, Resilience",
+            "Bonus_Career_Skills": "Gunnery, Perception, Ranged - Heavy, Resilience",
             "Talents": "Armour Master, Armour Master (Improved), Brace, Deadly Accuracy, Dedication, Enduring, Grit, Toughened, Physical Training, Suppressing Fire, Brace (Improved), Brace (Supreme), Clanker Killer, Lateral Thinking, Natural Trooper",
             "Gain_Force_Rating": "",
             "Prerequisite_Force_Rating": "",
@@ -21360,7 +21360,7 @@
           "careerSkills": [
             "gunnery",
             "perception",
-            "rangedLight",
+            "rangedHeavy",
             "resilience"
           ],
           "forceRating": 0
@@ -21590,7 +21590,7 @@
             "Force_Sensitive": "FALSE",
             "Primary_Career_Type": "Gymnast",
             "Secondary_Career_Type": "Under Cover",
-            "Bonus_Career_Skills": "Athletics, Discipline, Streetwise, Vigilance",
+            "Bonus_Career_Skills": "Athletics, Deception, Streetwise, Vigilance",
             "Talents": "Dedication, Grit, Hidden Storage, Indistinguishable, Second Wind, Shortcut, Swift, Well Travelled, Freerunning, Hidden Storage (Improved), Incite Distraction, Indistinguishable (Improved), Lose Them, Natural Athlete, Pilot Training",
             "Gain_Force_Rating": "",
             "Prerequisite_Force_Rating": "",
@@ -21609,7 +21609,7 @@
           "career": "Spy",
           "careerSkills": [
             "athletics",
-            "discipline",
+            "deception",
             "streetwise",
             "vigilance"
           ],
@@ -23275,7 +23275,7 @@
             "Force_Sensitive": "TRUE",
             "Primary_Career_Type": "Combat",
             "Secondary_Career_Type": "Inner Knowledge",
-            "Bonus_Career_Skills": "Coercion, Discipline, Leadership, Melee",
+            "Bonus_Career_Skills": "Coercion, Discipline, Lightsaber, Melee",
             "Talents": "Balance, Dedication, Grit, Intimidating, Lethal Blows, Quick Strike, Toughened, Multiple Opponents, Parry, Embrace Your Hate, Inner Peace, Juyo Savagery, Vaapad Control",
             "Gain_Force_Rating": "1",
             "Prerequisite_Force_Rating": "",
@@ -23295,7 +23295,7 @@
           "careerSkills": [
             "coercion",
             "discipline",
-            "leadership",
+            "lightsaber",
             "melee"
           ],
           "forceRating": 0
@@ -23425,7 +23425,7 @@
             "Force_Sensitive": "TRUE",
             "Primary_Career_Type": "Combat",
             "Secondary_Career_Type": "Defensive",
-            "Bonus_Career_Skills": "Charm, Coercion, Cool, Lightsaber",
+            "Bonus_Career_Skills": "Charm, Cool, Coordination, Lightsaber",
             "Talents": "Dedication, Grit, Intense Presence, Defensive Training, Duelist's Training, Feint, Makashi Finish, Makashi Flourish, Makashi Technique, Parry, Parry (Improved), Resist Disarm, Sum Djem",
             "Gain_Force_Rating": "1",
             "Prerequisite_Force_Rating": "",
@@ -23444,8 +23444,8 @@
           "career": "Mystic",
           "careerSkills": [
             "charm",
-            "coercion",
             "cool",
+            "coordination",
             "lightsaber"
           ],
           "forceRating": 0
@@ -24175,7 +24175,7 @@
             "Force_Sensitive": "TRUE",
             "Primary_Career_Type": "Defensive",
             "Secondary_Career_Type": "Inner Knowledge",
-            "Bonus_Career_Skills": "Coercion, Education, Mechanics, Vigilance",
+            "Bonus_Career_Skills": "Coordination, Education, Mechanics, Vigilance",
             "Talents": "Dedication, Force Rating, Grit, Quick Draw, Sense Danger, Toughened, Well Rounded, Parry, Reflect, Valuable Facts, Adaptable, Beginner's Luck, Learning Opportunity, Sincerest Flattery, Something To Prove, Temple Training",
             "Gain_Force_Rating": "1 (For joining the Jedi career)",
             "Prerequisite_Force_Rating": "",
@@ -24193,7 +24193,7 @@
           ],
           "career": "Jedi",
           "careerSkills": [
-            "coercion",
+            "coordination",
             "education",
             "mechanics",
             "vigilance"
@@ -26571,7 +26571,7 @@
             "Force_Sensitive": "FALSE",
             "Primary_Career_Type": "Leader",
             "Secondary_Career_Type": "Combat Support",
-            "Bonus_Career_Skills": "Brawl, Deception, Leadership, Ranged - Heavy",
+            "Bonus_Career_Skills": "Brawl, Discipline, Leadership, Ranged - Heavy",
             "Talents": "Body Guard, Confidence, Dedication, Field Commander, Field Commander (Improved), Natural Outdoorsman, Outdoorsman, Quick Draw, Swift, Toughened, Commanding Presence, Coordinated Assault, Natural Leader, Side Step",
             "Gain_Force_Rating": "",
             "Prerequisite_Force_Rating": "",
@@ -26590,7 +26590,7 @@
           "career": "Commander",
           "careerSkills": [
             "brawl",
-            "deception",
+            "discipline",
             "leadership",
             "rangedHeavy"
           ],
@@ -114174,7 +114174,7 @@
           },
           "metadata": {
             "ID": 30,
-            "signature_abilities": "Unmatched Devistation",
+            "signature_abilities": "Unmatched Devastation",
             "career": "Bounty Hunter",
             "career_type": "Aggressive",
             "book": "Edge of The Empire - No Disintegrations",

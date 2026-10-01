@@ -10,6 +10,7 @@ import { validateRollTables } from "../src/roll-tables.mjs";
 import { validateSpeciesAbilityRegistry } from "../src/species-abilities.mjs";
 import { validateBookPlayGuidance } from "../src/book-play-guidance.mjs";
 import { normalizeBookTitle } from "../src/rules.mjs";
+import { auditOriginData } from "../src/origin-data-audit.mjs";
 const typecheck = spawnSync(process.execPath, ["node_modules/typescript/bin/tsc", "--project", "tsconfig.json", "--pretty", "false"], { encoding: "utf8" });
 if (typecheck.error || typecheck.status !== 0) throw new Error("TypeScript checks failed.\n" + (typecheck.error?.message ?? "") + typecheck.stdout + typecheck.stderr);
 async function walk(dir) {
@@ -58,6 +59,17 @@ for (const entry of speciesRegistry.entries)
     normalizeBookTitle(row.Book) === normalizeBookTitle(entry.source.book) &&
     String(row.Page) === String(entry.source.cataloguePage)))
     throw new Error(`Species ability source is absent from the public catalogue: ${entry.species}.`);
+const originAudit = auditOriginData({
+  database: referenceDatabase,
+  advancement: JSON.parse(await readFile("data/advancement-trees.json", "utf8")),
+  speciesAbilities: speciesRegistry,
+  sourceVerification: JSON.parse(await readFile("data/source-verification.json", "utf8")),
+});
+if (!originAudit.ok)
+  throw new Error(
+    "Origin data audit failed.\n" +
+      originAudit.errors.map((error) => `${error.code}: ${error.message}`).join("\n"),
+  );
 const playGuidance = validateBookPlayGuidance(
   JSON.parse(await readFile("data/book-play-guidance.json", "utf8")),
 );
@@ -101,5 +113,5 @@ for (const [key, die] of Object.entries(DICE))
     }
   }
 console.log(
-  "TypeScript, syntax, templates, manifest, integration schemas, versions, public vehicle, species and book-play data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
+  "TypeScript, syntax, templates, manifest, integration schemas, versions, public vehicle, origin, species and book-play data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
 );
