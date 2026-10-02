@@ -1,0 +1,46 @@
+/* Layout only in configuration windows: fonts, colours, inputs and chrome belong to Foundry. */
+.sf-native-settings .sf-settings-group { margin:0 0 1rem; }
+.sf-native-settings .sf-settings-group .form-group { margin-block:.65rem; }
+.sf-native-settings .sf-owned-books-content { padding:1rem;display:flex;flex-direction:column;gap:.8rem;min-height:0;overflow:auto; }
+.sf-native-settings .sf-owned-books-content :is(p,h2) { margin:0; }
+.sf-native-settings .sf-book-list { display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));max-height:340px;overflow:auto;gap:.35rem; }
+.sf-native-settings .sf-book-choice { display:flex;gap:.5rem;align-items:center; }
+.sf-native-settings .sf-book-tools { display:flex;gap:.5rem;align-items:end;flex-wrap:wrap; }
+.sf-native-settings .sf-book-tools label { flex:1;min-width:140px; }
+.sf-native-settings .sf-checkbox { display:flex;align-items:center;gap:.5rem; }
+.sf-native-settings .sf-book-choice[hidden] { display:none; }
+/* System play windows share sheet paper and readable ink; configuration windows never receive this class. */
+.sf-themed-window { --color-text-primary:var(--sf-ink);--color-text-secondary:var(--sf-muted);--color-text-emphatic:var(--sf-ink);--color-text-light-highlight:var(--sf-ink);--color-border-light-primary:var(--sf-line); }
+.sf-themed-window > .window-header { color:#faf7ed;background:var(--sf-dark);border-bottom:2px solid var(--sf-accent);font-family:"Star Wars FFG Rajdhani",sans-serif; }
+.sf-themed-window > .window-header button { color:inherit; }
+.sf-themed-window .dialog-content { padding:.75rem;overflow:auto;min-height:0; }
+.sf-themed-window .dialog-buttons { padding:.5rem; }
+.sf-themed-window .dialog-form { min-height:0; }
+.sf-themed-window :is(input,select,textarea) { --input-text-color:var(--sf-ink);--input-background-color:var(--sf-paper);--input-placeholder-color:var(--sf-muted); }
+.sf-themed-window .sf-tabletop-body { color:var(--sf-ink); }
+.sf-journal-window :is(.journal-page-content,.journal-entry-content,.editor-content,.prosemirror .editor-content) { color:var(--sf-ink);background:var(--sf-paper);font-family:"Star Wars FFG Roboto",sans-serif; }
+.sf-journal-window .journal-sidebar { color:#faf7ed;--color-text-primary:#faf7ed;--color-text-secondary:#e0d8c7;--color-text-emphatic:#fff; }
+.sf-journal-window .journal-sidebar :is(a,button,input,h2,h3) { color:inherit; }
+.sf-journal-window .journal-entry-pages { color:var(--sf-ink); }
+
+.sf-native-settings .sf-settings-group:not(:has(.form-group:not([hidden]))) { display:none; }
+.sf-native-settings .sf-book-choice { font:inherit; }
+
+.sf-themed-window :is(h1,h2,h3,h4) { font-family:"Star Wars FFG Rajdhani",sans-serif; }
+#star-wars-welcome.sf-themed-window .sf-welcome-body button { color:#fff;background:var(--sf-dark);border:1px solid var(--sf-dark); }
+#star-wars-welcome.sf-themed-window .sf-welcome-body button:hover { background:var(--sf-accent-text); }
+#star-wars-welcome.sf-themed-window .sf-welcome-body button:disabled { opacity:.55;cursor:not-allowed; }
+.sf-welcome [data-step-heading]:focus { outline:none; }
+
+body.system-star-wars-ffg .sf-journal-window .journal-entry-pages { background:var(--sf-paper);color:var(--sf-ink); }
+.sf-journal-window .journal-page-header { background:var(--sf-paper);color:var(--sf-ink); }
+.sf-journal-window :is(h1,h2,h3,h4) { border-color:var(--sf-line); }
+body.system-star-wars-ffg .sf-interface-tour, body.system-star-wars-ffg #tooltip.sf-interface-tour { color:#253138;background:#faf7ed url("../assets/ui/paper-grain.svg");font-family:"Star Wars FFG Roboto",sans-serif;border:2px solid #9d5233; }
+body.system-star-wars-ffg .sf-interface-tour :is(h3,a), body.system-star-wars-ffg #tooltip.sf-interface-tour :is(h3,a) { color:#8d472c; }
+.sf-interface-tour .step-title { font-family:"Star Wars FFG Rajdhani",sans-serif; }
+.sf-interface-tour .step-button:focus-visible { outline:3px solid #8d472c;outline-offset:3px; }
+
+/* Native popover CSS also applies when closed; suppress the departing tour immediately. */
+body.system-star-wars-ffg #tooltip.sf-interface-tour:not(.active) { visibility:hidden;opacity:0;transition:none; }
+
+#star-wars-welcome .sf-welcome-body button { --button-background-color:var(--sf-dark);--button-text-color:#fff;--button-border-color:var(--sf-dark);--button-hover-background-color:var(--sf-accent-text);--button-hover-text-color:#fff; }

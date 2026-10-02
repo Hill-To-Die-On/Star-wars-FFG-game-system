@@ -4,6 +4,8 @@ This guide is for a normal human-GM game. Director of Realms is optional. Keep t
 
 ## Prepare a world
 
+In the 0.4.1 candidate, first launch offers book selection and a skippable interface tour after Foundry’s own welcome. Saved books apply to the world; optional browser remembrance can be reused explicitly in a later world. Reopen Welcome & interface tour from system settings. [Onboarding and persistence details](onboarding-settings.md)
+
 1. Install the system from the release manifest and create a world using Star Wars FFG. Start with no optional modules; add Dice So Nice after basic sheets and chat work.
 2. Open the Settings sidebar and select Transaction authority for this GM browser. Confirm that previous transaction tabs have stopped. Repeat after reloading or handing over to another GM; other GM tabs can view without processing changes. [Authority and interrupted-request recovery](security-authority.md)
 3. Open Configure Settings → Star Wars FFG → Campaign rules & adventure state. Enable the intended rule lines and choose the story mechanics separately. All three rule lines are enabled by default; adding a line does not grant another starting package.

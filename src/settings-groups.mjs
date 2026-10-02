@@ -2,7 +2,7 @@
 import { localize } from "./localization.mjs";
 
 export const SETTINGS_GROUPS = Object.freeze([
-  { label: "Campaign setup", key: "SWFFG.Settings.Groups.CampaignSetup", keys: ["campaignMenu", "ownedBooksMenu", "allowHomebrewIdentities"] },
+  { label: "Campaign setup", key: "SWFFG.Settings.Groups.CampaignSetup", keys: ["welcomeMenu", "campaignMenu", "ownedBooksMenu", "allowHomebrewIdentities"] },
   { label: "Appearance", key: "SWFFG.Settings.Groups.Appearance", keys: ["sheetTheme", "interfaceTheme", "compactChatDice", "altitudeShadows"] },
   { label: "Combat & turns", key: "SWFFG.Settings.Groups.CombatTurns", keys: ["turnTrackerControl", "automaticTurnRolls", "automaticTurnMovement", "combatRangeAssistant", "combatRangeFollowTurn", "animatedTargetTrace"] },
   { label: "Play tools", key: "SWFFG.Settings.Groups.PlayTools", keys: ["consoleMenu", "referenceMenu", "transactionAuthorityMenu"] },

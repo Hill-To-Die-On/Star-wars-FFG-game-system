@@ -47,7 +47,7 @@ const translations = Object.fromEntries(
 );
 validateLocaleManifest(manifest.languages, translations);
 
-for (const version of [1, 2])
+for (const version of [1, 2, 3])
   JSON.parse(
     await readFile(`docs/schemas/integration-v${version}.schema.json`, "utf8"),
   );

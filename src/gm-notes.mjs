@@ -215,7 +215,7 @@ export async function gmSourceKeyDialog() {
   assertGM();
   const pack = getLibraryPack("GMNotes");
   return foundry.applications.api.DialogV2.wait({
-    classes: ["star-wars"],
+    classes: ["star-wars", "sf-native-settings"],
     window: { title: "GM source key · Backup and restore" },
     content:
       '<p>Source prose is encrypted in the world. Its key stays in this browser. Keep a private backup to unlock notes on another GM browser or after clearing browser data. Share it only with a trusted GM.</p><label>Restore key from backup<input type="file" name="keyFile" accept=".json"></label>',
