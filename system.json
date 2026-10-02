@@ -2,7 +2,7 @@
   "id": "star-wars-ffg",
   "title": "Star Wars FFG",
   "description": "Unofficial, free Star Wars FFG system for Edge of the Empire, Age of Rebellion, and Force and Destiny. Original sheets, narrative dice and a searchable book-reference database; rulebooks required.",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "compatibility": {
     "minimum": "14",
     "verified": "14.368",
@@ -14,14 +14,104 @@
       "url": "https://github.com/Hill-To-Die-On"
     }
   ],
-  "esmodules": ["src/main.mjs"],
+  "esmodules": [
+    "src/main.mjs"
+  ],
   "socket": true,
-  "styles": ["styles/star-wars.css", "styles/star-wars-interface.css"],
+  "styles": [
+    "styles/star-wars.css",
+    "styles/star-wars-interface.css",
+    "styles/tabletop.css",
+    "styles/support.css",
+    "styles/onboarding.css",
+    "styles/window-presentation.css",
+    "styles/sheets-responsive.css"
+  ],
   "languages": [
     {
       "lang": "en",
       "name": "English",
       "path": "lang/en.json"
+    },
+    {
+      "lang": "en-GB",
+      "name": "English (UK)",
+      "path": "lang/en-GB.json"
+    },
+    {
+      "lang": "en-US",
+      "name": "English (US)",
+      "path": "lang/en-US.json"
+    },
+    {
+      "lang": "es",
+      "name": "Español",
+      "path": "lang/es.json"
+    },
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "lang/fr.json"
+    },
+    {
+      "lang": "de",
+      "name": "Deutsch",
+      "path": "lang/de.json"
+    },
+    {
+      "lang": "it",
+      "name": "Italiano",
+      "path": "lang/it.json"
+    },
+    {
+      "lang": "pt-BR",
+      "name": "Português (Brasil)",
+      "path": "lang/pt-BR.json"
+    },
+    {
+      "lang": "pt-PT",
+      "name": "Português (Portugal)",
+      "path": "lang/pt-PT.json"
+    },
+    {
+      "lang": "ja",
+      "name": "日本語",
+      "path": "lang/ja.json"
+    },
+    {
+      "lang": "ko",
+      "name": "한국어",
+      "path": "lang/ko.json"
+    },
+    {
+      "lang": "zh-CN",
+      "name": "简体中文",
+      "path": "lang/zh-CN.json"
+    },
+    {
+      "lang": "zh-TW",
+      "name": "繁體中文",
+      "path": "lang/zh-TW.json"
+    },
+    {
+      "lang": "pl",
+      "name": "Polski",
+      "path": "lang/pl.json"
+    },
+    {
+      "lang": "ru",
+      "name": "Русский",
+      "path": "lang/ru.json"
+    },
+    {
+      "lang": "nl",
+      "name": "Nederlands",
+      "path": "lang/nl.json"
+    },
+    {
+      "lang": "sv",
+      "name": "Svenska",
+      "path": "lang/sv.json"
     }
   ],
   "documentTypes": {
@@ -66,7 +156,7 @@
   "secondaryTokenAttribute": "strain",
   "url": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system",
   "manifest": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json",
-  "download": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.3.0/star-wars-ffg.zip",
+  "download": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.1/star-wars-ffg.zip",
   "license": "LICENSE",
   "readme": "README.md"
 }

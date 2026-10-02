@@ -71,3 +71,13 @@ The marker must be the first word of the comment: `// TODO: replace this` is rec
 graded high whichever word you used.
 
 <!-- atlasmind:debt-markers:end -->
+
+## Keep the GitHub wiki current
+
+The GitHub wiki is maintained product documentation, not a one-time deliverable. Its version-controlled source is `docs/wiki/`; the public site is https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki and is published through the separate `.wiki.git` repository.
+
+- For every change, assess its documentation impact. Update affected wiki source pages in the same change whenever features, rules automation, UI, settings, installation, compatibility, integrations, security, limitations, troubleshooting, or release behaviour change. Include renames and removals, navigation links, and screenshots that no longer match. If no wiki update is needed, state why in the pull request or delivery notes.
+- Verify guidance against the implementation, relevant validation evidence, and the actual release state. Clearly label candidate or planned behaviour; never present an unmerged feature or unreleased build as available in the stable release. Do not claim a workflow was tested when it was not.
+- Keep the wiki, README, changelog, and relevant guides consistent. Recheck version-sensitive instructions and remove stale caveats when the evidence supports doing so. Roadmap changes still follow the canonical AtlasMind synchronization rules above; the wiki is not a separate completion ledger.
+- Publish reviewed wiki source changes to the separate wiki repository as part of the authorized delivery, preserving concurrent edits. Verify that the published pages match the source and that changed links and navigation work. A commit to `docs/wiki/` alone does not update the public wiki. If publication is blocked or not authorized, report the exact unpublished pages and blocker rather than declaring the wiki current.
+- Keep all examples, screenshots, and troubleshooting material within the project's public-content boundaries: no credentials, private campaign data, copyrighted book prose, or scans.

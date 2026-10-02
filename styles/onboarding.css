@@ -1,0 +1,19 @@
+.sf-welcome .window-content { min-height:0;overflow:auto; }
+.sf-welcome-body { padding:24px 30px;line-height:1.55;display:flex;flex-direction:column;gap:12px; }
+.sf-welcome-body :is(p,h1,h2) { margin:0; }
+.sf-welcome-body h1 { border:0;font-size:2rem;font-family:"Star Wars FFG Rajdhani",sans-serif;font-weight:600; }
+.sf-welcome-kicker { font-size:.8rem;font-weight:bold;letter-spacing:.13em;color:var(--sf-accent-text); }
+.sf-welcome-lead { font-size:1.15rem; }
+.sf-welcome-notice { border-left:4px solid var(--sf-accent);padding:15px 18px;background:var(--sf-paper); }
+.sf-welcome-notice h2 { font-size:1.1rem;border:0;margin-bottom:8px; }
+.sf-welcome-body footer { display:flex;justify-content:space-between;gap:12px;padding-top:14px;border-top:1px solid var(--sf-line); }
+.sf-welcome-body footer button { flex:0 1 auto;min-height:40px;white-space:normal; }
+.sf-welcome .sf-book-list { max-height:270px;min-height:100px;overflow:auto;grid-template-columns:1fr; }
+.sf-welcome-check { display:flex;align-items:center;gap:8px; }
+.sf-welcome-check input { flex:0 0 auto; }
+.sf-welcome-reuse { padding:10px;border:1px solid var(--sf-line);display:flex;gap:8px;flex-wrap:wrap; }
+.sf-welcome-reuse p { flex-basis:100%; }
+.sf-welcome-reuse button { flex:1; }
+.sf-welcome :focus-visible { outline:3px solid var(--sf-accent-text);outline-offset:2px; }
+.sf-welcome .hint { color:var(--sf-muted);font-size:.9rem; }
+@media(max-width:600px) { .sf-welcome-body{padding:16px}.sf-welcome .sf-book-tools{flex-wrap:wrap;display:flex}.sf-welcome .sf-book-tools label{flex-basis:100%} }

@@ -1,0 +1,50 @@
+<div class="sf-support-content">
+  <section aria-labelledby="sf-support-start">
+    <h2 id="sf-support-start">Start here</h2>
+    <p>Declare intent, review the dice pool, roll, agree the result, then apply reviewed changes. Recorded conditions and narrative choices do not silently apply every mechanical effect.</p>
+    <nav aria-label="Help documents">
+      <a href="https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki" target="_blank" rel="noopener">Online wiki</a>
+      <a href="{{systemPath}}/docs/onboarding-settings.md" target="_blank" rel="noopener">First launch & settings</a>
+      <a href="{{systemPath}}/docs/player-quick-start.md" target="_blank" rel="noopener">Player quick start</a>
+      {{#if isGM}}<a href="{{systemPath}}/docs/gm-quick-start.md" target="_blank" rel="noopener">GM quick start</a>{{/if}}
+      <a href="{{systemPath}}/docs/tabletop-workflows.md" target="_blank" rel="noopener">Tabletop tools and undo</a>
+      <a href="{{systemPath}}/docs/production-readiness.md" target="_blank" rel="noopener">Known limits and release gates</a>
+    </nav>
+    <p>These packaged guides open as Markdown documents. Books remain the authority for rules. A printed-chart check validates the graph; it does not certify every effect.</p>
+  </section>
+  <section aria-labelledby="sf-support-coverage">
+    <h2 id="sf-support-coverage">Implemented workflows</h2>
+    <div class="sf-capabilities">
+      {{#each capabilities}}
+      <article><h3>{{label}} <span class="sf-support-status">{{status}}</span></h3><p>{{detail}}</p></article>
+      {{/each}}
+    </div>
+  </section>
+  <section aria-labelledby="sf-support-actor">
+    <h2 id="sf-support-actor">Learned talent and signature effects</h2>
+    <div class="sf-support-filters">
+      <div><label for="sf-support-actor-select">Actor</label><select id="sf-support-actor-select" name="actorId"><option value="">Choose an accessible actor</option>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></div>
+      <div><label for="sf-support-query">Find an effect</label><input id="sf-support-query" name="query" type="search" value="{{query}}"></div>
+      <div><label for="sf-support-status-select">Status</label><select id="sf-support-status-select" name="status">{{#each statuses}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}</select></div>
+      <button type="button" data-action="filter">Refresh coverage</button>
+    </div>
+    {{#if hasActor}}
+    <p role="status">Automatic: {{report.counts.automatic}} · Requires a choice: {{report.counts.choice}} · Manual: {{report.counts.manual}} · Excluded by book filter: {{report.excluded}}</p>
+    <p>{{report.notice}}</p>
+    <div class="sf-support-effects">
+      {{#each report.entries}}
+      <article><h3>{{name}} <span class="sf-support-status">{{status}}</span></h3>
+        <p>{{calculation}}</p><p>{{condition}}</p>
+        <p>Activation: {{activation}} · Source: {{source.book}} {{source.page}} · Chart comparison: {{chartVerification}}</p>
+      </article>
+      {{else}}<p>No matching learned effects. This is not a claim that every ability is automated.</p>{{/each}}
+    </div>
+    {{else}}<p>Select an actor to inspect recorded effects. Only actors available to this account are listed.</p>{{/if}}
+  </section>
+  <section aria-labelledby="sf-support-diagnostics">
+    <h2 id="sf-support-diagnostics">Support diagnostics</h2>
+    <p>Review the complete export below. It contains versions, two integration states and document counts. It excludes names, world IDs, settings, source notes, chat content, URLs and credentials. Nothing is uploaded.</p>
+    <pre aria-label="Diagnostic export preview">{{diagnostic}}</pre>
+    <button type="button" data-action="download">Download diagnostic JSON</button>
+  </section>
+</div>

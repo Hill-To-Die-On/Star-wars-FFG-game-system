@@ -23,15 +23,19 @@ export const RULE_LINES = {
 };
 const RULE_THEMES = new Set(Object.values(RULE_LINES).map((rule) => rule.theme));
 
+// Own keys only, so names like "toString" are never taken for a rule line.
+export const ruleLine = (id) =>
+  Object.hasOwn(RULE_LINES, id) ? RULE_LINES[id] : undefined;
+
 export function resolveSheetTheme(
   selection = "auto",
   line,
   campaignLines = [],
 ) {
   if (selection !== "auto" && RULE_THEMES.has(selection)) return selection;
-  if (RULE_LINES[line]) return RULE_LINES[line].theme;
+  if (ruleLine(line)) return ruleLine(line).theme;
   const campaignLine = (Array.isArray(campaignLines) ? campaignLines : []).find(
-    (candidate) => RULE_LINES[candidate],
+    (candidate) => ruleLine(candidate),
   );
   return RULE_LINES[campaignLine ?? "edge"].theme;
 }
@@ -58,7 +62,7 @@ export function validateCampaign(value) {
   if (
     !Array.isArray(value.lines) ||
     !value.lines.length ||
-    value.lines.some((id) => !RULE_LINES[id])
+    value.lines.some((id) => !ruleLine(id))
   )
     throw new Error("Select at least one supported rule line.");
   const partySize = Number(value.partySize ?? 4),
@@ -75,8 +79,7 @@ export function validateCampaign(value) {
     books: [
       ...new Set(
         (value.books ?? [])
-          .map(String)
-          .map((book) => book.trim())
+          .map((book) => String(book ?? "").trim())
           .filter(Boolean),
       ),
     ],

@@ -1,0 +1,19 @@
+{
+  "format": "star-wars-ffg-actor-icon-audit",
+  "version": 1,
+  "renderedTokenSize": 64,
+  "decodedSourcePixels": {
+    "character": 512,
+    "vehicle": 2048
+  },
+  "characterFamilies": 24,
+  "vehicleFamilies": 20,
+  "databaseSpecies": 173,
+  "databaseVehicleRecords": 399,
+  "databaseHullLabels": 110,
+  "unknownSpecies": [],
+  "unknownVehicles": [],
+  "maximumHeadBodyCentreError": 0,
+  "failures": [],
+  "result": "pass"
+}

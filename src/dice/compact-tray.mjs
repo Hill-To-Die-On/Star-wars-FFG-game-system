@@ -1,6 +1,7 @@
 import { SYSTEM_ID } from "../config.mjs";
 import { DICE, normalizePool } from "./core.mjs";
 import { rollPool } from "./foundry.mjs";
+import { turnCostHTML } from "../turn-economy-foundry.mjs";
 
 export const COMPACT_DICE_GROUPS = Object.freeze([
   Object.freeze(["boost", "ability", "proficiency"]),
@@ -35,9 +36,55 @@ export function adjustCompactPool(pool, die, delta) {
 export const chatModeToRollMode = (mode) =>
   CHAT_ROLL_MODES[mode] ?? "publicroll";
 
+const emptyCompactContext = () => ({
+  label: "",
+  actor: null,
+  turnCost: "none",
+  automaticResults: {},
+  ruleNotes: [],
+});
+
 let compactPool = emptyCompactPool(),
+  compactContext = emptyCompactContext(),
   hooksRegistered = false,
   refreshQueued = false;
+
+function renderAllCompactPools() {
+  for (const tray of globalThis.document?.querySelectorAll?.(
+    ".sf-compact-dice",
+  ) ?? [])
+    renderCompactPool(tray);
+}
+
+export function getCompactPoolState() {
+  return {
+    pool: { ...compactPool },
+    context: {
+      ...compactContext,
+      automaticResults: { ...compactContext.automaticResults },
+      ruleNotes: [...compactContext.ruleNotes],
+    },
+  };
+}
+
+export function loadCompactPool(pool, context = {}) {
+  compactPool = normalizePool(pool);
+  compactContext = {
+    label: typeof context.label === "string" ? context.label : "",
+    actor: context.actor ?? null,
+    turnCost: ["action","maneuver"].includes(context.turnCost) ? context.turnCost : "none",
+    automaticResults: { ...(context.automaticResults ?? {}) },
+    ruleNotes: Array.isArray(context.ruleNotes) ? [...context.ruleNotes] : [],
+  };
+  renderAllCompactPools();
+  return getCompactPoolState();
+}
+
+function clearCompactPool() {
+  compactPool = emptyCompactPool();
+  compactContext = emptyCompactContext();
+  renderAllCompactPools();
+}
 
 const dieButtonHTML = (key) =>
   `<button type="button" class="sf-compact-die" data-compact-die="${key}" data-count="0" aria-label="Add ${DICE[key].label} die" title="${DICE[key].label}: click to add, Shift-click or right-click to remove">
@@ -55,6 +102,7 @@ const compactTrayHTML = () =>
       <button type="button" data-compact-clear aria-label="Clear quick dice pool" title="Clear pool"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
       <button type="button" data-compact-roll aria-label="Roll quick dice pool" title="Roll pool"><i class="fa-solid fa-dice" aria-hidden="true"></i></button>
     </span>
+    <span data-compact-turn-cost></span>
   </div>`;
 
 function renderCompactPool(tray) {
@@ -73,6 +121,8 @@ function renderCompactPool(tray) {
   }
   tray.querySelector("[data-compact-clear]").disabled = total === 0;
   tray.querySelector("[data-compact-roll]").disabled = total === 0;
+  const turn = tray.querySelector("[data-compact-turn-cost]");
+  if (turn) turn.innerHTML = turnCostHTML(compactContext.actor,compactContext.turnCost);
 }
 
 function selectedRollMode(tray) {
@@ -88,10 +138,12 @@ function selectedActor() {
 }
 
 function bindCompactTray(tray) {
+  tray.addEventListener("change",event=>{
+    if (event.target.name === "turnCost") compactContext.turnCost = event.target.value;
+  });
   const update = (die, delta) => {
     compactPool = adjustCompactPool(compactPool, die, delta);
-    for (const current of document.querySelectorAll(".sf-compact-dice"))
-      renderCompactPool(current);
+    renderAllCompactPools();
   };
   tray.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
@@ -101,9 +153,7 @@ function bindCompactTray(tray) {
       return;
     }
     if (button.hasAttribute("data-compact-clear")) {
-      compactPool = emptyCompactPool();
-      for (const current of document.querySelectorAll(".sf-compact-dice"))
-        renderCompactPool(current);
+      clearCompactPool();
       return;
     }
     if (!button.hasAttribute("data-compact-roll")) return;
@@ -111,13 +161,14 @@ function bindCompactTray(tray) {
     try {
       const actor = selectedActor();
       await rollPool(compactPool, {
-        label: "Quick narrative pool",
-        actor,
+        label: compactContext.label || "Quick narrative pool",
+        actor: compactContext.actor ?? actor,
+        turnCost: compactContext.turnCost,
         rollMode: selectedRollMode(tray),
+        automaticResults: compactContext.automaticResults,
+        ruleNotes: compactContext.ruleNotes,
       });
-      compactPool = emptyCompactPool();
-      for (const current of document.querySelectorAll(".sf-compact-dice"))
-        renderCompactPool(current);
+      clearCompactPool();
     } catch (error) {
       ui.notifications.error(error.message);
       renderCompactPool(tray);

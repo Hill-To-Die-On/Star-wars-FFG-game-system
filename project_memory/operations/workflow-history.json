@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "id": "ci-2026-09-29T17:31:26.809Z-349b801b2a1cd640",
+      "stageId": "ci",
+      "action": "queueLocalCiWorkflowRun",
+      "at": "2026-09-29T17:31:26.809Z",
+      "actor": "user",
+      "requestedLevel": "auto",
+      "effectiveLevel": "auto",
+      "limitedBy": "none",
+      "gates": [
+        {
+          "gate": "automation ladder",
+          "passed": true,
+          "detail": "Dispatched by the user from the Pipeline page after a modal confirmation naming the repository and the exact command."
+        }
+      ],
+      "inputsFingerprint": "349b801b2a1cd640",
+      "outcome": "failed",
+      "detail": "GitHub could not find that resource, or this account cannot see it."
+    }
+  ]
+}

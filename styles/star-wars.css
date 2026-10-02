@@ -129,6 +129,20 @@
 .sf-theme-select select {
   width: 115px;
 }
+.sf-theme-select span {
+  position: absolute;
+  right: calc(100% + 8px);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+.sf-theme-select:hover span,
+.sf-theme-select:focus-within span {
+  opacity: 1;
+  visibility: visible;
+}
 .sf-identity {
   display: flex;
   align-items: center;
@@ -143,6 +157,37 @@
   height: 88px;
   place-items: center;
 }
+.sf-facing-frame { position:relative; }
+.sf-facing-ring { position:absolute; inset:0; width:100%; height:100%; z-index:3; overflow:visible; pointer-events:none; color:#e9cf7c; }
+.sf-facing-ring-hit { fill:none; stroke:currentColor; stroke-width:7; opacity:.72; pointer-events:stroke; cursor:pointer; }
+.sf-facing-ring-indicator { transform:rotate(var(--sf-facing-angle,0deg)); transform-origin:50% 50%; pointer-events:none; }
+.sf-facing-ring-indicator path:first-child { fill:#ffe090; stroke:#26353a; stroke-width:1; }
+.sf-facing-ring-indicator path:last-child { fill:none; stroke:#ffe090; stroke-width:3; stroke-linecap:round; }
+.sf-facing-frame[data-facing-editing="true"] .sf-facing-ring-hit { stroke:#7ce8d4; opacity:1; stroke-dasharray:4 3; }
+.sf-facing-ring:focus-visible { outline:2px solid #7ce8d4; border-radius:50%; }
+.sf-shell .sf-token-editor-button {
+  position: absolute;
+  z-index: 4;
+  left: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  min-height: 25px;
+  padding: 0;
+  border: 1px solid #b9d8d2;
+  border-radius: 50%;
+  background: var(--sf-dark);
+  color: #f8f3df;
+  box-shadow: 0 2px 7px #071014a6;
+  font-size: 11px;
+}
+.sf-shell .sf-token-editor-button:hover { background: var(--sf-accent); color: var(--sf-on-accent); }
+.sf-token-facing-dialog .sf-facing-token-preview { width:160px; height:160px; margin:12px auto; }
+.sf-token-facing-dialog .sf-facing-token-preview img { width:100%; height:100%; object-fit:contain; border-radius:50%; border:2px solid #a9c9c5; background:#26353a; }
+.sf-token-facing-dialog .sf-dialog label { display:block; margin:10px 0; }
+.sf-token-facing-dialog [name="tokenImage"] { display:block; width:100%; margin-top:4px; }
 .sf-portrait-frame > img {
   width: 80px;
   height: 80px;
@@ -181,6 +226,18 @@
 .sf-portrait-marks::after {
   right: 0;
   rotate: -26deg;
+}
+.sf-portrait-frame[data-portrait-family="vehicle"] > img {
+  object-fit: contain;
+  object-position: center;
+  border-radius: 15px;
+}
+.sf-portrait-frame[data-portrait-family="vehicle"]::after {
+  border-radius: 12px;
+}
+.sf-portrait-frame[data-procedural="true"]::after,
+.sf-portrait-frame[data-procedural="true"] .sf-portrait-marks {
+  display: none;
 }
 .sf-identity > div:not(.sf-portrait-frame) {
   flex: 1;
@@ -360,6 +417,11 @@
   border-color: var(--sf-accent);
   color: var(--sf-on-accent);
 }
+.sf-shell .sf-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 0 0;
+}
 .sf-form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
@@ -512,32 +574,40 @@
   justify-content: space-between;
   align-items: center;
 }
-.sf-item-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--sf-line);
+.sf-inventory-layout { display:grid; gap:18px; }
+.sf-inventory-panel { margin-bottom:0; }
+.sf-inventory-panel .sf-section-heading { gap:12px; margin-bottom:8px; }
+.sf-inventory-panel .sf-section-heading h2 { margin:0; }
+.sf-inventory-subhead { margin:17px 0 5px; color:var(--sf-accent-text); font-size:12px; font-weight:750; letter-spacing:.04em; text-transform:uppercase; }
+.sf-item-card {
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr) auto;
+  align-items:start;
+  gap:12px;
+  margin-top:10px;
+  padding:13px;
+  border:1px solid color-mix(in srgb,var(--sf-line) 80%,transparent);
+  border-radius:7px;
+  background:color-mix(in srgb,var(--sf-paper) 80%,var(--sf-wash));
 }
-.sf-item-row img {
-  width: 32px;
-  height: 32px;
-}
-.sf-item-row > div {
-  flex: 1;
-  min-width: 0;
-}
-.sf-item-row > div button {
-  border: 0;
-  background: none;
-  padding: 0;
-  text-align: left;
-}
-.sf-item-row small {
-  display: block;
-  color: var(--sf-muted);
-  font-size: 10px;
-}
+.sf-item-card > img { width:40px; height:40px; object-fit:cover; border-radius:5px; border:1px solid var(--sf-line); }
+.sf-ability-mark { display:grid; place-items:center; width:40px; height:40px; border:1px solid var(--sf-line); border-radius:5px; background:var(--sf-wash); color:var(--sf-accent-text); font-size:21px; }
+.sf-item-body { min-width:0; }
+.sf-item-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:5px 12px; }
+.sf-item-head strong { color:var(--sf-accent-text); font-size:14px; }
+.sf-shell .sf-item-head button { border:0; background:none; padding:0; min-height:0; text-align:left; color:var(--sf-accent-text); font-size:14px; font-weight:750; }
+.sf-shell .sf-item-head button:hover { text-decoration:underline; }
+.sf-item-type { color:var(--sf-muted); font-size:11px; }
+.sf-item-chips { display:flex; flex-wrap:wrap; gap:5px; margin:9px 0 5px; }
+.sf-item-chip { display:inline-flex; gap:4px; align-items:baseline; padding:4px 7px; border:1px solid var(--sf-line); border-radius:4px; background:var(--sf-paper); font-size:11px; line-height:1.25; }
+.sf-item-chip b { color:var(--sf-accent-text); }
+.sf-item-detail { margin:7px 0 5px; line-height:1.45; font-size:12px; }
+.sf-ability-detail .sf-talent-die { display:inline-block; width:13px; height:13px; margin:0 2px; vertical-align:-2px; }
+.sf-item-body small { display:block; color:var(--sf-muted); font-size:10px; margin-top:4px; }
+.sf-item-body .sf-item-warning { color:var(--sf-accent-text); font-weight:700; }
+.sf-item-actions { display:flex; align-items:center; gap:5px; }
+.sf-shell .sf-item-actions button { padding:3px 8px; min-height:25px; }
+.sf-shell .sf-item-actions [data-action="removeItem"] { width:25px; padding:0; font-size:17px; }
 .sf-footer {
   display: flex;
   justify-content: space-between;
@@ -576,6 +646,7 @@
   border-radius: 6px;
   font-size: 12px;
   overflow: hidden;
+  gap: 5px;
 }
 .sf-shell .sf-talent.owned {
   background: var(--sf-dark);
@@ -591,18 +662,39 @@
   line-height: 1.15;
 }
 .sf-talent-description {
-  display: -webkit-box;
-  overflow: hidden;
+  display: block;
+  overflow: auto;
   color: var(--sf-muted);
-  font-size: 8.5px;
-  line-height: 1.2;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  font-size: 10.5px;
+  line-height: 1.25;
+  flex: 1;
+  width: 100%;
 }
+.sf-talent-effect { display: block; width: 100%; font-size: 9px; font-weight: 700; color: var(--sf-accent-text); }
+.sf-talent.owned .sf-talent-effect { color: #fff; }
 .sf-talent.owned .sf-talent-description {
   color: #fff;
   opacity: 0.82;
 }
+.sf-talent-description strong { font-weight: 850; }
+.sf-talent-description .sf-talent-die {
+  width: 11px;
+  height: 11px;
+  flex: none;
+  margin: 0 1px;
+  vertical-align: -1px;
+}
+.sf-talent-symbol {
+  display: inline-block;
+  min-width: 12px;
+  margin: 0 1px;
+  color: #f5d66b;
+  font: 850 12px/1 "Star Wars FFG Signika", Arial, sans-serif;
+  text-align: center;
+  vertical-align: -1px;
+}
+.sf-talent-symbol-failure,.sf-talent-symbol-threat,.sf-talent-symbol-despair,.sf-talent-symbol-dark { color: #e38f9a; }
+.sf-talent-symbol-light,.sf-talent-symbol-force-point { color: #d9eefa; }
 .sf-talent small {
   display: flex;
   gap: 4px;
@@ -617,6 +709,7 @@
   border-radius: 3px;
   font-size: 7px;
   text-transform: uppercase;
+  cursor: help;
 }
 .sf-talent-automation.automatic {
   color: #196f46;
@@ -656,6 +749,7 @@
   gap: 5px;
   flex-wrap: wrap;
   margin: 10px 0;
+  filter: drop-shadow(0 0 1px #071014) drop-shadow(0 2px 2px #07101499);
 }
 .sf-dice-tray span {
   display: inline-grid;
@@ -670,9 +764,6 @@
   overflow: hidden;
   background: var(--sf-die-color, #77848a);
   border: 1px solid #0710148f;
-  filter:
-    drop-shadow(0 1px 0 #fff7)
-    drop-shadow(0 2px 2px #07101466);
 }
 .sf-dice-tray > span[style*="#47ad68"],
 .sf-dice-tray > span[style*="#7953ad"] {
@@ -1025,6 +1116,8 @@
   box-shadow: 0 12px 30px #080e12a6;
 }
 .star-wars .sf-origin-menu button {
+  height: auto;
+  flex: 0 0 auto;
   display: block;
   width: 100%;
   min-height: 42px;
@@ -1271,11 +1364,11 @@ body[data-star-wars-theme] #pause figcaption {
 .sf-shell h3 {
   font-family: "Star Wars FFG Signika", Arial, Helvetica, sans-serif !important;
 }
-.sf-shell .sf-talent:disabled {
+.sf-shell .sf-talent[aria-disabled="true"] {
   opacity: 1;
   color: var(--sf-muted);
 }
-.sf-shell .sf-talent.owned:disabled {
+.sf-shell .sf-talent.owned[aria-disabled="true"] {
   color: white;
 }
 
@@ -1439,6 +1532,135 @@ body[data-star-wars-theme] #pause figcaption {
   justify-content: space-between;
   margin-top: 12px;
 }
+.sf-data-review .sf-shell {
+  min-height: 100%;
+  background: var(--sf-bg);
+}
+.sf-data-review-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px 18px;
+}
+.sf-data-review-header > p { flex: 1 1 100%; }
+.sf-data-review-filter {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: #f7f3e9;
+  font-size: 11px;
+}
+.sf-data-review-filter select { min-height: 30px; padding: 4px 8px; }
+.sf-data-review-layout {
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) minmax(480px, 1.25fr);
+  min-height: 650px;
+}
+.sf-data-review-results,
+.sf-data-review-detail {
+  min-width: 0;
+  padding: 18px 22px;
+  background: var(--sf-paper);
+}
+.sf-data-review-results { border-right: 1px solid var(--sf-line); }
+.sf-data-review-results table { width: 100%; border-collapse: collapse; }
+.sf-data-review-results th,
+.sf-data-review-results td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--sf-line);
+  text-align: left;
+  vertical-align: top;
+}
+.sf-data-review-results tr.selected { background: #efe5d3; }
+.sf-data-review-results td:first-child { width: 45%; }
+.sf-data-review-results td button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sf-ink);
+  font: 750 13px/1.2 "Star Wars FFG Signika", Arial, sans-serif;
+  text-align: left;
+}
+.sf-data-review-results td button:hover,
+.sf-data-review-results td button:focus-visible { color: var(--sf-accent); text-decoration: underline; }
+.sf-data-review-results small {
+  display: block;
+  margin-top: 3px;
+  color: var(--sf-muted);
+  font-size: 10px;
+}
+.sf-data-review-detail { overflow: auto; }
+.sf-data-review-detail h2 {
+  margin: 5px 0 2px;
+  color: var(--sf-ink);
+  font: 750 23px/1.15 "Star Wars FFG Signika", Arial, sans-serif;
+}
+.sf-data-review-detail form > label,
+.sf-data-review-grid label {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0;
+  color: var(--sf-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+.sf-data-review-grid { display: grid; grid-template-columns: 1fr 110px 1fr; gap: 10px; }
+.sf-data-review-detail input,
+.sf-data-review-detail textarea,
+.sf-data-review-detail select {
+  width: 100%;
+  border: 1px solid var(--sf-line);
+  border-radius: 4px;
+  padding: 7px 8px;
+  background: #fffdf7;
+  color: var(--sf-ink);
+  font: 400 12px/1.4 "Star Wars FFG Roboto", Arial, sans-serif;
+}
+.sf-data-review-detail textarea { resize: vertical; font-family: Consolas, "SFMono-Regular", monospace; white-space: pre; }
+.sf-data-review-detail form > label:first-of-type textarea { font-family: "Star Wars FFG Roboto", Arial, sans-serif; }
+.sf-data-review-detail input:focus,
+.sf-data-review-detail textarea:focus,
+.sf-data-review-detail select:focus { outline: 2px solid var(--sf-accent); outline-offset: 1px; }
+.sf-data-review-detail label small { color: var(--sf-muted); font-size: 10px; font-weight: 400; }
+.sf-data-review-gaps {
+  margin: 14px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--sf-accent);
+  border-radius: 6px;
+  background: #fff8eb;
+  color: var(--sf-ink);
+}
+.sf-data-review-gaps strong { font-size: 11px; }
+.sf-data-review-gaps ul { margin: 5px 0 0; padding-left: 20px; }
+.sf-data-review-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.sf-data-review-actions button {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--sf-line);
+  border-radius: 5px;
+  background: var(--sf-paper);
+  color: var(--sf-ink);
+  font-weight: 700;
+}
+.sf-data-review-actions button:last-child { border-color: var(--sf-accent); background: var(--sf-accent); color: var(--sf-on-accent); }
+.sf-roll-tables .sf-catalogue-filters {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.sf-roll-tables .sf-catalogue-results td:first-child {
+  width: 110px;
+  white-space: nowrap;
+}
+.sf-roll-result {
+  padding: 12px;
+  background: var(--sf-wash);
+  border-left: 3px solid var(--sf-accent);
+  font-weight: 600;
+}
+.sf-roll-source-note {
+  color: var(--sf-muted);
+  font-size: 12px;
+}
 .sf-owned-books-content {
   padding: 24px;
   display: flex;
@@ -1510,6 +1732,17 @@ body[data-star-wars-theme] #pause figcaption {
   margin: 10px 0;
   display: block;
 }
+.sf-group-resource-panel { margin-bottom: 16px; }
+.sf-group-asset { display: grid; gap: 7px; padding: 14px; border: 1px solid var(--sf-line); border-left: 4px solid var(--sf-accent); border-radius: 6px; background: var(--sf-paper); }
+.sf-group-asset strong { font-size: 20px; }
+.sf-group-asset p { margin: 0; }
+.sf-group-asset button { justify-self: start; }
+.sf-group-gear { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+.sf-group-gear span { padding: 4px 8px; border: 1px solid var(--sf-line); border-radius: 4px; background: var(--sf-paper); }
+.sf-group-ledger { display: grid; gap: 8px; padding: 0; list-style: none; }
+.sf-group-ledger li { display: grid; gap: 3px; padding: 9px 12px; border: 1px solid var(--sf-line); border-radius: 5px; background: var(--sf-paper); }
+.sf-group-ledger strong { color: var(--sf-ink); }
+.sf-group-ledger p { margin: 0; }
 .star-wars .sf-catalogue-detail,
 .star-wars .sf-owned-books-content h2,
 .star-wars .sf-catalogue-detail h2,
@@ -2219,6 +2452,49 @@ body[data-star-wars-theme] #pause figcaption {
   padding: 19px 24px 21px;
   border-bottom: 1px solid var(--sf-line);
 }
+.sf-talent-decisions fieldset {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--sf-line);
+  border-radius: 7px;
+  background: var(--sf-paper);
+}
+.sf-talent-decisions legend {
+  padding: 0 5px;
+  color: var(--sf-muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.sf-talent-decision {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 8px 9px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.sf-talent-decision:hover,
+.sf-talent-decision:focus-within {
+  border-color: var(--sf-accent);
+  background: #fffaf0;
+}
+.sf-talent-decision input {
+  margin-top: 3px;
+  accent-color: var(--sf-accent);
+}
+.sf-talent-decision span {
+  display: grid;
+  gap: 2px;
+}
+.sf-talent-decision small {
+  color: var(--sf-muted);
+  font-size: 10px;
+}
 .sf-pool-section-title {
   display: flex;
   justify-content: space-between;
@@ -2383,6 +2659,21 @@ body[data-star-wars-theme] #pause figcaption {
   border-radius: 5px;
   font-weight: 650;
 }
+.sf-gm-sight-ruling {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  color: var(--sf-ink);
+  background: #fff1db;
+  border: 1px solid #c98745;
+  border-radius: 6px;
+}
+.sf-gm-sight-ruling p { margin: 0; }
+.sf-gm-sight-ruling label { display: grid; gap: 4px; }
+.sf-gm-sight-ruling label:has([type="checkbox"]) { display: flex; align-items: center; gap: 8px; }
+.sf-gm-sight-ruling [name="gmSightReason"] { width: 100%; }
+.sf-gm-sight-ruling [data-sight-ruling-error] { color: #8b1f2d; font-weight: 650; }
 .sf-manual-presets {
   margin-bottom: 12px;
 }
@@ -2597,6 +2888,16 @@ body[data-star-wars-theme] #pause figcaption {
     0 0 0 4px #10191d26,
     inset 0 0 0 1px #ffffff5c;
 }
+.sf-portrait-frame[data-portrait-family="vehicle"] > img {
+  border-radius: 15px;
+}
+.sf-vehicle-footprint .sf-footprint-summary {
+  margin: 12px 0 4px;
+  color: var(--sf-ink);
+}
+.sf-vehicle-footprint input[readonly] {
+  opacity: 0.68;
+}
 .star-wars .sf-tabs {
   gap: 5px;
   background-color: color-mix(in srgb, var(--sf-paper) 88%, transparent);
@@ -2788,4 +3089,241 @@ body[data-star-wars-theme] #pause figcaption {
     padding-right: 15px;
     padding-left: 15px;
   }
+}
+
+/* Turn controls share the same lights on sheets and selected canvas tokens. */
+.sf-turn-panel, .sf-token-turn {
+  color: #f5f1dc;
+  background: #162630;
+  border: 1px solid #84999c;
+  border-radius: 7px;
+  font-family: var(--font-primary, sans-serif);
+}
+.sf-turn-panel { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:10px 20px 0; padding:10px 12px; }
+.sf-turn-heading { display:flex; flex-direction:column; gap:3px; }
+.sf-turn-heading small, .sf-turn-panel small { color:#c6d2d3; }
+.sf-turn-indicators, .sf-turn-pips, .sf-turn-tools { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.sf-turn-indicators { gap:16px; }
+.sf-turn-pips b { font-size:12px; letter-spacing:.05em; }
+.sf-turn-indicators button.sf-turn-light { display:grid; place-items:center; min-width:22px; width:22px; height:22px; padding:3px; border:1px solid transparent; border-radius:50%; background:transparent; box-shadow:none; }
+.sf-turn-light span { display:block; width:12px; height:12px; border-radius:50%; border:1px solid #a7bbc1; background:#233741; }
+.sf-turn-light.available span { background:#9ceadd; border-color:#cefff4; box-shadow:0 0 5px #9ceadd70; }
+.sf-turn-light.temporary span { border-style:dashed; border-width:2px; }
+.sf-turn-light.temporary.available span { background:#efd291; border-color:#ffe6ad; }
+.sf-turn-indicators button:disabled { opacity:1; cursor:default; }
+.sf-turn-indicators button:not(:disabled):hover, .sf-turn-indicators button:focus-visible { border-color:#eef9ff; outline:1px solid #eef9ff; }
+.sf-turn-indicators button.sf-turn-add { min-width:24px; width:24px; height:24px; padding:0; line-height:20px; background:#314951; color:#fff1b8; border:1px solid #90a9af; border-radius:4px; font-size:19px; }
+.sf-turn-indicators button.sf-turn-add:disabled { color:#8f9d9f; background:#20333c; border-color:#4d626b; }
+.sf-turn-panel .sf-turn-tools button, .sf-turn-panel > button { color:#f5f1dc; background:#293e48; border:1px solid #718790; padding:3px 8px; width:auto; min-height:26px; font-size:12px; }
+.sf-turn-tools button:disabled { opacity:.5; }
+.sf-turn-tools details { position:relative; }
+.sf-turn-tools summary { cursor:pointer; font-size:12px; }
+.sf-turn-tools details[open] { display:flex; flex-wrap:wrap; gap:5px; }
+.sf-turn-note { flex-basis:100%; font-size:12px; }
+.sf-token-turn { position:fixed; z-index:50; padding:5px 8px; pointer-events:auto; box-shadow:0 3px 8px #0008; }
+.sf-token-turn .sf-turn-indicators { flex-wrap:nowrap; gap:12px; }
+.sf-token-turn .sf-turn-pips { flex-wrap:nowrap; gap:4px; }
+
+/* Crew portraits are a screen-sized view of the original tokens, never resized actors. */
+.sf-vehicle-crew-strip { position:fixed; display:flex; align-items:center; gap:4px; z-index:49; --sf-crew-size:24px; color:#f1e7c9; pointer-events:auto; }
+.sf-vehicle-crew-strip[hidden] { display:none; }
+.sf-crew-portrait { box-sizing:border-box; width:var(--sf-crew-size,48px); height:var(--sf-crew-size,48px); min-width:0; min-height:0; padding:0; border:calc(var(--sf-crew-size,24px) / 24) solid #a9c5c5; border-radius:50%; background:#203943; color:#ffe6a0; font-size:19px; font-weight:700; line-height:1; overflow:hidden; flex:none; }
+.sf-crew-portrait img { display:block; width:100%; height:100%; border:0; border-radius:50%; object-fit:cover; pointer-events:none; }
+.sf-crew-portrait[data-crew-token] { cursor:grab; touch-action:none; }
+.sf-crew-portrait:focus-visible { outline:2px solid #ffe6a0; outline-offset:2px; }
+.sf-crew-vacancy, .sf-crew-roster { box-shadow:0 0 0 calc(var(--sf-crew-size) / 12) #203943; font-size:calc(var(--sf-crew-size) * 5 / 12); }
+.sf-crew-roster:disabled { opacity:.55; cursor:default; }
+.sf-crew-lights { display:flex; flex-wrap:wrap; justify-content:center; gap:3px; min-height:18px; }
+.sf-crew-light { display:flex; align-items:center; justify-content:center; gap:4px; width:auto; height:auto; min-height:0; padding:4px 6px; background:#253640; color:#d7e3e5; border:1px solid #69858b; border-radius:5px; font-size:12px; line-height:1; }
+.sf-crew-light.active { background:#f1d28d; border-color:#ffe7a5; color:#172933; box-shadow:0 0 3px #ffe7a57a; }
+.sf-crew-passenger { display:block; min-height:18px; font-size:10px; color:#bdd0d2; }
+.sf-crew-sheet-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--sf-line,#8c9698); }
+.sf-crew-sheet-row > img { width:40px; height:40px; border:0; border-radius:50%; }
+.sf-crew-sheet-row > strong { flex:1; min-width:100px; }
+.sf-crew-sheet-row > button { width:auto; }
+.sf-crew-sheet-row[data-crew-sheet] { cursor:pointer; }
+.sf-crew-sheet-row[data-crew-sheet]:focus-visible { outline:2px solid var(--sf-accent,#82572b); outline-offset:3px; }
+.sf-crew-checks { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.sf-crew-checks button { width:auto; }
+.sf-crew-manage fieldset { padding:10px; margin:12px 0; }
+.sf-crew-dialog { min-width:min(360px,95vw); min-height:300px; max-width:95vw; max-height:90vh; }
+.sf-crew-dialog .window-content { overflow:hidden; min-height:0; }
+.sf-crew-dialog .dialog-form { display:flex; flex-direction:column; min-height:0; height:100%; }
+.sf-crew-dialog .dialog-content { flex:1 1 0; min-height:0; overflow-y:auto; scrollbar-gutter:stable; }
+.sf-crew-dialog .dialog-buttons { flex:0 0 auto; }
+.sf-crew-generator label { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+.sf-crew-generator select { width:100%; }
+.sf-crew-generation-counts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 18px; }
+.sf-crew-generation-review article { padding:12px 4px; border-bottom:1px solid var(--color-border-light-primary,#727b80); }
+.sf-crew-generation-review article p { margin:4px 0; }
+.sf-crew-sheet-portrait { cursor:pointer; }
+.sf-crew-sheet-portrait:focus-visible { outline:2px solid #e9d8aa; outline-offset:3px; }
+.sf-crew-manage { min-height:0; }
+.sf-crew-member-heading { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.sf-crew-member-heading img { width:36px; height:36px; border:0; border-radius:50%; }
+.sf-crew-manage .sf-crew-lights { margin-bottom:10px; }
+.sf-crew-drag-ghost { position:fixed; z-index:10000; pointer-events:none; width:48px; height:48px; opacity:.85; box-shadow:0 5px 12px #000a; }
+.sf-turn-roll-cost { display:flex; align-items:center; gap:8px; margin:8px 0; font-size:12px; }
+.sf-turn-roll-cost select { width:auto; min-width:105px; }
+.sf-compact-dice:has([data-compact-turn-cost] select) { flex-wrap:wrap; }
+.sf-compact-dice [data-compact-turn-cost] { flex-basis:100%; }
+.sf-compact-dice .sf-turn-roll-cost { margin:0; justify-content:flex-end; }
+#token-hud .sf-token-rotate { position:relative; }
+#token-hud .sf-token-rotate small { position:absolute; bottom:0; left:0; right:0; font-size:8px; line-height:9px; }
+.sf-turn-indicators button.sf-turn-light, .sf-turn-indicators button.sf-turn-add { min-height:0; }
+.sf-vehicle-systems { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px 16px; margin: 12px 0; }
+.sf-vehicle-systems div { min-width: 0; }
+.sf-vehicle-systems dt { font-size: .8em; text-transform: uppercase; opacity: .8; }
+.sf-vehicle-systems dd { margin: 3px 0 0; font-weight: 600; }
+.sf-creation-entry { display:flex; flex-direction:column; gap:6px; padding:14px 20px; margin:10px 20px; border:1px solid var(--sf-accent, #786649); border-radius:8px; background:#f2eddf; color:#22323c; }
+.sf-species-abilities { margin:10px 20px; padding:12px 16px; border:1px solid var(--sf-accent, #786649); border-radius:8px; background:#f4f0e5; color:#22323c; }
+.sf-species-abilities > strong { display:block; }
+.sf-species-abilities > small { display:block; margin-top:3px; }
+.sf-species-abilities p { margin:6px 0; }
+.sf-species-abilities ul { margin:6px 0; padding-left:22px; }
+.sf-species-abilities li + li { margin-top:4px; }
+.sf-species-abilities li small { margin-left:4px; font-style:italic; }
+.sf-catalogue-species-abilities { margin:10px 0; padding:10px 12px; border:1px solid var(--sf-accent, #786649); border-radius:8px; }
+.sf-catalogue-species-abilities > small { display:block; }
+.sf-catalogue-species-abilities p { margin:6px 0; }
+.sf-catalogue-species-abilities ul { margin:6px 0; padding-left:22px; }
+.sf-creation-entry .sf-button-row { display:flex; gap:10px; }
+.sf-creation-dialog .window-content, .sf-minion-dialog .window-content { overflow:hidden; min-height:0; padding:12px; }
+.sf-creation-dialog { z-index:10000 !important; }
+.sf-creation-dialog .dialog-form, .sf-minion-dialog .dialog-form { display:flex; flex-direction:column; height:100%; min-height:0; }
+.sf-creation-dialog .dialog-content, .sf-minion-dialog .dialog-content { flex:1 1 0; min-height:0; overflow-y:auto; padding-right:6px; scrollbar-gutter:stable; }
+.sf-creation-dialog .form-footer, .sf-minion-dialog .form-footer { flex:0 0 auto; margin-top:10px; }
+.sf-creation-guide { display:flex; flex-direction:column; gap:12px; }
+.sf-creation-guide label { display:flex; flex-direction:column; gap:5px; }
+.sf-creation-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
+.sf-creation-guide output { position:sticky; top:0; padding:12px; z-index:1; background:#17383f; color:#e9ffef; font-weight:bold; border-radius:5px; }
+.sf-creation-guide output.invalid { background:#652b27; color:#fff4ec; }
+.sf-minion-links { position:fixed; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; overflow:hidden; }
+.sf-minion-link-shadow { fill:none; stroke:#18272e; stroke-width:5; opacity:.85; }
+.sf-minion-link { fill:none; stroke:#f1d983; stroke-width:2; stroke-dasharray:8 7; animation:sf-minion-march 1s linear infinite; }
+.sf-minion-casualty { fill:none; stroke:#df847d; stroke-width:3; }
+@keyframes sf-minion-march { to { stroke-dashoffset:-30; } }
+@media (prefers-reduced-motion:reduce) { .sf-minion-link { animation:none; } }
+.sf-minion-roster article { display:grid; grid-template-columns:36px 1fr auto; align-items:center; gap:10px; padding:10px 0; border-top:1px solid #7c8a8d; }
+.sf-minion-roster article img { width:36px; height:36px; }
+.sf-minion-roster article label { grid-column:2 / -1; }
+/* Tactical arc picker: ship-relative sectors, screen-upright labels. */
+.sf-arc-picker { position:fixed; z-index:10100; pointer-events:none; transform:rotate(var(--sf-arc-rotation)); isolation:isolate; }
+.sf-arc-picker .sf-arc-sector { position:absolute; inset:0; width:100%; height:100%; border:0; border-radius:0; margin:0; padding:0; pointer-events:auto; background:rgba(18,68,81,.48); color:#fff5d5; font:700 12px Arial,sans-serif; text-shadow:0 1px 3px #000; box-shadow:inset 0 0 0 2px #9ce8e0; cursor:crosshair; }
+.sf-arc-picker .sf-arc-sector span { position:absolute; transform:translate(-50%,-50%) rotate(var(--sf-arc-counter)); pointer-events:none; }
+.sf-arc-picker .sf-arc-fore span { left:50%; top:16%; }
+.sf-arc-picker .sf-arc-aft span { left:50%; top:84%; }
+.sf-arc-picker .sf-arc-port span { left:15%; top:50%; }
+.sf-arc-picker .sf-arc-starboard span { left:85%; top:50%; }
+.sf-arc-picker .sf-arc-dorsal,.sf-arc-picker .sf-arc-ventral { inset:auto; left:calc(50% - var(--sf-arc-centre) / 2); width:var(--sf-arc-centre); height:calc(var(--sf-arc-centre) / 2); z-index:2; background:#173945; }
+.sf-arc-picker .sf-arc-dorsal { top:calc(50% - var(--sf-arc-centre) / 2); border-radius:100% 100% 0 0; }
+.sf-arc-picker .sf-arc-ventral { top:50%; border-radius:0 0 100% 100%; }
+.sf-arc-picker .sf-arc-dorsal span,.sf-arc-picker .sf-arc-ventral span { left:50%; top:50%; }
+.sf-arc-picker .sf-arc-hover,.sf-arc-picker .sf-arc-sector:focus-visible { background:rgba(42,183,165,.78); outline:3px solid #fff0ad; }
+.sf-arc-picker .sf-arc-hover.sf-arc-invalid { background:rgba(162,52,39,.8); }
+.sf-arc-picker .sf-arc-sector:disabled { background:#313a3d; color:#b9c0c4; cursor:not-allowed; }
+.sf-arc-picker svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1; overflow:visible; }
+.sf-arc-picker svg polygon { fill:none; stroke:#b5e4e1; stroke-width:1; vector-effect:non-scaling-stroke; }
+.sf-arc-picker-help { position:fixed; z-index:10101; top:140px; left:210px; width:min(470px,calc(100vw - 230px)); padding:14px 16px; border:1px solid #9ce8e0; border-radius:8px; background:#10232bf5; color:#f8f3df; font:14px/1.45 Arial,sans-serif; box-shadow:0 4px 20px #0008; }
+@media (max-width:700px) { .sf-arc-picker-help { left:12px; width:calc(100vw - 24px); } }
+.sf-arc-picker-help strong { color:#b4fff2; font-size:16px; }
+.sf-arc-picker-help p { margin:8px 0; }
+.sf-arc-picker-help nav { display:flex; gap:8px; }
+.sf-arc-picker-help button { color:#fff5d5; background:#244751; border:1px solid #9bbdc6; padding:6px 10px; font:inherit; }
+.sf-arc-picker-help button[hidden] { display:none; }
+.sf-career-story { margin: 14px 0; padding: 12px 16px; border: 1px solid var(--sf-accent, #786649); border-radius: 8px; color: var(--sf-ink); }
+.sf-story-hook-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-top:12px; }
+.sf-story-hook { padding:12px 14px; border:1px solid #9b9b8a; border-radius:8px; background:#fffaf0; color:#26353a; }
+.sf-story-hook.inactive { background:#f1eee5; }
+.star-wars .sf-shell .sf-story-hook h4 { margin:0 0 7px; color:#26353a; font-size:15px; text-shadow:none; }
+.sf-story-hook p { margin:7px 0; line-height:1.45; }
+.sf-story-hook-choice { font-size:15px; }
+.sf-story-hook small { display:block; margin-top:10px; color:#4f5b5e; line-height:1.35; }
+.sf-background-story p { color:#26353a; line-height:1.55; }
+.sf-background-card label { display:block; margin-top:10px; color:#26353a; font-weight:600; }
+.sf-background-card textarea { display:block; width:100%; margin-top:6px; color:#26353a; background:#fffdf7; line-height:1.5; }
+.sf-background-card:has(textarea:not(:placeholder-shown)) .sf-background-prompts { display:none; }
+.star-wars .sf-shell .sf-career-story .sf-section-heading h3 { color: var(--sf-ink); font-weight: 750; }
+.star-wars .sf-shell .sf-panel > h3,
+.star-wars .sf-shell .sf-panel > .sf-section-heading h3 { color: var(--sf-ink); }
+.star-wars .sf-shell[data-section="story"] .sf-panel > h3,
+.star-wars .sf-shell[data-section="story"] .sf-background-story > h3,
+.star-wars .sf-shell[data-section="story"] .sf-background-card > h3 {
+  color:#26353a !important;
+  opacity:1;
+  text-shadow:none;
+}
+.sf-career-story .sf-background-default { color: var(--sf-ink); font-size: 13px; line-height: 1.5; }
+.sf-career-story ul { margin: 8px 0 0; padding-left: 24px; }
+.sf-career-story li + li { margin-top: 5px; }
+.sf-reference-summary { margin: 12px 0; line-height: 1.5; }
+.sf-reference-summary small { display: block; opacity: .8; }
+.sf-arc-accessible-choices { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.sf-arc-picker-help button { min-height:44px; }
+.sf-arc-picker-help button:focus-visible { outline:3px solid #ffe7a1; outline-offset:2px; }
+.sf-arc-picker-help { max-height:calc(100vh - 160px); overflow:auto; }
+.sf-sr-only { position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip-path:inset(50%)!important; white-space:nowrap!important; border:0!important; }
+.sf-origin-control input:focus-visible { outline:3px solid var(--sf-accent,#815c35); outline-offset:2px; }
+.sf-flight-dialog .sf-dialog { padding:16px 20px; color:#23313a; }
+.sf-flight-dialog .sf-dialog p { margin:0 0 16px; line-height:1.5; }
+.sf-flight-dialog .sf-dialog label { display:grid; gap:6px; margin:0 0 16px; font-weight:600; }
+.sf-flight-dialog .sf-dialog input,.sf-flight-dialog .sf-dialog select { background:#f9f5e9; color:#23313a; border:1px solid #6f7776; padding:6px 10px; min-height:36px; }
+.sf-flight-dialog .sf-dialog input:focus,.sf-flight-dialog .sf-dialog select:focus { outline:2px solid #317c83; outline-offset:2px; }
+.sf-flight-dialog .form-footer { padding:0 20px 16px; }
+
+/* Shared presentation for system dialogs, including creation, crew, and combat review. */
+.star-wars .window-header {
+  background: var(--sf-dark);
+  color: #f8f3df;
+  border-bottom: 3px solid var(--sf-accent);
+}
+.star-wars .window-header .window-title { color:inherit; font-family:"Star Wars FFG Signika",Arial,sans-serif; font-weight:700; letter-spacing:.025em; }
+.star-wars .dialog-form { display:flex; flex-direction:column; min-height:0; color:var(--sf-ink); }
+.star-wars .dialog-content {
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  padding:20px 22px;
+  color:var(--sf-ink);
+  font:13px/1.5 "Star Wars FFG Roboto",Arial,sans-serif;
+  scrollbar-gutter:stable;
+}
+.star-wars .dialog-content > :first-child { margin-top:0; }
+.star-wars .dialog-content p { margin:0 0 12px; line-height:1.5; }
+.star-wars .dialog-content :is(h2,h3) { margin:0 0 12px; border:0; color:var(--sf-ink); font-family:"Star Wars FFG Signika",Arial,sans-serif; line-height:1.25; }
+.star-wars .dialog-content h2 { font-size:18px; }
+.star-wars .dialog-content h3 { font-size:15px; }
+.star-wars .dialog-content :is(label,legend) { color:var(--sf-ink); font-weight:650; }
+.star-wars .dialog-content label { display:grid; gap:5px; margin:0 0 12px; font-size:12px; }
+.star-wars .dialog-content :is(input:not([type="checkbox"]),select,textarea) {
+  width:100%;
+  min-height:34px;
+  padding:7px 9px;
+  border:1px solid var(--sf-line);
+  border-radius:4px;
+  background:var(--sf-paper);
+  color:var(--sf-ink);
+  font:inherit;
+  box-shadow:none;
+}
+.star-wars .dialog-content input[type="checkbox"] { width:auto; accent-color:var(--sf-accent); }
+.star-wars .dialog-content label:has(> input[type="checkbox"]) { display:flex; align-items:flex-start; gap:8px; }
+.star-wars .dialog-content :is(button,input,select,textarea):focus-visible,
+.star-wars .form-footer button:focus-visible { outline:3px solid var(--sf-accent); outline-offset:2px; }
+.star-wars .dialog-content fieldset { min-width:0; margin:5px 0 14px; padding:12px 14px; border:1px solid var(--sf-line); border-radius:6px; background:color-mix(in srgb,var(--sf-paper) 78%,var(--sf-wash)); }
+.star-wars .dialog-content legend { padding:0 6px; color:var(--sf-accent-text); }
+.star-wars .dialog-content :is(.sf-hint,small) { color:var(--sf-muted); }
+.star-wars .dialog-content table { width:100%; border-collapse:collapse; margin:10px 0; }
+.star-wars .dialog-content :is(th,td) { padding:7px 9px; border-bottom:1px solid var(--sf-line); text-align:left; vertical-align:top; }
+.star-wars .dialog-content th { background:var(--sf-wash); color:var(--sf-ink); }
+.star-wars .dialog-content .sf-tabletop-body article { padding:12px 14px; margin-bottom:12px; border:1px solid var(--sf-line); border-radius:6px; background:var(--sf-paper); }
+.star-wars .dialog-content button { width:auto; min-height:32px; padding:6px 10px; border:1px solid var(--sf-line); border-radius:4px; background:var(--sf-paper); color:var(--sf-ink); font:600 12px/1.3 "Star Wars FFG Roboto",Arial,sans-serif; }
+.star-wars .dialog-content button:hover { border-color:var(--sf-accent); background:var(--sf-wash); }
+.star-wars :is(.form-footer,.dialog-buttons) { flex:0 0 auto; display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin:0; padding:13px 20px; border-top:1px solid var(--sf-line); background:color-mix(in srgb,var(--sf-paper) 75%,var(--sf-wash)); }
+.star-wars :is(.form-footer,.dialog-buttons) button { width:auto; min-height:34px; padding:6px 14px; border:1px solid var(--sf-line); border-radius:4px; background:var(--sf-paper); color:var(--sf-ink); font:700 12px/1.3 "Star Wars FFG Roboto",Arial,sans-serif; }
+.star-wars :is(.form-footer,.dialog-buttons) button:hover { border-color:var(--sf-accent); background:var(--sf-wash); }
+.star-wars :is(.form-footer,.dialog-buttons) button:is([data-action="ok"],[data-action="yes"],[data-action="next"],.default) { border-color:var(--sf-accent); background:var(--sf-accent); color:var(--sf-on-accent); }
+@media (max-width:640px) {
+  .star-wars .dialog-content { padding:14px 16px; }
+  .star-wars .dialog-content .sf-form-grid { grid-template-columns:1fr; }
 }

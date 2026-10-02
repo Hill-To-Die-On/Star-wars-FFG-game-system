@@ -1,0 +1,31 @@
+<div class="sf-welcome-body">
+  <p class="sf-welcome-kicker">STAR WARS FFG · START HERE</p>
+  {{#if welcome}}
+  <h1 data-step-heading tabindex="-1">Welcome aboard</h1>
+  <p class="sf-welcome-lead">Your books. Your campaign. One table.</p>
+  <p>Play Edge of the Empire, Age of Rebellion and Force and Destiny, separately or together. Foundry's scenes, actors and permissions work as usual; the system adds narrative dice, character creation and tabletop tools.</p>
+  <section class="sf-welcome-notice" aria-label="Copyright reminder"><h2>Keep the books at the table</h2><p>{{copyright}}</p></section>
+  {{#if isGM}}<p>First choose the books available to this campaign. The selection is saved in this world and filters references and new character choices for everyone. Existing characters are preserved.</p>{{else}}<p>Your GM chooses the campaign's books and rules. The next step offers a short tour of the added controls.</p>{{/if}}
+  <footer><button type="button" data-action="later">Set up later</button><button type="button" data-action="next">{{#if isGM}}Choose my books{{else}}Continue{{/if}} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></footer>
+  {{/if}}
+  {{#if booksStep}}
+  <h1 data-step-heading tabindex="-1">Build your bookshelf</h1>
+  <p>Choose the books you own or are authorised to use for this campaign. This changes reference availability, not the enabled rulesets.</p>
+  <div class="form-group"><label for="sf-welcome-filter">Reference filter</label><div class="form-fields"><select id="sf-welcome-filter" name="bookMode"><option value="owned" {{#unless all}}selected{{/unless}}>Only selected books</option><option value="all" {{#if all}}selected{{/if}}>All reference books</option></select></div></div>
+  {{#if hasRemembered}}<div class="sf-welcome-reuse"><p>A bookshelf with {{remembered}} books is remembered in this browser.</p><button type="button" data-action="useRemembered">Use remembered selection</button><button type="button" data-action="forget">Forget remembered books</button></div>{{/if}}
+  <div class="sf-book-tools"><label>Find a book<input type="search" name="bookSearch" placeholder="Core, rebellion, force…"></label><button type="button" data-action="selectAll">Select all</button><button type="button" data-action="clearAll">Clear all</button></div>
+  <div class="sf-book-list" role="group" aria-label="Available books">{{#each choices}}<label class="sf-book-choice"><input type="checkbox" name="books" value="{{name}}" {{checked selected}}><span>{{name}}</span></label>{{/each}}</div>
+  <label class="sf-welcome-check"><input type="checkbox" name="includeUnreferenced" {{checked draft.includeUnreferenced}}> Include records that have no book reference</label>
+  <label class="sf-welcome-check"><input type="checkbox" name="remember" {{checked draft.remember}}> Remember this bookshelf in this browser for future worlds</label>
+  <p class="hint">With “Only selected books”, an empty selection hides all book-sourced entries. Remembered books stay in this browser on this Foundry address; they are not uploaded or shared with other servers. You can change the world selection later in Owned books.</p>
+  <footer><button type="button" data-action="back">Back</button><button type="button" data-action="saveBooks">Save books & continue</button></footer>
+  {{/if}}
+  {{#if tourStep}}
+  <h1 data-step-heading tabindex="-1">A quick look around</h1>
+  <p class="sf-welcome-lead">Familiar Foundry. A few new controls.</p>
+  <p>The optional tour highlights narrative dice, character and vehicle sheets, range tools, combat, journals and help. It won't roll dice or change a character.</p>
+  <ol class="sf-tour-outline"><li>Narrative dice and pool adjustments</li><li>Characters, vehicles and crew</li><li>Ranges, targeting and combat</li><li>Journals, settings and help</li></ol>
+  <p>Exit any time. Replay or resume from <strong>Settings → Tour Management</strong>, or open <strong>Welcome & interface tour</strong> again.</p>
+  <footer><button type="button" data-action="skip">Skip tutorial</button><button type="button" data-action="tour">Start interface tour</button></footer>
+  {{/if}}
+</div>

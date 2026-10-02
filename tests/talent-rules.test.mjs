@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { resolveFaces, applyAutomaticResults } from "../src/dice/core.mjs";
 import {
   applyTalentPool,
+  actorTalentRules,
   effectiveTalentTraits,
   learnedTalentRules,
   talentPurchaseUpdates,
@@ -192,4 +193,77 @@ test("structured attribute effects update purchases and conditional armor traits
   assert.equal(effectiveTalentTraits(base).soak, 5);
   base.items.contents[1].system.equipped = false;
   assert.equal(effectiveTalentTraits(base).soak, 4);
+});
+
+test("talent check contributions retain citations and distinguish selected effects from passive effects",()=>{
+ const check={key:"leadership",label:"Leadership",group:"General"};
+ const rules=talentRulesForCheck(actor,check);
+ assert.equal(rules.contributions.length,3);
+ assert.deepEqual(rules.contributions[0].source,{book:"Test",page:"1"});
+ assert.equal(rules.contributions[0].status,"automatic");
+ assert.equal(rules.contributions[0].verification,"structured-effect");
+ assert.match(rules.reasons[0],/Test.*1/);
+ assert.deepEqual(rules.decisions[0].source,{book:"Test",page:"1"});
+ const chosen=talentRulesForCheck(actor,check,{selectedTalents:["ACTIVE"]});
+ assert.equal(chosen.contributions.find(c=>c.ruleId==="spec:active").status,"selected");
+ chosen.contributions[0].source.page="changed";
+ assert.equal(actor.items.contents[0].system.source.page,"1");
+});
+
+test("equipped armour and owned item abilities feed traits and checks, while stowed gear does not", () => {
+  const check = { key: "leadership", label: "Leadership", group: "General" };
+  const a = {
+    type: "character",
+    system: {
+      soak: 3,
+      defense: { melee: 0, ranged: 0 },
+      forceRating: 1,
+      advancement: [{ itemId: "spec", nodeId: "armoured" }],
+    },
+    items: [
+      {
+        id: "spec", type: "specialization", name: "Armour specialist", system: { tree: { nodes: [
+          { id: "armoured", name: "Armoured command", activation: "Passive", effects: [
+            { type: "pool", operation: "add", target: "boost", count: 1, skills: ["leadership"], requirements: { minimumSoak: 2 } },
+          ] },
+        ] } },
+      },
+      { id: "armour", type: "armor", name: "Blast vest", system: { equipped: true, quantity: 1, soak: 2, defense: 1 } },
+      { id: "kit", type: "gear", name: "Command kit", system: { equipped: true, quantity: 1, abilities: [
+        { name: "Signal boost", activation: "Passive", effects: [{ type: "pool", operation: "add", target: "boost", count: 1, skills: ["leadership"] }] },
+      ] } },
+      { id: "talent", type: "talent", name: "Steady voice", system: { activation: "Passive", effects: [
+        { type: "result", operation: "add", target: "advantage", count: 1, skills: ["leadership"] },
+      ] } },
+    ],
+  };
+  assert.equal(effectiveTalentTraits(a).soak, 5);
+  assert.equal(effectiveTalentTraits(a).defense.melee, 1);
+  assert.equal(effectiveTalentTraits(a).defense.ranged, 1);
+  const rules = talentRulesForCheck(a, check);
+  assert.equal(rules.pool.add.boost, 2);
+  assert.equal(rules.automaticResults.advantage, 1);
+  assert.equal(actorTalentRules(a).some((rule) => rule.name === "Signal boost"), true);
+  a.items[1].system.equipped = false;
+  a.items[2].system.equipped = false;
+  const stowed = talentRulesForCheck(a, check);
+  assert.equal(effectiveTalentTraits(a).soak, 3);
+  assert.equal(stowed.pool.add.boost, 0);
+  assert.equal(stowed.automaticResults.advantage, 1);
+});
+
+test("active equipment rules are offered as decisions and apply only when selected", () => {
+  const a = {
+    type: "character",
+    system: { advancement: [] },
+    items: [{ id: "tool", type: "gear", name: "Tactical uplink", system: { equipped: true, quantity: 1, abilities: [
+      { name: "Coordinated burst", activation: "Action", effects: [{ type: "pool", operation: "add", target: "boost", count: 2, skills: ["leadership"] }] },
+    ] } }],
+  };
+  const check = { key: "leadership", label: "Leadership", group: "General" };
+  const pending = talentRulesForCheck(a, check);
+  assert.equal(pending.pool.add.boost, 0);
+  assert.equal(pending.decisions[0].name, "Coordinated burst");
+  const selected = talentRulesForCheck(a, check, { selectedTalents: [pending.decisions[0].id] });
+  assert.equal(selected.pool.add.boost, 2);
 });

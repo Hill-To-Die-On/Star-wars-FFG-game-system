@@ -3,7 +3,7 @@
     <span class="sf-eyebrow">STAR WARS FFG / REFERENCE LIBRARY</span>
     <h1>Find it. Bring the book.</h1>
     <p>{{databaseTotal}} database entries · {{bookSummary}}</p>
-    {{#if isGM}}<div class="sf-catalogue-actions"><button type="button" data-action="ownedBooks">Owned books</button><button type="button" data-action="populate">Populate compendiums</button></div>{{/if}}
+    <div class="sf-catalogue-actions"><button type="button" data-action="rollTables">Roll tables</button>{{#if isGM}}<button type="button" data-action="ownedBooks">Owned books</button><button type="button" data-action="populate">Populate compendiums</button>{{/if}}</div>
   </header>
   <div class="sf-catalogue-filters">
     <label>Search names, notes and statistics<input type="search" name="query" value="{{query}}" placeholder="Blaster, pilot, planet…"></label>
@@ -22,6 +22,12 @@
     <aside class="sf-catalogue-detail" aria-label="Reference details">
       {{#if detail}}<span class="sf-eyebrow">{{detail.categoryLabel}}</span><h2>{{detail.name}}</h2>
       <p class="sf-reference-source">{{#if detail.source.book}}{{detail.source.book}}{{else}}No book reference recorded{{/if}}{{#if detail.source.page}} · p. {{detail.source.page}}{{/if}}</p>
+      {{#if detail.summary}}<p class="sf-reference-summary">{{detail.summary}} <small>Summary from recorded fields; consult the book for descriptions and effects.</small></p>{{/if}}
+      {{#if detail.speciesAbilities}}<section class="sf-catalogue-species-abilities"><strong>Book-verified species abilities</strong><small>{{detail.speciesAbilities.source.book}}, p. {{detail.speciesAbilities.source.page}} (ability page)</small>
+      {{#if detail.speciesAbilities.startingSkills.length}}<p>Starting skill ranks: {{#each detail.speciesAbilities.startingSkills}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}.</p>{{/if}}
+      {{#if detail.speciesAbilities.choiceSkillRank}}<p>Start with one rank in {{#if detail.speciesAbilities.choiceSkillOptions}}{{detail.speciesAbilities.choiceSkillOptions}}{{else}}a skill of your choice{{/if}}.</p>{{/if}}
+      <ul>{{#each detail.speciesAbilities.abilities}}<li><strong>{{name}}</strong>: {{summary}} <small>{{applicationLabel}}</small></li>{{/each}}</ul></section>
+      {{else}}{{#if detail.isSpecies}}<p class="sf-reference-summary">Species ability details still require a book check; the catalogue's Special field is shorthand only.</p>{{/if}}{{/if}}
       <dl>{{#each detail.fields}}<dt>{{label}}</dt><dd>{{#if value}}{{value}}{{else}}—{{/if}}</dd>{{/each}}</dl>
       {{else}}<h2>A reference at the table</h2><p>Select a result to see its statistics, notes and book page. The catalogue retains the creator's database fields; blank values remain unknown.</p>{{/if}}
     </aside>
