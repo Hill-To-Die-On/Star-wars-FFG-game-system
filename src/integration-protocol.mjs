@@ -4,16 +4,21 @@ import {
   SKILLS,
 } from "./config.mjs";
 import { validateTree } from "./advancement.mjs";
+import { validateTurnConfig } from "./turn-economy.mjs";
+import { validateTalentNodeRules } from "./talent-rules.mjs";
 
 export const INTEGRATION_FORMAT = "star-wars-ffg-interchange";
-export const INTEGRATION_VERSION = 2;
-export const INTEGRATION_VERSIONS = Object.freeze([1, 2]);
+export const INTEGRATION_VERSION = 3;
+export const INTEGRATION_VERSIONS = Object.freeze([1, 2, 3]);
 export const MAX_PACKAGE_BYTES = 2 * 1024 * 1024;
 export const MAX_HANDOFF_BYTES = 192 * 1024;
+export const MAX_ACTOR_GROUP_ACTORS = 200;
+export const MAX_ACTOR_GROUP_RELATIONSHIPS = 1000;
 
 const PACKAGE_KINDS = Object.freeze({
   1: ["character", "rulePack", "bundle"],
   2: ["actor", "rulePack", "bundle"],
+  3: ["actorGroup"],
 });
 const ACTOR_TYPES = Object.freeze([
   "character",
@@ -23,7 +28,153 @@ const ACTOR_TYPES = Object.freeze([
   "vehicle",
   "group",
 ]);
+const ACTOR_GROUP_ROLES = Object.freeze([
+  "player-character",
+  "ally",
+  "neutral",
+  "enemy-minion",
+  "enemy-rival",
+  "enemy-nemesis",
+  "organisation",
+  "vehicle",
+  "location",
+]);
+const ACTOR_GROUP_RELATIONSHIP_KINDS = Object.freeze([
+  "commands",
+  "reports-to",
+  "leads",
+  "serves",
+  "employed-by",
+  "loyal-to",
+  "owes-duty-to",
+  "paid-by",
+  "controls",
+  "controlled-by",
+  "enslaves",
+  "enslaved-by",
+  "employs",
+  "protects",
+  "protected-by",
+  "pursues",
+  "pursued-by",
+  "opposes",
+  "competes-with",
+  "attacks",
+  "attacked-by",
+  "targets",
+  "targeted-by",
+  "allied-with",
+  "rivals",
+  "trusts",
+  "distrusts",
+  "fears",
+  "respects",
+  "loves",
+  "hates",
+  "related-to",
+  "parent-of",
+  "child-of",
+  "sibling-of",
+  "partner-of",
+  "mentor-of",
+  "student-of",
+  "owes-debt-to",
+  "creditor-of",
+  "blackmails",
+  "blackmailed-by",
+  "informant-for",
+  "spies-on",
+  "betrayed",
+  "betrayed-by",
+  "knows-secret-of",
+  "member-of",
+  "located-at",
+  "contains",
+  "assigned-to",
+  "owns",
+  "owned-by",
+  "operates",
+  "operated-by",
+  "borrows",
+  "borrowed-by",
+  "lends",
+  "loaned-by",
+  "leases",
+  "leased-to",
+  "steals",
+  "stolen-by",
+  "stolen-from",
+  "lost-to-theft",
+  "hijacks",
+  "hijacked-by",
+  "commandeers",
+  "commandeered-by",
+  "requisitions",
+  "requisitioned-by",
+  "captures",
+  "captured-by",
+  "salvages",
+  "salvaged-by",
+  "impounds",
+  "impounded-by",
+  "gifts",
+  "gifted-by",
+  "inherits",
+  "inherited-by",
+  "claims",
+  "claimed-by",
+  "pilots",
+  "piloted-by",
+  "crews",
+  "crewed-by",
+  "aboard",
+  "carries",
+  "transports",
+  "transported-by",
+  "escorts",
+  "escorted-by",
+  "tows",
+  "towed-by",
+  "guards",
+  "guarded-by",
+  "docked-at",
+  "berths",
+  "based-at",
+  "hosts",
+  "stationed-at",
+  "stations",
+  "deployed-from",
+  "deploys",
+  "launched-from",
+  "launches",
+  "orbits",
+  "orbited-by",
+  "supplies",
+  "supplied-by",
+  "refuels",
+  "refuels-at",
+  "repairs",
+  "repaired-by",
+  "modifies",
+  "modified-by",
+  "manufactures",
+  "manufactured-by",
+  "stores",
+  "stored-at",
+  "supports",
+  "supported-by",
+  "conceals",
+  "hidden-at",
+  "occupies",
+  "occupied-by",
+  "patrols",
+  "patrolled-by",
+  "blockades",
+  "blockaded-by",
+]);
+const EXTERNAL_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}$/;
 const ACTOR_SYSTEM_FIELDS = new Set([
+  "turnEconomy",
   "theme",
   "line",
   "phase",
@@ -54,6 +205,8 @@ const ACTOR_SYSTEM_FIELDS = new Set([
   "incomplete",
 ]);
 const ITEM_SYSTEM_FIELDS = new Set([
+  "effects",
+  "abilities",
   "description",
   "quantity",
   "price",
@@ -88,6 +241,7 @@ const ITEM_SYSTEM_FIELDS = new Set([
   "incomplete",
 ]);
 const VEHICLE_SYSTEM_FIELDS = new Set([
+  "turnEconomy",
   "theme",
   "hullTrauma",
   "systemStrain",
@@ -103,6 +257,7 @@ const VEHICLE_SYSTEM_FIELDS = new Set([
   "hyperdrive",
   "cargo",
   "notes",
+  "footprint",
   "source",
   "incomplete",
   "metadata",
@@ -170,6 +325,12 @@ function stringAt(value, path, { min = 0, max = 1000, pattern } = {}) {
 function integerAt(value, path, min, max) {
   if (!Number.isInteger(value) || value < min || value > max)
     fail(path, `must be an integer from ${min} to ${max}`);
+  return value;
+}
+
+function numberAt(value, path, min, max) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < min || value > max)
+    fail(path, `must be a number from ${min} to ${max}`);
   return value;
 }
 
@@ -270,6 +431,7 @@ function validateStoryScore(value, path, fields) {
 
 function validateCharacterSystem(system, path, { skillRankMax = 5 } = {}) {
   allowedFields(system, ACTOR_SYSTEM_FIELDS, path);
+  if (system.turnEconomy !== undefined) validateTurnConfig(objectAt(system.turnEconomy,`${path}.turnEconomy`));
   if (system.theme !== undefined && !["auto", "frontier", "rebellion", "mystic"].includes(system.theme))
     fail(`${path}.theme`, "unsupported theme");
   if (system.line !== undefined && !["edge", "age", "force"].includes(system.line))
@@ -398,6 +560,7 @@ function validateTheme(value, path) {
 
 function validateVehicleSystem(system, path) {
   allowedFields(system, VEHICLE_SYSTEM_FIELDS, path);
+  if (system.turnEconomy !== undefined) validateTurnConfig(objectAt(system.turnEconomy,`${path}.turnEconomy`));
   validateTheme(system.theme, `${path}.theme`);
   validateResource(system.hullTrauma, `${path}.hullTrauma`, 100000);
   validateResource(system.systemStrain, `${path}.systemStrain`, 100000);
@@ -415,6 +578,37 @@ function validateVehicleSystem(system, path) {
     );
     for (const [key, value] of Object.entries(system.shields))
       integerAt(value, `${path}.shields.${key}`, 0, 4);
+  }
+  if (system.footprint !== undefined) {
+    const footprintPath = `${path}.footprint`;
+    allowedFields(
+      system.footprint,
+      new Set(["mode", "hull", "length", "width"]),
+      footprintPath,
+    );
+    if (
+      system.footprint.mode !== undefined &&
+      !["automatic", "manual"].includes(system.footprint.mode)
+    )
+      fail(`${footprintPath}.mode`, "unsupported sizing mode");
+    if (
+      system.footprint.hull !== undefined &&
+      ![
+        "auto",
+        "fighter",
+        "freighter",
+        "shuttle",
+        "capital",
+        "tank",
+        "walker",
+        "speeder",
+        "station",
+      ].includes(system.footprint.hull)
+    )
+      fail(`${footprintPath}.hull`, "unsupported hull type");
+    for (const key of ["length", "width"])
+      if (system.footprint[key] !== undefined)
+        numberAt(system.footprint[key], `${footprintPath}.${key}`, 0, 100000);
   }
   for (const key of [
     "model",
@@ -493,6 +687,36 @@ function validateGroupSystem(system, path) {
 
 function validateItemSystem(system, path) {
   allowedFields(system, ITEM_SYSTEM_FIELDS, path);
+  if (system.effects !== undefined) {
+    if (!Array.isArray(system.effects)) fail(`${path}.effects`,"expected an array");
+    validateTalentNodeRules({effects:system.effects});
+  }
+  if (system.abilities !== undefined) {
+    if (!Array.isArray(system.abilities) || system.abilities.length > 100)
+      fail(`${path}.abilities`, "must contain no more than 100 abilities");
+    system.abilities.forEach((ability, index) => {
+      const abilityPath = `${path}.abilities[${index}]`;
+      allowedFields(ability, new Set([
+        "name", "key", "summary", "description", "activation", "source",
+        "effects", "rank", "ranked",
+      ]), abilityPath);
+      stringAt(ability.name, `${abilityPath}.name`, { min: 1, max: 160 });
+      for (const key of ["key", "summary", "description", "activation"])
+        if (ability[key] !== undefined)
+          stringAt(ability[key], `${abilityPath}.${key}`, { max: key === "summary" ? 4000 : 50000 });
+      if (ability.rank !== undefined) integerAt(ability.rank, `${abilityPath}.rank`, 1, 10);
+      if (ability.ranked !== undefined) booleanAt(ability.ranked, `${abilityPath}.ranked`);
+      validateSourceReference(ability.source, `${abilityPath}.source`);
+      if (ability.effects !== undefined) {
+        if (!Array.isArray(ability.effects)) fail(`${abilityPath}.effects`, "expected an array");
+        validateTalentNodeRules({
+          summary: ability.summary,
+          activation: ability.activation,
+          effects: ability.effects,
+        });
+      }
+    });
+  }
   if (system.description !== undefined)
     stringAt(system.description, `${path}.description`, { max: 50000 });
   validateSourceReference(system.source, `${path}.source`);
@@ -689,6 +913,98 @@ function normalizeRulePack(payload, path) {
   };
 }
 
+function externalId(value, path) {
+  return stringAt(value, path, { min: 1, max: 200, pattern: EXTERNAL_ID_PATTERN });
+}
+
+function normalizeActorGroup(payload, path) {
+  allowedFields(payload, new Set(["id", "name", "actors", "nodes", "relationships"]), path);
+  if (!Array.isArray(payload.actors) || !payload.actors.length || payload.actors.length > MAX_ACTOR_GROUP_ACTORS)
+    fail(`${path}.actors`, `must contain 1-${MAX_ACTOR_GROUP_ACTORS} actors`);
+  if (!Array.isArray(payload.nodes) || !payload.nodes.length || payload.nodes.length > MAX_ACTOR_GROUP_ACTORS)
+    fail(`${path}.nodes`, `must contain 1-${MAX_ACTOR_GROUP_ACTORS} nodes`);
+  if (!Array.isArray(payload.relationships) || payload.relationships.length > MAX_ACTOR_GROUP_RELATIONSHIPS)
+    fail(`${path}.relationships`, `must contain no more than ${MAX_ACTOR_GROUP_RELATIONSHIPS} relationships`);
+
+  const actorIds = new Set();
+  const actors = payload.actors.map((entry, index) => {
+    const entryPath = `${path}.actors[${index}]`;
+    allowedFields(entry, new Set(["id", "actor"]), entryPath);
+    const id = externalId(entry.id, `${entryPath}.id`);
+    if (actorIds.has(id)) fail(`${entryPath}.id`, "duplicate actor reference");
+    actorIds.add(id);
+    return { id, actor: normalizeActor(entry.actor, `${entryPath}.actor`) };
+  });
+
+  const nodeIds = new Set();
+  const assignedActors = new Set();
+  const nodes = payload.nodes.map((node, index) => {
+    const nodePath = `${path}.nodes[${index}]`;
+    allowedFields(node, new Set(["id", "name", "role", "position", "actorRefs"]), nodePath);
+    const id = externalId(node.id, `${nodePath}.id`);
+    if (nodeIds.has(id)) fail(`${nodePath}.id`, "duplicate node id");
+    nodeIds.add(id);
+    const role = stringAt(node.role, `${nodePath}.role`, { min: 1, max: 40 });
+    if (!ACTOR_GROUP_ROLES.includes(role)) fail(`${nodePath}.role`, "unsupported actor-group role");
+    allowedFields(node.position, new Set(["x", "y"]), `${nodePath}.position`);
+    const position = {
+      x: integerAt(node.position.x, `${nodePath}.position.x`, 0, 100000),
+      y: integerAt(node.position.y, `${nodePath}.position.y`, 0, 100000),
+    };
+    if (!Array.isArray(node.actorRefs) || !node.actorRefs.length || node.actorRefs.length > 50)
+      fail(`${nodePath}.actorRefs`, "must contain 1-50 actor references");
+    const actorRefs = node.actorRefs.map((value, actorIndex) => {
+      const actorPath = `${nodePath}.actorRefs[${actorIndex}]`;
+      const actorId = externalId(value, actorPath);
+      if (!actorIds.has(actorId)) fail(actorPath, "refers to an unknown actor");
+      if (assignedActors.has(actorId)) fail(actorPath, "each actor reference must belong to exactly one node");
+      assignedActors.add(actorId);
+      return actorId;
+    });
+    return {
+      id,
+      name: stringAt(node.name, `${nodePath}.name`, { min: 1, max: 160 }),
+      role,
+      position,
+      actorRefs,
+    };
+  });
+  if (assignedActors.size !== actorIds.size)
+    fail(`${path}.actors`, "each actor reference must belong to exactly one node");
+
+  const relationshipIds = new Set();
+  const relationships = payload.relationships.map((relationship, index) => {
+    const relationshipPath = `${path}.relationships[${index}]`;
+    allowedFields(relationship, new Set(["id", "fromNodeId", "toNodeId", "kind", "label"]), relationshipPath);
+    const id = externalId(relationship.id, `${relationshipPath}.id`);
+    if (relationshipIds.has(id)) fail(`${relationshipPath}.id`, "duplicate relationship id");
+    relationshipIds.add(id);
+    const fromNodeId = externalId(relationship.fromNodeId, `${relationshipPath}.fromNodeId`);
+    const toNodeId = externalId(relationship.toNodeId, `${relationshipPath}.toNodeId`);
+    if (!nodeIds.has(fromNodeId)) fail(`${relationshipPath}.fromNodeId`, "refers to an unknown node");
+    if (!nodeIds.has(toNodeId)) fail(`${relationshipPath}.toNodeId`, "refers to an unknown node");
+    if (fromNodeId === toNodeId) fail(relationshipPath, "self-relationships are not supported");
+    const kind = stringAt(relationship.kind, `${relationshipPath}.kind`, { min: 1, max: 40 });
+    if (!ACTOR_GROUP_RELATIONSHIP_KINDS.includes(kind))
+      fail(`${relationshipPath}.kind`, "unsupported relationship kind");
+    return {
+      id,
+      fromNodeId,
+      toNodeId,
+      kind,
+      label: stringAt(relationship.label, `${relationshipPath}.label`, { max: 120 }),
+    };
+  });
+
+  return {
+    id: externalId(payload.id, `${path}.id`),
+    name: stringAt(payload.name, `${path}.name`, { min: 1, max: 160 }),
+    actors,
+    nodes,
+    relationships,
+  };
+}
+
 function normalizePackage(value, path = "package", allowBundle = true) {
   allowedFields(value, new Set(["format", "version", "kind", "source", "payload"]), path);
   if (value.format !== INTEGRATION_FORMAT)
@@ -701,6 +1017,7 @@ function normalizePackage(value, path = "package", allowBundle = true) {
   let payload;
   if (value.kind === "character") payload = normalizeCharacter(value.payload, `${path}.payload`);
   else if (value.kind === "actor") payload = normalizeActor(value.payload, `${path}.payload`);
+  else if (value.kind === "actorGroup") payload = normalizeActorGroup(value.payload, `${path}.payload`);
   else if (value.kind === "rulePack")
     payload = normalizeRulePack(value.payload, `${path}.payload`);
   else {
@@ -738,22 +1055,26 @@ export function integrationCapabilities() {
   return {
     format: INTEGRATION_FORMAT,
     versions: [...INTEGRATION_VERSIONS],
-    schema: "systems/star-wars-ffg/docs/schemas/integration-v2.schema.json",
+    schema: "systems/star-wars-ffg/docs/schemas/integration-v3.schema.json",
     schemas: {
       1: "systems/star-wars-ffg/docs/schemas/integration-v1.schema.json",
       2: "systems/star-wars-ffg/docs/schemas/integration-v2.schema.json",
+      3: "systems/star-wars-ffg/docs/schemas/integration-v3.schema.json",
     },
-    imports: ["character", "actor", "rulePack", "bundle"],
+    imports: ["character", "actor", "actorGroup", "rulePack", "bundle"],
     exports: ["character", "actor"],
     transports: ["json-file", "url-fragment", "post-message"],
     actorTypes: [...ACTOR_TYPES],
     itemTypes: [...ITEM_TYPES],
+    actorGroupRelationshipKinds: [...ACTOR_GROUP_RELATIONSHIP_KINDS],
     limits: {
       packageBytes: MAX_PACKAGE_BYTES,
       handoffBytes: MAX_HANDOFF_BYTES,
       characterItems: 250,
       rulePackRules: 500,
       bundlePackages: 20,
+      actorGroupActors: MAX_ACTOR_GROUP_ACTORS,
+      actorGroupRelationships: MAX_ACTOR_GROUP_RELATIONSHIPS,
     },
   };
 }
@@ -784,6 +1105,16 @@ export function integrationSummary(value) {
       source: pkg.source.name,
       entries: pkg.payload.rules.length,
       items: pkg.payload.rules.length,
+    };
+  if (pkg.kind === "actorGroup")
+    return {
+      kind: pkg.kind,
+      label: pkg.payload.name,
+      source: pkg.source.name,
+      entries: pkg.payload.actors.length,
+      items: pkg.payload.actors.reduce((total, entry) => total + entry.actor.items.length, 0),
+      actors: pkg.payload.actors.length,
+      relationships: pkg.payload.relationships.length,
     };
   const summaries = pkg.payload.packages.map(integrationSummary);
   return {

@@ -4,7 +4,157 @@ import {
   actorContext,
   directorAdapter,
   RULE_KNOWLEDGE_POLICY,
+  combatRangeDecision,
 } from "../src/director-adapter.mjs";
+import { DEFAULT_CAMPAIGN } from "../src/rules.mjs";
+
+test("Director range decisions never treat an unverified vertical path as clear", () => {
+  const clear = { available: true, lineOfSightBlocked: false, requiresGmRuling: false };
+  assert.equal(combatRangeDecision(clear).allowed, true);
+  for (const lineOfSightBlocked of [false, null, true]) {
+    const result = combatRangeDecision({
+      ...clear, lineOfSightBlocked, requiresGmRuling: true,
+      sightReason: "The floor between these levels has not been verified.",
+    });
+    assert.equal(result.allowed, false);
+    assert.match(result.reason, /floor/);
+  }
+  assert.equal(combatRangeDecision({ ...clear, lineOfSightBlocked: true }).allowed, false);
+  assert.equal(combatRangeDecision({ ...clear, lineOfSightBlocked: null }).allowed, false);
+  assert.equal(combatRangeDecision({ available: false }).allowed, false);
+  assert.equal(combatRangeDecision(null).allowed, false);
+});
+
+test("Director targeted checks remeasure and reject blocked, unknown and unverified paths before rolling", async () => {
+  let calls = 0;
+  const actor = { uuid: "Actor.attacker", rollSkill: async (skill, options) => { calls++; return { skill, options }; } };
+  const sourceToken = { id: "source", actor }, targetToken = { id: "target" };
+  for (const range of [
+    { available: true, lineOfSightBlocked: true },
+    { available: true, lineOfSightBlocked: null },
+    { available: true, lineOfSightBlocked: false, requiresGmRuling: true, automaticRangedCheckAllowed: true },
+  ]) {
+    const adapter = { ...directorAdapter, getCombatRange: (source, target) => {
+      assert.equal(source, sourceToken); assert.equal(target, targetToken); return range;
+    } };
+    await assert.rejects(adapter.executeCheck(actor, "gunnery", {
+      sourceToken, targetToken, difficulty: 2,
+    }), /GM.*Manual|Manual.*GM/);
+  }
+  assert.equal(calls, 0);
+  await assert.rejects(directorAdapter.executeCheck(actor, "gunnery", { targetToken }), /both.*token/i);
+  assert.equal(calls, 0);
+  const adapter = { ...directorAdapter, getCombatRange: () => ({
+    available: true, lineOfSightBlocked: false, requiresGmRuling: false,
+  }) };
+  assert.deepEqual(await adapter.executeCheck(actor, "gunnery", {
+    sourceToken, targetToken, difficulty: 2, boost: 1,
+  }), { skill: "gunnery", options: { difficulty: 2, boost: 1 } });
+  assert.equal(calls, 1);
+  await directorAdapter.executeCheck(actor, "negotiation", { difficulty: 1 });
+  assert.equal(calls, 2);
+  assert.match(directorAdapter.getNativeCheckRules().guidance, /requiresGmRuling/);
+});
+
+test("targeted Force-style checks require a recorded GM sight override", async () => {
+  const previousGame = globalThis.game;
+  const actor = { uuid: "Actor.force-user", rollSkill: async (_skill, options) => options };
+  const sourceToken = { actor }, targetToken = { id: "target" };
+  const adapter = { ...directorAdapter, getCombatRange: () => ({ available: true, lineOfSightBlocked: true }) };
+  const options = { sourceToken, targetToken, sightOverride: { approved: true, reason: "Sense locates the target beyond the bulkhead" } };
+  try {
+    globalThis.game = { user: { isGM: false } };
+    await assert.rejects(adapter.executeCheck(actor, "discipline", options), /GM/i);
+    globalThis.game.user.isGM = true;
+    await assert.rejects(adapter.executeCheck(actor, "discipline", { ...options, sightOverride: { approved: true, reason: " " } }), /Record|reason/i);
+    const roll = await adapter.executeCheck(actor, "discipline", options);
+    assert.deepEqual(roll.ruleNotes, ["GM line of sight override: Sense locates the target beyond the bulkhead"]);
+    assert.equal(Object.hasOwn(roll, "sightOverride"), false);
+  } finally { globalThis.game = previousGame; }
+});
+
+test("Director receives rolled story hooks and active GM scene decisions", () => {
+  const priorGame = globalThis.game;
+  const systemId = "star-wars-ffg";
+  const actor = {
+    uuid: "Actor.scene-droid", name: "Scene Droid", type: "minion",
+    items: { contents: [] },
+    flags: { [systemId]: {
+      conditions: [{ id: "stand-down", name: "Stand-down command accepted", note: "Ceases hostile targeting until an explicit new trigger.", automation: "record-only", source: { book: "GM scene ruling", page: "Round 2" } }],
+      narrativeEffects: [
+        { id: "pending", label: "Maintenance route", note: "Access to the service bay", die: "boost", count: 1, skillKey: "mechanics" },
+        { id: "used", label: "Spent clue", die: "boost", count: 1, skillKey: "computers", consumedBy: "roll-1" },
+      ],
+      workflowHistory: [
+        { id: "reviewed", kind: "condition", label: "Droid accepts stand-down", at: "2026-09-30T10:00:00Z", source: { book: "GM scene ruling", page: "Round 2" } },
+        { id: "undone", kind: "condition", label: "Removed ruling", undone: true },
+      ],
+    } },
+    system: {
+      species: "Droid", career: "", source: {}, incomplete: [],
+      characteristics: { brawn: 1, agility: 1, intellect: 1, cunning: 1, willpower: 1, presence: 1 },
+      skills: {}, customSkills: [], motivations: [], biography: "Keeps the hangar secure.",
+      wounds: { value: 8, max: 11 }, strain: { value: 0, max: 11 },
+      defense: { melee: 0, ranged: 0 }, soak: 1, xp: { available: 0 },
+      advancement: [], phase: "ready", creation: { storyRolls: [{ mechanic: "obligation", description: "A debt to the hangar operator", roll: 64 }] },
+      obligation: { label: "Family", value: 15 }, duty: { label: "", value: 0 },
+      morality: { strength: "Enthusiasm", weakness: "Recklessness", value: 50 },
+    },
+  };
+  try {
+    globalThis.game = { user: { isGM: true }, settings: { get: () => DEFAULT_CAMPAIGN }, combats: [] };
+    const stats = directorAdapter.getNarrativeSheetStats(actor);
+    const byLabel = (label) => stats.find((entry) => entry.label === label)?.value ?? "";
+    assert.match(byLabel("Story hooks and rolled narrative values"), /A debt to the hangar operator/);
+    assert.match(byLabel("Story hooks and rolled narrative values"), /64/);
+    assert.match(byLabel("Active GM conditions"), /Ceases hostile targeting/);
+    assert.match(byLabel("Pending GM dice effects"), /Maintenance route/);
+    assert.doesNotMatch(byLabel("Pending GM dice effects"), /Spent clue/);
+    assert.match(byLabel("Recent reviewed GM changes"), /Droid accepts stand-down/);
+    assert.doesNotMatch(byLabel("Recent reviewed GM changes"), /Removed ruling/);
+    assert.match(directorAdapter.getNativeCheckRules().guidance, /Honor Active GM conditions/);
+  } finally { globalThis.game = priorGame; }
+});
+
+test("Director targeted checks bind the rolled actor and assigned vehicle crew to the measured source", async () => {
+  let rolls = 0, measurements = 0;
+  const actor = { uuid: "Actor.ship", type: "vehicle", rollSkill: async (skill, options) => {
+    rolls++; return { skill, options };
+  } };
+  const sourceToken = { id: "source", actor }, targetToken = { id: "target" };
+  const adapter = { ...directorAdapter, getCombatRange: () => {
+    measurements++; return { available: true, lineOfSightBlocked: false };
+  } };
+  for (const source of [
+    { id: "unrelated", actor: { uuid: "Actor.other" } },
+    { id: "synthetic", actor: { id: "ship", uuid: "Scene.one.Token.copy.Actor.ship" } },
+    { id: "missingActor" },
+    "missing-token-id",
+  ]) {
+    await assert.rejects(adapter.executeCheck(actor, "gunnery", { sourceToken: source, targetToken }), /source token.*actor/i);
+  }
+  assert.equal(rolls, 0);
+  assert.equal(measurements, 0);
+  const result = await adapter.executeCheck(actor, "gunnery", {
+    sourceToken, targetToken, difficulty: 2, crewTokenId: "assigned-gunner",
+    vehicleToken: { id: "another-copy", actor },
+  });
+  assert.equal(result.options.vehicleToken, sourceToken);
+  assert.equal(result.options.crewTokenId, "assigned-gunner");
+  assert.equal(result.options.difficulty, 2);
+  assert.equal(rolls, 1);
+  assert.equal(measurements, 1);
+  const previousCanvas = globalThis.canvas;
+  try {
+    globalThis.canvas = { tokens: { get: (id) => id === "source" ? sourceToken : null } };
+    const byId = await adapter.executeCheck(actor, "gunnery", { sourceToken: "source", targetToken });
+    assert.equal(byId.options.vehicleToken, sourceToken);
+    const byDocument = await adapter.executeCheck(actor, "gunnery", { sourceToken: { document: sourceToken }, targetToken });
+    assert.equal(byDocument.options.vehicleToken.document, sourceToken);
+  } finally {
+    globalThis.canvas = previousCanvas;
+  }
+});
 
 test("Director of Realms receives every custom skill with its effective rank", () => {
   const customSkills = Array.from({ length: 8 }, (_, index) => ({
@@ -23,6 +173,8 @@ test("Director of Realms receives every custom skill with its effective rank", (
       items: { contents: [] },
       system: {
         customSkills,
+        species: "Umbaran",
+        creation: { species: { book: "Rise of the Seperatists", page: "15" }, speciesAbilitiesPending: true },
         skills: {},
         source: {},
         incomplete: [],
@@ -60,6 +212,9 @@ test("Director of Realms receives every custom skill with its effective rank", (
   assert.equal(typeof directorAdapter.getRangeProfile, "function");
   assert.equal(context.motivation, "Relationship: Protect the crew");
   assert.equal(context.motivations[0].description.includes("loyalties"), true);
+  assert.equal(context.speciesAbilities.status, "book-verified");
+  assert.equal(context.speciesAbilities.source.page, "16");
+  assert.equal(context.speciesAbilities.remainingReview, true);
 });
 
 test("Director rules knowledge fails closed when no source evidence exists", () => {

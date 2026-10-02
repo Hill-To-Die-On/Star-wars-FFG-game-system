@@ -49,9 +49,9 @@ export function normalizeCustomSkill(
     throw new Error("Custom skill needs a stable identifier.");
   if (!skill.label || skill.label.length > 60)
     throw new Error("Enter a custom skill name of 60 characters or fewer.");
-  if (!(skill.characteristic in CHARACTERISTICS))
+  if (!Object.hasOwn(CHARACTERISTICS, skill.characteristic))
     throw new Error("Choose a valid characteristic for the custom skill.");
-  if (!(skill.type in CUSTOM_SKILL_TYPES))
+  if (!Object.hasOwn(CUSTOM_SKILL_TYPES, skill.type))
     throw new Error("Choose how the custom skill is used.");
   if (!Number.isInteger(skill.rank) || skill.rank < 0 || skill.rank > rankCap)
     throw new Error(`Custom skill rank must be from 0 to ${rankCap}.`);

@@ -1,6 +1,6 @@
 {
   "name": "star-wars-ffg-system",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "private": true,
   "type": "module",
   "description": "An independent Foundry VTT system for the three FFG Star Wars roleplaying lines.",
@@ -10,17 +10,29 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
+    "test:browser": "node scripts/browser-checks.mjs",
+    "test:playtest": "node scripts/browser-checks.mjs --fixture=tabletop-ui.mjs --runs=3",
+    "test:playtest:matrix": "node scripts/browser-checks.mjs --fixture=tabletop-ui.mjs --runs=1 --seed=4200",
+    "test:playtest:stateful": "node scripts/browser-checks.mjs --fixture=tabletop-ui.mjs --runs=3 --stateful",
+    "test:recovery": "node scripts/foundry-recovery-acceptance.mjs",
     "check": "node scripts/check.mjs",
+    "audit:origins": "node scripts/audit-origin-data.mjs",
+    "audit:icons": "node scripts/audit-actor-icons.mjs",
     "build": "node scripts/build.mjs",
+    "audit:release": "node scripts/audit-release.mjs",
     "import:database": "node scripts/import-database.mjs",
     "publish:database": "node scripts/publish-database.mjs",
     "publish:advancement": "node scripts/publish-advancement-trees.mjs",
     "publish:vehicles": "python scripts/publish-vehicle-stats.py",
-    "import:swa": "node scripts/fetch-swa.mjs"
+    "publish:loadouts": "python scripts/publish-vehicle-loadouts.py",
+    "import:swa": "node scripts/fetch-swa.mjs",
+    "typecheck": "tsc --project tsconfig.json",
+    "version:set": "node scripts/set-version.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "fflate": "^0.8.3",
-    "handlebars": "^4.7.9"
+    "handlebars": "^4.7.9",
+    "typescript": "7.0.2"
   }
 }

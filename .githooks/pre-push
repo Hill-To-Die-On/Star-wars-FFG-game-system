@@ -1,0 +1,7 @@
+#!/bin/sh
+# Runs the unit suite and static checks before every push (about 6 s).
+# Enable once per clone: git config core.hooksPath .githooks
+# Skip for one push:     git push --no-verify
+set -e
+npm test --silent
+npm run check --silent

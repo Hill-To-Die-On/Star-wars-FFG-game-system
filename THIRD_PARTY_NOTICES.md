@@ -66,3 +66,20 @@ the font project's licence file also identifies its later project authors.
 
 Elektra and Star Jedi are not included. Their presence in a public repository
 does not establish redistribution permission for this system.
+
+## SHA-256 HTTP compatibility
+
+The locally bundled SHA-256 fallback uses the MIT-licensed `@noble/hashes` 1.4.0
+ES modules by Paul Miller, from the package distributed with Foundry 14.368.
+Upstream: https://github.com/paulmillr/noble-hashes/tree/1.4.0
+
+Files in `src/vendor/noble-hashes`: `sha256.js`, `_md.js`, `_assert.js`, `utils.js`
+and `crypto.js`. The complete upstream license is retained as `LICENSE.txt`.
+The only source changes are removal of source-map URL comments and replacement of
+the bare `@noble/hashes/crypto` import with its local relative module path. The
+hash implementation is unchanged. SHA-256 is loaded only when native Web Crypto
+hashing is unavailable, including ordinary HTTP LAN connections.
+
+This pinned vendored copy is not part of the npm lockfile or its advisory scan.
+Review upstream security notices and the pinned version when maintaining it.
+This attribution does not claim an audit of the game system or its integrations.

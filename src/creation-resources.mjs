@@ -130,6 +130,7 @@ const validPrice = (entry) => {
   const price = Number(entry?.system?.price);
   return Number.isSafeInteger(price) && price >= 0;
 };
+const validEncumbrance = (entry) => Number.isSafeInteger(Number(entry?.system?.encumbrance)) && Number(entry.system.encumbrance) >= 0;
 
 export function startingEquipmentOptions(entries, campaign) {
   return Array.from(entries ?? [])
@@ -137,7 +138,7 @@ export function startingEquipmentOptions(entries, campaign) {
       ["weapon", "armor", "gear"].includes(entry?.type),
     )
     .filter((entry) => entry.type !== "weapon" || entry.system?.scale !== "vehicle")
-    .filter((entry) => documentId(entry) && validPrice(entry))
+    .filter((entry) => documentId(entry) && validPrice(entry) && validEncumbrance(entry))
     .filter(
       (entry) =>
         !(entry.system?.incomplete ?? []).some((value) =>
@@ -150,6 +151,8 @@ export function startingEquipmentOptions(entries, campaign) {
       name: String(entry.name ?? "").trim(),
       type: entry.type,
       price: Number(entry.system.price),
+      encumbrance: Number(entry.system.encumbrance),
+      skill: String(entry.system?.skill ?? ""),
       restricted: entry.system?.restricted === true,
       source: {
         book: String(entry.system?.source?.book ?? ""),
@@ -178,16 +181,18 @@ export function buildStartingLoadout({
   cashBudget,
   gearGrant = 0,
   allowRestricted = false,
+  encumbranceLimit = Number.MAX_SAFE_INTEGER,
 } = {}) {
   const cash = budgetValue(cashBudget, "Starting credit budget"),
     grant = budgetValue(gearGrant, "Starting gear grant"),
+    capacity = budgetValue(encumbranceLimit, "Encumbrance limit"),
     available = new Map(Array.from(options ?? [], (option) => [option.id, option]));
   if (available.size !== Array.from(options ?? []).length)
     throw new Error("Starting equipment options require unique database IDs.");
   if (!Array.isArray(selections)) throw new Error("Starting equipment selections must be a list.");
   const ids = new Set(),
     items = [];
-  let cost = 0;
+  let cost = 0, encumbrance = 0;
   for (const selection of selections) {
     const id = String(selection?.id ?? ""),
       quantity = Number(selection?.quantity),
@@ -202,20 +207,47 @@ export function buildStartingLoadout({
     if (!Number.isSafeInteger(itemCost)) throw new Error("Starting equipment cost is too large.");
     cost += itemCost;
     if (!Number.isSafeInteger(cost)) throw new Error("Starting equipment cost is too large.");
+    const itemEncumbrance = budgetValue(option.encumbrance ?? 0, `${option.name} encumbrance`) * quantity;
+    encumbrance += itemEncumbrance;
+    if (!Number.isSafeInteger(encumbrance)) throw new Error("Starting equipment encumbrance is too large.");
     ids.add(id);
     items.push({ id, quantity, price: option.price, cost: itemCost, restricted: option.restricted });
   }
   if (cost > cash + grant)
     throw new Error(`Starting equipment exceeds the ${cash + grant}-credit allowance.`);
+  if (encumbrance > capacity)
+    throw new Error(`Starting equipment encumbrance ${encumbrance} exceeds carrying limit ${capacity}.`);
   const cashSpent = Math.max(0, cost - grant);
   return {
     items,
     cost,
+    encumbrance,
+    encumbranceLimit: capacity,
     cashSpent,
     gearGrantUsed: Math.min(grant, cost),
     gearGrantUnused: Math.max(0, grant - cost),
     credits: cash - cashSpent,
   };
+}
+
+export function suggestedStartingEquipment(options, system, cashBudget, encumbranceLimit) {
+  const total = Number(system?.xp?.total ?? 0), available = Number(system?.xp?.available ?? 0);
+  const spentShare = total > 0 ? Math.max(0, Math.min(1, (total - available) / total)) : 0;
+  const priceCeiling = Math.floor(cashBudget * (0.35 + 0.6 * spentShare));
+  const ranked = Array.from(options ?? []).filter((entry) =>
+    !entry.restricted && entry.price > 0 && entry.price <= priceCeiling && entry.encumbrance <= encumbranceLimit);
+  const score = (entry) => {
+    const name = entry.name.toLowerCase(), skill = system?.skills?.[entry.skill];
+    let value = entry.type === "weapon" ? (skill?.rank ?? 0) * 6 + Number(!!skill?.career) * 2 : 0;
+    if (entry.type === "armor") value += /heavy clothing|concealing robes|armoured clothing/.test(name) ? 5 : 1;
+    if (/comlink|datapad|backpack|macrobinoculars/.test(name)) value += 5;
+    if ((system?.skills?.medicine?.rank ?? 0) && /medpack/.test(name)) value += 7;
+    if ((system?.skills?.mechanics?.rank ?? 0) && /tool kit/.test(name)) value += 7;
+    if ((system?.skills?.survival?.rank ?? 0) && /survival|scanner/.test(name)) value += 5;
+    if ((system?.skills?.pilotingSpace?.rank ?? 0) && /comlink|datapad/.test(name)) value += 2;
+    return value - entry.encumbrance * 0.4 - entry.price / Math.max(1, cashBudget);
+  };
+  return ranked.sort((a, b) => score(b) - score(a) || a.price - b.price || a.name.localeCompare(b.name)).slice(0, 12);
 }
 
 export function finalizePocketMoney(system, amount) {

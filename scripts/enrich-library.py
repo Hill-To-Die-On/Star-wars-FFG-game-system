@@ -24,6 +24,34 @@ def read_xml(path):
 def text(el, key, default=""):
     return el.findtext(key, default=default).strip()
 
+def apply_chart_corrections(nodes, edges, check, name):
+    if not check:
+        return
+    corrections = check.get("nodeCorrections", [])
+    additions = check.get("edgeAdds", [])
+    if (corrections or additions) and check.get("level") != "full-chart":
+        raise ValueError(f"{name} corrections need a full chart check")
+    node_by_id = {node["id"]: node for node in nodes}
+    corrected = set()
+    for correction in corrections:
+        node_id = correction.get("id")
+        if node_id not in node_by_id or node_id in corrected:
+            raise ValueError(f"Invalid {name} node correction")
+        corrected.add(node_id)
+        if set(correction) == {"id", "sourceCost", "printedCost"}:
+            field, before, after = "cost", correction["sourceCost"], correction["printedCost"]
+        elif set(correction) == {"id", "sourceName", "printedName"}:
+            field, before, after = "name", correction["sourceName"], correction["printedName"]
+        else:
+            raise ValueError(f"Invalid {name} node correction fields")
+        if node_by_id[node_id][field] not in (before, after):
+            raise ValueError(f"{name} node correction does not match the source tree")
+        node_by_id[node_id][field] = after
+    for pair in additions:
+        if len(pair) != 2 or pair[0] == pair[1] or any(node_id not in node_by_id for node_id in pair):
+            raise ValueError(f"Invalid {name} edge correction")
+        edges.add(tuple(sorted(pair)))
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset", type=Path)
@@ -175,14 +203,21 @@ def main():
                 item["system"]["description"]=description
                 motivations_enriched+=1
     pdfs = [p for p in args.pdf_root.rglob("*.pdf") if "Map Assets" not in str(p)]
+    filed_summary_path = Path(".local/rule-scan/filed-source-summary.json")
+    filed_summary = json.loads(filed_summary_path.read_text(encoding="utf-8")) if filed_summary_path.exists() else []
     def match_pdf(book):
+        held = [Path(row["privateSource"]) for row in filed_summary
+                if row.get("registeredBook") and not row.get("error")
+                and book_key(row["book"]) == book_key(book)
+                and Path(row["privateSource"]).resolve().is_relative_to(args.pdf_root.resolve())
+                and Path(row["privateSource"]).exists()]
         key=book_key(book)
         matches=[p for p in pdfs if book_key(p.stem)==key]
         if not matches:
             # Some database book names include a rule-line prefix absent from the filename.
             stripped=re.sub(r"^(?:eote|aor|fad)","",key)
             if stripped!="core": matches=[p for p in pdfs if re.sub(r"^(?:eote|aor|fad)","",book_key(p.stem))==stripped]
-        return matches
+        return list(dict.fromkeys(held + matches))
     specs={norm(i["name"]):i for i in bundle["documents"]["Item"] if i["type"]=="specialization"}
     coverage=[]; matched=set(); imported=0
     for path in sorted((args.dataset/"Specializations").glob("*.xml")):
@@ -254,6 +289,7 @@ def main():
                 reference.get("page") or page,
             )
         printed_check=next((entry for entry in printed_checks.values() if entry),None)
+        apply_chart_corrections(nodes, edges, printed_check, name)
         comparison=(
             "Full chart checked"
             if printed_check and printed_check.get("level")=="full-chart"
@@ -408,6 +444,7 @@ def main():
         printed_check=source_verification(
             "signatureAbility", item["name"], reference_book, reference_page
         )
+        apply_chart_corrections(nodes, edges, printed_check, item["name"])
         comparison="Full chart checked" if printed_check else "Pending"
         provenance=(
             "Private structured signature-ability dataset; printed chart compared for node names, costs and connectors"
@@ -424,6 +461,20 @@ def main():
     for key,item in signature_items.items():
         if key in signature_matched: continue
         system=item["system"]
+        reference=system.get("source",{})
+        printed_check=source_verification("signatureAbility", item["name"], reference.get("book",""), reference.get("page",""))
+        standalone=printed_check.get("chart") if printed_check else None
+        if standalone:
+            chart_nodes=standalone.get("nodes",[])
+            matching=standalone.get("matchingNodes",[])
+            if printed_check.get("level")!="full-chart" or len(chart_nodes)!=9 or len(matching)!=4 or not any(matching):
+                raise ValueError(f"Invalid checked signature chart for {item['name']}")
+            system["matchingNodes"]=matching
+            system["tree"]={"nodes":chart_nodes,"edges":standalone.get("edges",[]),"verified":True,"provenance":"Printed chart checked for node names, costs, connectors and attachment slots","source":{"book":reference.get("book", ""),"page":reference.get("page", "")}}
+            system["incomplete"]=["Private guidance missing for 9 nodes"]
+            signature_coverage.append({"signatureAbility":item["name"],"career":", ".join(system.get("eligibleCareers",[])),"book":reference.get("book",""),"page":reference.get("page",""),"graph":"imported","nodes":9,"links":len(standalone.get("edges",[])),"guidanceMissing":9,"issues":[],"comparison":"Full chart checked"})
+            signature_imported+=1
+            continue
         system["tree"]={"nodes":[],"edges":[],"verified":False}
         system["incomplete"]=["No structured signature ability chart found"]
         signature_coverage.append({"signatureAbility":item["name"],"career":", ".join(system.get("eligibleCareers",[])),"book":system.get("source",{}).get("book",""),"page":system.get("source",{}).get("page",""),"graph":"missing","nodes":0,"links":0,"guidanceMissing":0,"issues":["No structured chart found"],"comparison":"Pending"})
@@ -453,7 +504,9 @@ def main():
     missing=[r for r in coverage if not r["pdf"] and not r["pdfCompared"]]
     full_comparisons=sum(r["comparison"]=="Full chart checked" for r in coverage)+sum(r["comparison"]=="Full chart checked" for r in signature_coverage)
     connector_corrections=sum(r["comparison"]=="Connector correction checked" for r in coverage)
-    lines=["# Advancement source coverage", "", "Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.", "", f"{len(coverage)} specialization references; {imported} structurally validated specialization graphs; {enriched} vehicles with matching structured statistics; {motivations_enriched} private motivation guidance matches.", "", f"A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. {connector_corrections} connector-only checks and {full_comparisons} full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.", "", "## Character-creation source verification", "", "The public implementation records structured values and page citations without copying the books' explanatory prose. The held core books were checked for the shared 500-credit baseline, party-size Obligation/Duty values, line-specific starting-benefit choices, the Age of Rebellion Base of Operations gear-only allowance and the final d100 pocket-money roll.", "", "| Rule line | Held source pages checked |", "|---|---|", "| Edge of the Empire | Core Rulebook pp. 40 and 97 |", "| Age of Rebellion | Core Rulebook pp. 46, 108 and 111 |", "| Force and Destiny | Core Rulebook pp. 49 and 107 |", "", "The source books remain required for their explanations, examples, exceptional species rules and any option not represented as reviewed structured data.", "", "## Partial sourcebook scan requests", "", "These requests record exact page gaps without publishing source text, artwork or private file paths. A database page reference is an index entry, not proof that the complete printed statistics or rule exceptions have been reviewed.", ""]
+    lines=["# Advancement source coverage", "", "Generated from the locally supplied SQL and structured dataset. No book text or artwork is included.", "", f"{len(coverage)} specialization references; {imported} structurally validated specialization graphs; {enriched} vehicles with matching structured statistics; {motivations_enriched} private motivation guidance matches.", "", f"A structurally validated graph is usable for XP path checks; it is not a claim that every node has been compared against the printed book. {connector_corrections} connector-only checks and {full_comparisons} full chart comparisons have been checked against privately held pages; the remaining node-by-node comparisons are pending.", "", "## Character-creation source verification", "", "The public implementation records structured values and page citations without copying the books' explanatory prose. The held core books were checked for the shared 500-credit baseline, party-size Obligation/Duty values, line-specific starting-benefit choices, the Age of Rebellion Base of Operations gear-only allowance and the final d100 pocket-money roll.", "", "| Rule line | Held source pages checked |", "|---|---|", "| Edge of the Empire | Core Rulebook pp. 40 and 97 |", "| Age of Rebellion | Core Rulebook pp. 46, 108 and 111 |", "| Force and Destiny | Core Rulebook pp. 49 and 107 |", "", "The source books remain required for their explanations, examples, exceptional species rules and any option not represented as reviewed structured data.", "", "## Sourcebook page availability", "", "Source availability is separate from per-rule verification. A database page reference does not prove that every instruction or exception has been captured.", ""]
+    if not source_requests.get("partialSources"):
+        lines += ["No open partial-scan page requests are recorded.", ""]
     for source in source_requests.get("partialSources", []):
         evidence = "; ".join(
             f"{entry['assetPages']}-page {entry['kind']} covering printed pages {', '.join(entry['printedPageRanges'])}"
@@ -466,6 +519,9 @@ def main():
         lines += ["", "Capture requirements:", ""]
         lines += [f"- {guidance}" for guidance in source_requests.get("captureGuidance", [])]
         lines += ["", "Keep the captured pages private; they are used to verify structured mechanics and citations, not shipped in the public system.", ""]
+    for source in source_requests.get("resolvedSources", []):
+        earlier = " and ".join(source["previouslyRequestedPrintedPageRanges"])
+        lines += [f"### {source['book']}", "", f"A complete {source['assetPages']}-page PDF is now held. The earlier printed-page gaps {earlier} are present; {source['textLayerPages']} PDF pages have extractable text. Page images were spot checked, but mechanics still require per-instruction review.", ""]
     lines += ["## Photo request register", "", "These chart sources have neither a matched full PDF nor a recorded private-page comparison. A full, straight-on image of each chart, with all four columns, five rows, connecting lines and page number visible, will let the chart be checked. Include adjacent creation or exception rules only where the chart references them. Structured graphs may already be available, as shown.", "", "| Book | Printed page | Specialization | Graph |", "|---|---|---|---|"]
     lines += [f"| {r['book']} | {r['page'] or 'Check index'} | {r['specialization']} | {r['graph']}{'; standalone chart PDF found' if r.get('standaloneChart') else ''} |" for r in missing]
     if not missing: lines.append("| None identified | | | |")

@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { parseSqlDump } from "./sql-parser.mjs";
 import { skillKey, SYSTEM_ID } from "../src/config.mjs";
 import { escapeHTML } from "../src/mechanics.mjs";
+import { stampVehicleMount } from "../src/vehicle-loadouts.mjs";
 import {
   ROW_NAMES,
   correctReferenceName,
@@ -60,9 +61,10 @@ export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
     },
   };
   const ids = new Set();
+  const loadouts = tables.vehicle_loadouts ?? [];
   for (const [table, rows] of Object.entries(tables)) {
     bundle.report.tables[table] = rows.length;
-    if (table.startsWith("dice_") || table === "dice_sides") continue;
+    if (table.startsWith("dice_") || table === "dice_sides" || table === "vehicle_loadouts") continue;
     for (const [index, row] of rows.entries()) {
       const sourceName =
         String(
@@ -110,7 +112,15 @@ export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
       };
       const ref = referenceSource(table, row);
       if (table === "vehicles") {
-        bundle.report.missingVehicleStats++;
+        const numeric = ["Hull_Trauma", "System_Strain", "Armor", "Silhouette", "Speed", "Handling", "Defense_fore", "Defense_aft", "Defense_port", "Defense_starboard"]
+          .every(key => typeof row[key] === "number" && Number.isSafeInteger(row[key]));
+        const weaponsKnown = ["source-checked armed", "source-checked unarmed"].includes(row.Weapons_Status);
+        if (!numeric) bundle.report.missingVehicleStats++;
+        const mounts = loadouts.filter(mount => String(mount.Vehicle_ID) === String(row.ID) && mount.Review_Status === "source-checked");
+        if ((row.Weapons_Status === "source-checked armed" && !mounts.length) || (row.Weapons_Status === "source-checked unarmed" && mounts.length))
+          throw new Error(`${name} weapon readiness does not match its recorded mounts.`);
+        if (mounts.some(mount => mount.Book !== row.Book || String(mount.Profile_Page ?? mount.Page) !== String(row.Page)))
+          throw new Error(`${name} weapon source does not match the selected profile.`);
         bundle.documents.Actor.push({
           ...common,
           type: "vehicle",
@@ -124,7 +134,7 @@ export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
             hyperdrive: String(row.Primary_Hyperdrive ?? ""),
             source: ref,
             metadata,
-            incomplete: [
+            incomplete: [...(!numeric ? [
               "hullTrauma.max",
               "systemStrain.max",
               "armor",
@@ -132,13 +142,24 @@ export function convertDatabase(tables, { retainCreatorNotes = false } = {}) {
               "speed.max",
               "handling",
               "shields",
-            ],
-            hullTrauma: { value: 0, max: 0 },
-            systemStrain: { value: 0, max: 0 },
-            armor: 0,
-            silhouette: 0,
-            speed: { value: 0, max: 0 },
+            ] : []), ...(!weaponsKnown ? ["installed weapons"] : [])],
+            hullTrauma: { value: 0, max: numeric ? row.Hull_Trauma : 0 },
+            systemStrain: { value: 0, max: numeric ? row.System_Strain : 0 },
+            armor: numeric ? row.Armor : 0,
+            silhouette: numeric ? row.Silhouette : 0,
+            speed: { value: 0, max: numeric ? row.Speed : 0 },
+            handling: numeric ? row.Handling : 0,
+            shields: Object.fromEntries(["fore", "aft", "port", "starboard"].map(side => [side, numeric ? row[`Defense_${side}`] : 0])),
           },
+          items: weaponsKnown ? mounts.map(mount => stampVehicleMount({
+            _id: createHash("sha256").update(`vehicle-mount:${mount.ID}`).digest("hex").slice(0, 16),
+            name: `${mount.Weapon} (${mount.Location})`, type: "weapon", img: `systems/${SYSTEM_ID}/assets/weapon.svg`,
+            flags: { [SYSTEM_ID]: { vehicleMount: { vehicleId: String(row.ID), mountId: mount.ID } } },
+            system: { skill: mount.Skill, damage: String(mount.Damage), critical: mount.Critical,
+              range: mount.Range, scale: mount.Scale, quantity: mount.Count, qualities: mount.Qualities, equipped: true,
+              source: referenceSource("vehicle_loadouts", mount), incomplete: [],
+              metadata: { fireArcs: mount.Fire_Arcs.split(", "), location: mount.Location, verification: "printed-page" } },
+          })) : [],
         });
       } else if (
         [

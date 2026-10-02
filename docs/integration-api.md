@@ -17,9 +17,9 @@ const integration = game.system.api.integration;
 console.table(integration.getCapabilities());
 ```
 
-Version 1 remains supported unchanged for player characters, community rule packs and bundles containing both. Version 2 adds reviewed Actor packages for characters, minions, rivals, nemeses, vehicles and groups; its bundles can combine those Actors with version-two rule packs. Both versions support JSON files, compact URL-fragment handoffs and an origin-bound `postMessage` handoff.
+Version 1 remains supported unchanged for player characters, community rule packs and bundles containing both. Version 2 adds reviewed Actor packages for characters, minions, rivals, nemeses, vehicles and groups; its bundles can combine those Actors with version-two rule packs. Version 3 adds GM-reviewed authored actor groups whose stable source nodes, map roles, positions and directed relationships survive alongside the created Actors. All versions support JSON files, compact URL-fragment handoffs and an origin-bound `postMessage` handoff.
 
-The returned `schema` path points to the latest bundled [version 2 JSON Schema](schemas/integration-v2.schema.json), while `schemas[1]` and `schemas[2]` expose both contracts. Sites can use them for editor hints and preflight validation. The runtime validator remains authoritative for size limits, actor-specific fields and detailed talent-tree rules.
+The returned `schema` path points to the latest bundled [version 3 JSON Schema](schemas/integration-v3.schema.json), while `schemas[1]`, `schemas[2]` and `schemas[3]` expose every contract. Sites can use them for editor hints and preflight validation. The runtime validator remains authoritative for referential integrity, size limits, actor-specific fields and detailed talent-tree rules.
 
 ## Version 2 Actor package
 
@@ -33,7 +33,7 @@ Version 2 uses `kind: "actor"` and accepts every native system Actor type: `char
   "source": {
     "id": "sw-rpg.info",
     "name": "SW-RPG.info",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "url": "https://sw-rpg.info/"
   },
   "payload": {
@@ -58,6 +58,14 @@ Version 2 uses `kind: "actor"` and accepts every native system Actor type: `char
 ```
 
 Player-character Actors retain the ordinary Actor-create permission and are owned by their non-GM importer. Importing an adversary, vehicle or group is GM-only. Every Actor import creates a new document; version 2 does not silently update an existing Actor.
+
+## Version 3 authored actor group
+
+Version 3 uses `kind: "actorGroup"` and is GM-only. Its `actors` array contains allow-listed native Actor payloads. Stable actor references connect those payloads to authored `nodes`; each node retains its name, semantic role, canvas position and one or more Actor references. A roster can therefore create several Foundry Actors while remaining one exact relationship endpoint.
+
+Relationships use stable node IDs and one of 131 allow-listed directed kinds. Each relationship reads as a `fromNodeId → kind → toNodeId` sentence, and several facts may connect the same pair in either direction. The vocabulary covers authority/service, alliance/conflict, explicit personal attitudes, family/mentorship, leverage/intelligence, organisation/assignment, ownership/custody/acquisition, vehicles/travel and bases/territory/logistics. A commander can therefore `commands` a minion while that minion is `loyal-to` the commander; legal `owns` can coexist with `steals`, `stolen-from` and `borrowed-by`; and a ship can be `piloted-by`, `docked-at`, `refuels-at` or `repaired-by` without those meanings being conflated. The optional creator label remains separate from the kind. Runtime validation rejects dangling references, reused Actor references, self-links, duplicate IDs and unknown fields before any Actor is created. Capability discovery publishes the same vocabulary as the public v3 JSON Schema, with a contract test preventing drift.
+
+The importer creates the Actors as one batch and stores system-owned provenance sufficient to reconstruct each node's incident relationships. It then emits one `starWarsFFGIntegrationImported` result with the stable-reference-to-Foundry-Actor mapping. Connected tools such as Director of Realms can consume this result as explicit authored context. Consumers must not convert structural links into invented trust, fear or hostility scores; live DoR consumption is a separate acceptance check. See [ADR 0002](adr/0002-authored-actor-group-interchange.md).
 
 ## Interchange envelope
 
@@ -296,9 +304,10 @@ Hooks.once("starWarsFFGReady", (api) => {
 | `getCapabilities()` | Discover formats, transports, document types and limits |
 | `validatePackage(data)` | Validate and return a normalized defensive copy |
 | `summarizePackage(data)` | Produce safe review metadata |
-| `importPackage(data, options)` | Import a character, rule pack or bundle |
+| `importPackage(data, options)` | Import any supported package kind |
 | `importCharacter(data, options)` | Create one player character |
 | `importActor(data, options)` | Create one version 2 character, adversary, vehicle or group |
+| `importActorGroup(data, options)` | GM-only batch import of a version 3 authored Actor group |
 | `exportCharacter(actorOrUuid, options)` | Export an observable player character |
 | `exportActor(actorOrUuid, options)` | Export any observable native Actor as version 2 |
 | `importRulePack(data, options)` | GM-only community Item import |
@@ -313,3 +322,16 @@ Hooks.once("starWarsFFGReady", (api) => {
 Successful imports call `Hooks.callAll("starWarsFFGIntegrationImported", result, package)`. Connector registration calls `starWarsFFGConnectorRegistered`. The existing `starWarsFFGReady` hook receives the complete system API.
 
 The protocol is client-mediated by design. It does not expose a public unauthenticated HTTP or socket write endpoint, store website credentials or let imported data execute JavaScript. See [ADR 0001](adr/0001-public-integration-api.md) for the decision record.
+
+## Read-only support and rules inventory
+
+```js
+game.system.api.support.capabilities();
+game.system.api.support.capabilities("cross-scale");
+game.system.api.support.actorCoverage(actor, { query: "", status: "" });
+game.system.api.support.diagnostics();
+```
+
+Unknown capability IDs return unsupported with a GM ruling required. Actor coverage requires observer access and applies the campaign book filter without changing learned mechanics. The diagnostic v1 format returns only versions, two known integration states and document counts; it is not an upload API.
+
+The existing DoR getCheckTalentRules result now includes cloned structured contributions (rule ID, activation status, source and effect). Check-pool results retain basePool separately from the adjusted pool. Structured-effect metadata identifies what code applies; it does not certify book interpretation or turn prose into executable rules.
