@@ -1,0 +1,51 @@
+import {createServer} from 'node:http';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {resolve,join} from 'node:path';
+import assert from 'node:assert/strict';
+import {chromium} from '@playwright/test';
+import {createContentReview} from '../scripts/content-review-policy.mjs';
+import {contentReviewPage} from '../scripts/content-review-page.mjs';
+
+const encode=value=>new TextEncoder().encode(value);
+const template='<p>{{localize "SWFFG.Close"}} {{actor.name}}</p>{{#if permitted}}Owner copy{{else}}Observer copy{{/if}}<button onclick="globalThis.previewCompromised=true">Confirm copy</button><script>globalThis.previewCompromised=true</script><img src="https://example.invalid/image" onerror="globalThis.previewCompromised=true" alt="Portrait"><iframe src="https://example.invalid/frame"></iframe><a href="https://example.invalid/link">Source link</a><svg onload="globalThis.previewCompromised=true"><text>Injected SVG</text></svg>';
+const review=createContentReview({
+ 'system.json':encode(JSON.stringify({id:'star-wars-ffg',version:'0.4.2',title:'Review test',description:'Review test',languages:[{lang:'en',path:'lang/en.json'}]})),
+ 'lang/en.json':encode('{"SWFFG.Close":"Close"}'),
+ 'templates/example.hbs':encode(template),
+ 'README.md':encode('# Review guide\n\nRead **carefully** with `source` beside the preview.\n\n- First item\n- Second item\n\n| Label | Detail |\n| --- | --- |\n| Row | Row detail |\n\n```html\n<button>Example copy</button>\n```'),
+},{archiveSha256:'f'.repeat(64)});
+const html=contentReviewPage(review),server=createServer((request,response)=>{response.writeHead(200,{'content-type':'text/html; charset=utf-8'});response.end(html);});
+await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
+const url=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({headless:true});
+const errors=[],externalRequests=[];
+try {
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',error=>errors.push(error.message));
+ await page.route('**/*',route=>{if(route.request().url().startsWith(url))return route.continue();externalRequests.push(route.request().url());return route.abort();});
+ await page.goto(url);await page.locator('#category').selectOption('Complete interface templates');
+ const source=page.locator('.source-pane'),preview=page.locator('.reading-preview');
+ assert.equal(await source.locator('pre').textContent(),template);
+ assert.match(await preview.innerText(),/Close \[actor\.name\]/);assert.match(await preview.innerText(),/Owner copy/);assert.match(await preview.innerText(),/Observer copy/);
+ assert.equal(await preview.locator('button').textContent(),'Confirm copy');assert.equal(await preview.locator('button').isDisabled(),true);
+ assert.equal(await preview.locator('script,img,iframe,svg,[onclick],[onerror],[src],[href],[style]').count(),0);
+ assert.equal(await page.evaluate(()=>globalThis.previewCompromised),undefined);
+ assert.deepEqual(externalRequests,[]);
+ await preview.getByText('Source link',{exact:true}).click();assert.ok(page.url().startsWith(url));
+ const left=await source.boundingBox(),right=await page.locator('.reading-preview-pane').boundingBox();assert.ok(right.x>left.x+left.width,'desktop panes are side by side');
+ await page.locator('#view-mode').selectOption('rendered');assert.equal(await source.isVisible(),false);assert.equal(await preview.isVisible(),true);
+ await page.locator('#view-mode').selectOption('source');assert.equal(await source.isVisible(),true);assert.equal(await preview.isVisible(),false);
+ await page.locator('#view-mode').selectOption('both');
+ await page.locator('#category').selectOption('Documentation');
+ assert.equal(await preview.locator('h1').innerText(),'Review guide');assert.equal(await preview.locator('strong').innerText(),'carefully');
+ assert.equal(await preview.locator('li').count(),2);assert.equal(await preview.locator('tbody td').last().innerText(),'Row detail');
+ assert.equal(await preview.getByRole('button',{name:'Example copy'}).isDisabled(),true);
+ await page.locator('#category').selectOption('English interface');assert.equal(await preview.innerText(),'Close');
+ await page.locator('#category').selectOption('Complete interface templates');
+ await page.setViewportSize({width:520,height:900});
+ const above=await source.boundingBox(),below=await page.locator('.reading-preview-pane').boundingBox();assert.ok(below.y>=above.y+above.height,'narrow panes stack');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal page overflow');
+ assert.deepEqual(errors,[]);assert.deepEqual(externalRequests,[]);
+ const output=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui');await mkdir(output,{recursive:true});
+ await page.setViewportSize({width:1440,height:1000});await page.locator('.review-views').screenshot({path:join(output,'source-and-rendered.png')});
+ await writeFile(join(output,'results.json'),JSON.stringify({passed:true,checks:['exact source preserved','translated template labels','visible dynamic placeholders and both conditional branches','inert markup without network requests','source/rendered/both controls','Markdown headings/emphasis/lists/tables/code examples','plain interface text','responsive stacked panes','zero page errors']},null,2)+'\n');
+ console.log('Content review previews passed language, source fidelity, inert markup, view controls and responsive checks.');
+} finally {await browser.close();await new Promise(ok=>server.close(ok));}

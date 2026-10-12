@@ -18,7 +18,7 @@ The [Foundry AI policy](https://foundryvtt.com/article/ai-policy/) requires huma
 2. **Listing:** The User writes the final listing description and verifies its claims. The review page supplies factual scope prompts rather than generated marketing copy.
 3. **Data and assets:** Retain creator permission for this project's reference database publication and confirm its applicability to the shipped derivatives. Do not claim a general downstream data licence without evidence. Confirm the third-party font/symbol terms and human origin of raster artwork. [NASA review](nasa-artwork-rights.md) documents the bundled background separately.
 4. **Code maintenance:** The submitting maintainer personally understands, can explain, modify and maintain the entire submitted codebase. Automated tests cannot attest to this.
-   Review the [development template compiler advisories and scoped mitigations](dependency-advisory-review.md); the currently available lockfile still has one critical advisory family. An attempted upstream patch install was unavailable from npm. This is a maintainer release-risk decision, not a clean advisory result.
+   The [development template compiler advisories](dependency-advisory-review.md) are resolved by the pinned upstream Handlebars 4.7.10 update; the dependency audit is clean. The earlier compiler-risk gate is closed.
 5. **Independent GM:** A human GM other than the implementer follows the quick starts, creates and owns a character, runs an encounter/check, applies and undoes damage, recovers, advances, wraps up a session, reloads and checks persistence. Record versions, exceptions and the conclusion.
 
 The packet includes all shipped text conservatively, including technical literals. A technical classification is appropriate for selectors, configuration and software documentation; it must not be used to exempt prepared UI or rules copy merely because the string appears in source code. Asset and maintainer gates cover binary and vendored files separately.
@@ -37,7 +37,9 @@ npm run audit:release
 npm run review:content
 ```
 
-Open `.local/alpha-review/content-review.html`. Search by text, category, file or source location. Record a reviewer, evidence and any independently human-written replacements, then export the decisions JSON. The JSON inventory includes every packaged file hash and all text occurrences. Work stays local; there is no upload. Export before leaving the browser.
+Open `.local/alpha-review/content-review.html`. Search by text, category, file or source location. Use **Source and rendered**, **Rendered only** or **Source only** to compare exact source with a formatted reading preview. HTML/templates and Markdown are formatted; English template labels are resolved from the shipped catalogue. Dynamic values appear in brackets and conditional branches appear together. Previews use a plain reading layout and inert controls; they do not reproduce a live Foundry window or execute source actions.
+
+Record a reviewer, evidence and any independently human-written replacements, then export the decisions JSON. The JSON inventory includes every packaged file hash and all text occurrences. Work stays local; there is no upload. Export before leaving the browser.
 
 Decisions bind to the exact archive SHA-256. Applying replacements changes the package: rebuild, audit and regenerate the review, then reconcile the changed records. Do not carry an approval from a different archive forward as final acceptance. Complete the native acceptance matrix on the final archive after all changes.
 

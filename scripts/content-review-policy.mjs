@@ -79,7 +79,6 @@ export function createContentReview(files, { archiveSha256 } = {}) {
       {id:"data-permission",title:"Retain the creator's publication permission and confirm scope for the shipped database and derivatives"},
       {id:"asset-provenance",title:"Confirm human origin and redistribution rights for all raster assets and retained font/symbol licences"},
       {id:"maintainability",title:"The maintainer can understand, explain, modify and maintain all submitted code"},
-      {id:"dependency-advisory",title:"The maintainer reviews the remaining development-only Handlebars advisory, mitigations and unavailable npm patch"},
       {id:"independent-gm",title:"An independent human GM completes onboarding and a short ordinary-play session"},
     ],
   };

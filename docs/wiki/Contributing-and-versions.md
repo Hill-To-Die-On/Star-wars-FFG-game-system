@@ -29,6 +29,8 @@ Choose the intended next number. The command synchronizes package metadata, lock
 
 The 0.4.2 Alpha listing candidate packages only English and retains draft translations in source. `npm run review:content` generates the exact-ZIP human text review packet after build/audit; it does not automatically approve content or publish a listing.
 
+The review page offers source and rendered reading views side by side, with source-only and rendered-only options. It formats Markdown and static HTML/templates, resolves packaged English labels, and marks dynamic values and conditional branches. Its plain reading layout keeps source actions inactive. Human evidence and the exact archive binding remain required. The development compiler is pinned to the upstream Handlebars 4.7.10 security fix; the current dependency audit is clean.
+
 ## Documentation
 
 Wiki source pages live under docs/wiki in the development candidate. Update them with the implementation and changelog, then publish the reviewed Markdown to this repository's separate wiki Git repository. Keep stable and candidate behavior clearly distinguished. The AtlasMind canonical roadmap remains project_memory/roadmap/improvement-plan.md; the wiki is not a second completion ledger.
