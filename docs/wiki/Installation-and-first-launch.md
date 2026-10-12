@@ -12,7 +12,9 @@ https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/down
 
 This URL installs the published release, not an unmerged development candidate. Back up an existing world before upgrading.
 
-## First-launch setup — 0.4.1 candidate
+## First-launch setup — 0.4.2 Alpha candidate
+
+The first Alpha candidate packages English only. Back up worlds before evaluation; the public manifest above continues to install 0.3.0 until a new release is published.
 
 After Foundry's own new-world tour finishes or is exited, Welcome aboard offers a short copyright reminder. The GM can choose the campaign's bookshelf, save it, and start or skip the Star Wars interface tour. Players see the reminder and tour invitation; they cannot edit campaign books.
 

@@ -1,0 +1,32 @@
+import { chromium } from '@playwright/test';
+import { pathToFileURL } from 'node:url';
+import { resolve,join } from 'node:path';
+import { readFile,writeFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const output=resolve(process.argv.find(value=>value.startsWith('--output='))?.slice(9)??'.local/alpha-review');
+const browser=await chromium.launch({headless:true});
+const errors=[];
+try {
+  const page=await browser.newPage({viewport:{width:1400,height:1000},acceptDownloads:true});page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(pathToFileURL(join(output,'content-review.html')).href);await page.locator('#entries article').first().waitFor();
+  const review=JSON.parse(await readFile(join(output,'content-review.json'),'utf8'));
+  assert.ok((await page.locator('#identity').innerText()).includes(review.archiveSha256));
+  assert.equal(await page.locator('#entries article').count(),40);
+  await page.locator('#search').fill('NASA');assert.ok(await page.locator('#entries article').count()>0);
+  await page.locator('#category').selectOption('English interface');await page.locator('#search').fill('');
+  assert.ok(await page.locator('#entries article').count()>0);await page.screenshot({path:join(output,'content-review-preview.png')});
+  const downloadEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Export review JSON',exact:true}).click();
+  const downloaded=await downloadEvent;await downloaded.saveAs(join(output,'review-export-smoke.json'));
+  const exported=JSON.parse(await readFile(join(output,'review-export-smoke.json'),'utf8'));
+  assert.equal(exported.archiveSha256,review.archiveSha256);assert.equal(exported.submissionReady,false);assert.deepEqual(exported.entries,{});
+  await page.locator('#entries article select').first().selectOption('human-origin');await page.getByRole('button',{name:'Export review JSON',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'Every decision needs'}).waitFor();
+  const unfinishedId=await page.locator('#entries article select').first().getAttribute('aria-label');
+  await page.reload();
+  await page.locator('#category').selectOption('English interface');
+  assert.equal(await page.getByLabel(unfinishedId,{exact:true}).inputValue(),'human-origin','unfinished draft decisions survive reload');
+  await page.getByRole('button',{name:'Export review JSON',exact:true}).click();
+  await page.getByRole('status').filter({hasText:'Every decision needs'}).waitFor();
+  assert.deepEqual(errors,[]);await writeFile(join(output,'page-check.json'),JSON.stringify({passed:true,archiveSha256:review.archiveSha256,checks:['ZIP identity','paginated complete inventory','NASA text search','English category filter','local pending export','no approval without reviewer/evidence','unfinished drafts survive reload without becoming approved','zero page errors']},null,2)+'\n');
+  console.log('Content review page passed search, pagination, pending export and explicit evidence requirements.');
+} finally {await browser.close();}

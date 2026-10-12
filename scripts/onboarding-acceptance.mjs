@@ -17,10 +17,11 @@ await copyFile(license,join(output,"Config/license.json"));
 await writeFile(join(output,"Config/options.json"),JSON.stringify({port,hostname:"127.0.0.1",upnp:false,world:"onboarding-validation"}));
 const installed=await installRecoveryArchive(resolve("dist/star-wars-ffg.zip"),join(output,"Data/systems/star-wars-ffg"));
 await writeFile(join(output,"Data/worlds/onboarding-validation/world.json"),JSON.stringify({id:"onboarding-validation",title:"Onboarding validation",system:"star-wars-ffg",systemVersion:installed.version,coreVersion:"14.368",compatibility:{minimum:"14",verified:"14.368"},packs:[]}));
-const report={kind:"native-onboarding",version:installed.version,port,checks:[],errors:[]};let child,browser,gm;
+const report={kind:args.includes('--alpha-play')?"native-onboarding-and-alpha-play":"native-onboarding",version:installed.version,archiveSha256:installed.sha256,port,checks:[],errors:[]};let child,browser,gm;
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
+async function bounded(promise,ms){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Native onboarding cleanup timed out.')),ms);})]);}finally{clearTimeout(timer);}}
 async function screenshot(name){await gm.screenshot({path:join(output,`${name}.png`)});}
-async function joinWorld(page,name){await page.goto(`http://127.0.0.1:${port}/game`);if(page.url().includes("/join")){await page.locator("#join-username").fill(name);await page.getByRole("button",{name:"Join Game Session"}).click();}await page.waitForFunction(()=>globalThis.game?.ready,null,{timeout:60000});}
+async function joinWorld(page,name){await page.goto(`http://127.0.0.1:${port}/game`,{waitUntil:"domcontentloaded",timeout:60000});if(page.url().includes("/join")){await page.locator("#join-username").fill(name);await page.getByRole("button",{name:"Join Game Session"}).click();}await page.waitForFunction(()=>globalThis.game?.ready,null,{timeout:60000});}
 try {
  const log=createWriteStream(join(output,"server.log"));child=spawn(process.execPath,[resolve(app),`--dataPath=${output}`,`--port=${port}`,"--world=onboarding-validation"],{windowsHide:true,stdio:["ignore","pipe","pipe"]});child.stdout.pipe(log);child.stderr.pipe(log);
  let ready=false;for(let i=0;i<240;i++){if(child.exitCode!==null)throw Error("Isolated Foundry exited; see private server.log.");try{if((await fetch(`http://127.0.0.1:${port}/join`)).ok){ready=true;break;}}catch{}await delay(250);}assert.ok(ready,"Foundry starts within one minute");
@@ -34,7 +35,7 @@ try {
  await screenshot("02-bookshelf");await gm.getByRole("button",{name:"Save books & continue"}).click();await gm.getByRole("button",{name:"Skip tutorial"}).click();await gm.locator("#star-wars-welcome").waitFor({state:"hidden"});
  const saved=await gm.evaluate(()=>({campaign:game.settings.get("star-wars-ffg","campaign"),remembered:JSON.parse(localStorage.getItem("star-wars-ffg.bookshelf.v1")),progress:game.user.getFlag("star-wars-ffg","onboarding")}));
  assert.deepEqual(saved.campaign.books,[book]);assert.equal(saved.campaign.bookMode,"owned");assert.deepEqual(saved.campaign.lines,["edge","age","force"]);assert.deepEqual(saved.remembered.books,[book]);assert.equal(saved.progress.tour,"skipped");
- await gm.reload();await gm.waitForFunction(()=>globalThis.game?.ready);await gm.evaluate(()=>foundry.nue.Tour.activeTour?.exit());assert.equal(await gm.locator("#star-wars-welcome").count(),0);assert.deepEqual(await gm.evaluate(()=>game.settings.get("star-wars-ffg","campaign").books),[book]);report.checks.push("Books and skipped tutorial persist after reload");
+ await gm.reload({waitUntil:"domcontentloaded",timeout:60000});await gm.waitForFunction(()=>globalThis.game?.ready);await gm.evaluate(()=>foundry.nue.Tour.activeTour?.exit());assert.equal(await gm.locator("#star-wars-welcome").count(),0);assert.deepEqual(await gm.evaluate(()=>game.settings.get("star-wars-ffg","campaign").books),[book]);report.checks.push("Books and skipped tutorial persist after reload");
  await gm.evaluate(()=>new foundry.applications.settings.SettingsConfig({initialCategory:"system"}).render({force:true}));
  await gm.locator("#settings-config .sf-settings-group").first().waitFor();
  assert.equal(await gm.locator("#settings-config.sf-native-settings").count(),1);assert.equal(await gm.locator("#settings-config.star-wars").count(),0);assert.equal(await gm.locator("#settings-config fieldset.sf-settings-group").count(),6);await screenshot("03-native-settings");
@@ -68,12 +69,20 @@ try {
  report.checks.push('Character sheet resizes with native handle, compact overview and single-column skills; skill opens a pool without rolling');
  await gm.evaluate(async()=>{for(const instance of [...foundry.applications.instances.values()])if(instance.rendered && instance.element?.querySelector(":scope > .window-header"))await instance.close();});
  const playerContext=await browser.newContext({viewport:{width:1280,height:900}}),player=await playerContext.newPage();player.on("pageerror",error=>report.errors.push(error.message));await joinWorld(player,"Onboarding Player");
- await player.locator("#star-wars-welcome").waitFor();assert.equal(await player.getByRole("button",{name:"Choose my books"}).count(),0);await player.getByRole("button",{name:"Continue",exact:true}).click();await player.getByRole("button",{name:"Skip tutorial"}).click();await player.locator("#star-wars-welcome").waitFor({state:"hidden"});await player.reload();await player.waitForFunction(()=>globalThis.game?.ready);assert.equal(await player.locator("#star-wars-welcome").count(),0);report.checks.push("Player welcome cannot edit campaign books and persists independently");await playerContext.close();
+ await player.locator("#star-wars-welcome").waitFor();assert.equal(await player.getByRole("button",{name:"Choose my books"}).count(),0);await player.getByRole("button",{name:"Continue",exact:true}).click();await player.getByRole("button",{name:"Skip tutorial"}).click();await player.locator("#star-wars-welcome").waitFor({state:"hidden"});await player.reload({waitUntil:"domcontentloaded",timeout:60000});await player.waitForFunction(()=>globalThis.game?.ready);assert.equal(await player.locator("#star-wars-welcome").count(),0);report.checks.push("Player welcome cannot edit campaign books and persists independently");await playerContext.close();
+ if(args.includes('--alpha-play')) {
+   const playContext=await browser.newContext({viewport:{width:1500,height:1000}}),playPlayer=await playContext.newPage();playPlayer.on('pageerror',error=>report.errors.push(error.message));await joinWorld(playPlayer,'Onboarding Player');
+   let playDeadline;
+   try {await Promise.race([(await import('./alpha-play-acceptance.mjs')).alphaPlayAcceptance({gm,player:playPlayer,report,output}),new Promise((_,reject)=>{playDeadline=setTimeout(()=>reject(Error('Alpha play workflow exceeded its three-minute bound.')),180000);})]);}
+   catch(error){try{await playPlayer.screenshot({path:join(output,'alpha-play-failure.png'),timeout:5000});await writeFile(join(output,'alpha-play-failure-dom.html'),await playPlayer.content());}catch{}throw error;}
+   finally {clearTimeout(playDeadline);}
+   await playContext.close();
+ }
  assert.deepEqual(report.errors,[]);report.passed=true;
 } catch(error) {report.failure=error.stack;try { await screenshot("failure"); await writeFile(join(output,"failure-dom.html"),await gm.content()); } catch {} throw error;}
 finally {
  await writeFile(join(output,"results.json"),JSON.stringify(report,null,2));
- try{await gm?.evaluate(()=>game.shutDown());}catch{}await browser?.close();
+ try{await bounded(gm?.evaluate(()=>game.shutDown()),10000);}catch{}await bounded(browser?.close(),10000).catch(()=>{});
  if(child&&child.exitCode===null){const stopped=new Promise(r=>child.once("exit",r));child.kill();await Promise.race([stopped,delay(10000)]);if(child.exitCode===null)child.kill("SIGKILL");}
  console.log(JSON.stringify({passed:report.passed??false,checks:report.checks,output,failure:report.failure??null}));
 }

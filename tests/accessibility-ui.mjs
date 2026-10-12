@@ -4,11 +4,12 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {resolve,sep} from 'node:path';
 import assert from 'node:assert/strict';
 import Handlebars from 'handlebars';
+import { compileTrustedTemplate } from '../scripts/trusted-templates.mjs';
 import {chromium} from '@playwright/test';
 const root=resolve('.'),template=await readFile('templates/actor.hbs','utf8');
 const artifacts=process.env.TEST_ARTIFACTS_DIR||'.local/accessibility';
 Handlebars.registerHelper('selectOptions',()=>new Handlebars.SafeString(''));
-const header=Handlebars.compile(template.slice(template.indexOf('<header'),template.indexOf('</header>')+9));
+const header=compileTrustedTemplate(template.slice(template.indexOf('<header'),template.indexOf('</header>')+9));
 const entries=['Human','Twi’lek','Wookiee','Zabrak'].map((name,i)=>({id:String(i),name,source:{book:'Reference',page:i+1}}));
 const shipEntries=['YT-1300','Lambda shuttle','Patrol skiff'].map((name,i)=>({id:String(i),name,source:{book:'Reference',page:i+1}}));
 const headings=header({portraitSrc:'/assets/character.svg',themeKey:'edge',isCharacter:true,originEditable:true,homebrewAllowed:true,system:{species:'Human',career:'Explorer'},actor:{name:'Keyboard pilot'},speciesOptions:entries,careerOptions:entries})+

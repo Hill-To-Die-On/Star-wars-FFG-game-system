@@ -1,6 +1,6 @@
 {
   "name": "star-wars-ffg-system",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "type": "module",
   "description": "An independent Foundry VTT system for the three FFG Star Wars roleplaying lines.",
@@ -9,6 +9,7 @@
     "node": ">=24"
   },
   "scripts": {
+    "review:content": "node scripts/create-content-review.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node scripts/browser-checks.mjs",
     "test:playtest": "node scripts/browser-checks.mjs --fixture=tabletop-ui.mjs --runs=3",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
+    "acorn": "8.18.0",
     "fflate": "^0.8.3",
     "handlebars": "^4.7.9",
     "typescript": "7.0.2"

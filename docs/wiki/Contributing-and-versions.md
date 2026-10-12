@@ -22,10 +22,12 @@ Native Foundry tests need a licensed installation and an isolated disposable wor
 Git commits identify code revisions; they do not automatically increment the installed system version. The candidate adds:
 
 ```sh
-npm run version:set -- 0.4.1
+npm run version:set -- 0.4.2
 ```
 
 Choose the intended next number. The command synchronizes package metadata, lockfile, Foundry manifest/download and changelog. It neither tags nor publishes. Use three numeric parts, keep unreleased status explicit and never overwrite an existing release tag.
+
+The 0.4.2 Alpha listing candidate packages only English and retains draft translations in source. `npm run review:content` generates the exact-ZIP human text review packet after build/audit; it does not automatically approve content or publish a listing.
 
 ## Documentation
 

@@ -1,0 +1,13 @@
+import { readFile,writeFile,mkdir } from 'node:fs/promises';
+import { resolve,join } from 'node:path';
+import { createHash } from 'node:crypto';
+import { unzipSync } from 'fflate';
+import { createContentReview } from './content-review-policy.mjs';
+import { contentReviewPage } from './content-review-page.mjs';
+const args=process.argv.slice(2),arg=name=>args.find(value=>value.startsWith(`--${name}=`))?.slice(name.length+3);
+const archive=await readFile(resolve(arg('archive')??'dist/star-wars-ffg.zip'));
+const review=createContentReview(unzipSync(archive),{archiveSha256:createHash('sha256').update(archive).digest('hex')});
+const output=resolve(arg('output')??'.local/alpha-review');await mkdir(output,{recursive:true});
+await writeFile(join(output,'content-review.json'),JSON.stringify(review,null,2)+'\n');
+await writeFile(join(output,'content-review.html'),contentReviewPage(review));
+console.log(JSON.stringify({version:review.version,archiveSha256:review.archiveSha256,files:review.files.length,textRecords:review.entries.length,occurrences:review.entries.reduce((sum,entry)=>sum+entry.occurrences.length,0),output}));

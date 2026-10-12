@@ -786,6 +786,8 @@ export function validateLocaleManifest(languages, translationsByPath) {
     }
     if (canonical !== lang)
       throw new Error(`System language locale must be canonical: ${lang}.`);
+    if (!SUPPORTED_LOCALES.includes(lang))
+      throw new Error(`Unsupported locale: ${lang}.`);
     if (seen.has(lang)) throw new Error(`Duplicate system language: ${lang}.`);
     seen.add(lang);
     registered.add(lang);
@@ -800,7 +802,5 @@ export function validateLocaleManifest(languages, translationsByPath) {
     }
   }
   if (!registered.has("en")) throw new Error("The default en locale is required.");
-  for (const locale of SUPPORTED_LOCALES)
-    if (!registered.has(locale)) throw new Error(`Manifest is missing locale ${locale}.`);
   return true;
 }

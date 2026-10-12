@@ -1,17 +1,19 @@
 # Interface and settings
 
-The 0.4.1 candidate uses the credited NASA artwork for the automatic new-world welcome scene. The same artwork sits behind the interface, but a viewed scene's map or solid background covers it. Existing tactical scenes and assigned maps are preserved.
+In the 0.4.2 Alpha candidate, **Rule data review** appears under **Help & diagnostics**; all six documented settings groups are retained.
 
-**The first-launch tour and these settings groups are part of the unreleased 0.4.1 candidate.** Settings retain Foundry's own controls, theme, permissions, search and save behavior. Gameplay windows use the system's paper-and-datapad presentation. Journals follow the selected interface theme.
+The 0.4.2 Alpha candidate uses the credited NASA artwork for the automatic new-world welcome scene. The same artwork sits behind the interface, but a viewed scene's map or solid background covers it. Existing tactical scenes and assigned maps are preserved.
+
+**The first-launch tour and these settings groups are part of the unreleased 0.4.2 Alpha candidate.** Settings retain Foundry's own controls, theme, permissions, search and save behavior. Gameplay windows use the system's paper-and-datapad presentation. Journals follow the selected interface theme.
 
 | Group | What belongs here |
 | --- | --- |
 | 1 · Campaign setup | Welcome and tour, enabled rule lines, adventure state, owned books, GM homebrew identities |
 | 2 · Appearance & accessibility | Sheet and interface theme, compact chat dice, cosmetic altitude shadows |
 | 3 · Combat & turn automation | Player control of turn indicators, automatic check/drag spending, combat range assistant, active-combatant following, target traces |
-| 4 · Play tools & references | Dice & Destiny console and reference catalogue |
+| 4 · Play tools & references | Dice & Destiny console, reference catalogue and Transaction authority |
 | 5 · Imports & private sources | Reviewed external imports, local library/adversary imports, private source search and key backup |
-| 6 · Help & diagnostics | Quick starts, automation coverage and diagnostic download |
+| 6 · Help & diagnostics | Quick starts, automation coverage, diagnostic download and Rule data review |
 
 World settings are GM-controlled. Client settings affect this browser. Reordering the page does not change existing values. Foundry's search still finds the original controls.
 
@@ -30,4 +32,4 @@ Reopen Welcome & interface tour, or use Foundry Tour Management to replay/resume
 
 ### Candidate integration note
 
-The onboarding and general settings panels share the same localized grouping, including Welcome, About and Transaction authority. New onboarding labels are registered for translation but currently use English fallbacks in other languages; existing translated labels remain available.
+The onboarding and general settings panels share the same grouping, including Welcome, About and Transaction authority. This Alpha packages English only. Other translation files and keys remain in source for later fluent review.
