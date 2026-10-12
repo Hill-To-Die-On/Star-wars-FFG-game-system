@@ -41,6 +41,7 @@ try {
  await page.locator('#category').selectOption('English interface');assert.equal(await preview.innerText(),'Close');
  await page.locator('#category').selectOption('Complete interface templates');
  await page.setViewportSize({width:520,height:900});
+  await page.addStyleTag({content:'body{font-family:monospace}'});
  const above=await source.boundingBox(),below=await page.locator('.reading-preview-pane').boundingBox();assert.ok(below.y>=above.y+above.height,'narrow panes stack');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal page overflow');
  assert.deepEqual(errors,[]);assert.deepEqual(externalRequests,[]);
