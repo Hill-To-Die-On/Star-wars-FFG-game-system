@@ -44,9 +44,46 @@ try {
   await page.addStyleTag({content:'body{font-family:monospace}'});
  const above=await source.boundingBox(),below=await page.locator('.reading-preview-pane').boundingBox();assert.ok(below.y>=above.y+above.height,'narrow panes stack');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal page overflow');
+ // Reproduce a legacy draft that the old export rejected. The same storage key must survive.
+ const word=review.entries.find(entry=>entry.category==='English interface');
+ const legacy={schemaVersion:1,archiveSha256:review.archiveSha256,reviewer:'The User',listingText:'Human-written listing saved before the export fix.',
+   entries:{[word.id]:{decision:'human-origin',evidence:'',replacement:'Original unfinished replacement'}},
+   humanGates:Object.fromEntries(review.humanGates.map(gate=>[gate.id,gate.id==='maintainability'?'correct':'complete'])),submissionReady:true};
+ await page.evaluate(draft=>localStorage.setItem('star-wars-ffg.review.'+draft.archiveSha256,JSON.stringify(draft)),legacy);
+ await page.reload();
+ assert.equal(await page.locator('#reviewer').inputValue(),legacy.reviewer);
+ assert.equal(await page.locator('#listing').inputValue(),legacy.listingText);
+ for(const gate of review.humanGates)assert.equal(await page.getByLabel(gate.title,{exact:true}).inputValue(),legacy.humanGates[gate.id]);
+ const download=async name=>{const event=page.waitForEvent('download');await page.locator('#export').click();const file=await event;
+   const path=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui',name);await mkdir(resolve(path,'..'),{recursive:true});await file.saveAs(path);
+   return JSON.parse(await (await import('node:fs/promises')).readFile(path,'utf8'));};
+ const draft=await download('unfinished-draft.json');
+ assert.equal(draft.submissionReady,false);assert.equal(draft.exportKind,'draft');assert.equal(draft.listingText,legacy.listingText);
+ assert.deepEqual(draft.humanGates,legacy.humanGates);assert.deepEqual(draft.entries,legacy.entries);
+ assert.equal(draft.reviewIssues[0].entryId,word.id);assert.match(draft.reviewIssues[0].message,/lang\/en\.json.*evidence/);
+ await page.getByRole('button',{name:'Show affected record',exact:true}).click();
+ assert.equal(await page.locator('#entries > article').count(),1);assert.equal(await page.getByLabel('Decision for '+word.id,{exact:true}).inputValue(),'human-origin');
+ const scope=JSON.stringify(['lang/en.json','English interface']);
+ await page.locator('#scope').selectOption(scope);await page.locator('#scope-evidence').fill('Original human-authored catalogue retained in contributor history; this source note covers its interface labels.');
+ await page.locator('#record-scope').click();await page.locator('#check-review').click();
+ assert.match(await page.locator('#issues').innerText(),/No incomplete changed decisions/);
+ const shared=await download('shared-source-evidence.json');
+ assert.deepEqual(shared.entries,legacy.entries,'source evidence does not overwrite individual decisions or replacements');
+ assert.equal(shared.scopeReviews[scope].state,'evidence-recorded');assert.equal(shared.reviewIssues.length,0);assert.equal(shared.submissionReady,false);
+ await page.locator('#import').setInputFiles({name:'different-archive.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...draft,archiveSha256:'e'.repeat(64)}))});
+ await page.locator('#message').filter({hasText:/different archive/}).waitFor();
+ assert.match(await page.locator('#message').innerText(),/different archive/);assert.equal(await page.locator('#listing').inputValue(),legacy.listingText);
+ await page.locator('#import').setInputFiles({name:'unfinished-draft.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(draft))});
+ await page.locator('#message').filter({hasText:/Matching draft imported/}).waitFor();
+ assert.match(await page.locator('#message').innerText(),/Matching draft imported/);
+ assert.ok(await page.evaluate(hash=>localStorage.getItem('star-wars-ffg.review.'+hash+'.before-import'),review.archiveSha256));
+ await page.reload();assert.equal(await page.locator('#listing').inputValue(),legacy.listingText);
+ await page.locator('#reviewer').fill('');const anonymous=await download('draft-without-reviewer.json');
+ assert.match(anonymous.reviewIssues[0].message,/reviewer identity/);assert.equal(anonymous.entries[word.id].replacement,legacy.entries[word.id].replacement);
+ await page.locator('#category').selectOption('Complete interface templates');
  assert.deepEqual(errors,[]);assert.deepEqual(externalRequests,[]);
  const output=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui');await mkdir(output,{recursive:true});
  await page.setViewportSize({width:1440,height:1000});await page.locator('.review-views').screenshot({path:join(output,'source-and-rendered.png')});
- await writeFile(join(output,'results.json'),JSON.stringify({passed:true,checks:['exact source preserved','translated template labels','visible dynamic placeholders and both conditional branches','inert markup without network requests','source/rendered/both controls','Markdown headings/emphasis/lists/tables/code examples','plain interface text','responsive stacked panes','zero page errors']},null,2)+'\n');
- console.log('Content review previews passed language, source fidelity, inert markup, view controls and responsive checks.');
+ await writeFile(join(output,'results.json'),JSON.stringify({passed:true,checks:['exact source preserved','translated template labels','visible dynamic placeholders and both conditional branches','inert markup without network requests','source/rendered/both controls','Markdown headings/emphasis/lists/tables/code examples','plain interface text','responsive stacked panes','legacy draft answers and unfinished decisions survive reload','draft export without per-record evidence or reviewer','actionable missing-evidence links','shared source evidence preserves per-entry exceptions','wrong archive rejected without data loss','unfinished draft import and previous-draft backup','zero page errors']},null,2)+'\n');
+ console.log('Content review passed inert previews, legacy draft export, missing-evidence navigation, shared source evidence and import preservation.');
 } finally {await browser.close();await new Promise(ok=>server.close(ok));}

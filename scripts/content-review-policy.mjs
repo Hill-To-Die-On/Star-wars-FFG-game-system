@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { parse } from "acorn";
+import { normalizeReviewDraft, reviewDraftIssues } from './content-review-workflow.mjs';
 
 const decoder = new TextDecoder();
 const hash = value => createHash("sha256").update(value).digest("hex");
-const decisions = new Set(["pending", "human-origin", "third-party-rights", "technical-only", "rewrite-required"]);
 
 /** Inventory the actual ZIP, retaining exact strings and every source occurrence. */
 export function createContentReview(files, { archiveSha256 } = {}) {
@@ -86,14 +86,7 @@ export function createContentReview(files, { archiveSha256 } = {}) {
 
 /** Review evidence is always explicit, archive-bound and never an automatic approval. */
 export function reviewDecisions(review, input) {
-  if (!input || input.archiveSha256 !== review.archiveSha256) throw Error("Review decisions belong to a different archive.");
-  const validIds=new Set(review.entries.map(entry=>entry.id)), result={};
-  for (const [id,value] of Object.entries(input.entries??{})) {
-    if (!validIds.has(id) || !value || !decisions.has(value.decision)) throw Error("Unknown review entry or decision.");
-    if (value.decision!=="pending" && (!String(input.reviewer??"").trim() || !String(value.evidence??"").trim()))
-      throw Error("Every review decision needs a named reviewer and authorship or classification evidence.");
-    result[id]={decision:value.decision,evidence:String(value.evidence??""),replacement:String(value.replacement??"")};
-  }
-  return {schemaVersion:1,archiveSha256:review.archiveSha256,reviewer:String(input.reviewer??""),entries:result,
-    humanGates:input.humanGates??{},submissionReady:false};
+  const draft = normalizeReviewDraft(review, input), issues = reviewDraftIssues(review, draft);
+  if (issues.length) throw Error(issues[0].message);
+  return draft;
 }

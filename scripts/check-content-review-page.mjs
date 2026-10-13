@@ -1,7 +1,7 @@
 import { chromium } from '@playwright/test';
 import { pathToFileURL } from 'node:url';
 import { resolve,join } from 'node:path';
-import { readFile,writeFile } from 'node:fs/promises';
+import { readFile,writeFile,unlink } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const output=resolve(process.argv.find(value=>value.startsWith('--output='))?.slice(9)??'.local/alpha-review');
 const browser=await chromium.launch({headless:true});
@@ -21,19 +21,29 @@ try {
   const downloaded=await downloadEvent;await downloaded.saveAs(join(output,'review-export-smoke.json'));
   const exported=JSON.parse(await readFile(join(output,'review-export-smoke.json'),'utf8'));
   assert.equal(exported.archiveSha256,review.archiveSha256);assert.equal(exported.submissionReady,false);assert.deepEqual(exported.entries,{});
-  await page.locator('#entries > article select[aria-label^="Decision for "]').first().selectOption('human-origin');await page.getByRole('button',{name:'Export review JSON',exact:true}).click();
-  await page.getByRole('status').filter({hasText:'Every decision needs'}).waitFor();
+  await page.locator('#reviewer').fill('Fixture reviewer');await page.locator('#listing').fill('Fixture listing preserved across reload.');
+  await page.getByLabel(review.humanGates[0].title,{exact:true}).fill('Fixture source evidence pending.');
+  await page.locator('#entries > article select[aria-label^="Decision for "]').first().selectOption('human-origin');
   const unfinishedId=await page.locator('#entries > article select[aria-label^="Decision for "]').first().getAttribute('aria-label');
   await page.reload();
   await page.locator('#category').selectOption('English interface');
   assert.equal(await page.getByLabel(unfinishedId,{exact:true}).inputValue(),'human-origin','unfinished draft decisions survive reload');
-  await page.getByRole('button',{name:'Export review JSON',exact:true}).click();
-  await page.getByRole('status').filter({hasText:'Every decision needs'}).waitFor();
+  const draftEvent=page.waitForEvent('download');await page.getByRole('button',{name:'Export review JSON',exact:true}).click();
+  await (await draftEvent).saveAs(join(output,'review-export-smoke-draft.json'));
+  const unfinished=JSON.parse(await readFile(join(output,'review-export-smoke-draft.json'),'utf8'));
+  assert.equal(unfinished.listingText,'Fixture listing preserved across reload.');
+  assert.equal(unfinished.humanGates[review.humanGates[0].id],'Fixture source evidence pending.');
+  assert.equal(unfinished.entries[unfinishedId.slice('Decision for '.length)].decision,'human-origin');
+  assert.equal(unfinished.reviewIssues.length,1);assert.equal(unfinished.submissionReady,false);
+  await page.getByRole('button',{name:'Show affected record',exact:true}).click();assert.equal(await page.locator('#entries > article').count(),1);
+  const scope=JSON.stringify(['lang/en.json','English interface']);await page.locator('#scope').selectOption(scope);
+  await page.locator('#scope-evidence').fill('Fixture shared source evidence for the English catalogue.');await page.locator('#record-scope').click();
+  await page.locator('#check-review').click();assert.match(await page.locator('#issues').innerText(),/No incomplete changed decisions/);
   await page.locator('#category').selectOption('Complete interface templates');await page.locator('#search').fill('templates/welcome.hbs');
   assert.equal(await page.locator('.reading-preview').count(),1);
   assert.match(await page.locator('.reading-preview').innerText(),/STAR WARS FFG/);
   await page.locator('#view-mode').selectOption('rendered');assert.equal(await page.locator('.source-pane').isVisible(),false);
   await page.locator('#view-mode').selectOption('both');await page.locator('.review-views').screenshot({path:join(output,'content-review-rendered-preview.png')});
-  assert.deepEqual(errors,[]);await writeFile(join(output,'page-check.json'),JSON.stringify({passed:true,archiveSha256:review.archiveSha256,checks:['ZIP identity','paginated complete inventory','source and rendered panes','rendered packaged welcome copy','view controls','NASA text search','English category filter','local pending export','no approval without reviewer/evidence','unfinished drafts survive reload without becoming approved','zero page errors']},null,2)+'\n');
-  console.log('Content review page passed search, pagination, pending export and explicit evidence requirements.');
-} finally {await browser.close();}
+  assert.deepEqual(errors,[]);await writeFile(join(output,'page-check.json'),JSON.stringify({passed:true,archiveSha256:review.archiveSha256,sourceScopes:await page.locator('#scope option').count()-1,checks:['ZIP identity','paginated complete inventory','source and rendered panes','rendered packaged welcome copy','view controls','NASA text search','English category filter','local pending export','unfinished answers exported with specific evidence issues','reviewer/listing/gates/unfinished decisions survive reload','issue link opens affected record','one shared source note covers the catalogue without changing record decisions','no automatic submission approval','zero page errors']},null,2)+'\n');
+  console.log('Content review page passed full-inventory previews, unfinished draft export, source evidence and preserved answers.');
+} finally {await browser.close();for(const name of ['review-export-smoke.json','review-export-smoke-draft.json'])await unlink(join(output,name)).catch(()=>{});}
