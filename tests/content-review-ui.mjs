@@ -13,6 +13,8 @@ const review=createContentReview({
  'lang/en.json':encode('{"SWFFG.Close":"Close"}'),
  'CHANGELOG.md':encode('# Changelog\n\nTechnical implementation history.'),
  'src/selector.mjs':encode('root.querySelector(".sf-control");'),
+ 'src/format.mjs':encode('export const ADVANCEMENT_FORMAT="star-wars-ffg-advancement-trees";'),
+ 'data/advancement-trees.json':encode(JSON.stringify({format:'star-wars-ffg-advancement-trees',items:[{_id:'14b710c863b5df75',name:'Investigator',description:'Choose a route.'}]})),
  'templates/example.hbs':encode(template),
  'README.md':encode('# Review guide\n\nRead **carefully** with `source` beside the preview.\n\n- First item\n- Second item\n\n| Label | Detail |\n| --- | --- |\n| Row | Row detail |\n\n```html\n<button>Example copy</button>\n```'),
 },{archiveSha256:'f'.repeat(64)});
@@ -27,10 +29,25 @@ try {
  assert.match(await page.locator('h1').first().innerText(),/Foundry Beta/);
  await page.locator('#review-lane').selectOption('prepared');
  assert.equal(await page.locator('#entries > article[data-review-lane="maintenance"]').count(),0);
+ await page.locator('#category').selectOption('English interface');
+ assert.equal(await page.locator('#review-lane').inputValue(),'prepared','category selection must not silently widen the review purpose');
+ const metadataScope=JSON.stringify(['data/advancement-trees.json','Reference data and source metadata']);
+ assert.equal(await page.locator('#scope option').evaluateAll((options,id)=>options.filter(option=>option.value===id).length,metadataScope),0,'technical/reference source is absent from the prepared-copy selector');
+ await page.locator('#review-lane').selectOption('rights');await page.locator('#scope').selectOption(metadataScope);
+ assert.equal(await page.locator('#review-lane').inputValue(),'rights','source selection must preserve the permission view');
+ assert.ok(await page.locator('#entries > article[data-review-mode="source-index"]').count()>0);
+ assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').count(),0,'permissions are recorded per source, not per metadata value');
+ await page.getByRole('button',{name:'Inspect source records',exact:true}).click();
+ for(const text of ['star-wars-ffg-advancement-trees','14b710c863b5df75'])assert.ok(await page.locator('#entries .source-pane pre').filter({hasText:text}).count()>0);
+ assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').count(),0);
+ assert.equal(await page.locator('#entries textarea[aria-label^="Evidence for "]').count(),0);
+ assert.equal(await page.locator('#entries textarea[aria-label^="Replacement for "]').count(),0);
+ const metadataOutput=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui');await mkdir(metadataOutput,{recursive:true});
+ await page.locator('#entries').screenshot({path:join(metadataOutput,'metadata-audit-read-only.png')});
  await page.locator('#review-lane').selectOption('maintenance');
  assert.ok(await page.getByText('# Changelog\n\nTechnical implementation history.',{exact:true}).count()>0);
  assert.ok(await page.getByText('.sf-control',{exact:true}).count()>0);
- await page.locator('#category').selectOption('Complete interface templates');
+ await page.locator('#review-lane').selectOption('prepared');await page.locator('#category').selectOption('Complete interface templates');
  const source=page.locator('.source-pane'),preview=page.locator('.reading-preview');
  assert.equal(await source.locator('pre').textContent(),template);
  assert.match(await preview.innerText(),/Close \[actor\.name\]/);assert.match(await preview.innerText(),/Owner copy/);assert.match(await preview.innerText(),/Observer copy/);
@@ -43,13 +60,13 @@ try {
  await page.locator('#view-mode').selectOption('rendered');assert.equal(await source.isVisible(),false);assert.equal(await preview.isVisible(),true);
  await page.locator('#view-mode').selectOption('source');assert.equal(await source.isVisible(),true);assert.equal(await preview.isVisible(),false);
  await page.locator('#view-mode').selectOption('both');
- await page.locator('#category').selectOption('Documentation');
+ await page.locator('#review-lane').selectOption('maintenance');await page.locator('#category').selectOption('Documentation');
  await page.locator('#search').fill('README.md');
  assert.equal(await preview.locator('h1').innerText(),'Review guide');assert.equal(await preview.locator('strong').innerText(),'carefully');
  assert.equal(await preview.locator('li').count(),2);assert.equal(await preview.locator('tbody td').last().innerText(),'Row detail');
  assert.equal(await preview.getByRole('button',{name:'Example copy'}).isDisabled(),true);
  await page.locator('#search').fill('');
- await page.locator('#category').selectOption('English interface');assert.equal(await preview.innerText(),'Close');
+ await page.locator('#review-lane').selectOption('prepared');await page.locator('#category').selectOption('English interface');assert.equal(await preview.innerText(),'Close');
  await page.locator('#category').selectOption('Complete interface templates');
  await page.setViewportSize({width:520,height:900});
   await page.addStyleTag({content:'body{font-family:monospace}'});
@@ -59,7 +76,7 @@ try {
  const word=review.entries.find(entry=>entry.category==='English interface');
  const changelog=review.entries.find(entry=>entry.occurrences.some(source=>source.path==='CHANGELOG.md'));
  const legacy={schemaVersion:1,archiveSha256:review.archiveSha256,reviewer:'The User',listingText:'Human-written listing saved before the export fix.',
-   entries:{[word.id]:{decision:'human-origin',evidence:'',replacement:'Original unfinished replacement'},[changelog.id]:{decision:'human-origin',evidence:'',replacement:''}},
+   entries:{[word.id]:{decision:'human-origin',evidence:'',replacement:'Original unfinished replacement'},[changelog.id]:{decision:'human-origin',evidence:'',replacement:''},...Object.fromEntries(review.entries.filter(entry=>['star-wars-ffg-advancement-trees','14b710c863b5df75','Investigator'].includes(entry.text)).map(entry=>[entry.id,{decision:'human-origin',evidence:'',replacement:'Legacy metadata answer retained'}]))},
    humanGates:Object.fromEntries(review.humanGates.map(gate=>[gate.id,gate.id==='maintainability'?'correct':'complete'])),submissionReady:true};
  await page.evaluate(draft=>localStorage.setItem('star-wars-ffg.review.'+draft.archiveSha256,JSON.stringify(draft)),legacy);
  await page.reload();

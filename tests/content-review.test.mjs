@@ -56,9 +56,9 @@ test("review page keeps embedded hostile text inert and retains it exactly as da
 });
 
 test('literal context separates selectors and property access from one-word UI labels', () => {
-  const source = 'const field=actor["system"];root.querySelector("button");node.setAttribute("aria-label","Close");const label="Close";const message=`Ready ${name}`;const key="SWFFG.Close";if(kind==="character"){}';
+  const source = 'const ADVANCEMENT_FORMAT="star-wars-ffg-advancement-trees";const field=actor["system"];root.querySelector("button");node.setAttribute("aria-label","Close");const label="Close";const message=`Ready ${name}`;const key="SWFFG.Close";if(kind==="character"){}';
   const inventory = createContentReview({ ...files, 'src/dialog.mjs': encode(source) }, { archiveSha256: 'd'.repeat(64) });
   const entry = text => inventory.entries.find(item => item.category === 'Inline runtime text and code literals' && item.text === text);
-  for (const text of ['system', 'button', 'aria-label', 'SWFFG.Close', 'character']) assert.equal(reviewRecordLane(entry(text)), 'maintenance', text);
+  for (const text of ['star-wars-ffg-advancement-trees', 'system', 'button', 'aria-label', 'SWFFG.Close', 'character']) assert.equal(reviewRecordLane(entry(text)), 'maintenance', text);
   for (const text of ['Close', 'Ready ${name}']) assert.equal(reviewRecordLane(entry(text)), 'prepared', text);
 });

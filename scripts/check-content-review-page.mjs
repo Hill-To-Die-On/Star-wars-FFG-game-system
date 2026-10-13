@@ -42,11 +42,24 @@ try {
   const scope=JSON.stringify(['lang/en.json','English interface']);await page.locator('#scope').selectOption(scope);
   await page.locator('#scope-evidence').fill('Fixture shared source evidence for the English catalogue.');await page.locator('#record-scope').click();
   await page.locator('#check-review').click();assert.match(await page.locator('#issues').innerText(),/No incomplete changed decisions/);
+  assert.equal(await page.locator('#review-lane').inputValue(),'prepared','source selection preserves prepared purpose');
+  await page.locator('#review-lane').selectOption('rights');
+  assert.ok(await page.locator('#entries > article[data-review-mode="source-index"]').count()>0);
+  assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').count(),0);
+  await page.locator('#review-lane').selectOption('all');
+  await page.locator('#category').selectOption('Reference data and source metadata');
+  await page.locator('#search').fill('14b710c863b5df75');
+  assert.equal(await page.locator('#entries > article').count(),1);
+  assert.equal(await page.locator('#entries > article').getAttribute('data-review-mode'),'audit');
+  assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').count(),0);
+  assert.equal(await page.locator('#entries textarea').count(),0);
+  await page.locator('#entries').screenshot({path:join(output,'metadata-audit-read-only.png')});
+  await page.locator('#review-lane').selectOption('prepared');
   await page.locator('#category').selectOption('Complete interface templates');await page.locator('#search').fill('templates/welcome.hbs');
   assert.equal(await page.locator('.reading-preview').count(),1);
   assert.match(await page.locator('.reading-preview').innerText(),/STAR WARS FFG/);
   await page.locator('#view-mode').selectOption('rendered');assert.equal(await page.locator('.source-pane').isVisible(),false);
   await page.locator('#view-mode').selectOption('both');await page.locator('.review-views').screenshot({path:join(output,'content-review-rendered-preview.png')});
-  assert.deepEqual(errors,[]);await writeFile(join(output,'page-check.json'),JSON.stringify({passed:true,archiveSha256:review.archiveSha256,sourceScopes:await page.locator('#scope option').count()-1,checks:['ZIP identity','paginated complete inventory','source and rendered panes','rendered packaged welcome copy','view controls','NASA text search','English category filter','local pending export','unfinished answers exported with specific evidence issues','reviewer/listing/gates/unfinished decisions survive reload','issue link opens affected record','one shared source note covers the catalogue without changing record decisions','no automatic submission approval','zero page errors']},null,2)+'\n');
+  assert.deepEqual(errors,[]);await writeFile(join(output,'page-check.json'),JSON.stringify({passed:true,archiveSha256:review.archiveSha256,preparedSourceScopes:await page.locator('#scope option').count()-1,checks:['ZIP identity','paginated complete inventory','source and rendered panes','rendered packaged welcome copy','view controls','NASA text search','English category filter','local pending export','unfinished answers exported with specific evidence issues','reviewer/listing/gates/unfinished decisions survive reload','issue link opens affected record','source and category preserve selected review purpose','one shared source note covers the catalogue without changing record decisions','permissions grouped by source without per-value forms','reported record ID is audit-only without decision/evidence/replacement inputs','no automatic submission approval','zero page errors']},null,2)+'\n');
   console.log('Content review page passed full-inventory previews, unfinished draft export, source evidence and preserved answers.');
 } finally {await browser.close();for(const name of ['review-export-smoke.json','review-export-smoke-draft.json'])await unlink(join(output,name)).catch(()=>{});}

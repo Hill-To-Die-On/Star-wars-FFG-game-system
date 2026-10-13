@@ -109,7 +109,34 @@ test('short labels and inline prepared copy remain content even alongside techni
 });
 
 test('dataset permissions are grouped while rendered journal content remains in the authorship queue', () => {
-  assert.equal(reviewRecordLane({ category: 'Reference data and source metadata', occurrences: [{ path: 'data/reference.json', location: '/items/0/_id' }] }), 'rights');
+  assert.equal(reviewRecordLane({ category: 'Reference data and source metadata', occurrences: [{ path: 'data/reference.json', location: '/items/0/_id' }] }), 'maintenance');
+  assert.equal(reviewRecordLane({ category: 'Reference data and source metadata', occurrences: [{ path: 'data/reference.json', location: '/items/0/name' }] }), 'rights');
   assert.equal(reviewRecordLane({ category: 'Reference data and source metadata', occurrences: [{ path: 'data/reference.json', location: '/items/0/pages/0/text/content' }] }), 'prepared');
   assert.equal(reviewRecordLane({ category: 'Prepared guidance and rules text', occurrences: [{ path: 'data/guidance.json', location: '/entries/0/summary' }] }), 'prepared');
+});
+
+test('schema identifiers and record IDs from the reported screenshot are audit metadata', () => {
+  for (const [text, location] of [['star-wars-ffg-advancement-trees', '/format'], ['14b710c863b5df75', '/items/0/_id']]) {
+    const entry = { id: location, text, category: 'Reference data and source metadata', occurrences: [{ path: 'data/advancement-trees.json', location }] };
+    assert.equal(reviewRecordLane(entry), 'maintenance', text);
+    const inventory = { ...review, entries: [entry] };
+    assert.deepEqual(reviewDraftIssues(inventory, input({ entries: { [entry.id]: { decision: 'human-origin', evidence: '' } } })), []);
+  }
+});
+
+test('metadata field context never exempts a displayed label with the same text', () => {
+  const text = '14b710c863b5df75';
+  assert.equal(reviewRecordLane({ text, category: 'English interface', occurrences: [{ path: 'lang/en.json', location: '/id' }] }), 'prepared');
+  assert.equal(reviewRecordLane({ text, category: 'Reference data and source metadata', occurrences: [{ path: 'data/reference.json', location: '/items/0/name' }] }), 'rights');
+  assert.equal(reviewRecordLane({ text, category: 'Prepared guidance and rules text', occurrences: [{ path: 'data/rules.json', location: '/effects/0/type' }] }), 'maintenance');
+  assert.equal(reviewRecordLane({ text: 'Apply one Boost die.', category: 'Prepared guidance and rules text', occurrences: [{ path: 'data/rules.json', location: '/effects/0/description' }] }), 'prepared');
+});
+
+test('reference rights use source evidence rather than per-record authorship requirements', () => {
+  const entry = { id: 'catalogue-name', text: 'Investigator', category: 'Reference data and source metadata', occurrences: [{ path: 'data/reference.json', location: '/items/0/name' }] };
+  const inventory = { ...review, entries: [entry] };
+  const draft = normalizeReviewDraft(inventory, input({ entries: { [entry.id]: { decision: 'third-party-rights', evidence: '', replacement: 'Legacy note retained' } } }));
+  assert.deepEqual(reviewDraftIssues(inventory, draft), []);
+  assert.equal(draft.entries[entry.id].replacement, 'Legacy note retained');
+  assert.equal(draft.submissionReady, false);
 });

@@ -1,8 +1,17 @@
+/** Machine fields are identified by their role, not by the spelling/length of a value. */
+export function isTechnicalReviewField(field) {
+  return /^(?:_?id|uuid|format|schema|schemaVersion|version|sha256|hash|checksum|slug|path|src|img|icon|type|kind|status|key|pack|collection|documentType|documentName|isbn|mimeType|url)$/i.test(field) ||
+    /(?:Id|Ids|UUID|Uuid|Hash|Checksum|Key|Path|Format|Schema|Url|URL)$/.test(field);
+}
+
 /** Review purpose follows content and source context, never word count or an approval. */
 export function reviewRecordLane(entry) {
+  if (['English interface', 'Listing and manifest'].includes(entry.category)) return 'prepared';
   if (entry.category === 'Documentation') {
     return entry.occurrences.some(source => /(?:^|\/)(?:lore|adventures?|stories|journals?)(?:\/|\.)/i.test(source.path)) ? 'prepared' : 'maintenance';
   }
+  if (entry.occurrences.length && entry.occurrences.every(source => source.reviewRole === 'technical' ||
+    (/\.json$/i.test(source.path) && isTechnicalReviewField((source.location ?? '').split('/').at(-1).replace(/~1/g, '/').replace(/~0/g, '~'))))) return 'maintenance';
   if (entry.category === 'Configuration and schema text') return 'maintenance';
   if (entry.category === 'Inline runtime text and code literals') {
     return entry.occurrences.length && entry.occurrences.every(source => source.reviewRole === 'technical') ? 'maintenance' : 'prepared';
@@ -62,9 +71,9 @@ export function reviewDraftIssues(review, input) {
   for (const [id, value] of Object.entries(draft.entries)) {
     if (value.decision === 'pending') continue;
     const entry = byId.get(id);
-    // Code and technical package documentation use the maintainer attestation,
-    // not the prepared-copy authorship check. Retain their old answers in the draft.
-    if (reviewRecordLane(entry) === 'maintenance') continue;
+    // Code/metadata and reference permissions use maintenance/source gates,
+    // not individual authorship checks. Retain all their old answers in the draft.
+    if (reviewRecordLane(entry) !== 'prepared') continue;
     const sourceEvidence = entry.occurrences.every(occurrence => {
       const source = draft.scopeReviews[JSON.stringify([occurrence.path, entry.category])];
       return source?.state === 'evidence-recorded' && source.reviewer.trim() && source.evidence.trim();
@@ -75,7 +84,10 @@ export function reviewDraftIssues(review, input) {
         message: entry.occurrences[0].path + ' — ' + entry.text.slice(0, 100) + ': missing ' + missing.join(' and ') + '.' });
     }
   }
+  const sourceScopes = new Map(reviewScopes(review).map(source => [source.id, source]));
   for (const [id, value] of Object.entries(draft.scopeReviews)) {
+    const scope = sourceScopes.get(id);
+    if (scope.entryIds.every(entryId => reviewRecordLane(byId.get(entryId)) === 'maintenance')) continue;
     if (value.state === 'evidence-recorded' && (!value.reviewer.trim() || !value.evidence.trim())) {
       issues.push({ kind: 'scope-evidence', scopeId: id, message: JSON.parse(id)[0] + ': recorded source evidence needs a named reviewer and evidence note.' });
     }

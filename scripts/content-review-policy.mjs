@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { parse } from "acorn";
-import { normalizeReviewDraft, reviewDraftIssues } from './content-review-workflow.mjs';
+import { normalizeReviewDraft, reviewDraftIssues, isTechnicalReviewField } from './content-review-workflow.mjs';
 
 const decoder = new TextDecoder();
 const hash = value => createHash("sha256").update(value).digest("hex");
@@ -48,7 +48,10 @@ export function createContentReview(files, { archiveSha256, releasePhase = 'Beta
         const propertyAccess = parent?.type === 'MemberExpression' && parent.property === node;
         const comparedConstant = parent?.type === 'BinaryExpression' && ['==','===','!=','!=='].includes(parent.operator);
         const technicalReference = /^SWFFG\.[\w.]+$/.test(value) || /^#[\da-f]{3,8}$/i.test(value);
-        const reviewRole = selectorOrAttribute || propertyAccess || comparedConstant || technicalReference ? 'technical' : 'prepared-candidate';
+        const variableName = parent?.type === 'VariableDeclarator' ? parent.id?.name : '';
+        const machineConstant = variableName && (isTechnicalReviewField(variableName) || /^[A-Z][A-Z0-9_]*_(?:ID|IDS|UUID|FORMAT|SCHEMA|HASH|SHA256|PATH|KEY|TYPE)$/.test(variableName));
+        const machineProperty = parent?.type === 'Property' && parent.value === node && isTechnicalReviewField(parent.key?.name ?? parent.key?.value ?? '');
+        const reviewRole = selectorOrAttribute || propertyAccess || comparedConstant || technicalReference || machineConstant || machineProperty ? 'technical' : 'prepared-candidate';
         add("Inline runtime text and code literals", value, path, `L${node.loc.start.line}:${node.loc.start.column+1}`, reviewRole);
       };
       const visit = (node,parent) => {
