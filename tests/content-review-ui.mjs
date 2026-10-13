@@ -127,6 +127,23 @@ try {
  const legacy={schemaVersion:1,archiveSha256:review.archiveSha256,reviewer:'The User',listingText:'Human-written listing saved before the export fix.',
    entries:{[word.id]:{decision:'human-origin',evidence:'',replacement:'Original unfinished replacement'},[changelog.id]:{decision:'human-origin',evidence:'',replacement:''},...Object.fromEntries(review.entries.filter(entry=>['star-wars-ffg-advancement-trees','14b710c863b5df75','Investigator'].includes(entry.text)).map(entry=>[entry.id,{decision:'human-origin',evidence:'',replacement:'Legacy metadata answer retained'}]))},
    humanGates:Object.fromEntries(review.humanGates.map(gate=>[gate.id,gate.id==='maintainability'?'correct':'complete'])),submissionReady:true};
+ const templateEntry=review.entries.find(entry=>entry.category==='Complete interface templates');
+ const statementDraft={...legacy,entries:{[word.id]:{decision:'human-origin',evidence:'',replacement:''},[templateEntry.id]:{decision:'technical-only',evidence:'',replacement:''}}};
+ await page.evaluate(draft=>localStorage.setItem('star-wars-ffg.review.'+draft.archiveSha256,JSON.stringify(draft)),statementDraft);await page.reload();
+ assert.equal(await page.getByRole('link',{name:'Confirm missing-evidence statement',exact:true}).getAttribute('href'),'#missing-evidence-review');
+ await page.getByRole('link',{name:'Confirm short-label review',exact:true}).click();assert.equal(new URL(page.url()).hash,'#short-label-review');
+ assert.match(await page.locator('#short-label-status').innerText(),/pending/);
+ assert.match(await page.locator('#missing-evidence-count').innerText(),/^2 existing decisions/);
+ const unsigned=await download('unsigned-shared-statement.json');assert.equal(unsigned.missingEvidenceReview.state,'pending');assert.equal(unsigned.reviewIssues.length,2,'suggested text does not sign itself');
+ await page.locator('#reviewer').fill('');await page.locator('#record-missing-evidence').click();assert.match(await page.locator('#message').innerText(),/needs reviewer identity/);
+ await page.locator('#reviewer').fill('The User');await page.locator('#missing-evidence-note').fill('Fixture: the original human catalogue and the template implementation history support these recorded classifications.');
+ await page.locator('#record-missing-evidence').click();
+ const confirmed=await download('confirmed-shared-statement.json');assert.equal(confirmed.missingEvidenceReview.state,'evidence-recorded');assert.equal(confirmed.missingEvidenceReview.records.length,2);assert.equal(confirmed.reviewIssues.length,0);
+ assert.deepEqual(confirmed.entries,statementDraft.entries,'one signed statement preserves individual decisions and blank notes');assert.equal(confirmed.submissionReady,false);assert.equal(confirmed.labelReview.state,'pending','the short-label sign-off stays separate');
+ await page.reload();assert.equal(await page.locator('#missing-evidence-note').inputValue(),confirmed.missingEvidenceReview.evidence);assert.match(await page.locator('#missing-evidence-status').innerText(),/confirmed by The User/);
+ await page.locator('#missing-evidence-members').evaluate(element=>{element.open=true;});await page.locator('#missing-evidence-list > details').first().evaluate(element=>{element.open=true;});
+ await page.locator('#missing-evidence-list .reading-preview').first().waitFor();assert.ok(await page.locator('#missing-evidence-list .reading-preview').count()>0,'bundled wording has a lazy rendered reading view');
+ await page.locator('#missing-evidence-note').fill('Edited statement awaiting confirmation.');const edited=await download('edited-shared-statement.json');assert.equal(edited.missingEvidenceReview.state,'pending');assert.equal(edited.reviewIssues.length,2);
  await page.evaluate(draft=>localStorage.setItem('star-wars-ffg.review.'+draft.archiveSha256,JSON.stringify(draft)),legacy);
  await page.reload();
  assert.equal(await page.locator('#reviewer').inputValue(),legacy.reviewer);
@@ -180,5 +197,5 @@ try {
  const output=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui');await mkdir(output,{recursive:true});
  await page.setViewportSize({width:1440,height:1000});await page.locator('.review-views').screenshot({path:join(output,'source-and-rendered.png')});
  await writeFile(join(output,'results.json'),JSON.stringify({passed:true,checks:['human-origin preselected without per-entry sign-off','optional notes collapsed for scanning','Needs review filters only explicit flags','review flags survive reload','identical text appears once across categories','one shared answer updates prepared copies under original IDs','technical duplicates remain read-only','conflicting original decisions and replacements retained','short-label inspector deduplicated','one shared statement for single- and two-word labels','short labels leave the main review queue','exact label membership exported and retained on reload','individual label exceptions and replacements stay visible','expanded local bundle retains earlier statement as pending and backs up all answers','longer copy remains in individual review','exact source preserved','translated template labels','visible dynamic placeholders and both conditional branches','inert markup without network requests','source/rendered/both controls','Markdown headings/emphasis/lists/tables/code examples','plain interface text','responsive stacked panes','legacy draft answers and unfinished decisions survive reload','draft export without per-record evidence or reviewer','actionable missing-evidence links','shared source evidence preserves per-entry exceptions','wrong archive rejected without data loss','unfinished draft import and previous-draft backup','zero page errors']},null,2)+'\n');
- console.log('Content review passed scan defaults, exact duplicate grouping, retained flags/conflicts, inert previews and draft preservation.');
+ console.log('Content review passed shared missing-evidence confirmation, short-label navigation, scan defaults, retained answers, inert previews and draft preservation.');
 } finally {await browser.close();await new Promise(ok=>server.close(ok));}

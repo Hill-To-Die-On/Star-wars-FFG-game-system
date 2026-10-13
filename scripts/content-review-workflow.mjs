@@ -110,6 +110,11 @@ export function normalizeReviewDraft(review, input) {
     return [id, { state: value.state, reviewer: String(value.reviewer ?? ''), evidence: String(value.evidence ?? '') }];
   }));
   const gates = object(input.humanGates, 'human gates');
+  const shared = object(input.missingEvidenceReview, 'missing-evidence review');
+  const sharedState = shared.state ?? 'pending', records = shared.records ?? [];
+  if (!['pending', 'evidence-recorded'].includes(sharedState) || !Array.isArray(records) ||
+    records.some(record => !record || !ids.has(record.entryId) || !['human-origin', 'technical-only'].includes(record.decision)) ||
+    new Set(records.map(record => record.entryId)).size !== records.length) throw Error('Invalid missing-evidence review coverage.');
   const gateIds = new Set(review.humanGates.map(gate => gate.id));
   for (const id of Object.keys(gates)) if (!gateIds.has(id)) throw Error('Unknown human gate.');
   const group = reviewLabelGroup(review), groupIds = new Set(group.entryIds), label = object(input.labelReview, 'short-label review');
@@ -125,6 +130,7 @@ export function normalizeReviewDraft(review, input) {
     defaultDecision: 'human-origin', defaultSelectionIsSignOff: false,
     listingText: String(input.listingText ?? ''), releasePhase: review.releasePhase ?? input.releasePhase ?? 'Beta', entries, scopeReviews,
     humanGates: Object.fromEntries(Object.entries(gates).map(([id, value]) => [id, String(value ?? '')])),
+    missingEvidenceReview: { state: sharedState, reviewer: String(shared.reviewer ?? ''), evidence: String(shared.evidence ?? ''), records: records.map(record => ({ entryId: record.entryId, decision: record.decision })) },
     labelReview: { state, reviewer: String(label.reviewer ?? ''), evidence: String(label.evidence ?? ''), entryIds: group.entryIds },
     submissionReady: false,
   };
@@ -145,6 +151,8 @@ export function restoreStoredReviewDraft(review, input) {
 export function reviewDraftIssues(review, input) {
   const draft = normalizeReviewDraft(review, input), issues = [];
   const byId = new Map(review.entries.map(entry => [entry.id, entry]));
+  const shared = draft.missingEvidenceReview, sharedRecords = new Map(shared.records.map(record => [record.entryId, record.decision]));
+  const sharedEvidence = shared.state === 'evidence-recorded' && shared.reviewer.trim() && shared.evidence.trim();
   const labels = new Set(draft.labelReview.entryIds), labelEvidence = draft.labelReview.state === 'evidence-recorded' &&
     draft.labelReview.reviewer.trim() && draft.labelReview.evidence.trim();
   for (const [id, value] of Object.entries(draft.entries)) {
@@ -158,8 +166,9 @@ export function reviewDraftIssues(review, input) {
       return source?.state === 'evidence-recorded' && source.reviewer.trim() && source.evidence.trim();
     });
     const bundledEvidence = labelEvidence && labels.has(id) && !hasIndividualLabelException(value);
-    if (!draft.reviewer.trim() || (!value.evidence.trim() && !sourceEvidence && !bundledEvidence)) {
-      const missing = [!draft.reviewer.trim() && 'reviewer identity', !value.evidence.trim() && !sourceEvidence && !bundledEvidence && 'authorship or classification evidence'].filter(Boolean);
+    const sharedCoverage = sharedEvidence && sharedRecords.get(id) === value.decision && !value.replacement.trim();
+    if (!draft.reviewer.trim() || (!value.evidence.trim() && !sourceEvidence && !bundledEvidence && !sharedCoverage)) {
+      const missing = [!draft.reviewer.trim() && 'reviewer identity', !value.evidence.trim() && !sourceEvidence && !bundledEvidence && !sharedCoverage && 'authorship or classification evidence'].filter(Boolean);
       issues.push({ kind: 'entry-evidence', entryId: id, path: entry.occurrences[0].path,
         message: entry.occurrences[0].path + ' — ' + entry.text.slice(0, 100) + ': missing ' + missing.join(' and ') + '.' });
     }
@@ -167,6 +176,7 @@ export function reviewDraftIssues(review, input) {
   if (draft.labelReview.state === 'evidence-recorded' && !labelEvidence) {
     issues.push({ kind: 'label-evidence', groupId: 'short-interface-labels', message: 'The shared short-label statement needs a named reviewer and provenance evidence.' });
   }
+  if (shared.state === 'evidence-recorded' && (!sharedEvidence || !shared.records.length)) issues.push({ kind: 'shared-evidence', groupId: 'missing-evidence', message: 'The shared missing-evidence statement needs a named reviewer, an evidence note and listed decisions.' });
   const sourceScopes = new Map(reviewScopes(review).map(source => [source.id, source]));
   for (const [id, value] of Object.entries(draft.scopeReviews)) {
     const scope = sourceScopes.get(id);
@@ -176,4 +186,21 @@ export function reviewDraftIssues(review, input) {
     }
   }
   return issues;
+}
+
+/** List only explicit, unchanged human/technical decisions needing a shared note. */
+export function missingEvidenceGroup(review, input) {
+  const draft = normalizeReviewDraft(review, input);
+  const records = reviewDraftIssues(review, { ...draft, missingEvidenceReview: undefined }).filter(issue => issue.kind === 'entry-evidence').flatMap(issue => {
+    const value = draft.entries[issue.entryId];
+    return ['human-origin', 'technical-only'].includes(value.decision) && !value.replacement.trim() ? [{ entryId: issue.entryId, decision: value.decision }] : [];
+  });
+  const ids = new Set(records.map(record => record.entryId)), byId = new Map(review.entries.map(entry => [entry.id, entry]));
+  for (const record of draft.missingEvidenceReview.records) {
+    const value = draft.entries[record.entryId];
+    if (!ids.has(record.entryId) && value?.decision === record.decision && !value.replacement.trim() && reviewRecordLane(byId.get(record.entryId)) === 'prepared') {
+      records.push(record); ids.add(record.entryId);
+    }
+  }
+  return { records };
 }

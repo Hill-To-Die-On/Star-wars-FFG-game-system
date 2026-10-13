@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reviewScopes, normalizeReviewDraft, reviewDraftIssues, reviewRecordLane, isShortInterfaceLabel, reviewLabelGroup, restoreStoredReviewDraft, reviewTextGroups, reviewGroupState } from '../scripts/content-review-workflow.mjs';
+import { reviewScopes, normalizeReviewDraft, reviewDraftIssues, reviewRecordLane, isShortInterfaceLabel, reviewLabelGroup, restoreStoredReviewDraft, reviewTextGroups, reviewGroupState, missingEvidenceGroup } from '../scripts/content-review-workflow.mjs';
 
 const review = {
   archiveSha256: 'a'.repeat(64),
@@ -14,6 +14,46 @@ const review = {
   humanGates: [{ id: 'maintainability' }],
 };
 const input = (extra = {}) => ({ archiveSha256: review.archiveSha256, reviewer: 'The User', entries: {}, ...extra });
+
+test('one missing-evidence statement covers exact recorded decisions without changing answers', () => {
+  const entries = { word: { decision: 'human-origin', evidence: '', replacement: '' }, prose: { decision: 'technical-only', evidence: '', replacement: '' } };
+  const before = input({ entries, listingText: 'Human listing', humanGates: { maintainability: 'correct' } });
+  const records = missingEvidenceGroup(review, before).records;
+  assert.deepEqual(records, [{ entryId: 'word', decision: 'human-origin' }, { entryId: 'prose', decision: 'technical-only' }]);
+  const draft = normalizeReviewDraft(review, { ...before, missingEvidenceReview: { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Human source history and reasons for technical classifications recorded together.', records } });
+  assert.deepEqual(reviewDraftIssues(review, draft), []);
+  assert.deepEqual(draft.entries, entries);
+  assert.equal(draft.listingText, before.listingText);
+  assert.deepEqual(draft.humanGates, before.humanGates);
+  assert.equal(draft.submissionReady, false);
+  assert.equal(draft.labelReview.state, 'pending', 'the short-label confirmation remains separate');
+  assert.deepEqual(missingEvidenceGroup(review, draft).records, records, 'signed coverage stays inspectable');
+  draft.entries.word.evidence = 'Later individual source note';
+  assert.deepEqual(new Set(missingEvidenceGroup(review, draft).records.map(record => record.entryId)), new Set(['word', 'prose']), 'previously confirmed members remain inspectable after other evidence is added');
+});
+
+test('shared missing-evidence coverage excludes untouched defaults, rights, rewrites and replacements', () => {
+  for (const value of [{ decision: 'pending' }, { decision: 'rewrite-required' }, { decision: 'third-party-rights' }, { decision: 'human-origin', replacement: 'New text' }]) {
+    assert.deepEqual(missingEvidenceGroup(review, input({ entries: { word: value } })).records, []);
+  }
+  assert.deepEqual(missingEvidenceGroup(review, input()).records, []);
+  const entries = { word: { decision: 'human-origin', evidence: '', replacement: '' } };
+  const missingEvidenceReview = { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Human source history.', records: missingEvidenceGroup(review, input({ entries })).records };
+  for (const value of [{ decision: 'technical-only' }, { decision: 'rewrite-required' }, { decision: 'human-origin', replacement: 'Changed wording' }]) {
+    const issues = reviewDraftIssues(review, input({ entries: { word: value }, missingEvidenceReview }));
+    assert.equal(issues.length, 1, 'a changed decision or replacement needs its own evidence');
+  }
+  assert.equal(reviewDraftIssues(review, input({ entries: { ...entries, prose: { decision: 'human-origin' } }, missingEvidenceReview })).length, 1, 'new decisions do not acquire earlier coverage');
+});
+
+test('a shared missing-evidence statement requires identity, a note and valid unique coverage', () => {
+  const entries = { word: { decision: 'human-origin', evidence: '' } };
+  const shared = { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Human source history.', records: [{ entryId: 'word', decision: 'human-origin' }] };
+  for (const change of [{ reviewer: '' }, { evidence: '' }, { state: 'pending' }]) assert.ok(reviewDraftIssues(review, input({ entries, missingEvidenceReview: { ...shared, ...change } })).some(issue => issue.entryId === 'word'));
+  for (const records of [[...shared.records, ...shared.records], [{ entryId: 'unknown', decision: 'human-origin' }], [{ entryId: 'word', decision: 'rewrite-required' }]]) assert.throws(() => normalizeReviewDraft(review, input({ missingEvidenceReview: { ...shared, records } })), /missing-evidence/i);
+  const legacy = normalizeReviewDraft(review, input());
+  assert.deepEqual(legacy.missingEvidenceReview, { state: 'pending', reviewer: '', evidence: '', records: [] });
+});
 
 test('unfinished legacy drafts remain exportable without losing listing, gate answers or decisions', () => {
   const draft = normalizeReviewDraft(review, input({ listingText: 'The human listing', humanGates: { maintainability: 'correct' },
