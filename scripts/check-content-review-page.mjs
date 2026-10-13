@@ -3,7 +3,7 @@ import { pathToFileURL } from 'node:url';
 import { resolve,join } from 'node:path';
 import { readFile,writeFile,unlink } from 'node:fs/promises';
 import assert from 'node:assert/strict';
-import {reviewLabelGroup} from './content-review-workflow.mjs';
+import {reviewLabelGroup,reviewTextGroups} from './content-review-workflow.mjs';
 const output=resolve(process.argv.find(value=>value.startsWith('--output='))?.slice(9)??'.local/beta-review');
 const browser=await chromium.launch({headless:true});
 const errors=[];
@@ -29,6 +29,9 @@ try {
   const downloaded=await downloadEvent;await downloaded.saveAs(join(output,'review-export-smoke.json'));
   const exported=JSON.parse(await readFile(join(output,'review-export-smoke.json'),'utf8'));
   assert.equal(exported.archiveSha256,review.archiveSha256);assert.equal(exported.submissionReady,false);assert.deepEqual(exported.entries,{});
+  assert.equal(exported.defaultDecision,'human-origin');assert.equal(exported.defaultSelectionIsSignOff,false);
+  assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').first().inputValue(),'human-origin');
+  assert.equal((await page.locator('#entries .source-pane pre').allTextContents()).length,new Set(await page.locator('#entries .source-pane pre').allTextContents()).size,'visible exact strings appear only once');
   await page.locator('#reviewer').fill('Fixture reviewer');await page.locator('#listing').fill('Fixture listing preserved across reload.');
   await page.getByLabel(review.humanGates[0].title,{exact:true}).fill('Fixture source evidence pending.');
   await page.locator('#entries > article select[aria-label^="Decision for "]').first().selectOption('human-origin');
@@ -42,18 +45,22 @@ try {
   assert.equal(unfinished.listingText,'Fixture listing preserved across reload.');
   assert.equal(unfinished.humanGates[review.humanGates[0].id],'Fixture source evidence pending.');
   assert.equal(unfinished.entries[unfinishedId.slice('Decision for '.length)].decision,'human-origin');
-  assert.equal(unfinished.reviewIssues.length,1);assert.equal(unfinished.submissionReady,false);
+  assert.deepEqual(new Set(unfinished.reviewIssues.map(issue=>issue.entryId)),new Set(Object.keys(unfinished.entries)));assert.equal(unfinished.submissionReady,false);
   await page.getByRole('button',{name:'Show affected record',exact:true}).click();assert.equal(await page.locator('#entries > article').count(),1);
   const scope=JSON.stringify(['lang/en.json','English interface']);await page.locator('#scope').selectOption(scope);
   await page.locator('#scope-evidence').fill('Fixture shared source evidence for the English catalogue.');await page.locator('#record-scope').click();
+  await page.locator('#entries .review-notes').first().evaluate(element=>{element.open=true;});
+  await page.getByLabel('Evidence for '+unfinishedId.slice('Decision for '.length),{exact:true}).fill('Fixture human source evidence for every identical prepared copy shown in this group.');
   await page.locator('#check-review').click();assert.match(await page.locator('#issues').innerText(),/No incomplete changed decisions/);
   assert.equal(await page.locator('#review-lane').inputValue(),'prepared','source selection preserves prepared purpose');
+  const sourceEvent=page.waitForEvent('download');await page.locator('#export').click();await(await sourceEvent).saveAs(join(output,'review-export-smoke-source.json'));
+  const priorAnswers=JSON.parse(await readFile(join(output,'review-export-smoke-source.json'),'utf8'));
   await page.locator('#short-label-evidence').fill('Fixture human-origin source statement covering the listed single- and two-word interface labels.');
   await page.locator('#record-short-labels').click();
   const labelEvent=page.waitForEvent('download');await page.locator('#export').click();await(await labelEvent).saveAs(join(output,'review-export-smoke-labels.json'));
   const bundled=JSON.parse(await readFile(join(output,'review-export-smoke-labels.json'),'utf8'));
   assert.equal(bundled.labelReview.state,'evidence-recorded');assert.deepEqual(bundled.labelReview.entryIds,labelGroup.entryIds);
-  assert.deepEqual(bundled.entries,unfinished.entries,'recording one label statement preserves individual decisions');assert.equal(bundled.submissionReady,false);
+  assert.deepEqual(bundled.entries,priorAnswers.entries,'recording one label statement preserves individual decisions');assert.equal(bundled.submissionReady,false);
   await page.reload();assert.equal(await page.locator('#short-label-evidence').inputValue(),bundled.labelReview.evidence);
   await page.locator('#short-label-review').screenshot({path:join(output,'short-label-bundle.png')});
   await page.locator('#review-lane').selectOption('rights');
@@ -73,6 +80,6 @@ try {
   assert.match(await page.locator('.reading-preview').innerText(),/STAR WARS FFG/);
   await page.locator('#view-mode').selectOption('rendered');assert.equal(await page.locator('.source-pane').isVisible(),false);
   await page.locator('#view-mode').selectOption('both');await page.locator('.review-views').screenshot({path:join(output,'content-review-rendered-preview.png')});
-  assert.deepEqual(errors,[]);await writeFile(join(output,'page-check.json'),JSON.stringify({passed:true,archiveSha256:review.archiveSha256,bundledLabels:labelGroup.entryIds.length,preparedSourceScopes:await page.locator('#scope option').count()-1,checks:['ZIP identity','paginated complete inventory','source and rendered panes','rendered packaged welcome copy','view controls','NASA text search','English category filter','local pending export','unfinished answers exported with specific evidence issues','reviewer/listing/gates/unfinished decisions survive reload','issue link opens affected record','source and category preserve selected review purpose','one shared source note covers the catalogue without changing record decisions','one statement covers exact single- and two-word label membership','bundled labels absent from the default individual queue','label statement survives export and reload without changing individual answers','permissions grouped by source without per-value forms','reported record ID is audit-only without decision/evidence/replacement inputs','no automatic submission approval','zero page errors']},null,2)+'\n');
+  assert.deepEqual(errors,[]);await writeFile(join(output,'page-check.json'),JSON.stringify({passed:true,archiveSha256:review.archiveSha256,bundledLabels:labelGroup.entryIds.length,uniqueLabelTexts:reviewTextGroups(review.entries.filter(entry=>labelIds.has(entry.id))).length,uniqueInventoryTexts:reviewTextGroups(review.entries).length,preparedSourceScopes:await page.locator('#scope option').count()-1,checks:['ZIP identity','paginated complete inventory','source and rendered panes','rendered packaged welcome copy','view controls','NASA text search','English category filter','local pending export','human-origin scan default without per-record approvals','exact strings grouped once with every original source retained','shared changes recorded under original IDs','unfinished answers exported with specific evidence issues','reviewer/listing/gates/unfinished decisions survive reload','issue link opens affected record','source and category preserve selected review purpose','shared source and exact-text evidence preserve original record identities','one statement covers exact single- and two-word label membership','bundled labels absent from the default individual queue','label statement survives export and reload without changing individual answers','permissions grouped by source without per-value forms','reported record ID is audit-only without decision/evidence/replacement inputs','no automatic submission approval','zero page errors']},null,2)+'\n');
   console.log('Content review page passed full-inventory previews, unfinished draft export, source evidence and preserved answers.');
-} finally {await browser.close();for(const name of ['review-export-smoke.json','review-export-smoke-draft.json','review-export-smoke-labels.json'])await unlink(join(output,name)).catch(()=>{});}
+} finally {await browser.close();for(const name of ['review-export-smoke.json','review-export-smoke-draft.json','review-export-smoke-labels.json','review-export-smoke-source.json'])await unlink(join(output,name)).catch(()=>{});}

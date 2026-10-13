@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reviewScopes, normalizeReviewDraft, reviewDraftIssues, reviewRecordLane, isShortInterfaceLabel, reviewLabelGroup, restoreStoredReviewDraft } from '../scripts/content-review-workflow.mjs';
+import { reviewScopes, normalizeReviewDraft, reviewDraftIssues, reviewRecordLane, isShortInterfaceLabel, reviewLabelGroup, restoreStoredReviewDraft, reviewTextGroups, reviewGroupState } from '../scripts/content-review-workflow.mjs';
 
 const review = {
   archiveSha256: 'a'.repeat(64),
@@ -149,7 +149,7 @@ test('one bundle contains single- and two-word interface labels without exemptin
   assert.equal(isShortInterfaceLabel(label('Back', { category: 'Inline runtime text and code literals', occurrences: [{ path: 'src/dialog.mjs', reviewRole: 'interface-label' }] })), true);
   assert.equal(isShortInterfaceLabel(label('Back', { category: 'Inline runtime text and code literals', occurrences: [{ path: 'src/dialog.mjs', reviewRole: 'interface-label' }, { path: 'src/phrases.mjs', reviewRole: 'prepared-candidate' }] })), true, 'a known label retains all of its shared source occurrences in the bundle');
   assert.equal(isShortInterfaceLabel(review.entries[0]), false, 'an unknown runtime literal is not assumed to be a label');
-  assert.deepEqual(reviewLabelGroup(review).entryIds, ['word']);
+  assert.deepEqual(reviewLabelGroup(review).entryIds, ['shared', 'word'], 'identical runtime copies join a known interface label');
 });
 
 test('one label statement covers its exact members while retaining individual decisions and longer copy', () => {
@@ -157,7 +157,7 @@ test('one label statement covers its exact members while retaining individual de
   const entries = { word: { decision: 'human-origin', evidence: '', replacement: '' }, prose: { decision: 'human-origin', evidence: '', replacement: '' } };
   const draft = normalizeReviewDraft(review, input({ entries, labelReview: { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Human interface catalogue history covers the included labels.', entryIds: group.entryIds } }));
   assert.deepEqual(draft.entries, entries);
-  assert.deepEqual(draft.labelReview.entryIds, ['word']);
+  assert.deepEqual(draft.labelReview.entryIds, ['shared', 'word']);
   assert.deepEqual(reviewDraftIssues(review, draft).map(issue => issue.entryId), ['prose']);
   assert.equal(draft.submissionReady, false);
 });
@@ -166,12 +166,12 @@ test('legacy drafts acquire an unfinished label bundle without inventing human e
   const entries = { word: { decision: 'rewrite-required', evidence: 'Unknown origin', replacement: 'Dismiss' } };
   const draft = normalizeReviewDraft(review, input({ entries }));
   assert.deepEqual(draft.entries, entries);
-  assert.deepEqual(draft.labelReview, { state: 'pending', reviewer: '', evidence: '', entryIds: ['word'] });
+  assert.deepEqual(draft.labelReview, { state: 'pending', reviewer: '', evidence: '', entryIds: ['shared', 'word'] });
   assert.equal(draft.submissionReady, false);
 });
 
 test('a recorded label statement requires identity and evidence and cannot silently change coverage', () => {
-  const labelReview = { state: 'evidence-recorded', reviewer: '', evidence: '', entryIds: ['word'] };
+  const labelReview = { state: 'evidence-recorded', reviewer: '', evidence: '', entryIds: reviewLabelGroup(review).entryIds };
   assert.equal(reviewDraftIssues(review, input({ labelReview }))[0].kind, 'label-evidence');
   for (const extra of [{ entryIds: [] }, { entryIds: ['word', 'prose'] }, { entryIds: ['word', 'word'] }, { state: 'approved-by-ai' }]) {
     assert.throws(() => normalizeReviewDraft(review, input({ labelReview: { ...labelReview, ...extra } })), /label/i);
@@ -179,7 +179,7 @@ test('a recorded label statement requires identity and evidence and cannot silen
 });
 
 test('shared label evidence does not swallow a rewrite decision or a replacement that needs individual evidence', () => {
-  const labelReview = { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Human source for the other labels.', entryIds: ['word'] };
+  const labelReview = { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Human source for the other labels.', entryIds: reviewLabelGroup(review).entryIds };
   for (const value of [{ decision: 'rewrite-required', replacement: '' }, { decision: 'human-origin', replacement: 'Dismiss' }, { decision: 'third-party-rights', replacement: '' }]) {
     const draft = normalizeReviewDraft(review, input({ labelReview, entries: { word: { ...value, evidence: '' } } }));
     assert.equal(reviewDraftIssues(review, draft)[0].entryId, 'word');
@@ -189,7 +189,7 @@ test('shared label evidence does not swallow a rewrite decision or a replacement
 });
 
 test('an expanded stored label bundle preserves all answers and its earlier statement as pending', () => {
-  const previous = normalizeReviewDraft(review, input({ listingText: 'Human listing retained', entries: { word: { decision: 'rewrite-required', evidence: 'Original exception', replacement: 'Dismiss' } }, labelReview: { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Original shared statement', entryIds: ['word'] } }));
+  const previous = normalizeReviewDraft(review, input({ listingText: 'Human listing retained', entries: { word: { decision: 'rewrite-required', evidence: 'Original exception', replacement: 'Dismiss' } }, labelReview: { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Original shared statement', entryIds: reviewLabelGroup(review).entryIds } }));
   const expanded = { ...review, entries: [...review.entries, { id: 'another-label', text: 'Choose career…', category: 'English interface', occurrences: [{ path: 'lang/en.json', location: '/career' }] }] };
   const restored = restoreStoredReviewDraft(expanded, previous);
   assert.equal(restored.coverageChanged, true);
@@ -197,7 +197,70 @@ test('an expanded stored label bundle preserves all answers and its earlier stat
   assert.equal(restored.draft.listingText, previous.listingText);
   assert.equal(restored.draft.labelReview.evidence, previous.labelReview.evidence);
   assert.equal(restored.draft.labelReview.state, 'pending');
-  assert.deepEqual(restored.draft.labelReview.entryIds, ['word', 'another-label']);
+  assert.deepEqual(restored.draft.labelReview.entryIds, ['shared', 'word', 'another-label']);
   assert.equal(restored.draft.submissionReady, false);
   for (const bad of [{ ...previous, archiveSha256: 'b'.repeat(64) }, { ...previous, labelReview: { ...previous.labelReview, entryIds: ['unknown'] } }]) assert.throws(() => restoreStoredReviewDraft(expanded, bad));
+});
+
+test('identical text forms one group across categories while preserving every original ID and occurrence', () => {
+  const groups = reviewTextGroups(review.entries);
+  const close = groups.find(group => group.text === 'Close');
+  assert.deepEqual(close.entryIds, ['shared', 'word']);
+  assert.equal(close.occurrences.length, 4);
+  assert.deepEqual(close.categories, ['Inline runtime text and code literals', 'English interface']);
+  assert.equal(reviewTextGroups([...review.entries, { ...review.entries[1], id: 'different-case', text: 'read the result' }, { ...review.entries[1], id: 'different-space', text: 'Read the result ' }]).length, 4, 'case and whitespace are not silently normalized');
+  assert.deepEqual(review.entries[0].occurrences[0], { path: 'src/a.mjs', location: 'L1:1' }, 'inventory objects are not mutated');
+});
+
+test('one shared answer targets prepared copies and never technical or rights records', () => {
+  const technical = { id: 'machine', text: 'Close', category: 'Reference data and source metadata', occurrences: [{ path: 'data/schema.json', location: '/format' }] };
+  const rights = { ...technical, id: 'rights', occurrences: [{ path: 'data/reference.json', location: '/items/0/name' }] };
+  const group = reviewTextGroups([...review.entries, technical, rights]).find(group => group.text === 'Close');
+  const state = reviewGroupState(group, {});
+  assert.deepEqual(state.targetIds, ['shared', 'word']);
+  assert.deepEqual(state.conflicts, []);
+  assert.deepEqual(state.value, { decision: 'human-origin', evidence: '', replacement: '' });
+  const existing = { word: { decision: 'human-origin', evidence: 'Original shared human source', replacement: '' } };
+  assert.deepEqual(reviewGroupState(group, existing).value, existing.word);
+  assert.deepEqual(existing, { word: { decision: 'human-origin', evidence: 'Original shared human source', replacement: '' } }, 'grouping itself does not fill pending copies');
+});
+
+test('conflicting existing answers remain individual while unanswered identical copies can share one answer', () => {
+  const another = { ...review.entries[1], id: 'another', text: 'Close' };
+  const group = reviewTextGroups([...review.entries, another]).find(group => group.text === 'Close');
+  const entries = { shared: { decision: 'human-origin', evidence: 'Original source', replacement: '' }, word: { decision: 'rewrite-required', evidence: 'Unknown origin', replacement: 'Dismiss' } };
+  const state = reviewGroupState(group, entries);
+  assert.deepEqual(state.targetIds, ['another']);
+  assert.deepEqual(state.conflicts.map(entry => entry.id), ['shared', 'word']);
+  assert.equal(entries.word.replacement, 'Dismiss');
+  assert.deepEqual(reviewGroupState(group, { word: entries.word }).targetIds, ['shared', 'another'], 'an existing isolated rewrite is not spread to other copies');
+});
+
+test('human-origin is a scan default without inventing individual answers or completed sign-off', () => {
+  const draft = normalizeReviewDraft(review, input());
+  assert.equal(draft.defaultDecision, 'human-origin');
+  assert.equal(draft.defaultSelectionIsSignOff, false);
+  assert.deepEqual(draft.entries, {});
+  assert.equal(draft.submissionReady, false);
+});
+
+test('an existing needs-review flag is retained instead of being replaced by the scan default', () => {
+  const group = reviewTextGroups(review.entries).find(group => group.text === 'Close');
+  const answers = { word: { decision: 'pending', evidence: '', replacement: '' } };
+  const state = reviewGroupState(group, answers);
+  assert.deepEqual(state.conflicts.map(entry => entry.id), ['word']);
+  assert.deepEqual(state.targetIds, ['shared']);
+  assert.equal(state.value.decision, 'human-origin');
+  assert.equal(answers.word.decision, 'pending');
+});
+
+test('short-label duplicate coverage does not absorb marketing, rules prose or audit-only names', () => {
+  const source={path:'data/reference.json',location:'/items/0/name'};
+  const extended={...review,entries:[...review.entries,
+    {id:'marketing',text:'Close',category:'Listing and manifest',occurrences:[{path:'system.json',location:'/title'}]},
+    {id:'rule',text:'Close',category:'Prepared guidance and rules text',occurrences:[{path:'data/rules.json',location:'/description'}]},
+    {id:'reference',text:'Close',category:'Reference data and source metadata',occurrences:[source]},
+    {id:'case-sensitive',text:'close',category:'Inline runtime text and code literals',occurrences:[{path:'src/case.mjs',location:'L1:1'}]},
+  ]};
+  assert.deepEqual(reviewLabelGroup(extended).entryIds,['shared','word']);
 });

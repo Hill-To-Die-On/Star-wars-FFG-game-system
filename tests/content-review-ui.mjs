@@ -15,6 +15,8 @@ const review=createContentReview({
  'CHANGELOG.md':encode('# Changelog\n\nTechnical implementation history.'),
  'src/selector.mjs':encode('root.querySelector(".sf-control");'),
  'src/format.mjs':encode('export const ADVANCEMENT_FORMAT="star-wars-ffg-advancement-trees";'),
+ 'src/duplicates.mjs':encode('const message="Read the result";const label="Close";'),
+ 'data/machine.json':encode(JSON.stringify({format:'Read the result'})),
  'data/advancement-trees.json':encode(JSON.stringify({format:'star-wars-ffg-advancement-trees',items:[{_id:'14b710c863b5df75',name:'Investigator',description:'Choose a route.'}]})),
  'templates/example.hbs':encode(template),
  'README.md':encode('# Review guide\n\nRead **carefully** with `source` beside the preview.\n\n- First item\n- Second item\n\n| Label | Detail |\n| --- | --- |\n| Row | Row detail |\n\n```html\n<button>Example copy</button>\n```'),
@@ -26,6 +28,9 @@ const errors=[],externalRequests=[];
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',error=>errors.push(error.message));
  await page.route('**/*',route=>{if(route.request().url().startsWith(url))return route.continue();externalRequests.push(route.request().url());return route.abort();});
+ const download=async name=>{const event=page.waitForEvent('download');await page.locator('#export').click();const file=await event;
+   const path=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui',name);await mkdir(resolve(path,'..'),{recursive:true});await file.saveAs(path);
+   return JSON.parse(await (await import('node:fs/promises')).readFile(path,'utf8'));};
  await page.goto(url);
  assert.equal(await page.getByRole('heading',{name:'Single- and two-word interface labels',exact:true}).count(),1,'short labels share one review statement');
  assert.equal(await page.locator('#short-label-evidence').count(),1);
@@ -34,6 +39,41 @@ try {
  assert.deepEqual(await page.locator('#entries .source-pane pre').allTextContents(),['Read the result'],'short labels leave the main review queue');
  await page.locator('#short-label-members').evaluate(element=>{element.open=true;});
  assert.deepEqual((await page.locator('#short-label-list .label-wording').allTextContents()).sort(),['Back','Close','Save Changes']);
+ const copies=review.entries.filter(entry=>entry.text==='Read the result'),preparedCopies=copies.filter(entry=>entry.category!=='Reference data and source metadata');
+ assert.equal(copies.length,3);assert.equal(await page.locator('#entries > article').count(),1,'identical text across categories appears once');
+ assert.equal(await page.locator('#entries > article').getAttribute('data-entry-count'),'3');
+ assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').count(),1,'identical prepared copies share one answer');
+ assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').inputValue(),'human-origin','scan default is preselected');
+ assert.equal(await page.locator('#entries .review-notes').evaluate(element=>element.open),false,'optional notes stay out of the scan view');
+ const scan=await download('scan-defaults.json');assert.deepEqual(scan.entries,{});assert.equal(scan.defaultDecision,'human-origin');assert.equal(scan.defaultSelectionIsSignOff,false);assert.equal(scan.submissionReady,false);
+ await page.locator('#state').selectOption('pending');assert.equal(await page.locator('#entries > article').count(),0,'Needs review shows explicit flags, not untouched defaults');await page.locator('#state').selectOption('');
+ await page.locator('#entries select[aria-label^="Decision for "]').selectOption('pending');
+ const flagged=await download('flagged-identical-text.json');for(const entry of preparedCopies)assert.equal(flagged.entries[entry.id].decision,'pending');
+ await page.reload();await page.locator('#category').selectOption('English interface');assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').inputValue(),'pending','explicit review flags survive reload');
+ await page.locator('#reviewer').fill('The User');
+ await page.locator('#entries select[aria-label^="Decision for "]').selectOption('human-origin');
+ await page.locator('#entries textarea[aria-label^="Evidence for "]').fill('The same human-authored phrase is copied into both prepared sources.');
+ const sharedCopies=await download('shared-identical-text.json');
+ for(const entry of preparedCopies)assert.deepEqual(sharedCopies.entries[entry.id],{decision:'human-origin',evidence:'The same human-authored phrase is copied into both prepared sources.',replacement:''});
+ const machine=copies.find(entry=>entry.category==='Reference data and source metadata');assert.equal(sharedCopies.entries[machine.id],undefined,'shared copy review never classifies a technical source');
+ await page.reload();await page.locator('#category').selectOption('English interface');assert.equal(await page.locator('#entries > article').count(),1);
+ const englishCopy=preparedCopies.find(entry=>entry.category==='English interface'),runtimeCopy=preparedCopies.find(entry=>entry.category==='Inline runtime text and code literals');
+ const conflicted={...sharedCopies,entries:{...sharedCopies.entries,[englishCopy.id]:{decision:'human-origin',evidence:'Original English catalogue source',replacement:''},[runtimeCopy.id]:{decision:'rewrite-required',evidence:'Unknown runtime source',replacement:'Replacement kept for this source'},[machine.id]:{decision:'technical-only',evidence:'Machine format',replacement:''}}};
+ await page.evaluate(draft=>localStorage.setItem('star-wars-ffg.review.'+draft.archiveSha256,JSON.stringify(draft)),conflicted);await page.reload();await page.locator('#category').selectOption('English interface');
+ assert.equal(await page.locator('#entries > article').count(),1);
+ assert.equal(await page.locator('#entries > article').getAttribute('data-review-conflicts'),'true');
+ assert.equal(await page.getByLabel('Decision for '+englishCopy.id,{exact:true}).inputValue(),'human-origin');
+ assert.equal(await page.getByLabel('Decision for '+runtimeCopy.id,{exact:true}).inputValue(),'rewrite-required');
+ assert.equal(await page.getByLabel('Replacement for '+runtimeCopy.id,{exact:true}).inputValue(),'Replacement kept for this source');
+ const preservedCopies=await download('conflicting-identical-text.json');assert.deepEqual(preservedCopies.entries,conflicted.entries);
+ await page.locator('#entries').screenshot({path:resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui','identical-text-conflicts.png')});
+ await page.locator('#entries > article > details').filter({has:page.locator('summary').filter({hasText:/^Edit one source as an individual exception$/})}).evaluate(element=>{element.open=true;});
+ await page.getByLabel('Edit source exception for '+runtimeCopy.id,{exact:true}).click();
+ assert.equal(await page.locator('#entries select[aria-label^="Decision for "]').count(),1,'an explicit individual edit only exposes the selected source');
+ await page.getByLabel('Replacement for '+runtimeCopy.id,{exact:true}).fill('A source-specific replacement');
+ const individual=await download('individual-source-exception.json');assert.deepEqual(individual.entries[englishCopy.id],conflicted.entries[englishCopy.id]);assert.deepEqual(individual.entries[machine.id],conflicted.entries[machine.id]);assert.equal(individual.entries[runtimeCopy.id].replacement,'A source-specific replacement');
+ await page.evaluate(hash=>localStorage.removeItem('star-wars-ffg.review.'+hash),review.archiveSha256);await page.reload();
+ await page.locator('#view-mode').selectOption('both');
  await page.locator('#category').selectOption('Complete interface templates');
  assert.match(await page.locator('h1').first().innerText(),/Foundry Beta/);
  await page.locator('#review-lane').selectOption('prepared');
@@ -92,9 +132,6 @@ try {
  assert.equal(await page.locator('#reviewer').inputValue(),legacy.reviewer);
  assert.equal(await page.locator('#listing').inputValue(),legacy.listingText);
  for(const gate of review.humanGates)assert.equal(await page.getByLabel(gate.title,{exact:true}).inputValue(),legacy.humanGates[gate.id]);
- const download=async name=>{const event=page.waitForEvent('download');await page.locator('#export').click();const file=await event;
-   const path=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui',name);await mkdir(resolve(path,'..'),{recursive:true});await file.saveAs(path);
-   return JSON.parse(await (await import('node:fs/promises')).readFile(path,'utf8'));};
  const draft=await download('unfinished-draft.json');
  assert.equal(draft.submissionReady,false);assert.equal(draft.exportKind,'draft');assert.equal(draft.releasePhase,'Beta');assert.equal(draft.listingText,legacy.listingText);
  assert.deepEqual(draft.humanGates,legacy.humanGates);assert.deepEqual(draft.entries,legacy.entries);
@@ -142,6 +179,6 @@ try {
  assert.deepEqual(errors,[]);assert.deepEqual(externalRequests,[]);
  const output=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui');await mkdir(output,{recursive:true});
  await page.setViewportSize({width:1440,height:1000});await page.locator('.review-views').screenshot({path:join(output,'source-and-rendered.png')});
- await writeFile(join(output,'results.json'),JSON.stringify({passed:true,checks:['one shared statement for single- and two-word labels','short labels leave the main review queue','exact label membership exported and retained on reload','individual label exceptions and replacements stay visible','expanded local bundle retains earlier statement as pending and backs up all answers','longer copy remains in individual review','exact source preserved','translated template labels','visible dynamic placeholders and both conditional branches','inert markup without network requests','source/rendered/both controls','Markdown headings/emphasis/lists/tables/code examples','plain interface text','responsive stacked panes','legacy draft answers and unfinished decisions survive reload','draft export without per-record evidence or reviewer','actionable missing-evidence links','shared source evidence preserves per-entry exceptions','wrong archive rejected without data loss','unfinished draft import and previous-draft backup','zero page errors']},null,2)+'\n');
- console.log('Content review passed inert previews, legacy draft export, missing-evidence navigation, shared source evidence and import preservation.');
+ await writeFile(join(output,'results.json'),JSON.stringify({passed:true,checks:['human-origin preselected without per-entry sign-off','optional notes collapsed for scanning','Needs review filters only explicit flags','review flags survive reload','identical text appears once across categories','one shared answer updates prepared copies under original IDs','technical duplicates remain read-only','conflicting original decisions and replacements retained','short-label inspector deduplicated','one shared statement for single- and two-word labels','short labels leave the main review queue','exact label membership exported and retained on reload','individual label exceptions and replacements stay visible','expanded local bundle retains earlier statement as pending and backs up all answers','longer copy remains in individual review','exact source preserved','translated template labels','visible dynamic placeholders and both conditional branches','inert markup without network requests','source/rendered/both controls','Markdown headings/emphasis/lists/tables/code examples','plain interface text','responsive stacked panes','legacy draft answers and unfinished decisions survive reload','draft export without per-record evidence or reviewer','actionable missing-evidence links','shared source evidence preserves per-entry exceptions','wrong archive rejected without data loss','unfinished draft import and previous-draft backup','zero page errors']},null,2)+'\n');
+ console.log('Content review passed scan defaults, exact duplicate grouping, retained flags/conflicts, inert previews and draft preservation.');
 } finally {await browser.close();await new Promise(ok=>server.close(ok));}

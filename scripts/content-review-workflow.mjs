@@ -35,13 +35,48 @@ export function isShortInterfaceLabel(entry) {
 }
 
 export function reviewLabelGroup(review) {
+  const wording = new Set(review.entries.filter(isShortInterfaceLabel).map(entry => entry.text));
+  const categories = new Set(['English interface', 'CSS interface labels', 'SVG accessible text', 'Inline runtime text and code literals']);
   return { id: 'short-interface-labels', title: 'Single- and two-word interface labels',
-    entryIds: review.entries.filter(isShortInterfaceLabel).map(entry => entry.id) };
+    entryIds: review.entries.filter(entry => categories.has(entry.category) && reviewRecordLane(entry) === 'prepared' && wording.has(entry.text)).map(entry => entry.id) };
 }
 
 /** Explicit rewrites, replacements and other classifications remain individual exceptions. */
 export function hasIndividualLabelException(value) {
-  return Boolean(value && ((value.decision !== 'pending' && value.decision !== 'human-origin') || value.replacement?.trim()));
+  return Boolean(value && (value.decision !== 'human-origin' || value.replacement?.trim()));
+}
+
+/** The User requested a scan default; stored decisions always take precedence. */
+export function reviewEntryAnswer(entryId, answers = {}) {
+  const value = answers[entryId];
+  return { decision: value?.decision ?? 'human-origin', evidence: String(value?.evidence ?? ''), replacement: String(value?.replacement ?? '') };
+}
+
+/** Exact text is displayed once; every original record and source occurrence remains intact. */
+export function reviewTextGroups(entries) {
+  const groups = new Map();
+  for (const entry of entries) {
+    if (!groups.has(entry.text)) groups.set(entry.text, { ...entry, entries: [], entryIds: [], categories: [], occurrences: [] });
+    const group = groups.get(entry.text);
+    group.entries.push(entry); group.entryIds.push(entry.id);
+    if (!group.categories.includes(entry.category)) group.categories.push(entry.category);
+    group.occurrences.push(...entry.occurrences.map(source => ({ ...source, entryId: entry.id, category: entry.category })));
+  }
+  return [...groups.values()];
+}
+
+/** Shared edits never overwrite conflicting saved answers or infer authorship for audit records. */
+export function reviewGroupState(group, answers = {}) {
+  const prepared = group.entries.filter(entry => reviewRecordLane(entry) === 'prepared');
+  const blank = { decision: 'human-origin', evidence: '', replacement: '' };
+  const recorded = prepared.filter(entry => Object.hasOwn(answers, entry.id)).map(entry => ({ entry, value: reviewEntryAnswer(entry.id, answers) }));
+  const variants = new Set(recorded.map(({ value }) => JSON.stringify(value)));
+  const partialException = recorded.length < prepared.length && recorded.some(({ value }) => hasIndividualLabelException(value));
+  if (variants.size > 1 || partialException) {
+    const retained = new Set(recorded.map(({ entry }) => entry.id));
+    return { targetIds: prepared.filter(entry => !retained.has(entry.id)).map(entry => entry.id), value: blank, conflicts: recorded.map(({ entry }) => entry) };
+  }
+  return { targetIds: prepared.map(entry => entry.id), value: recorded[0]?.value ?? blank, conflicts: [] };
 }
 
 /** Source scopes preserve every occurrence; grouping is not an authorship decision. */
@@ -87,6 +122,7 @@ export function normalizeReviewDraft(review, input) {
   }
   return {
     schemaVersion: 1, archiveSha256: review.archiveSha256, reviewer: String(input.reviewer ?? ''),
+    defaultDecision: 'human-origin', defaultSelectionIsSignOff: false,
     listingText: String(input.listingText ?? ''), releasePhase: review.releasePhase ?? input.releasePhase ?? 'Beta', entries, scopeReviews,
     humanGates: Object.fromEntries(Object.entries(gates).map(([id, value]) => [id, String(value ?? '')])),
     labelReview: { state, reviewer: String(label.reviewer ?? ''), evidence: String(label.evidence ?? ''), entryIds: group.entryIds },
