@@ -1,5 +1,5 @@
 import {readingPreviewModel,appendReadingPreview} from './content-review-preview.mjs';
-import {reviewScopes,normalizeReviewDraft,reviewDraftIssues,reviewRecordLane,isTechnicalReviewField,isShortInterfaceLabel,reviewLabelGroup,hasIndividualLabelException} from './content-review-workflow.mjs';
+import {reviewScopes,normalizeReviewDraft,reviewDraftIssues,reviewRecordLane,isTechnicalReviewField,isShortInterfaceLabel,reviewLabelGroup,hasIndividualLabelException,restoreStoredReviewDraft} from './content-review-workflow.mjs';
 
 /** Self-contained local review UI. Previews copy only inert reading elements. */
 export function contentReviewPage(review) {
@@ -27,13 +27,14 @@ const isTechnicalReviewField=${isTechnicalReviewField.toString()};
 const isShortInterfaceLabel=${isShortInterfaceLabel.toString()};
 const reviewLabelGroup=${reviewLabelGroup.toString()};
 const hasIndividualLabelException=${hasIndividualLabelException.toString()};
+const restoreStoredReviewDraft=${restoreStoredReviewDraft.toString()};
 const review=JSON.parse(document.getElementById('review-data').textContent),key='star-wars-ffg.review.'+review.archiveSha256,$=id=>document.getElementById(id),allowed=new Set(['pending','human-origin','third-party-rights','technical-only','rewrite-required']);
 const scopes=reviewScopes(review),scopeMap=new Map(scopes.map(scope=>[scope.id,scope]));
 const lanes=new Map(review.entries.map(entry=>[entry.id,reviewRecordLane(entry)]));
 const labelGroup=reviewLabelGroup(review),labelIds=new Set(labelGroup.entryIds),labelEntries=review.entries.filter(entry=>labelIds.has(entry.id));
 const localizations={};for(const entry of review.entries.filter(entry=>entry.category==='English interface'))for(const occurrence of entry.occurrences)if(occurrence.path==='lang/en.json')localizations[occurrence.location.slice(1).replace(/~1/g,'/').replace(/~0/g,'~')]=entry.text;
 let saved={schemaVersion:1,archiveSha256:review.archiveSha256,reviewer:'',listingText:'',entries:{},scopeReviews:{},humanGates:{},labelReview:{state:'pending',reviewer:'',evidence:'',entryIds:labelGroup.entryIds},submissionReady:false},offset=0,labelOffset=0,filtered=[],focusEntry=null;
-try{const previous=localStorage.getItem(key);if(previous)saved=normalizeReviewDraft(review,JSON.parse(previous));}catch(error){$('message').textContent=error.message;}
+try{const previous=localStorage.getItem(key);if(previous){const restored=restoreStoredReviewDraft(review,JSON.parse(previous));saved=restored.draft;if(restored.coverageChanged){try{localStorage.setItem(key+'.before-label-bundle-update',previous);}catch{}$('message').textContent='The short-label list expanded. Existing answers and the earlier statement were retained; inspect the expanded list and record the shared statement again. Its evidence remains a draft until then.';}}}catch(error){$('message').textContent=error.message;}
 function save(){saved.reviewer=$('reviewer').value;saved.listingText=$('listing').value;saved.submissionReady=false;try{localStorage.setItem(key,JSON.stringify(saved));}catch{$('message').textContent='Browser storage unavailable. Export review JSON to retain decisions.';}}
 function node(tag,text,parent){const element=document.createElement(tag);if(text!==undefined)element.textContent=text;if(parent)parent.append(element);return element;}
 function appendViews(article,entry){const views=node('div',undefined,article);views.className='review-views';const source=node('div',undefined,views);source.className='source-pane';node('h4','Source',source);node('pre',entry.text,source);const pane=node('div',undefined,views);pane.className='reading-preview-pane';node('h4','Rendered reading view',pane);const preview=node('div',undefined,pane);preview.className='reading-preview';appendReadingPreview(preview,entry,localizations);if(preview.dataset.placeholders)node('small','Brackets mark dynamic values. Conditional branches are shown together.',pane).className='preview-note';}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reviewScopes, normalizeReviewDraft, reviewDraftIssues, reviewRecordLane, isShortInterfaceLabel, reviewLabelGroup } from '../scripts/content-review-workflow.mjs';
+import { reviewScopes, normalizeReviewDraft, reviewDraftIssues, reviewRecordLane, isShortInterfaceLabel, reviewLabelGroup, restoreStoredReviewDraft } from '../scripts/content-review-workflow.mjs';
 
 const review = {
   archiveSha256: 'a'.repeat(64),
@@ -143,7 +143,7 @@ test('reference rights use source evidence rather than per-record authorship req
 
 test('one bundle contains single- and two-word interface labels without exempting short prose or code', () => {
   const label = (text, extra = {}) => ({ id: text, text, category: 'English interface', occurrences: [{ path: 'lang/en.json', location: '/label' }], ...extra });
-  for (const text of ['Submit', 'Apply', 'Back', 'Save Changes', 'Ranged (Light)', 'Force-sensitive', 'Slot 1', 'Élan']) assert.equal(isShortInterfaceLabel(label(text)), true, text);
+  for (const text of ['Submit', 'Apply', 'Back', 'Save Changes', 'Ranged (Light)', 'Force-sensitive', 'Slot 1', 'Élan', 'Career ·', '· Manual:', 'Choose career…', 'Choose species...', 'Save & Close']) assert.equal(isShortInterfaceLabel(label(text)), true, text);
   for (const text of ['Save all changes', 'Read carefully.', '${name}', '{{name}}', '<b>Apply</b>', '.sf-control', 'SWFFG.Apply', '1']) assert.equal(isShortInterfaceLabel(label(text)), false, text);
   for (const category of ['Listing and manifest', 'Prepared guidance and rules text', 'Reference data and source metadata', 'Documentation']) assert.equal(isShortInterfaceLabel(label('Apply', { category })), false, category);
   assert.equal(isShortInterfaceLabel(label('Back', { category: 'Inline runtime text and code literals', occurrences: [{ path: 'src/dialog.mjs', reviewRole: 'interface-label' }] })), true);
@@ -186,4 +186,18 @@ test('shared label evidence does not swallow a rewrite decision or a replacement
     assert.equal(draft.entries.word.decision, value.decision);
     assert.equal(draft.entries.word.replacement, value.replacement);
   }
+});
+
+test('an expanded stored label bundle preserves all answers and its earlier statement as pending', () => {
+  const previous = normalizeReviewDraft(review, input({ listingText: 'Human listing retained', entries: { word: { decision: 'rewrite-required', evidence: 'Original exception', replacement: 'Dismiss' } }, labelReview: { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Original shared statement', entryIds: ['word'] } }));
+  const expanded = { ...review, entries: [...review.entries, { id: 'another-label', text: 'Choose career…', category: 'English interface', occurrences: [{ path: 'lang/en.json', location: '/career' }] }] };
+  const restored = restoreStoredReviewDraft(expanded, previous);
+  assert.equal(restored.coverageChanged, true);
+  assert.deepEqual(restored.draft.entries, previous.entries);
+  assert.equal(restored.draft.listingText, previous.listingText);
+  assert.equal(restored.draft.labelReview.evidence, previous.labelReview.evidence);
+  assert.equal(restored.draft.labelReview.state, 'pending');
+  assert.deepEqual(restored.draft.labelReview.entryIds, ['word', 'another-label']);
+  assert.equal(restored.draft.submissionReady, false);
+  for (const bad of [{ ...previous, archiveSha256: 'b'.repeat(64) }, { ...previous, labelReview: { ...previous.labelReview, entryIds: ['unknown'] } }]) assert.throws(() => restoreStoredReviewDraft(expanded, bad));
 });

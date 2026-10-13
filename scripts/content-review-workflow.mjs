@@ -28,9 +28,10 @@ export function isShortInterfaceLabel(entry) {
   if (reviewRecordLane(entry) !== 'prepared') return false;
   const labelSource = ['English interface', 'CSS interface labels', 'SVG accessible text'].includes(entry.category) ||
     (entry.category === 'Inline runtime text and code literals' && entry.occurrences.some(source => source.reviewRole === 'interface-label'));
-  const text = entry.text?.trim() ?? '';
-  return Boolean(labelSource && text && !/[\r\n]/u.test(text) && text.split(/\s+/u).length <= 2 &&
-    /\p{L}/u.test(text) && /^[\p{L}\p{M}\p{N}\s'’&()/+:%–—-]+$/u.test(text));
+  const text = entry.text?.trim().replace(/\.{3}/g, '…') ?? '';
+  const words = text.split(/\s+/u).filter(word => /[\p{L}\p{N}]/u.test(word));
+  return Boolean(labelSource && text && !/[\r\n]/u.test(text) && words.length <= 2 &&
+    /\p{L}/u.test(text) && /^[\p{L}\p{M}\p{N}\s'’&()/+:%·…–—-]+$/u.test(text));
 }
 
 export function reviewLabelGroup(review) {
@@ -91,6 +92,17 @@ export function normalizeReviewDraft(review, input) {
     labelReview: { state, reviewer: String(label.reviewer ?? ''), evidence: String(label.evidence ?? ''), entryIds: group.entryIds },
     submissionReady: false,
   };
+}
+
+/** A broadened local label list retains the old statement as a draft, never as new approval. */
+export function restoreStoredReviewDraft(review, input) {
+  try { return { draft: normalizeReviewDraft(review, input), coverageChanged: false }; }
+  catch (error) {
+    const group = reviewLabelGroup(review), ids = new Set(group.entryIds), previous = input?.labelReview;
+    if (!previous || !['pending', 'evidence-recorded'].includes(previous.state) || !Array.isArray(previous.entryIds) ||
+      previous.entryIds.length >= ids.size || new Set(previous.entryIds).size !== previous.entryIds.length || previous.entryIds.some(id => !ids.has(id))) throw error;
+    return { draft: normalizeReviewDraft(review, { ...input, labelReview: { ...previous, state: 'pending', entryIds: group.entryIds } }), coverageChanged: true };
+  }
 }
 
 /** Explain incomplete changed decisions without blocking a backup or creating approval. */
