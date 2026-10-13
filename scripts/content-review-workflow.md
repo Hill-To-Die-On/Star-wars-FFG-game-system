@@ -2,6 +2,10 @@
 
 `npm run review:content` prepares a local, archive-bound inventory. It is not a requirement to classify every technical literal independently. The standalone page supports source-level evidence, individual exceptions and a complete draft export.
 
+The current listing phase is **Beta**, selected by The User on 2026-10-13. Phase metadata does not change a reviewed ZIP's hash or saved answers. Earlier Alpha filenames remain usable; the page identifies an earlier archive designation separately and exports a Beta draft. Changing the text inside packaged documentation requires a new archive and an explicit reconciliation.
+
+The default authorship queue contains prepared in-module and listing text. Changelog, code, configuration and technical package documentation are outside that queue under Foundry AI policy section 4.4 and use the maintenance attestation. Repository material that is not shipped is absent from the inventory. Promotional copy remains subject to the marketing rule wherever used. Reference metadata/licences are grouped for rights review. Inline literals use source context to separate selectors, property access, compared constants and localization keys from prepared wording; unknown or mixed occurrences remain in the prepared queue. Word count alone never exempts a UI label. All routes are review purposes, not approvals.
+
 - **Export review JSON** always saves a structurally valid unfinished draft, including reviewer, listing, gates, source notes, per-record decisions and replacements. Missing evidence is listed in `reviewIssues` and never prevents a backup. `submissionReady` is always false.
 - **Check recorded decisions** identifies changed decisions that lack reviewer or evidence. Each issue links to its record. Pending inventory rows are allowed and are not automatically approved.
 - **Shared evidence by source** groups by exact file and category. Record a source, permission or authorship note once for that scope. An individual decision can refer to shared evidence when every occurrence is covered; explicit exceptions and replacements are retained. Source notes do not classify the underlying entries as human-authored or certify legal compliance.
@@ -9,6 +13,6 @@
 
 The existing `star-wars-ffg.review.<archiveSha256>` storage key and schema version 1 remain compatible with previous unfinished browser drafts. Imports reject another archive, unknown entries, decisions or source scopes. Before a valid import, the current draft is retained under `<key>.before-import` when storage is available.
 
-The generator, workflow scripts, tests and this development note are not shipped in the system ZIP. Regenerating only the review HTML from an unchanged archive leaves the package hash and existing review identities intact. Replacements to shipped content require a new archive and the release review described in `docs/alpha-listing.md`.
+The generator, workflow scripts, tests and this development note are not shipped in the system ZIP. Regenerating only review metadata/HTML from an unchanged archive leaves the package hash and every text ID intact. Replacements to shipped content require a new archive and the release review described in `docs/alpha-listing.md`.
 
-No wiki publication is needed for this tooling-only fix: the installed system, public instructions and released version are unchanged. Prepared candidate wiki copy remains pending its separate human review.
+The Beta phase change updates candidate wiki source labels alongside the roadmap and README. Publication remains a separate operation coordinated with the final release review; technical documentation does not require prepared-copy authorship sign-off. The public release is still 0.3.0.

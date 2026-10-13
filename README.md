@@ -8,7 +8,7 @@ Original sheets and interface, with familiar narrative dice symbols from an attr
 
 [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) · [First launch and settings](docs/onboarding-settings.md)
 
-The unreleased **0.4.2 Alpha listing candidate** is English only. Sixteen other translations remain in source for later fluent review and are excluded from the Alpha ZIP. The published release remains **0.3.0**; the manifest below installs that release until a reviewed candidate is published. Use backups and disposable worlds for Alpha evaluation. Human content/authorship, maintainer and independent GM sign-offs remain required; see [Alpha submission gates](docs/alpha-listing.md).
+The unreleased **0.4.2 Beta listing candidate** is English only. Sixteen other translations remain in source for later fluent review and are excluded from the Beta ZIP. The published release remains **0.3.0**; the manifest below installs that release until a reviewed candidate is published. Use backups and disposable worlds for Beta evaluation. Human content/authorship, maintainer and independent GM sign-offs remain required; see [Beta submission gates](docs/alpha-listing.md).
 
 The candidate offers a first-launch copyright reminder, a GM bookshelf saved to the world (with optional browser remembrance), and a skippable/replayable interface tour. Settings use native Foundry controls in six logical groups; play windows and journals use the system presentation.
 

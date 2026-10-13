@@ -1,6 +1,6 @@
 # Development template compiler advisory review
 
-Resolved 2026-10-12 with TLS verification enabled and the Windows system certificate store. The development compiler is pinned to **Handlebars 4.7.10** in the manifest and lockfile. A fresh `npm audit` reports **zero vulnerabilities**. The earlier 4.7.9 critical advisory family is no longer a pending Alpha review gate.
+Resolved 2026-10-12 with TLS verification enabled and the Windows system certificate store. The development compiler is pinned to **Handlebars 4.7.10** in the manifest and lockfile. A fresh `npm audit` reports **zero vulnerabilities**. The earlier 4.7.9 critical advisory family is no longer a pending Beta review gate.
 
 Handlebars is a development dependency for static checks and browser fixtures. The release ZIP contains no npm dependencies or bundled Handlebars compiler; native Foundry supplies its own template engine. This review does not assess or modify Foundry's engine.
 

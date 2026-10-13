@@ -1,6 +1,6 @@
 # NASA backdrop rights review
 
-Reviewed 2026-10-12 for the free, English-only 0.4.2 Alpha candidate. This is a source and usage review, not a statement that NASA has approved this project.
+Source and usage reviewed 2026-10-12 for the free, English-only 0.4.2 candidate. The User selected the Beta listing phase on 2026-10-13; the image and proposed free background use are unchanged. This is not a statement that NASA has approved this project.
 
 ## Result
 

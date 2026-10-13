@@ -16,6 +16,6 @@ test("wiki navigation resolves to committed pages and distinguishes the candidat
   const home=await readFile(new URL("../docs/wiki/Home.md",import.meta.url),"utf8");
   const {version}=JSON.parse(await readFile(new URL('../system.json',import.meta.url),'utf8'));
   assert.match(home,/published release is \*\*0\.3\.0/);
-  assert.ok(home.includes(`**${version} Alpha listing candidate**`));
+  assert.ok(home.includes(`**${version} Beta listing candidate**`));
   assert.match(home,/English only/);
 });

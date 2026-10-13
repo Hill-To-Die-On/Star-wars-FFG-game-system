@@ -11,6 +11,8 @@ const template='<p>{{localize "SWFFG.Close"}} {{actor.name}}</p>{{#if permitted}
 const review=createContentReview({
  'system.json':encode(JSON.stringify({id:'star-wars-ffg',version:'0.4.2',title:'Review test',description:'Review test',languages:[{lang:'en',path:'lang/en.json'}]})),
  'lang/en.json':encode('{"SWFFG.Close":"Close"}'),
+ 'CHANGELOG.md':encode('# Changelog\n\nTechnical implementation history.'),
+ 'src/selector.mjs':encode('root.querySelector(".sf-control");'),
  'templates/example.hbs':encode(template),
  'README.md':encode('# Review guide\n\nRead **carefully** with `source` beside the preview.\n\n- First item\n- Second item\n\n| Label | Detail |\n| --- | --- |\n| Row | Row detail |\n\n```html\n<button>Example copy</button>\n```'),
 },{archiveSha256:'f'.repeat(64)});
@@ -22,6 +24,13 @@ try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',error=>errors.push(error.message));
  await page.route('**/*',route=>{if(route.request().url().startsWith(url))return route.continue();externalRequests.push(route.request().url());return route.abort();});
  await page.goto(url);await page.locator('#category').selectOption('Complete interface templates');
+ assert.match(await page.locator('h1').first().innerText(),/Foundry Beta/);
+ await page.locator('#review-lane').selectOption('prepared');
+ assert.equal(await page.locator('#entries > article[data-review-lane="maintenance"]').count(),0);
+ await page.locator('#review-lane').selectOption('maintenance');
+ assert.ok(await page.getByText('# Changelog\n\nTechnical implementation history.',{exact:true}).count()>0);
+ assert.ok(await page.getByText('.sf-control',{exact:true}).count()>0);
+ await page.locator('#category').selectOption('Complete interface templates');
  const source=page.locator('.source-pane'),preview=page.locator('.reading-preview');
  assert.equal(await source.locator('pre').textContent(),template);
  assert.match(await preview.innerText(),/Close \[actor\.name\]/);assert.match(await preview.innerText(),/Owner copy/);assert.match(await preview.innerText(),/Observer copy/);
@@ -35,9 +44,11 @@ try {
  await page.locator('#view-mode').selectOption('source');assert.equal(await source.isVisible(),true);assert.equal(await preview.isVisible(),false);
  await page.locator('#view-mode').selectOption('both');
  await page.locator('#category').selectOption('Documentation');
+ await page.locator('#search').fill('README.md');
  assert.equal(await preview.locator('h1').innerText(),'Review guide');assert.equal(await preview.locator('strong').innerText(),'carefully');
  assert.equal(await preview.locator('li').count(),2);assert.equal(await preview.locator('tbody td').last().innerText(),'Row detail');
  assert.equal(await preview.getByRole('button',{name:'Example copy'}).isDisabled(),true);
+ await page.locator('#search').fill('');
  await page.locator('#category').selectOption('English interface');assert.equal(await preview.innerText(),'Close');
  await page.locator('#category').selectOption('Complete interface templates');
  await page.setViewportSize({width:520,height:900});
@@ -46,8 +57,9 @@ try {
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal page overflow');
  // Reproduce a legacy draft that the old export rejected. The same storage key must survive.
  const word=review.entries.find(entry=>entry.category==='English interface');
+ const changelog=review.entries.find(entry=>entry.occurrences.some(source=>source.path==='CHANGELOG.md'));
  const legacy={schemaVersion:1,archiveSha256:review.archiveSha256,reviewer:'The User',listingText:'Human-written listing saved before the export fix.',
-   entries:{[word.id]:{decision:'human-origin',evidence:'',replacement:'Original unfinished replacement'}},
+   entries:{[word.id]:{decision:'human-origin',evidence:'',replacement:'Original unfinished replacement'},[changelog.id]:{decision:'human-origin',evidence:'',replacement:''}},
    humanGates:Object.fromEntries(review.humanGates.map(gate=>[gate.id,gate.id==='maintainability'?'correct':'complete'])),submissionReady:true};
  await page.evaluate(draft=>localStorage.setItem('star-wars-ffg.review.'+draft.archiveSha256,JSON.stringify(draft)),legacy);
  await page.reload();
@@ -58,9 +70,9 @@ try {
    const path=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui',name);await mkdir(resolve(path,'..'),{recursive:true});await file.saveAs(path);
    return JSON.parse(await (await import('node:fs/promises')).readFile(path,'utf8'));};
  const draft=await download('unfinished-draft.json');
- assert.equal(draft.submissionReady,false);assert.equal(draft.exportKind,'draft');assert.equal(draft.listingText,legacy.listingText);
+ assert.equal(draft.submissionReady,false);assert.equal(draft.exportKind,'draft');assert.equal(draft.releasePhase,'Beta');assert.equal(draft.listingText,legacy.listingText);
  assert.deepEqual(draft.humanGates,legacy.humanGates);assert.deepEqual(draft.entries,legacy.entries);
- assert.equal(draft.reviewIssues[0].entryId,word.id);assert.match(draft.reviewIssues[0].message,/lang\/en\.json.*evidence/);
+ assert.equal(draft.reviewIssues.length,1,'changelog does not require prepared-copy authorship evidence');assert.equal(draft.reviewIssues[0].entryId,word.id);assert.match(draft.reviewIssues[0].message,/lang\/en\.json.*evidence/);
  await page.getByRole('button',{name:'Show affected record',exact:true}).click();
  assert.equal(await page.locator('#entries > article').count(),1);assert.equal(await page.getByLabel('Decision for '+word.id,{exact:true}).inputValue(),'human-origin');
  const scope=JSON.stringify(['lang/en.json','English interface']);

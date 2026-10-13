@@ -6,14 +6,16 @@ const decoder = new TextDecoder();
 const hash = value => createHash("sha256").update(value).digest("hex");
 
 /** Inventory the actual ZIP, retaining exact strings and every source occurrence. */
-export function createContentReview(files, { archiveSha256 } = {}) {
+export function createContentReview(files, { archiveSha256, releasePhase = 'Beta' } = {}) {
+  if (!['Alpha', 'Beta'].includes(releasePhase)) throw Error('Unknown release phase.');
   const manifest = JSON.parse(decoder.decode(files["system.json"]));
+  const archivePhase = decoder.decode(files['README.md'] ?? new Uint8Array()).match(/\b(Alpha|Beta) listing candidate\b/i)?.[1] ?? null;
   const entries = new Map(), inventory = [];
-  const add = (category, text, path, location) => {
+  const add = (category, text, path, location, reviewRole) => {
     if (typeof text !== "string" || !text.trim()) return;
     const sha256 = hash(text), id = hash(category + "\0" + text);
     if (!entries.has(id)) entries.set(id, {id, sha256, category, text, occurrences:[]});
-    entries.get(id).occurrences.push({path, location});
+    entries.get(id).occurrences.push({path, location, ...(reviewRole ? {reviewRole} : {})});
   };
   for (const path of Object.keys(files).sort()) {
     const bytes = files[path], text = decoder.decode(bytes);
@@ -39,19 +41,26 @@ export function createContentReview(files, { archiveSha256 } = {}) {
       file.review="text-inventoried";
     } else if (/\.(?:mjs|js)$/i.test(path) && !path.includes("/vendor/")) {
       const source = parse(text, {ecmaVersion:"latest",sourceType:"module",locations:true,allowHashBang:true});
-      const addNode = (node,value) => {
-        add("Inline runtime text and code literals", value, path, `L${node.loc.start.line}:${node.loc.start.column+1}`);
+      const addNode = (node,value,parent) => {
+        const method = parent?.callee?.property?.name;
+        const firstArgument = parent?.type === 'CallExpression' && parent.arguments[0] === node;
+        const selectorOrAttribute = firstArgument && ['querySelector','querySelectorAll','closest','matches','getAttribute','setAttribute','removeAttribute','hasAttribute','createElement','addEventListener','removeEventListener'].includes(method);
+        const propertyAccess = parent?.type === 'MemberExpression' && parent.property === node;
+        const comparedConstant = parent?.type === 'BinaryExpression' && ['==','===','!=','!=='].includes(parent.operator);
+        const technicalReference = /^SWFFG\.[\w.]+$/.test(value) || /^#[\da-f]{3,8}$/i.test(value);
+        const reviewRole = selectorOrAttribute || propertyAccess || comparedConstant || technicalReference ? 'technical' : 'prepared-candidate';
+        add("Inline runtime text and code literals", value, path, `L${node.loc.start.line}:${node.loc.start.column+1}`, reviewRole);
       };
       const visit = (node,parent) => {
         if (!node || typeof node!=="object" || !node.type) return;
         if (node.type==="TemplateLiteral") {
-          addNode(node,node.quasis.map((part,index)=>(part.value.cooked??part.value.raw)+(node.expressions[index]?"${"+text.slice(node.expressions[index].start,node.expressions[index].end)+"}":"")).join(""));
+          addNode(node,node.quasis.map((part,index)=>(part.value.cooked??part.value.raw)+(node.expressions[index]?"${"+text.slice(node.expressions[index].start,node.expressions[index].end)+"}":"")).join(""),parent);
           for (const expression of node.expressions) visit(expression,node);
           return;
         }
         if (node.type==="Literal" && typeof node.value==="string") {
           const moduleReference=["ImportDeclaration","ExportNamedDeclaration","ExportAllDeclaration","ImportExpression"].includes(parent?.type)&&parent.source===node;
-          if (!moduleReference) addNode(node,node.value);
+          if (!moduleReference) addNode(node,node.value,parent);
         }
         for (const [key,value] of Object.entries(node)) {
           if (["loc","start","end"].includes(key)) continue;
@@ -70,12 +79,12 @@ export function createContentReview(files, { archiveSha256 } = {}) {
     } else if (!/\.(?:mjs|js)$/i.test(path)) file.review="asset-provenance";
   }
   return {
-    schemaVersion:1, archiveSha256, version:manifest.version, systemId:manifest.id,
+    schemaVersion:1, archiveSha256, releasePhase, archivePhase, version:manifest.version, systemId:manifest.id,
     advertisedLocales:manifest.languages.map(language=>language.lang),
     files:inventory, entries:[...entries.values()].sort((a,b)=>a.category.localeCompare(b.category)||a.occurrences[0].path.localeCompare(b.occurrences[0].path)||a.occurrences[0].location.localeCompare(b.occurrences[0].location)),
     humanGates:[
       {id:"prepared-authorship",title:"Prepared text has human authorship evidence; AI-origin text is replaced by independently human-authored text"},
-      {id:"listing-authorship",title:"The User writes the final Foundry listing description and confirms its Alpha limitations"},
+      {id:"listing-authorship",title:"The User writes the final Foundry listing description and confirms its "+releasePhase+" limitations"},
       {id:"data-permission",title:"Retain the creator's publication permission and confirm scope for the shipped database and derivatives"},
       {id:"asset-provenance",title:"Confirm human origin and redistribution rights for all raster assets and retained font/symbol licences"},
       {id:"maintainability",title:"The maintainer can understand, explain, modify and maintain all submitted code"},

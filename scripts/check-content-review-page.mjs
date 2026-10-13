@@ -3,7 +3,7 @@ import { pathToFileURL } from 'node:url';
 import { resolve,join } from 'node:path';
 import { readFile,writeFile,unlink } from 'node:fs/promises';
 import assert from 'node:assert/strict';
-const output=resolve(process.argv.find(value=>value.startsWith('--output='))?.slice(9)??'.local/alpha-review');
+const output=resolve(process.argv.find(value=>value.startsWith('--output='))?.slice(9)??'.local/beta-review');
 const browser=await chromium.launch({headless:true});
 const errors=[];
 try {
@@ -11,6 +11,9 @@ try {
   await page.goto(pathToFileURL(join(output,'content-review.html')).href);await page.locator('#entries > article').first().waitFor();
   const review=JSON.parse(await readFile(join(output,'content-review.json'),'utf8'));
   assert.ok((await page.locator('#identity').innerText()).includes(review.archiveSha256));
+  assert.match(await page.locator('h1').first().innerText(),/Foundry Beta/);
+  assert.equal(await page.locator('#review-lane').inputValue(),'prepared');
+  assert.equal(await page.locator('#entries > article[data-review-lane="maintenance"]').count(),0);
   assert.equal(await page.locator('#entries > article').count(),40);
   assert.equal(await page.locator('#entries .source-pane').count(),40);
   assert.equal(await page.locator('#entries .reading-preview').count(),40);

@@ -10,7 +10,7 @@ Create a Character actor, then choose **Manual creation** or **Guide me**. Both 
 4. Review equipment, credits and XP. Finish the one-time starting pocket-money step where required.
 5. Buy starting talents and resolve outstanding source decisions before Ready for play.
 
-In the 0.4.2 Alpha candidate, drag the sheet's lower-right resize handle to keep it beside the canvas. Narrow sheets automatically use a compact header, wrapping section tabs and fewer skill columns; skill buttons still open the editable pool. Talent trees keep a readable minimum width and scroll within their panel. The layout follows the sheet width, not the monitor, and expands again when enlarged.
+In the 0.4.2 Beta candidate, drag the sheet's lower-right resize handle to keep it beside the canvas. Narrow sheets automatically use a compact header, wrapping section tabs and fewer skill columns; skill buttons still open the editable pool. Talent trees keep a readable minimum width and scroll within their panel. The layout follows the sheet width, not the monitor, and expands again when enlarged.
 
 The sheet exposes skill pools, custom skills, motivations, multiple specialization trees and signature abilities. Clicking an eligible talent node spends XP through the authority workflow and records the purchase. Only supported, configured effects apply automatically; check Help & rules coverage for the actual effect and verification status.
 

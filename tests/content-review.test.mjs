@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createContentReview, reviewDecisions } from "../scripts/content-review-policy.mjs";
 import { contentReviewPage } from "../scripts/content-review-page.mjs";
+import { reviewRecordLane } from '../scripts/content-review-workflow.mjs';
 
 const encode = value => new TextEncoder().encode(value);
 const files = {
@@ -52,4 +53,12 @@ test("review page keeps embedded hostile text inert and retains it exactly as da
   assert.ok(!html.includes(hostile));
   const embedded=html.match(/id="review-data">(.*?)<\/script>/s)[1];
   assert.ok(JSON.parse(embedded).entries.some(entry=>entry.text===hostile));
+});
+
+test('literal context separates selectors and property access from one-word UI labels', () => {
+  const source = 'const field=actor["system"];root.querySelector("button");node.setAttribute("aria-label","Close");const label="Close";const message=`Ready ${name}`;const key="SWFFG.Close";if(kind==="character"){}';
+  const inventory = createContentReview({ ...files, 'src/dialog.mjs': encode(source) }, { archiveSha256: 'd'.repeat(64) });
+  const entry = text => inventory.entries.find(item => item.category === 'Inline runtime text and code literals' && item.text === text);
+  for (const text of ['system', 'button', 'aria-label', 'SWFFG.Close', 'character']) assert.equal(reviewRecordLane(entry(text)), 'maintenance', text);
+  for (const text of ['Close', 'Ready ${name}']) assert.equal(reviewRecordLane(entry(text)), 'prepared', text);
 });

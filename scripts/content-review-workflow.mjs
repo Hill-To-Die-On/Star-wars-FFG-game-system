@@ -1,3 +1,19 @@
+/** Review purpose follows content and source context, never word count or an approval. */
+export function reviewRecordLane(entry) {
+  if (entry.category === 'Documentation') {
+    return entry.occurrences.some(source => /(?:^|\/)(?:lore|adventures?|stories|journals?)(?:\/|\.)/i.test(source.path)) ? 'prepared' : 'maintenance';
+  }
+  if (entry.category === 'Configuration and schema text') return 'maintenance';
+  if (entry.category === 'Inline runtime text and code literals') {
+    return entry.occurrences.length && entry.occurrences.every(source => source.reviewRole === 'technical') ? 'maintenance' : 'prepared';
+  }
+  if (entry.category === 'Licences and attribution') return 'rights';
+  if (entry.category === 'Reference data and source metadata') {
+    return entry.occurrences.some(source => /\/(?:content|description|summary|guidance|explanation|warning|note|effect|prompt|text)(?:\/|$)/i.test(source.location)) ? 'prepared' : 'rights';
+  }
+  return 'prepared';
+}
+
 /** Source scopes preserve every occurrence; grouping is not an authorship decision. */
 export function reviewScopes(review) {
   const groups = new Map();
@@ -33,7 +49,7 @@ export function normalizeReviewDraft(review, input) {
   for (const id of Object.keys(gates)) if (!gateIds.has(id)) throw Error('Unknown human gate.');
   return {
     schemaVersion: 1, archiveSha256: review.archiveSha256, reviewer: String(input.reviewer ?? ''),
-    listingText: String(input.listingText ?? ''), entries, scopeReviews,
+    listingText: String(input.listingText ?? ''), releasePhase: review.releasePhase ?? input.releasePhase ?? 'Beta', entries, scopeReviews,
     humanGates: Object.fromEntries(Object.entries(gates).map(([id, value]) => [id, String(value ?? '')])),
     submissionReady: false,
   };
@@ -46,6 +62,9 @@ export function reviewDraftIssues(review, input) {
   for (const [id, value] of Object.entries(draft.entries)) {
     if (value.decision === 'pending') continue;
     const entry = byId.get(id);
+    // Code and technical package documentation use the maintainer attestation,
+    // not the prepared-copy authorship check. Retain their old answers in the draft.
+    if (reviewRecordLane(entry) === 'maintenance') continue;
     const sourceEvidence = entry.occurrences.every(occurrence => {
       const source = draft.scopeReviews[JSON.stringify([occurrence.path, entry.category])];
       return source?.state === 'evidence-recorded' && source.reviewer.trim() && source.evidence.trim();

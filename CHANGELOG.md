@@ -2,7 +2,7 @@
 
 ## 0.4.2 — Unreleased
 
-### Alpha listing preparation
+### Beta listing preparation
 
 - Reconcile the listing candidate at 0.4.2 while the public release remains 0.3.0. Advertise and package English only; retain sixteen other translation files in source for later fluent review.
 - Generate a complete, archive-bound text review packet with source occurrences, file hashes, side-by-side source/rendered reading views and explicit human authorship, asset, data, maintainability and independent GM gates. It never certifies approval automatically.
