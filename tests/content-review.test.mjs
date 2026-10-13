@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createContentReview, reviewDecisions } from "../scripts/content-review-policy.mjs";
 import { contentReviewPage } from "../scripts/content-review-page.mjs";
-import { reviewRecordLane } from '../scripts/content-review-workflow.mjs';
+import { reviewRecordLane, isShortInterfaceLabel } from '../scripts/content-review-workflow.mjs';
 
 const encode = value => new TextEncoder().encode(value);
 const files = {
@@ -61,4 +61,6 @@ test('literal context separates selectors and property access from one-word UI l
   const entry = text => inventory.entries.find(item => item.category === 'Inline runtime text and code literals' && item.text === text);
   for (const text of ['star-wars-ffg-advancement-trees', 'system', 'button', 'aria-label', 'SWFFG.Close', 'character']) assert.equal(reviewRecordLane(entry(text)), 'maintenance', text);
   for (const text of ['Close', 'Ready ${name}']) assert.equal(reviewRecordLane(entry(text)), 'prepared', text);
+  assert.equal(isShortInterfaceLabel(entry('Close')), true, 'known label/accessible-label context joins the shared bundle');
+  assert.equal(isShortInterfaceLabel(entry('Ready ${name}')), false, 'dynamic wording remains separate');
 });

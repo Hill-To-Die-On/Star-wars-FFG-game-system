@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reviewScopes, normalizeReviewDraft, reviewDraftIssues, reviewRecordLane } from '../scripts/content-review-workflow.mjs';
+import { reviewScopes, normalizeReviewDraft, reviewDraftIssues, reviewRecordLane, isShortInterfaceLabel, reviewLabelGroup } from '../scripts/content-review-workflow.mjs';
 
 const review = {
   archiveSha256: 'a'.repeat(64),
@@ -139,4 +139,51 @@ test('reference rights use source evidence rather than per-record authorship req
   assert.deepEqual(reviewDraftIssues(inventory, draft), []);
   assert.equal(draft.entries[entry.id].replacement, 'Legacy note retained');
   assert.equal(draft.submissionReady, false);
+});
+
+test('one bundle contains single- and two-word interface labels without exempting short prose or code', () => {
+  const label = (text, extra = {}) => ({ id: text, text, category: 'English interface', occurrences: [{ path: 'lang/en.json', location: '/label' }], ...extra });
+  for (const text of ['Submit', 'Apply', 'Back', 'Save Changes', 'Ranged (Light)', 'Force-sensitive', 'Slot 1', 'Élan']) assert.equal(isShortInterfaceLabel(label(text)), true, text);
+  for (const text of ['Save all changes', 'Read carefully.', '${name}', '{{name}}', '<b>Apply</b>', '.sf-control', 'SWFFG.Apply', '1']) assert.equal(isShortInterfaceLabel(label(text)), false, text);
+  for (const category of ['Listing and manifest', 'Prepared guidance and rules text', 'Reference data and source metadata', 'Documentation']) assert.equal(isShortInterfaceLabel(label('Apply', { category })), false, category);
+  assert.equal(isShortInterfaceLabel(label('Back', { category: 'Inline runtime text and code literals', occurrences: [{ path: 'src/dialog.mjs', reviewRole: 'interface-label' }] })), true);
+  assert.equal(isShortInterfaceLabel(label('Back', { category: 'Inline runtime text and code literals', occurrences: [{ path: 'src/dialog.mjs', reviewRole: 'interface-label' }, { path: 'src/phrases.mjs', reviewRole: 'prepared-candidate' }] })), true, 'a known label retains all of its shared source occurrences in the bundle');
+  assert.equal(isShortInterfaceLabel(review.entries[0]), false, 'an unknown runtime literal is not assumed to be a label');
+  assert.deepEqual(reviewLabelGroup(review).entryIds, ['word']);
+});
+
+test('one label statement covers its exact members while retaining individual decisions and longer copy', () => {
+  const group = reviewLabelGroup(review);
+  const entries = { word: { decision: 'human-origin', evidence: '', replacement: '' }, prose: { decision: 'human-origin', evidence: '', replacement: '' } };
+  const draft = normalizeReviewDraft(review, input({ entries, labelReview: { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Human interface catalogue history covers the included labels.', entryIds: group.entryIds } }));
+  assert.deepEqual(draft.entries, entries);
+  assert.deepEqual(draft.labelReview.entryIds, ['word']);
+  assert.deepEqual(reviewDraftIssues(review, draft).map(issue => issue.entryId), ['prose']);
+  assert.equal(draft.submissionReady, false);
+});
+
+test('legacy drafts acquire an unfinished label bundle without inventing human evidence', () => {
+  const entries = { word: { decision: 'rewrite-required', evidence: 'Unknown origin', replacement: 'Dismiss' } };
+  const draft = normalizeReviewDraft(review, input({ entries }));
+  assert.deepEqual(draft.entries, entries);
+  assert.deepEqual(draft.labelReview, { state: 'pending', reviewer: '', evidence: '', entryIds: ['word'] });
+  assert.equal(draft.submissionReady, false);
+});
+
+test('a recorded label statement requires identity and evidence and cannot silently change coverage', () => {
+  const labelReview = { state: 'evidence-recorded', reviewer: '', evidence: '', entryIds: ['word'] };
+  assert.equal(reviewDraftIssues(review, input({ labelReview }))[0].kind, 'label-evidence');
+  for (const extra of [{ entryIds: [] }, { entryIds: ['word', 'prose'] }, { entryIds: ['word', 'word'] }, { state: 'approved-by-ai' }]) {
+    assert.throws(() => normalizeReviewDraft(review, input({ labelReview: { ...labelReview, ...extra } })), /label/i);
+  }
+});
+
+test('shared label evidence does not swallow a rewrite decision or a replacement that needs individual evidence', () => {
+  const labelReview = { state: 'evidence-recorded', reviewer: 'The User', evidence: 'Human source for the other labels.', entryIds: ['word'] };
+  for (const value of [{ decision: 'rewrite-required', replacement: '' }, { decision: 'human-origin', replacement: 'Dismiss' }, { decision: 'third-party-rights', replacement: '' }]) {
+    const draft = normalizeReviewDraft(review, input({ labelReview, entries: { word: { ...value, evidence: '' } } }));
+    assert.equal(reviewDraftIssues(review, draft)[0].entryId, 'word');
+    assert.equal(draft.entries.word.decision, value.decision);
+    assert.equal(draft.entries.word.replacement, value.replacement);
+  }
 });

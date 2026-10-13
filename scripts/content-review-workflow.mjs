@@ -23,6 +23,26 @@ export function reviewRecordLane(entry) {
   return 'prepared';
 }
 
+/** Bundle short interface wording for shared evidence; word count is not an exemption. */
+export function isShortInterfaceLabel(entry) {
+  if (reviewRecordLane(entry) !== 'prepared') return false;
+  const labelSource = ['English interface', 'CSS interface labels', 'SVG accessible text'].includes(entry.category) ||
+    (entry.category === 'Inline runtime text and code literals' && entry.occurrences.some(source => source.reviewRole === 'interface-label'));
+  const text = entry.text?.trim() ?? '';
+  return Boolean(labelSource && text && !/[\r\n]/u.test(text) && text.split(/\s+/u).length <= 2 &&
+    /\p{L}/u.test(text) && /^[\p{L}\p{M}\p{N}\s'’&()/+:%–—-]+$/u.test(text));
+}
+
+export function reviewLabelGroup(review) {
+  return { id: 'short-interface-labels', title: 'Single- and two-word interface labels',
+    entryIds: review.entries.filter(isShortInterfaceLabel).map(entry => entry.id) };
+}
+
+/** Explicit rewrites, replacements and other classifications remain individual exceptions. */
+export function hasIndividualLabelException(value) {
+  return Boolean(value && ((value.decision !== 'pending' && value.decision !== 'human-origin') || value.replacement?.trim()));
+}
+
 /** Source scopes preserve every occurrence; grouping is not an authorship decision. */
 export function reviewScopes(review) {
   const groups = new Map();
@@ -56,10 +76,19 @@ export function normalizeReviewDraft(review, input) {
   const gates = object(input.humanGates, 'human gates');
   const gateIds = new Set(review.humanGates.map(gate => gate.id));
   for (const id of Object.keys(gates)) if (!gateIds.has(id)) throw Error('Unknown human gate.');
+  const group = reviewLabelGroup(review), groupIds = new Set(group.entryIds), label = object(input.labelReview, 'short-label review');
+  const state = label.state ?? 'pending';
+  if (!['pending', 'evidence-recorded'].includes(state)) throw Error('Unknown short-label review state.');
+  if ((state === 'evidence-recorded' || label.entryIds !== undefined) &&
+    (!Array.isArray(label.entryIds) || label.entryIds.length !== group.entryIds.length ||
+      new Set(label.entryIds).size !== group.entryIds.length || label.entryIds.some(id => !groupIds.has(id)))) {
+    throw Error('Short-label review coverage does not match this archive inventory.');
+  }
   return {
     schemaVersion: 1, archiveSha256: review.archiveSha256, reviewer: String(input.reviewer ?? ''),
     listingText: String(input.listingText ?? ''), releasePhase: review.releasePhase ?? input.releasePhase ?? 'Beta', entries, scopeReviews,
     humanGates: Object.fromEntries(Object.entries(gates).map(([id, value]) => [id, String(value ?? '')])),
+    labelReview: { state, reviewer: String(label.reviewer ?? ''), evidence: String(label.evidence ?? ''), entryIds: group.entryIds },
     submissionReady: false,
   };
 }
@@ -68,6 +97,8 @@ export function normalizeReviewDraft(review, input) {
 export function reviewDraftIssues(review, input) {
   const draft = normalizeReviewDraft(review, input), issues = [];
   const byId = new Map(review.entries.map(entry => [entry.id, entry]));
+  const labels = new Set(draft.labelReview.entryIds), labelEvidence = draft.labelReview.state === 'evidence-recorded' &&
+    draft.labelReview.reviewer.trim() && draft.labelReview.evidence.trim();
   for (const [id, value] of Object.entries(draft.entries)) {
     if (value.decision === 'pending') continue;
     const entry = byId.get(id);
@@ -78,11 +109,15 @@ export function reviewDraftIssues(review, input) {
       const source = draft.scopeReviews[JSON.stringify([occurrence.path, entry.category])];
       return source?.state === 'evidence-recorded' && source.reviewer.trim() && source.evidence.trim();
     });
-    if (!draft.reviewer.trim() || (!value.evidence.trim() && !sourceEvidence)) {
-      const missing = [!draft.reviewer.trim() && 'reviewer identity', !value.evidence.trim() && !sourceEvidence && 'authorship or classification evidence'].filter(Boolean);
+    const bundledEvidence = labelEvidence && labels.has(id) && !hasIndividualLabelException(value);
+    if (!draft.reviewer.trim() || (!value.evidence.trim() && !sourceEvidence && !bundledEvidence)) {
+      const missing = [!draft.reviewer.trim() && 'reviewer identity', !value.evidence.trim() && !sourceEvidence && !bundledEvidence && 'authorship or classification evidence'].filter(Boolean);
       issues.push({ kind: 'entry-evidence', entryId: id, path: entry.occurrences[0].path,
         message: entry.occurrences[0].path + ' — ' + entry.text.slice(0, 100) + ': missing ' + missing.join(' and ') + '.' });
     }
+  }
+  if (draft.labelReview.state === 'evidence-recorded' && !labelEvidence) {
+    issues.push({ kind: 'label-evidence', groupId: 'short-interface-labels', message: 'The shared short-label statement needs a named reviewer and provenance evidence.' });
   }
   const sourceScopes = new Map(reviewScopes(review).map(source => [source.id, source]));
   for (const [id, value] of Object.entries(draft.scopeReviews)) {

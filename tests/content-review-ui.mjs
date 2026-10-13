@@ -5,12 +5,13 @@ import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
 import {createContentReview} from '../scripts/content-review-policy.mjs';
 import {contentReviewPage} from '../scripts/content-review-page.mjs';
+import {reviewLabelGroup} from '../scripts/content-review-workflow.mjs';
 
 const encode=value=>new TextEncoder().encode(value);
 const template='<p>{{localize "SWFFG.Close"}} {{actor.name}}</p>{{#if permitted}}Owner copy{{else}}Observer copy{{/if}}<button onclick="globalThis.previewCompromised=true">Confirm copy</button><script>globalThis.previewCompromised=true</script><img src="https://example.invalid/image" onerror="globalThis.previewCompromised=true" alt="Portrait"><iframe src="https://example.invalid/frame"></iframe><a href="https://example.invalid/link">Source link</a><svg onload="globalThis.previewCompromised=true"><text>Injected SVG</text></svg>';
 const review=createContentReview({
  'system.json':encode(JSON.stringify({id:'star-wars-ffg',version:'0.4.2',title:'Review test',description:'Review test',languages:[{lang:'en',path:'lang/en.json'}]})),
- 'lang/en.json':encode('{"SWFFG.Close":"Close"}'),
+ 'lang/en.json':encode(JSON.stringify({'SWFFG.Close':'Close','SWFFG.Back':'Back','SWFFG.Save':'Save Changes','SWFFG.Instructions':'Read the result'})),
  'CHANGELOG.md':encode('# Changelog\n\nTechnical implementation history.'),
  'src/selector.mjs':encode('root.querySelector(".sf-control");'),
  'src/format.mjs':encode('export const ADVANCEMENT_FORMAT="star-wars-ffg-advancement-trees";'),
@@ -25,7 +26,15 @@ const errors=[],externalRequests=[];
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',error=>errors.push(error.message));
  await page.route('**/*',route=>{if(route.request().url().startsWith(url))return route.continue();externalRequests.push(route.request().url());return route.abort();});
- await page.goto(url);await page.locator('#category').selectOption('Complete interface templates');
+ await page.goto(url);
+ assert.equal(await page.getByRole('heading',{name:'Single- and two-word interface labels',exact:true}).count(),1,'short labels share one review statement');
+ assert.equal(await page.locator('#short-label-evidence').count(),1);
+ assert.equal(await page.locator('#show-label-records').isChecked(),false);
+ await page.locator('#category').selectOption('English interface');
+ assert.deepEqual(await page.locator('#entries .source-pane pre').allTextContents(),['Read the result'],'short labels leave the main review queue');
+ await page.locator('#short-label-members').evaluate(element=>{element.open=true;});
+ assert.deepEqual((await page.locator('#short-label-list .label-wording').allTextContents()).sort(),['Back','Close','Save Changes']);
+ await page.locator('#category').selectOption('Complete interface templates');
  assert.match(await page.locator('h1').first().innerText(),/Foundry Beta/);
  await page.locator('#review-lane').selectOption('prepared');
  assert.equal(await page.locator('#entries > article[data-review-lane="maintenance"]').count(),0);
@@ -66,14 +75,14 @@ try {
  assert.equal(await preview.locator('li').count(),2);assert.equal(await preview.locator('tbody td').last().innerText(),'Row detail');
  assert.equal(await preview.getByRole('button',{name:'Example copy'}).isDisabled(),true);
  await page.locator('#search').fill('');
- await page.locator('#review-lane').selectOption('prepared');await page.locator('#category').selectOption('English interface');assert.equal(await preview.innerText(),'Close');
+ await page.locator('#review-lane').selectOption('prepared');await page.locator('#show-label-records').check();await page.locator('#category').selectOption('English interface');await page.locator('#search').fill('Close');assert.equal(await preview.innerText(),'Close');await page.locator('#search').fill('');
  await page.locator('#category').selectOption('Complete interface templates');
  await page.setViewportSize({width:520,height:900});
   await page.addStyleTag({content:'body{font-family:monospace}'});
  const above=await source.boundingBox(),below=await page.locator('.reading-preview-pane').boundingBox();assert.ok(below.y>=above.y+above.height,'narrow panes stack');
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal page overflow');
  // Reproduce a legacy draft that the old export rejected. The same storage key must survive.
- const word=review.entries.find(entry=>entry.category==='English interface');
+ const word=review.entries.find(entry=>entry.category==='English interface'&&entry.text==='Close');
  const changelog=review.entries.find(entry=>entry.occurrences.some(source=>source.path==='CHANGELOG.md'));
  const legacy={schemaVersion:1,archiveSha256:review.archiveSha256,reviewer:'The User',listingText:'Human-written listing saved before the export fix.',
    entries:{[word.id]:{decision:'human-origin',evidence:'',replacement:'Original unfinished replacement'},[changelog.id]:{decision:'human-origin',evidence:'',replacement:''},...Object.fromEntries(review.entries.filter(entry=>['star-wars-ffg-advancement-trees','14b710c863b5df75','Investigator'].includes(entry.text)).map(entry=>[entry.id,{decision:'human-origin',evidence:'',replacement:'Legacy metadata answer retained'}]))},
@@ -99,6 +108,20 @@ try {
  const shared=await download('shared-source-evidence.json');
  assert.deepEqual(shared.entries,legacy.entries,'source evidence does not overwrite individual decisions or replacements');
  assert.equal(shared.scopeReviews[scope].state,'evidence-recorded');assert.equal(shared.reviewIssues.length,0);assert.equal(shared.submissionReady,false);
+ await page.locator('#short-label-evidence').fill('The original human-authored interface catalogue is retained in contributor history; this statement covers the listed short labels, with individual exceptions preserved.');
+ await page.locator('#record-short-labels').click();
+ const bundled=await download('bundled-label-review.json');
+ assert.equal(bundled.labelReview.state,'evidence-recorded');assert.equal(bundled.labelReview.reviewer,legacy.reviewer);
+ assert.deepEqual(bundled.labelReview.entryIds,reviewLabelGroup(review).entryIds);
+ assert.deepEqual(bundled.entries,legacy.entries,'one label statement preserves existing individual decisions and replacements');
+ assert.equal(bundled.submissionReady,false);
+ await page.reload();assert.equal(await page.locator('#short-label-evidence').inputValue(),bundled.labelReview.evidence);
+ await page.locator('#category').selectOption('English interface');
+ assert.ok(await page.getByLabel('Replacement for '+word.id,{exact:true}).count()>0,'a saved replacement stays visible as an individual exception');
+ await page.locator('#short-label-members').evaluate(element=>{element.open=true;});
+ await page.locator('#short-label-list summary').filter({hasText:/^Close$/}).click();
+ await page.getByLabel('Edit individual exception for '+word.id,{exact:true}).click();
+ assert.equal(await page.locator('#entries > article').count(),1);assert.equal(await page.getByLabel('Replacement for '+word.id,{exact:true}).inputValue(),legacy.entries[word.id].replacement);
  await page.locator('#import').setInputFiles({name:'different-archive.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({...draft,archiveSha256:'e'.repeat(64)}))});
  await page.locator('#message').filter({hasText:/different archive/}).waitFor();
  assert.match(await page.locator('#message').innerText(),/different archive/);assert.equal(await page.locator('#listing').inputValue(),legacy.listingText);
@@ -113,6 +136,6 @@ try {
  assert.deepEqual(errors,[]);assert.deepEqual(externalRequests,[]);
  const output=resolve(process.env.TEST_ARTIFACTS_DIR??'test-results/content-review-ui');await mkdir(output,{recursive:true});
  await page.setViewportSize({width:1440,height:1000});await page.locator('.review-views').screenshot({path:join(output,'source-and-rendered.png')});
- await writeFile(join(output,'results.json'),JSON.stringify({passed:true,checks:['exact source preserved','translated template labels','visible dynamic placeholders and both conditional branches','inert markup without network requests','source/rendered/both controls','Markdown headings/emphasis/lists/tables/code examples','plain interface text','responsive stacked panes','legacy draft answers and unfinished decisions survive reload','draft export without per-record evidence or reviewer','actionable missing-evidence links','shared source evidence preserves per-entry exceptions','wrong archive rejected without data loss','unfinished draft import and previous-draft backup','zero page errors']},null,2)+'\n');
+ await writeFile(join(output,'results.json'),JSON.stringify({passed:true,checks:['one shared statement for single- and two-word labels','short labels leave the main review queue','exact label membership exported and retained on reload','individual label exceptions and replacements stay visible','longer copy remains in individual review','exact source preserved','translated template labels','visible dynamic placeholders and both conditional branches','inert markup without network requests','source/rendered/both controls','Markdown headings/emphasis/lists/tables/code examples','plain interface text','responsive stacked panes','legacy draft answers and unfinished decisions survive reload','draft export without per-record evidence or reviewer','actionable missing-evidence links','shared source evidence preserves per-entry exceptions','wrong archive rejected without data loss','unfinished draft import and previous-draft backup','zero page errors']},null,2)+'\n');
  console.log('Content review passed inert previews, legacy draft export, missing-evidence navigation, shared source evidence and import preservation.');
 } finally {await browser.close();await new Promise(ok=>server.close(ok));}
