@@ -2,16 +2,17 @@ import { createServer } from "node:http";
 import { readFile, mkdir } from "node:fs/promises";
 import { resolve, sep } from "node:path";
 import assert from "node:assert/strict";
-import Handlebars from "handlebars";
+import { precompileTrustedTemplate } from '../scripts/trusted-templates.mjs';
 import { chromium } from "@playwright/test";
 const root=resolve(".");
-const compiled=Handlebars.precompile(await readFile("templates/support.hbs","utf8"));
-const html=`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/styles/support.css"><style>body{font:16px system-ui;background:#14242e;color:#13232c;margin:20px}.application{max-width:920px;margin:auto;background:#f3f0e6;max-height:90vh;display:flex;flex-direction:column;border:2px solid #526568;border-radius:12px}.window-content{min-height:0;display:flex;flex-direction:column}button,input,select{font:inherit}a{color:#264f68}</style></head><body><script src="/handlebars.js"></script><script>Handlebars.templates={support:Handlebars.template(${compiled})};</script><script type="module" src="/tests/fixtures/support-browser.mjs"></script></body></html>`;
+const compiled=precompileTrustedTemplate(await readFile("templates/support.hbs","utf8"));
+const html=`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/styles/support.css"><style>body{font:16px system-ui;background:#14242e;color:#13232c;margin:20px}.application{max-width:920px;margin:auto;background:#f3f0e6;max-height:90vh;display:flex;flex-direction:column;border:2px solid #526568;border-radius:12px}.window-content{min-height:0;display:flex;flex-direction:column}button,input,select{font:inherit}a{color:#264f68}</style></head><body><script src="/handlebars.js"></script><script src="/support-compiled.js"></script><script type="module" src="/tests/fixtures/support-browser.mjs"></script></body></html>`;
 const server=createServer(async(req,res)=>{
  try{
   const url=new URL(req.url,"http://localhost");
   if(url.pathname==="/"){res.setHeader("Content-Type","text/html");return res.end(html);}
   if(url.pathname==="/handlebars.js"){res.setHeader("Content-Type","text/javascript");return res.end(await readFile("node_modules/handlebars/dist/handlebars.runtime.min.js"));}
+  if(url.pathname==="/support-compiled.js"){res.setHeader("Content-Type","text/javascript");return res.end(`Handlebars.templates={support:Handlebars.template(${compiled})};`);}
   const path=resolve(root,decodeURIComponent(url.pathname).slice(1));
   if(!path.startsWith(root+sep)||!/^\/(src|styles|data|tests\/fixtures)\//.test(url.pathname))throw Error("Outside fixture");
   res.setHeader("Content-Type",path.endsWith(".mjs")?"text/javascript":path.endsWith(".json")?"application/json":"text/css");res.end(await readFile(path));

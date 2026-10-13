@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { readVersionMetadata, validateVersionMetadata } from "./version-metadata.mjs";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import Handlebars from "handlebars";
+import { precompileTrustedTemplate } from "./trusted-templates.mjs";
 import { DICE } from "../src/dice/core.mjs";
 import { validateVehicleData } from "../src/vehicle-data.mjs";
 import { validateVehicleLoadouts } from "../src/vehicle-loadout-data.mjs";
@@ -35,7 +35,7 @@ for (const file of [
   if (result.status !== 0) throw new Error(`${file}\n${result.stderr}`);
 }
 for (const file of await walk("templates"))
-  Handlebars.precompile(await readFile(file, "utf8"));
+  precompileTrustedTemplate(await readFile(file, "utf8"));
 const manifest = JSON.parse(await readFile("system.json", "utf8"));
 const translations = Object.fromEntries(
   await Promise.all(

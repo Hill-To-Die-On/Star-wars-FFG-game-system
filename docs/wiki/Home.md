@@ -2,7 +2,7 @@
 
 A free, independent game system for **Edge of the Empire**, **Age of Rebellion** and **Force and Destiny**, separately or together. Keep the books available: references and structured mechanics do not replace their explanations.
 
-**Version status:** the latest published release is **0.3.0**. The **0.4.1 development candidate** adds first-launch onboarding and the reorganized settings described here, alongside the unreleased gameplay work. Candidate features are labelled in these guides; this wiki is not a release announcement. Check [Releases](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases) before installing.
+**Version status:** the latest published release is **0.3.0**. The **0.4.2 Beta listing candidate** is English only and includes the unreleased gameplay, onboarding and settings work described here. Other translations are retained in source for later review. Human authorship/provenance, maintainer and independent GM sign-offs are still required. Candidate features are labelled in these guides; this wiki is not a release announcement. Check [Releases](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases) before installing.
 
 ## Start playing
 
