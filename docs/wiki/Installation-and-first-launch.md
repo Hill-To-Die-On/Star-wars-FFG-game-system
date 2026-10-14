@@ -1,20 +1,20 @@
 # Installation and first launch
 
-Use Foundry VTT **14**. The candidate has been tested against **14.368**; do not assume compatibility with another major version.
+Use Foundry VTT **14**. The Beta has been tested against **14.368**; do not assume compatibility with another major version.
 
 1. In Foundry Setup, choose Install System and paste the manifest below.
 2. Create a new world using Star Wars FFG.
 3. Log in as GM and check sheets and chat before adding optional modules.
 
 ```text
-https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json
+https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.2/system.json
 ```
 
-This URL installs the published release, not an unmerged development candidate. Back up an existing world before upgrading.
+This version-specific URL installs 0.4.2 Beta. The [latest stable manifest](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json) remains on 0.3.0. Back up an existing world before upgrading.
 
-## First-launch setup — 0.4.2 Beta candidate
+## First-launch setup — 0.4.2 Beta release
 
-The first Beta candidate packages English only. Back up worlds before evaluation; the public manifest above continues to install 0.3.0 until a new release is published.
+The Beta packages English only. Back up worlds before evaluation. The stable and Beta manifests are separate, so choosing Beta does not change the stable download.
 
 After Foundry's own new-world tour finishes or is exited, Welcome aboard offers a short copyright reminder. The GM can choose the campaign's bookshelf, save it, and start or skip the Star Wars interface tour. Players see the reminder and tour invitation; they cannot edit campaign books.
 
