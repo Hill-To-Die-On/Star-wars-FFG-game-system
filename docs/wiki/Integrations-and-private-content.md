@@ -18,6 +18,8 @@ Versioned imports can carry characters, adversaries, vehicles, groups and commun
 
 Use the repository's public API documentation and schemas for the installed system version. Never place API keys or private source text in a public handoff URL.
 
+In the unreleased 0.4.2 candidate, exported default portraits regenerate on import. Custom raster portraits and ordinary asset paths are retained. Actor packages also preserve character metadata, vehicle registration, Group starting assets and resource history. This correction is candidate source behavior until a release containing it is published.
+
 ## Local libraries and source notes
 
 The system includes the creator-authorized reference catalogue. Private libraries are optional. Local imports can contain richer personal reference material, but they must remain within the table's lawful use and permission boundaries.

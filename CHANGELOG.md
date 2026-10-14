@@ -2,6 +2,12 @@
 
 ## 0.4.2 — Unreleased
 
+### Native feature regression fixes
+
+- Allow native actor exports to complete when their portrait is a system-generated SVG badge; regenerate that default on import while retaining custom portraits and the existing SVG data import restriction.
+- Retain native character metadata, vehicle registration, Group starting assets and resource history in integration packages, with field, type and size checks for Group records.
+- Add an opt-in licensed Foundry feature sweep with separate GM/player clients, per-feature results, failure captures and disposable-world isolation.
+
 ### Beta listing preparation
 
 - Reconcile the listing candidate at 0.4.2 while the public release remains 0.3.0. Advertise and package English only; retain sixteen other translation files in source for later fluent review.

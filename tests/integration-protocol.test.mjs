@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { actorPackage as nativeActorPackage } from "./fixtures/integration-packages.mjs";
 import {
   INTEGRATION_FORMAT,
   createConnectorRegistry,
@@ -19,6 +20,19 @@ const source = {
   version: "1.4.0",
   url: "https://builder.example/",
 };
+
+test("native Group bookkeeping and vehicle registration remain bounded data", () => {
+  const group = nativeActorPackage("group");
+  group.payload.system = { startingAsset: { choice: "edge-ship", name: "QA ship" }, resourceLedger: { QAentry: { kind: "credits", name: "QA income", change: 150, note: "Original QA", at: "", scene: "" } } };
+  assert.equal(validateIntegrationPackage(group).payload.system.resourceLedger.QAentry.change, 150);
+  for (const invalid of [
+    { kind: "script", change: 1 }, { kind: "credits", change: 1.5 }, { kind: "credits", change: 1000000000001 }, { kind: "credits", change: 1, macro: "execute" },
+  ]) assert.throws(() => validateIntegrationPackage({ ...group, payload: { ...group.payload, system: { resourceLedger: { QAentry: invalid } } } }));
+  const ship = nativeActorPackage("vehicle");ship.payload.system.registration = 42;
+  assert.throws(() => validateIntegrationPackage(ship), /registration.*text/);
+  const schema = JSON.parse(readFileSync(new URL('../docs/schemas/integration-v1.schema.json',import.meta.url),'utf8'));
+  assert.equal(schema.$defs.characterSystem.properties.metadata.type, 'object');
+});
 
 test("interchange accepts bounded turn allowances and structured talent effects without a spending ledger",()=>{
   const pack=characterPackage();
