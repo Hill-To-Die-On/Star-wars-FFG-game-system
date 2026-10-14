@@ -1,6 +1,6 @@
 # Beta listing candidate and submission gates
 
-Version **0.4.2 Beta** is published as a GitHub prerelease for broader user testing and defect fixing. The latest stable release remains **0.3.0**. The Beta uses its version-specific manifest; ZIP and manifest version metadata must agree. A GitHub release is separate from a Foundry listing submission or approval. This guide retains its existing filename so earlier links continue to work.
+Version **0.4.2 Beta** targets a GitHub prerelease for broader user testing and defect fixing. Check [the release page](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/tag/v0.4.2) for publication and asset availability; this source guide does not attest that publication or installation verification has completed. The latest stable release remains **0.3.0**. The Beta uses its version-specific manifest; ZIP and manifest version metadata must agree. A GitHub release is separate from a Foundry listing submission or approval. This guide retains its existing filename so earlier links continue to work.
 
 ## Beta scope
 
@@ -10,7 +10,7 @@ Version **0.4.2 Beta** is published as a GitHub prerelease for broader user test
 - Back up worlds before installing or upgrading. Restore an old world backup with its matching system version; replacing a ZIP alone is not a rollback.
 - Books remain necessary. Incomplete source coverage, narrative spending, situational effects and some combat/vehicle rules require GM adjudication. See [production readiness](production-readiness.md).
 
-## Human evidence still required
+## Human evidence requirements
 
 The [Foundry AI policy](https://foundryvtt.com/article/ai-policy/) requires human-origin prepared text, UI labels and marketing copy. Reading and approving generated prose does not establish human authorship. Technical package documentation and code may use AI assistance subject to the maintainer's personal understanding and responsibility.
 
