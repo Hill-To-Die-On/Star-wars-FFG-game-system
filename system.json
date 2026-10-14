@@ -75,7 +75,7 @@
   "primaryTokenAttribute": "wounds",
   "secondaryTokenAttribute": "strain",
   "url": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system",
-  "manifest": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json",
+  "manifest": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.2/system.json",
   "download": "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.2/star-wars-ffg.zip",
   "license": "LICENSE",
   "readme": "README.md"
