@@ -31,6 +31,12 @@ function audit(files=fixture(), options={}) {
 test("a self-contained original runtime package passes and reports its entry count", () => {
   assert.equal(audit().fileCount, 8);
 });
+
+test("unadvertised translations cannot enter a release archive", () => {
+  const files = fixture();
+  files["lang/fr.json"] = encode('{"SWFFG.Common.Close":"Fermer"}');
+  assert.throws(() => audit(files), /unadvertised language/i);
+});
 test("reviewed rules data enters the release but arbitrary data files remain blocked", () => {
   for (const name of ["roll-tables.json", "species-abilities.json", "book-play-guidance.json"])
     assert.doesNotThrow(() => validateReleasePath(`data/${name}`));

@@ -1,5 +1,11 @@
 # Third-party notices
 
+## Licence scope and reference data
+
+The root [MIT licence](LICENSE) applies to original project code, documentation and artwork. The components below retain their separate terms. Neither the root licence nor this inventory grants rights in third-party rulebooks, adventures, trademarks or private imports.
+
+`data/reference-database.json` records "Published with its creator's permission" in its provenance. This records this project's publication permission; it does not specify a general licence for downstream redistribution, modification or commercial reuse of the database. Derived catalogues do not establish additional rights in their source material. The permission's full scope still needs a public, rights-holder-approved record before the project can represent that data as freely reusable by downstream distributors. Until then, downstream distributors must establish applicable permission for the data they include or omit it and validate their resulting package. This uncertainty does not restrict the MIT-covered original software.
+
 ## Public-domain interface backdrop
 
 `assets/ui/saturn-enceladus-concept.webp` is a lossless WebP transcode of
@@ -22,6 +28,11 @@ requests acknowledgement of NASA as the source. The image contains no NASA
 identifier, logo or person. It is excluded from the project's MIT grant and is
 distributed under its own public-domain status and the applicable NASA usage
 guidelines.
+
+The player-visible credit explicitly disclaims NASA endorsement. A source,
+pixel-integrity and usage review dated 2026-10-12 is retained in
+[`docs/nasa-artwork-rights.md`](docs/nasa-artwork-rights.md). This background
+credit grants no permission to use NASA emblems or imply NASA approval.
 
 ## Narrative dice symbol font
 

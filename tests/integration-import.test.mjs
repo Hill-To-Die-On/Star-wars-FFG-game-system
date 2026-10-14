@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { actorIconDescriptor } from "../src/actor-icons.mjs";
 import {
   exportIntegrationActor,
   exportIntegrationCharacter,
@@ -145,6 +146,48 @@ function actorDocument({ type = "character", name = "Ria Vale", observer = true,
     toObject: () => ({ ...(img ? { img } : {}), system: structuredClone(system) }),
   };
 }
+
+test("generated system portraits round-trip through both export versions without allowing SVG data imports", async () => {
+  installFoundry();
+  for (const type of ["character", "rival", "vehicle"]) {
+    const img = actorIconDescriptor({ type, system: {} }).src;
+    const actor = actorDocument({ type, img });
+    const before = actor.toObject();
+    const packet = await exportIntegrationActor(actor);
+    assert.equal(packet.payload.img, undefined, "generated portraits are recreated by the receiving system");
+    assert.deepEqual(actor.toObject(), before, "export does not change the original actor");
+    await importIntegrationActor(packet, { renderSheet: false });
+    if (type === "character") assert.equal((await exportIntegrationCharacter(actor)).payload.img, undefined);
+  }
+  const foreign = actorDocument({ img: "data:image/svg+xml;base64," + btoa('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>') });
+  await assert.rejects(exportIntegrationActor(foreign), /data URLs must contain a PNG, JPEG or WebP/);
+  await assert.rejects(exportIntegrationCharacter(foreign), /data URLs must contain a PNG, JPEG or WebP/);
+});
+
+test("actor exports preserve custom raster portraits and ordinary asset paths", async () => {
+  installFoundry();
+  for (const img of ["data:image/png;base64,aGVsbG8=", "worlds/qa/portraits/hero.webp", "icons/svg/mystery-man.svg"]) {
+    const actor = actorDocument({ img });
+    assert.equal((await exportIntegrationActor(actor)).payload.img, img);
+    assert.equal((await exportIntegrationCharacter(actor)).payload.img, img);
+  }
+});
+
+test("native profile metadata, vehicle registration and Group bookkeeping survive actor export and import", async () => {
+  const cases = [
+    ["character", { ...characterPackage().payload.system, metadata: { damageImpairment: "scanner", origin: "Original QA" } }],
+    ["vehicle", { ...actorSystem("vehicle"), registration: "QA-042" }],
+    ["group", { credits: 150, startingAsset: { choice: "edge-ship", name: "QA ship", actorId: "Ship000000000001", status: "Available", description: "Original QA" }, resourceLedger: { Entry00000000001: { kind: "credits", name: "QA income", change: 150, note: "Original QA", at: "2026-10-13T00:00:00Z", scene: "QA scene" } } }],
+  ];
+  for (const [type, system] of cases) {
+    const calls = installFoundry(), actor = actorDocument({ type });
+    actor.toObject = () => ({ system: structuredClone(system) });
+    const packet = await exportIntegrationActor(actor);
+    assert.deepEqual(packet.payload.system, system);
+    await importIntegrationActor(packet, { renderSheet: false });
+    assert.deepEqual(calls.created[0].source.system, system);
+  }
+});
 
 test("players need Foundry's actor-creation permission to import a character, and then own it", async () => {
   installFoundry({ isGM: false });

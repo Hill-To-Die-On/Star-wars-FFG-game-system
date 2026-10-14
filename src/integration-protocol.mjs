@@ -201,6 +201,7 @@ const ACTOR_SYSTEM_FIELDS = new Set([
   "criticals",
   "advancement",
   "creation",
+  "metadata",
   "source",
   "incomplete",
 ]);
@@ -252,6 +253,7 @@ const VEHICLE_SYSTEM_FIELDS = new Set([
   "shields",
   "model",
   "manufacturer",
+  "registration",
   "crew",
   "passengers",
   "hyperdrive",
@@ -267,6 +269,8 @@ const GROUP_SYSTEM_FIELDS = new Set([
   "base",
   "members",
   "credits",
+  "startingAsset",
+  "resourceLedger",
   "resources",
   "possessions",
   "contacts",
@@ -548,6 +552,7 @@ function validateCharacterSystem(system, path, { skillRankMax = 5 } = {}) {
   if (system.criticals !== undefined && !Array.isArray(system.criticals))
     fail(`${path}.criticals`, "expected an array");
   if (system.creation !== undefined) objectAt(system.creation, `${path}.creation`);
+  if (system.metadata !== undefined) objectAt(system.metadata, `${path}.metadata`);
   validateSourceReference(system.source, `${path}.source`);
   if (system.advancement !== undefined && (!Array.isArray(system.advancement) || system.advancement.length > 1000))
     fail(`${path}.advancement`, "must contain no more than 1,000 entries");
@@ -613,6 +618,7 @@ function validateVehicleSystem(system, path) {
   for (const key of [
     "model",
     "manufacturer",
+    "registration",
     "crew",
     "passengers",
     "hyperdrive",
@@ -629,6 +635,28 @@ function validateVehicleSystem(system, path) {
 function validateGroupSystem(system, path) {
   allowedFields(system, GROUP_SYSTEM_FIELDS, path);
   validateTheme(system.theme, `${path}.theme`);
+  if (system.startingAsset !== undefined) {
+    const assetPath = `${path}.startingAsset`;
+    const fields = { choice: 80, name: 120, actorId: 80, status: 80, description: 2000 };
+    allowedFields(system.startingAsset, new Set(Object.keys(fields)), assetPath);
+    for (const [key, max] of Object.entries(fields)) if (system.startingAsset[key] !== undefined)
+      stringAt(system.startingAsset[key], `${assetPath}.${key}`, { max });
+  }
+  if (system.resourceLedger !== undefined) {
+    const ledgerPath = `${path}.resourceLedger`;
+    objectAt(system.resourceLedger, ledgerPath);
+    const entries = Object.entries(system.resourceLedger);
+    if (entries.length > 1000) fail(ledgerPath, "must contain no more than 1,000 entries");
+    for (const [id, entry] of entries) {
+      if (!/^[A-Za-z0-9]{1,64}$/.test(id)) fail(ledgerPath, "invalid resource entry id");
+      const entryPath = `${ledgerPath}.${id}`;
+      allowedFields(entry, new Set(["kind", "name", "change", "note", "at", "scene"]), entryPath);
+      if (!["credits", "gear", "note", "starting-asset"].includes(entry.kind)) fail(`${entryPath}.kind`, "unsupported resource kind");
+      integerAt(entry.change, `${entryPath}.change`, -1000000000000, 1000000000000);
+      for (const [key, max] of Object.entries({ name: 120, note: 2000, at: 80, scene: 120 })) if (entry[key] !== undefined)
+        stringAt(entry[key], `${entryPath}.${key}`, { max });
+    }
+  }
   if (system.base !== undefined) {
     allowedFields(
       system.base,

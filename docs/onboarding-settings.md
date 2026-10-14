@@ -1,6 +1,6 @@
 # First launch, settings and presentation
 
-The unreleased 0.4.1 candidate adds a per-user welcome flow: a copyright reminder, a GM-only campaign bookshelf and an optional native Foundry interface tour. The world remains playable if setup is deferred. Nothing is imported, no dice are rolled and no actor is changed by the tutorial.
+The unreleased 0.4.2 Beta candidate includes a per-user welcome flow: a copyright reminder, a GM-only campaign bookshelf and an optional native Foundry interface tour. The world remains playable if setup is deferred. Nothing is imported, no dice are rolled and no actor is changed by the tutorial.
 
 ## Book ownership and persistence
 
@@ -39,6 +39,10 @@ Actor sheets retain Foundry's native resize handle. CSS container queries follow
 
 Native Foundry 14.368 acceptance covers first-launch GM/player separation, reload persistence, all six settings groups, the owned-books form, seven tour steps with a hidden-tray fallback, journal theme switching and native compact-sheet controls. This is system-only acceptance with zero optional modules; it does not certify DoR campaign play.
 
+For the 0.4.2 Beta, add `--alpha-play` to exercise a separate owned player character through manual creation, skills and XP, starting equipment/funds, Ready for play, a narrative roll, GM-reviewed damage/undo/recovery, session awards and skill advancement with reload persistence. This automation uses actual native dialogs; APIs seed the disposable world and open documents. The independent human-GM gate in [Beta submission gates](alpha-listing.md) remains separate. **Rule data review** belongs to **Help & diagnostics**.
+
+Add `--features` for the onboarding/play journey followed by the broader native feature sweep. `--features-only` runs the sweep after the required initial core-tour handover and explicit GM authority selection; `--feature-filter=<regular-expression>` selects diagnostic checks and reports every skipped check. Each result records whether it used native UI, canvas rendering or document APIs. Failures retain screenshots, DOM and synthetic document state under the selected ignored `--output` directory; no production world is opened. To test an already-installed Dice So Nice copy, combine `--features-only` with `--dice-so-nice=<module-directory>`. The module is copied into the disposable data directory and enabled there only.
+
 ## Wiki maintenance
 
-The public [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) contains ten original guide pages plus sidebar/footer navigation. Sources are committed under `docs/wiki/`; publish those reviewed files to the separate `.wiki.git` repository. Internal links and stable/candidate labels are checked in tests. The wiki distinguishes the published 0.3.0 release from the 0.4.1 candidate and does not imply a production release.
+The public [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) contains ten guide pages plus sidebar/footer navigation. Updated 0.4.2 sources live under `docs/wiki/`; publish them after human content review to the separate `.wiki.git` repository. Internal links and stable/candidate labels are checked in tests. The sources distinguish the published 0.3.0 release from the 0.4.2 Beta candidate and do not imply a production release. Candidate source edits alone do not update the public wiki.
