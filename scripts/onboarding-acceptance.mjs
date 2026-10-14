@@ -1,5 +1,5 @@
-/** Opt-in native onboarding acceptance in a fresh, isolated, module-free Foundry world. */
-import { mkdir, mkdtemp, copyFile, writeFile, readFile } from "node:fs/promises";
+/** Opt-in native acceptance in a fresh isolated world; Dice So Nice is optional. */
+import { mkdir, mkdtemp, copyFile, writeFile, readFile, cp } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import { resolve, join } from "node:path";
 import { spawn } from "node:child_process";
@@ -14,10 +14,11 @@ const probe=createServer();await new Promise((ok,no)=>{probe.once("error",no);pr
 const parent=resolve(arg("output")??".local/onboarding-native");await mkdir(parent,{recursive:true});const output=await mkdtemp(join(parent,"run-"));
 for(const dir of ["Config","Data/systems","Data/worlds/onboarding-validation/data","Data/modules"])await mkdir(join(output,dir),{recursive:true});
 await copyFile(license,join(output,"Config/license.json"));
+if(arg('dice-so-nice')) {if(!args.includes('--features-only'))throw Error('Optional module checks require --features-only.');const source=resolve(arg('dice-so-nice'));const module=JSON.parse(await readFile(join(source,'module.json'),'utf8'));assert.equal(module.id,'dice-so-nice');await cp(source,join(output,'Data/modules/dice-so-nice'),{recursive:true,dereference:true});}
 await writeFile(join(output,"Config/options.json"),JSON.stringify({port,hostname:"127.0.0.1",upnp:false,world:"onboarding-validation"}));
 const installed=await installRecoveryArchive(resolve("dist/star-wars-ffg.zip"),join(output,"Data/systems/star-wars-ffg"));
 await writeFile(join(output,"Data/worlds/onboarding-validation/world.json"),JSON.stringify({id:"onboarding-validation",title:"Onboarding validation",system:"star-wars-ffg",systemVersion:installed.version,coreVersion:"14.368",compatibility:{minimum:"14",verified:"14.368"},packs:[]}));
-const report={kind:args.includes('--alpha-play')?"native-onboarding-and-alpha-play":"native-onboarding",version:installed.version,archiveSha256:installed.sha256,port,checks:[],errors:[]};let child,browser,gm;
+const report={kind:args.includes('--features')||args.includes('--features-only')?"native-beta-feature-check":args.includes('--alpha-play')?"native-onboarding-and-alpha-play":"native-onboarding",version:installed.version,archiveSha256:installed.sha256,port,checks:[],errors:[]};let child,browser,gm;
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function bounded(promise,ms){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Native onboarding cleanup timed out.')),ms);})]);}finally{clearTimeout(timer);}}
 async function screenshot(name){await gm.screenshot({path:join(output,`${name}.png`)});}
@@ -27,7 +28,17 @@ try {
  let ready=false;for(let i=0;i<240;i++){if(child.exitCode!==null)throw Error("Isolated Foundry exited; see private server.log.");try{if((await fetch(`http://127.0.0.1:${port}/join`)).ok){ready=true;break;}}catch{}await delay(250);}assert.ok(ready,"Foundry starts within one minute");
  browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:["--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
  const context=await browser.newContext({viewport:{width:1500,height:1000}});gm=await context.newPage();gm.on("pageerror",error=>report.errors.push(error.message));
- await joinWorld(gm,"Gamemaster");await gm.locator('.step-button[data-action="exit"]').waitFor();await gm.locator('.step-button[data-action="exit"]').click();await gm.locator("#star-wars-welcome").waitFor();
+ await joinWorld(gm,"Gamemaster");
+ if(args.includes('--features-only')) {
+   await gm.locator('.step-button[data-action="exit"]').waitFor();await gm.locator('.step-button[data-action="exit"]').click();await gm.locator('#star-wars-welcome').waitFor();
+   await gm.evaluate(async()=>{foundry.nue.Tour.activeTour?.exit();for(const app of [...foundry.applications.instances.values()])if(app.rendered&&app.element?.querySelector(':scope > .window-header'))await app.close();await User.create({name:'Onboarding Player',role:1,password:''});ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
+   if(arg('dice-so-nice')) {await gm.evaluate(()=>game.settings.set('core','moduleConfiguration',{'dice-so-nice':true}));await gm.reload({waitUntil:'domcontentloaded',timeout:60000});await gm.waitForFunction(()=>game.ready&&game.dice3d,null,{timeout:60000});await gm.evaluate(async()=>{foundry.nue.Tour.activeTour?.exit();for(const app of [...foundry.applications.instances.values()])if(app.rendered&&app.element?.querySelector(':scope > .window-header'))await app.close();ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});report.expectedModules=['dice-so-nice'];}
+   await gm.locator('[data-transaction-authority]').click();await gm.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true}).click();
+   await gm.waitForFunction(async()=>(await import('/systems/star-wars-ffg/src/document-transactions.mjs')).getDocumentTransactionBroker().isAuthority());
+   const featureContext=await browser.newContext({viewport:{width:1500,height:1000}}),featurePlayer=await featureContext.newPage();featurePlayer.on('pageerror',error=>report.errors.push(error.message));await joinWorld(featurePlayer,'Onboarding Player');
+   let featureDeadline;try{await Promise.race([(await import('./native-feature-acceptance.mjs')).nativeFeatureAcceptance({gm,player:featurePlayer,report,output,filter:arg('feature-filter')}),new Promise((_,reject)=>{featureDeadline=setTimeout(()=>reject(Error('Native feature checks exceeded their twenty-minute bound.')),1200000);})]);}finally{clearTimeout(featureDeadline);await featureContext.close();}
+ } else {
+ await gm.locator('.step-button[data-action="exit"]').waitFor();await gm.locator('.step-button[data-action="exit"]').click();await gm.locator("#star-wars-welcome").waitFor();
  assert.equal(await gm.evaluate(()=>canvas.scene.toObject().levels[0].background.src),'systems/star-wars-ffg/assets/ui/saturn-enceladus-concept.webp');assert.deepEqual(await gm.evaluate(()=>({tiles:canvas.scene.tiles.size,lights:canvas.scene.lights.size})),{tiles:0,lights:0});report.checks.push('Fresh-world welcome scene uses NASA artwork without the stock logo or demonstration lights');
  assert.match(await gm.locator("#star-wars-welcome").innerText(),/Do not distribute copyrighted PDFs/);report.welcomeStyle=await gm.locator('#star-wars-welcome').evaluate(root=>{const b=root.querySelector('[data-action="next"]'),css=getComputedStyle(b);return {classes:root.className,matches:b.matches(".sf-themed-window .window-content button"),parent:b.parentElement.parentElement.outerHTML.slice(0,120),button:{background:css.background,color:css.color,opacity:css.opacity,disabled:b.disabled}};});assert.equal(report.welcomeStyle.button.color,"rgb(255, 255, 255)");await screenshot("01-welcome");report.checks.push("Fresh GM sees copyright reminder and setup");
  await gm.getByRole("button",{name:"Choose my books"}).click();
@@ -70,13 +81,15 @@ try {
  await gm.evaluate(async()=>{for(const instance of [...foundry.applications.instances.values()])if(instance.rendered && instance.element?.querySelector(":scope > .window-header"))await instance.close();});
  const playerContext=await browser.newContext({viewport:{width:1280,height:900}}),player=await playerContext.newPage();player.on("pageerror",error=>report.errors.push(error.message));await joinWorld(player,"Onboarding Player");
  await player.locator("#star-wars-welcome").waitFor();assert.equal(await player.getByRole("button",{name:"Choose my books"}).count(),0);await player.getByRole("button",{name:"Continue",exact:true}).click();await player.getByRole("button",{name:"Skip tutorial"}).click();await player.locator("#star-wars-welcome").waitFor({state:"hidden"});await player.reload({waitUntil:"domcontentloaded",timeout:60000});await player.waitForFunction(()=>globalThis.game?.ready);assert.equal(await player.locator("#star-wars-welcome").count(),0);report.checks.push("Player welcome cannot edit campaign books and persists independently");await playerContext.close();
- if(args.includes('--alpha-play')) {
+ if(args.includes('--alpha-play')||args.includes('--features')) {
    const playContext=await browser.newContext({viewport:{width:1500,height:1000}}),playPlayer=await playContext.newPage();playPlayer.on('pageerror',error=>report.errors.push(error.message));await joinWorld(playPlayer,'Onboarding Player');
    let playDeadline;
    try {await Promise.race([(await import('./alpha-play-acceptance.mjs')).alphaPlayAcceptance({gm,player:playPlayer,report,output}),new Promise((_,reject)=>{playDeadline=setTimeout(()=>reject(Error('Alpha play workflow exceeded its three-minute bound.')),180000);})]);}
    catch(error){try{await playPlayer.screenshot({path:join(output,'alpha-play-failure.png'),timeout:5000});await writeFile(join(output,'alpha-play-failure-dom.html'),await playPlayer.content());}catch{}throw error;}
    finally {clearTimeout(playDeadline);}
+   if(args.includes('--features')) {let featureDeadline;try {await Promise.race([(await import('./native-feature-acceptance.mjs')).nativeFeatureAcceptance({gm,player:playPlayer,report,output,filter:arg('feature-filter')}),new Promise((_,reject)=>{featureDeadline=setTimeout(()=>reject(Error('Native feature checks exceeded their twenty-minute bound.')),1200000);})]);}finally{clearTimeout(featureDeadline);}}
    await playContext.close();
+ }
  }
  assert.deepEqual(report.errors,[]);report.passed=true;
 } catch(error) {report.failure=error.stack;try { await screenshot("failure"); await writeFile(join(output,"failure-dom.html"),await gm.content()); } catch {} throw error;}
