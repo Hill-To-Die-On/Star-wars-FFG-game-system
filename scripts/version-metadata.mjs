@@ -39,6 +39,8 @@ export function updateVersionMetadata(data, version) {
   const updated = structuredClone(data);
   updated.pkg.version = updated.lock.version = updated.lock.packages[""].version = updated.manifest.version = version;
   updated.manifest.download = `${updated.manifest.url}/releases/download/v${version}/star-wars-ffg.zip`;
+  if (data.manifest.manifest === `${data.manifest.url}/releases/download/v${data.pkg.version}/system.json`)
+    updated.manifest.manifest = `${updated.manifest.url}/releases/download/v${version}/system.json`;
   const first = updated.changelog.match(/^## .*$/m);
   if (!first) throw new Error("Changelog needs an existing release or Unreleased section before setting a version.");
   const parsed = first[0].match(numberedHeading);

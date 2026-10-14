@@ -222,7 +222,7 @@ function showIssues(){
   if(groups.size>20)node('p','The complete issue list is included in the JSON export.',$('issues'));return issues;
 }
 $('identity').textContent='System '+review.systemId+' '+review.version+'; archive SHA-256 '+review.archiveSha256+'; locales '+review.advertisedLocales.join(', ')+'.';$('file-count').textContent=review.files.length+' packaged files and their hashes';$('files').textContent=review.files.map(f=>f.path+' | '+f.sha256+' | '+f.review).join('\\n');
-$('phase-note').textContent=review.archivePhase&&review.archivePhase.toLowerCase()!=='${phase.toLowerCase()}'?'The planned listing is ${phase}. This page preserves the earlier '+review.archivePhase+'-labelled ZIP and saved answers; release-document changes will be reconciled before publication.':'${phase} candidate for broader user testing. Publication and final acceptance remain separate.';
+$('phase-note').textContent=review.archivePhase&&review.archivePhase.toLowerCase()!=='${phase.toLowerCase()}'?'The planned listing is ${phase}. This page preserves the earlier '+review.archivePhase+'-labelled ZIP and saved answers; release-document changes will be reconciled before publication.':'${phase} archive for broader user testing. Publication and final acceptance remain separate.';
 $('missing-evidence-note').oninput=()=>{saved.missingEvidenceReview={...saved.missingEvidenceReview,state:'pending',reviewer:'',evidence:$('missing-evidence-note').value,records:saved.missingEvidenceReview?.records||[]};save();showMissingEvidenceReview();};
 $('record-missing-evidence').onclick=()=>{
   save();const evidence=$('missing-evidence-note').value,group=missingEvidenceGroup(review,saved);

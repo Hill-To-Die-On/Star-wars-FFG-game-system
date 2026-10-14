@@ -1,6 +1,6 @@
 # Production readiness
 
-The **0.4.2 English-only Beta listing candidate** is tracked in [Beta submission gates](alpha-listing.md). It does not replace the public 0.3.0 release. Its archive-bound review packet records unresolved human authorship, asset/data provenance, maintainer and independent GM acceptance. The [NASA background review](nasa-artwork-rights.md) is complete for the current free background use; it does not certify the rest of the package.
+The **0.4.2 English-only Beta listing candidate** is tracked in [Beta submission gates](alpha-listing.md). It does not replace the stable 0.3.0 release. Its archive-bound review packet records unresolved human authorship, asset/data provenance, maintainer and independent GM acceptance. The [NASA background review](nasa-artwork-rights.md) is complete for the current free background use; it does not certify the rest of the package.
 
 This record describes release gates for the combined gameplay candidate. It is not a claim of production acceptance and does not include unfinished sourcebook extraction from another checkout. AtlasMind's canonical status is the repository's `project_memory/roadmap/improvement-plan.md`.
 
