@@ -68,3 +68,13 @@ test("inventory is an exact nonempty list rather than a self-attested partial pa
   assert.throws(()=>audit(fixture(), {inventory:[...Object.keys(fixture()),"system.json"]}), /inventory/i);
   assert.throws(()=>auditReleaseFiles({}, {version:"0.3.0",inventory:[],manifestBytes:encode("{}")}), /empty/i);
 });
+
+test("version-specific Beta manifests stay in their repository and version", () => {
+  const files=fixture();
+  files['system.json']=encode(JSON.stringify({...manifest,manifest:manifest.url+'/releases/download/v0.3.0/system.json'}));
+  assert.doesNotThrow(()=>audit(files));
+  for(const url of [manifest.url+'/releases/download/v0.2.1/system.json','https://evil.example/system.json']) {
+    files['system.json']=encode(JSON.stringify({...manifest,manifest:url}));
+    assert.throws(()=>audit(files),/Release URL/);
+  }
+});

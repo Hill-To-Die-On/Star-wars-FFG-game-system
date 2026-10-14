@@ -1,6 +1,6 @@
 # First launch, settings and presentation
 
-The unreleased 0.4.2 Beta candidate includes a per-user welcome flow: a copyright reminder, a GM-only campaign bookshelf and an optional native Foundry interface tour. The world remains playable if setup is deferred. Nothing is imported, no dice are rolled and no actor is changed by the tutorial.
+The 0.4.2 Beta release includes a per-user welcome flow: a copyright reminder, a GM-only campaign bookshelf and an optional native Foundry interface tour. The world remains playable if setup is deferred. Nothing is imported, no dice are rolled and no actor is changed by the tutorial.
 
 ## Book ownership and persistence
 
@@ -45,4 +45,4 @@ Add `--features` for the onboarding/play journey followed by the broader native 
 
 ## Wiki maintenance
 
-The public [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) contains ten guide pages plus sidebar/footer navigation. Updated 0.4.2 sources live under `docs/wiki/`; publish them after human content review to the separate `.wiki.git` repository. Internal links and stable/candidate labels are checked in tests. The sources distinguish the published 0.3.0 release from the 0.4.2 Beta candidate and do not imply a production release. Candidate source edits alone do not update the public wiki.
+The public [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) contains ten guide pages plus sidebar/footer navigation. Updated 0.4.2 sources live under `docs/wiki/`; publish them after human content review to the separate `.wiki.git` repository. Internal links and stable/candidate labels are checked in tests. The sources distinguish stable 0.3.0 from the 0.4.2 Beta release. Candidate source edits alone do not update the public wiki.
