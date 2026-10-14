@@ -1,6 +1,6 @@
 # Beta listing candidate and submission gates
 
-The candidate version is **0.4.2 Beta**, based on the protected 0.4.1 code baseline. The User selected Beta on 2026-10-13 for broader user testing and defect fixing. The current public release is **0.3.0**. Version metadata, the detached manifest and ZIP must agree; preparing this candidate does not publish it or submit a Foundry listing. This guide retains its existing filename so earlier links continue to work.
+Version **0.4.2 Beta** is published as a GitHub prerelease for broader user testing and defect fixing. The latest stable release remains **0.3.0**. The Beta uses its version-specific manifest; ZIP and manifest version metadata must agree. A GitHub release is separate from a Foundry listing submission or approval. This guide retains its existing filename so earlier links continue to work.
 
 ## Beta scope
 

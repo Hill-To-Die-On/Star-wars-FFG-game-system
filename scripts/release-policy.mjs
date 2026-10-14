@@ -52,7 +52,8 @@ export function auditReleaseFiles(files, { version, inventory, manifestBytes } =
   if (manifest.id !== "star-wars-ffg") throw new Error("Unexpected system identifier.");
   if (typeof version !== "string" || !/^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$/.test(version) || manifest.version !== version)
     throw new Error("Manifest and package version differ or are invalid.");
-  if (manifest.url !== REPOSITORY || manifest.manifest !== REPOSITORY + "/releases/latest/download/system.json" ||
+  const manifestChannels = new Set([REPOSITORY + "/releases/latest/download/system.json", REPOSITORY + "/releases/download/v" + version + "/system.json"]);
+  if (manifest.url !== REPOSITORY || !manifestChannels.has(manifest.manifest) ||
       manifest.download !== REPOSITORY + "/releases/download/v" + version + "/star-wars-ffg.zip")
     throw new Error("Release URL does not point to the expected repository and version.");
   for (const field of ["esmodules", "styles", "languages"])

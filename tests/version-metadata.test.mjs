@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { validateVersionMetadata } from "../scripts/version-metadata.mjs";
+import { validateVersionMetadata, updateVersionMetadata } from "../scripts/version-metadata.mjs";
 
 const url = "https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system";
 function fixture() {
@@ -86,4 +86,11 @@ test("invalid, unsupported prerelease and backwards versions fail without changi
       assert.deepEqual(await read(), before, version);
     }
   });
+});
+
+test("version changes retain a version-specific Beta manifest channel",()=>{
+  const data=fixture();data.manifest.manifest=url+'/releases/download/v0.3.0/system.json';
+  assert.equal(updateVersionMetadata(data,'0.4.2').manifest.manifest,url+'/releases/download/v0.4.2/system.json');
+  data.manifest.manifest=url+'/releases/latest/download/system.json';
+  assert.equal(updateVersionMetadata(data,'0.4.2').manifest.manifest,data.manifest.manifest);
 });

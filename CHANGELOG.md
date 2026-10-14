@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.4.2 — Unreleased
+## 0.4.2 — 2026-10-14
+
+### Beta release channel
+
+- Publish 0.4.2 as an English-only GitHub Beta prerelease with a version-specific manifest; the latest stable manifest remains on 0.3.0. Keep version-specific manifests synchronized when preparing later versions.
 
 ### Native feature regression fixes
 
