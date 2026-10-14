@@ -1,5 +1,6 @@
 import { SYSTEM_ID } from "./config.mjs";
 import { escapeHTML } from "./mechanics.mjs";
+import { isProceduralIconSource } from "./actor-icons.mjs";
 import {
   INTEGRATION_FORMAT,
   INTEGRATION_VERSION,
@@ -238,7 +239,7 @@ export async function exportIntegrationCharacter(actorOrUuid, options = {}) {
       payload: {
         name: actor.name,
         type: "character",
-        ...(source.img ? { img: source.img } : {}),
+        ...(source.img && !isProceduralIconSource(source.img) ? { img: source.img } : {}),
         system,
         items,
       },
@@ -286,7 +287,7 @@ export async function exportIntegrationActor(actorOrUuid, options = {}) {
       payload: {
         name: actor.name,
         type: actor.type,
-        ...(source.img ? { img: source.img } : {}),
+        ...(source.img && !isProceduralIconSource(source.img) ? { img: source.img } : {}),
         system: jsonClone(source.system),
         items,
       },

@@ -22,10 +22,16 @@ Native Foundry tests need a licensed installation and an isolated disposable wor
 Git commits identify code revisions; they do not automatically increment the installed system version. The candidate adds:
 
 ```sh
-npm run version:set -- 0.4.1
+npm run version:set -- 0.4.2
 ```
 
 Choose the intended next number. The command synchronizes package metadata, lockfile, Foundry manifest/download and changelog. It neither tags nor publishes. Use three numeric parts, keep unreleased status explicit and never overwrite an existing release tag.
+
+The 0.4.2 Beta listing candidate packages only English and retains draft translations in source. `npm run review:content` generates the exact-ZIP human text review packet after build/audit; it does not automatically approve content or publish a listing.
+
+The review page offers source and rendered reading views side by side, with source-only and rendered-only options. It formats Markdown and static HTML/templates, resolves packaged English labels, and marks dynamic values and conditional branches. Its plain reading layout keeps source actions inactive. Human evidence and the exact archive binding remain required. The development compiler is pinned to the upstream Handlebars 4.7.10 security fix; the current dependency audit is clean.
+
+Prepared in-module and listing text is the default authorship review. Code, configuration, changelog and technical package documentation use the code-maintenance requirements in section 4.4 of the [Foundry AI policy](https://foundryvtt.com/article/ai-policy/); they do not require a separate human-origin decision on each word. Reference metadata and licences use a separate rights review. Promotional copy follows the marketing rule wherever used. Shared file/category evidence can cover many records while retaining individual exceptions. Export saves an unfinished draft with the listing, gate answers and specific missing-evidence notes; the full inventory remains available and does not imply that every record needs a separate decision.
 
 ## Documentation
 

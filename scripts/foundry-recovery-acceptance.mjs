@@ -33,7 +33,7 @@ async function prepare(name,zip,worldCopy) {
     await mkdir(world);await mkdir(join(world,'data'));await mkdir(join(world,'scenes'));
     await writeFile(join(world,'world.json'),JSON.stringify({id:worldId,title:'Recovery acceptance',system:'star-wars-ffg',systemVersion:installed.version,coreVersion,compatibility:{minimum:'14',verified:coreVersion},packs:[]}));
   }
-  return {dataPath,world,...installed};
+  return {dataPath,world,freshWorld:!worldCopy,...installed};
 }
 async function start(stage) {
   const log=createWriteStream(join(stage.dataPath,'server.log'));
@@ -44,12 +44,16 @@ async function start(stage) {
     try{const response=await fetch(`http://127.0.0.1:${port}/join`);if(response.ok)break;}catch{}
     await wait(250);
   }
-  browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
+  browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
   page=await browser.newPage({viewport:{width:1500,height:1000}});stage.errors=[];page.on('pageerror',e=>stage.errors.push(e.message));
-  await page.goto(`http://127.0.0.1:${port}/game`);
+  await page.goto(`http://127.0.0.1:${port}/game`,{waitUntil:'domcontentloaded',timeout:60_000});
   if(page.url().includes('/join')){await page.locator('#join-username').fill('Gamemaster');await page.getByRole('button',{name:'Join Game Session'}).click();}
   await page.waitForFunction(()=>globalThis.game?.ready,null,{timeout:60_000});
   await page.waitForFunction(()=>canvas.initialized&&!canvas.loading,null,{timeout:60_000});
+  if(stage.freshWorld && await page.evaluate(()=>game.tours.get('core.welcome')?.status===foundry.nue.Tour.STATUS.UNSTARTED)){
+    await page.locator('.step-button[data-action="exit"]').waitFor({timeout:30000});
+    await page.locator('.step-button[data-action="exit"]').click();
+  }
   await page.evaluate(()=>foundry.nue.Tour.activeTour?.exit?.());
   stage.selectedAuthority=await selectAuthority();
   stage.runtime=await page.evaluate(()=>({core:game.version,system:game.system.version,activeModules:[...game.modules.values()].filter(m=>m.active).map(m=>m.id)}));
@@ -60,27 +64,27 @@ async function selectAuthority() {
   const supported=await page.evaluate(async()=>
     (await fetch('/systems/star-wars-ffg/src/document-transactions.mjs',{method:'HEAD'})).ok);
   if(!supported)return false;
+  // Finish the new candidate's first-launch UI before opening a second dialog.
+  // Its welcome window is queued after Foundry's tour and can otherwise cover
+  // the authority confirmation between locating and clicking its button.
+  if(await page.evaluate(()=>!!game.system.api?.onboarding&&!game.user.getFlag('star-wars-ffg','onboarding'))){
+    await page.locator('#star-wars-welcome').waitFor({timeout:15000});
+    await page.locator('#star-wars-welcome [data-action="later"]').click();
+    await page.locator('#star-wars-welcome').waitFor({state:'hidden'});
+  }
   await page.evaluate(()=>{foundry.nue.Tour.activeTour?.exit?.();ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
   await page.locator('[data-transaction-authority]').click();
   const confirm=page.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true});
   const dialogId=await confirm.evaluate(button=>button.closest('dialog')?.id);
   assert.ok(dialogId,'Native authority confirmation must be a dialog.');
-  // Foundry can reopen the first-run tour after the Settings app renders.
-  // The tour is unrelated to the recovery scenario and may intercept the
-  // authority dialog, so dismiss its DOM layer and force the reviewed click.
-  await page.evaluate(() => {
-    foundry.nue.Tour.activeTour?.exit?.();
-    for (const selector of ["aside.tour", ".tour-backdrop", ".tour-overlay"])
-      document.querySelectorAll(selector).forEach((node) => node.remove());
-  });
-  await confirm.click({ force: true });
+  await confirm.click();
   await page.waitForFunction(async()=>
     (await import('/systems/star-wars-ffg/src/document-transactions.mjs')).getDocumentTransactionBroker().isAuthority());
   await page.waitForFunction(id=>!document.getElementById(id),dialogId);
   return true;
 }
 async function reloadClient() {
-  await page.reload();await page.waitForFunction(()=>game.ready,null,{timeout:60_000});
+  await page.reload({waitUntil:'domcontentloaded',timeout:60_000});await page.waitForFunction(()=>game.ready,null,{timeout:60_000});
   await selectAuthority();
 }
 async function bounded(promise,ms) {
@@ -132,7 +136,7 @@ async function snapshot() {
     actors:game.actors.contents.filter(a=>a.getFlag('star-wars-ffg','recoveryFixture')).map(a=>({id:a.id,name:a.name,type:a.type,img:a.img,ownership:a.ownership,retained:a.getFlag('star-wars-ffg','retained'),
       identity:a.type==='character'?{species:a.system.species,career:a.system.career,xp:a.system.xp,credits:a.system.credits,wounds:a.system.wounds,strain:a.system.strain}:a.type==='vehicle'?{model:a.system.model,manufacturer:a.system.manufacturer,hullTrauma:a.system.hullTrauma,systemStrain:a.system.systemStrain}:null,
       items:a.items.contents.map(i=>({id:i.id,name:i.name,type:i.type,quantity:i.system.quantity}))})).sort((a,b)=>a.id.localeCompare(b.id)),
-    scenes:game.scenes.contents.map(s=>({id:s.id,name:s.name,grid:{size:s.grid.size,distance:s.grid.distance,units:s.grid.units},tokens:s.tokens.contents.map(t=>({id:t.id,actorId:t.actorId,actorLink:t.actorLink,rotation:t.rotation,x:t.x,y:t.y,width:t.width,height:t.height,texture:t.texture.src}))})),
+    scenes:game.scenes.contents.map(s=>({id:s.id,name:s.name,grid:{size:s.grid.size,distance:s.grid.distance,units:s.grid.units},tokens:s.tokens.contents.map(t=>({id:t.id,actorId:t.actorId,actorLink:t.actorLink,rotation:t.rotation,x:t.x,y:t.y,width:t.width,height:t.height,texture:t.texture.src}))})).sort((a,b)=>a.id.localeCompare(b.id)),
     privateNote:game.journal.contents.filter(j=>j.name==='Recovery private note').map(j=>({id:j.id,ownership:j.ownership,pages:j.pages.contents.map(p=>({id:p.id,text:p.text.content}))})),
     messages:game.messages.contents.filter(m=>m.getFlag('star-wars-ffg','recoveryFixture')).map(m=>({id:m.id,content:m.content})),
     pack:(await game.packs.get('world.recovery-items').getDocuments()).map(i=>({id:i.id,name:i.name,quantity:i.system.quantity})),
