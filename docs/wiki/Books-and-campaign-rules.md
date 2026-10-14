@@ -1,6 +1,6 @@
 # Books and campaign rules
 
-The GM chooses one reference filter for the table through **Owned books**. The 0.4.1 candidate offers this during onboarding as well.
+The GM chooses one reference filter for the table through **Owned books**. The 0.4.2 Beta candidate offers this during onboarding as well.
 
 | Choice | Result |
 | --- | --- |
@@ -14,7 +14,7 @@ In **Campaign rules & adventure state**, select Edge, Age, Force or any combinat
 
 Once creation is finished and play begins, origins such as species are locked. Later specialization purchases use XP advancement. The GM's homebrew identity option permits explicit custom entries; it does not invent statistics for them.
 
-## Remembered books — 0.4.1 candidate
+## Remembered books — 0.4.2 Beta candidate
 
 World selection persists on the Foundry server. **Remember this bookshelf in this browser for future worlds** stores only book titles and filter options locally. Use remembered selection in the welcome wizard to copy that preference into a draft, then review and save. Forget remembered books removes the local preference without deleting the world's books.
 

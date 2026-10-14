@@ -57,6 +57,10 @@ export function auditReleaseFiles(files, { version, inventory, manifestBytes } =
     throw new Error("Release URL does not point to the expected repository and version.");
   for (const field of ["esmodules", "styles", "languages"])
     if (!Array.isArray(manifest[field]) || !manifest[field].length) throw new Error("Missing manifest entrypoints: " + field);
+  const advertisedLanguages = new Set(manifest.languages.map(language => language.path));
+  for (const name of names)
+    if (name.startsWith("lang/") && !advertisedLanguages.has(name))
+      throw new Error("Unadvertised language in release: " + name);
   for (const entry of [...manifest.esmodules, ...manifest.styles, ...manifest.languages.map(language => language.path)]) {
     validateReleasePath(entry);
     if (!files[entry]?.length) throw new Error("Missing manifest entrypoint: " + entry);

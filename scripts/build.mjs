@@ -3,10 +3,14 @@ import { zipSync } from "fflate";
 import { validateReleasePath } from "./release-policy.mjs";
 import { readVersionMetadata, validateVersionMetadata } from "./version-metadata.mjs";
 const version = validateVersionMetadata(await readVersionMetadata());
+const manifest = JSON.parse(await readFile("system.json", "utf8"));
+const advertisedLanguages = new Set(manifest.languages.map(language => language.path));
 const files = {};
 async function collect(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const name = `${dir}/${entry.name}`;
+    // Retain draft translations in source control, but ship only declared locales.
+    if (dir === "lang" && !advertisedLanguages.has(name)) continue;
     if (entry.isSymbolicLink()) throw new Error("Symlinks cannot enter a release: " + name);
     if (entry.isDirectory()) await collect(name);
     else files[name] = new Uint8Array(await readFile(name));

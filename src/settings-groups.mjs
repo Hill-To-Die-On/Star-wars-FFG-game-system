@@ -7,7 +7,7 @@ export const SETTINGS_GROUPS = Object.freeze([
   { label: "Combat & turns", key: "SWFFG.Settings.Groups.CombatTurns", keys: ["turnTrackerControl", "automaticTurnRolls", "automaticTurnMovement", "combatRangeAssistant", "combatRangeFollowTurn", "animatedTargetTrace"] },
   { label: "Play tools", key: "SWFFG.Settings.Groups.PlayTools", keys: ["consoleMenu", "referenceMenu", "transactionAuthorityMenu"] },
   { label: "Imports & private sources", key: "SWFFG.Settings.Groups.ImportsSources", keys: ["integrationMenu", "libraryMenu", "adversariesMenu", "gmSourceLibraryMenu", "gmSourceKeyMenu"] },
-  { label: "Help & diagnostics", key: "SWFFG.Settings.Groups.HelpDiagnostics", keys: ["aboutMenu", "supportMenu"] },
+  { label: "Help & diagnostics", key: "SWFFG.Settings.Groups.HelpDiagnostics", keys: ["aboutMenu", "supportMenu", "dataReviewMenu"] },
 ]);
 
 export function groupSystemSettings(root) {

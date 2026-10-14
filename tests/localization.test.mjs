@@ -13,12 +13,34 @@ const translations = Object.fromEntries(
   ),
 );
 
-test("every advertised locale is canonical, present, and complete for the core UI vocabulary", () => {
+test("the Alpha advertises English while retained translations remain available for review", async () => {
   assert.deepEqual(
     manifest.languages.map((language) => language.lang),
-    SUPPORTED_LOCALES,
+    ["en"],
   );
   assert.equal(validateLocaleManifest(manifest.languages, translations), true);
+  for (const locale of SUPPORTED_LOCALES) {
+    const path = `lang/${locale}.json`;
+    const retained = JSON.parse(await readFile(path, "utf8"));
+    assert.equal(validateLocaleManifest([
+      manifest.languages[0],
+      ...(locale === "en" ? [] : [{ lang: locale, name: locale, path }]),
+    ], { ...translations, [path]: retained }), true);
+  }
+});
+
+test("locale subsets still require English and reject unknown or duplicate locales", () => {
+  assert.throws(() => validateLocaleManifest([], {}), /at least one/i);
+  assert.throws(() => validateLocaleManifest([
+    { lang: "fr", name: "French", path: "lang/fr.json" },
+  ], { "lang/fr.json": translations["lang/en.json"] }), /default en/i);
+  assert.throws(() => validateLocaleManifest([
+    ...manifest.languages,
+    { lang: "en-AU", name: "English Australia", path: "lang/en-AU.json" },
+  ], { ...translations, "lang/en-AU.json": translations["lang/en.json"] }), /unsupported locale/i);
+  assert.throws(() => validateLocaleManifest([
+    manifest.languages[0], manifest.languages[0],
+  ], translations), /duplicate/i);
 });
 
 test("localize uses Foundry's selected language and keeps a readable fallback", () => {

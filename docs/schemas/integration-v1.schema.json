@@ -196,6 +196,7 @@
         "groupSize": { "type": "integer", "minimum": 0, "maximum": 100 },
         "criticals": { "type": "array", "maxItems": 10000 },
         "advancement": { "type": "array", "maxItems": 1000 },
+        "metadata": { "type": "object" },
         "creation": { "type": "object" },
         "source": { "$ref": "#/$defs/sourceReference" },
         "incomplete": {
