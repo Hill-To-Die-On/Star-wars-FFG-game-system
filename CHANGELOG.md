@@ -1,6 +1,21 @@
 # Changelog
 
-## 0.4.1 — Unreleased
+## 0.4.2 — Unreleased
+
+### Native feature regression fixes
+
+- Allow native actor exports to complete when their portrait is a system-generated SVG badge; regenerate that default on import while retaining custom portraits and the existing SVG data import restriction.
+- Retain native character metadata, vehicle registration, Group starting assets and resource history in integration packages, with field, type and size checks for Group records.
+- Add an opt-in licensed Foundry feature sweep with separate GM/player clients, per-feature results, failure captures and disposable-world isolation.
+
+### Beta listing preparation
+
+- Reconcile the listing candidate at 0.4.2 while the public release remains 0.3.0. Advertise and package English only; retain sixteen other translation files in source for later fluent review.
+- Generate a complete, archive-bound text review packet with source occurrences, file hashes, side-by-side source/rendered reading views and explicit human authorship, asset, data, maintainability and independent GM gates. It never certifies approval automatically.
+- Retain the standard MIT text with third-party scope explained separately; document the NASA background's source terms, exact lossless pixels, attribution and no-endorsement boundary.
+- Make native recovery comparisons independent of scene collection order, and finish the actual first-launch tour/welcome before selecting transaction authority.
+- Keep Rule data review in the documented Help & diagnostics settings group instead of creating an unexpected seventh group.
+- Pin the development template compiler to the upstream Handlebars 4.7.10 security fix with a clean dependency audit. Retain trusted-string guards, prototype restrictions and separate compiled fixture scripts.
 
 ### Added
 

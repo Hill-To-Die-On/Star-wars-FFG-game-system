@@ -15,6 +15,7 @@ test("artwork credit journal is player-visible and carries the exact attribution
   assert.equal(data.flags["star-wars-ffg"].artworkCredits, 1);
   assert.match(data.pages[0].text.content, /Dan Gallagher \(eMITS\)/);
   assert.match(data.pages[0].text.content, /NASA's Goddard Space Flight Center/);
+  assert.match(data.pages[0].text.content, /does not imply NASA endorsement/);
   assert.match(data.pages[0].text.content, /saturn-enceladus-concept\.webp/);
   assert.match(data.pages[0].text.content, new RegExp(INTERFACE_ARTWORK.source));
 });

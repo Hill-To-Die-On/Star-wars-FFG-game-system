@@ -2,15 +2,16 @@ import {createServer} from "node:http";
 import {readFile,mkdir} from "node:fs/promises";
 import {resolve,sep,extname} from "node:path";
 import assert from "node:assert/strict";
-import Handlebars from "handlebars";
+import { precompileTrustedTemplate } from '../scripts/trusted-templates.mjs';
 import {chromium} from "@playwright/test";
-const root=resolve("."),compiled=Handlebars.precompile(await readFile("templates/welcome.hbs","utf8"));
-const html=`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/styles/star-wars.css"><link rel="stylesheet" href="/styles/onboarding.css"><link rel="stylesheet" href="/styles/window-presentation.css"><style>body{font:16px system-ui;background:#182b36;margin:20px}.application{width:min(730px,calc(100vw - 40px));margin:auto;max-height:90vh;display:flex;flex-direction:column;border:1px solid #53656a;border-radius:10px;overflow:hidden}.window-header{padding:10px}.window-content{min-height:0;overflow:auto}button,input,select{font:inherit}button{cursor:pointer}.sf-native-settings{background:#ddd;color:#222}</style></head><body class="system-star-wars-ffg" data-star-wars-theme="frontier"><script src="/handlebars.js"></script><script>Handlebars.registerHelper('checked',v=>v?'checked':'');Handlebars.templates={welcome:Handlebars.template(${compiled})};</script><script type="module" src="/tests/fixtures/onboarding-browser.mjs"></script></body></html>`;
+const root=resolve("."),compiled=precompileTrustedTemplate(await readFile("templates/welcome.hbs","utf8"));
+const html=`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/styles/star-wars.css"><link rel="stylesheet" href="/styles/onboarding.css"><link rel="stylesheet" href="/styles/window-presentation.css"><style>body{font:16px system-ui;background:#182b36;margin:20px}.application{width:min(730px,calc(100vw - 40px));margin:auto;max-height:90vh;display:flex;flex-direction:column;border:1px solid #53656a;border-radius:10px;overflow:hidden}.window-header{padding:10px}.window-content{min-height:0;overflow:auto}button,input,select{font:inherit}button{cursor:pointer}.sf-native-settings{background:#ddd;color:#222}</style></head><body class="system-star-wars-ffg" data-star-wars-theme="frontier"><script src="/handlebars.js"></script><script src="/welcome-compiled.js"></script><script type="module" src="/tests/fixtures/onboarding-browser.mjs"></script></body></html>`;
 const server=createServer(async(req,res)=>{
  try {
   let name=new URL(req.url,"http://localhost").pathname;
   if(name==="/"){res.setHeader("Content-Type","text/html");return res.end(html);}
   if(name==="/handlebars.js"){res.setHeader("Content-Type","text/javascript");return res.end(await readFile("node_modules/handlebars/dist/handlebars.runtime.min.js"));}
+  if(name==="/welcome-compiled.js"){res.setHeader("Content-Type","text/javascript");return res.end(`Handlebars.registerHelper('checked',v=>v?'checked':'');Handlebars.templates={welcome:Handlebars.template(${compiled})};`);}
   name=name.replace(/^\/systems\/star-wars-ffg\//,"/");
   const file=resolve(root,decodeURIComponent(name).slice(1));
   if(!file.startsWith(root+sep)||!/^\/(src|styles|assets|data|tests\/fixtures)\//.test(name))throw Error("Outside fixture");

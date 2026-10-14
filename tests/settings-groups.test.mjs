@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { groupSystemSettings } from "../src/settings-groups.mjs";
+import { groupSystemSettings, SETTINGS_GROUPS } from "../src/settings-groups.mjs";
+
+test("the rule-data review menu belongs to the documented Help group", () => {
+  assert.ok(SETTINGS_GROUPS.find(group=>group.label==="Help & diagnostics").keys.includes("dataReviewMenu"));
+});
 
 test("Star Wars settings return to named bordered panels without losing unknown settings", () => {
   const previous = globalThis.document;
