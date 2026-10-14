@@ -8,9 +8,9 @@ Original sheets and interface, with familiar narrative dice symbols from an attr
 
 [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) · [First launch and settings](docs/onboarding-settings.md)
 
-The unreleased **0.4.2 Beta listing candidate** is English only. Sixteen other translations remain in source for later fluent review and are excluded from the Beta ZIP. The published release remains **0.3.0**; the manifest below installs that release until a reviewed candidate is published. Use backups and disposable worlds for Beta evaluation. Human content/authorship, maintainer and independent GM sign-offs remain required; see [Beta submission gates](docs/alpha-listing.md).
+The **0.4.2 Beta release** is English only. Sixteen other translations remain in source for later fluent review and are excluded from the Beta ZIP. The latest stable release remains **0.3.0**. Use the version-specific Beta manifest below, back up worlds and evaluate Beta updates in disposable worlds. Foundry listing review is separate from GitHub release publication; see [Beta submission gates](docs/alpha-listing.md).
 
-The candidate offers a first-launch copyright reminder, a GM bookshelf saved to the world (with optional browser remembrance), and a skippable/replayable interface tour. Settings use native Foundry controls in six logical groups; play windows and journals use the system presentation.
+The Beta offers a first-launch copyright reminder, a GM bookshelf saved to the world (with optional browser remembrance), and a skippable/replayable interface tour. Settings use native Foundry controls in six logical groups; play windows and journals use the system presentation.
 
 [GM quick start](docs/gm-quick-start.md) · [Player quick start](docs/player-quick-start.md) · [Tabletop workflows](docs/tabletop-workflows.md) · [Production gates and limitations](docs/production-readiness.md) · [Backup and recovery](docs/backup-recovery.md) · [Keyboard access and performance](docs/accessibility-performance.md)
 
@@ -21,10 +21,12 @@ In Foundry, open **Configure Settings → Star Wars FFG → Help & rules coverag
 Use this manifest in Foundry's **Install System → Manifest URL**:
 
 ```text
-https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json
+https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.2/system.json
 ```
 
-Create a world using **Star Wars FFG**. For the unreleased candidate, the GM selects **Settings sidebar → Transaction authority** for one browser tab and repeats that selection after reload or handover. Other GM tabs can view without processing changes; see [transaction authority and recovery](docs/security-authority.md). Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
+The [latest stable manifest](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json) remains available separately; GitHub prereleases do not replace that channel.
+
+Create a world using **Star Wars FFG**. For the Beta, the GM selects **Settings sidebar → Transaction authority** for one browser tab and repeats that selection after reload or handover. Other GM tabs can view without processing changes; see [transaction authority and recovery](docs/security-authority.md). Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
 
 The compact seven-die tray beside the chat bar supports quick ad-hoc pools and follows Foundry's public, GM, blind and self chat buttons. Each player can hide it under **Configure Settings → Star Wars FFG → Compact dice tray by chat**.
 

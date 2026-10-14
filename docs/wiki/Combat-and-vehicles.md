@@ -1,6 +1,6 @@
 # Combat and vehicles
 
-These workflows describe the **unreleased gameplay candidate**. The system supports reviewed decisions; it does not silently resolve every rule in every sourcebook.
+These workflows describe the **0.4.2 Beta release**. The system supports reviewed decisions; it does not silently resolve every rule in every sourcebook.
 
 ## Personal combat
 

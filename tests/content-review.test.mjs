@@ -15,6 +15,13 @@ const files = {
   "assets/image.png": new Uint8Array([137,80,78,71]),
 };
 
+test('archive phase recognizes both candidate and release documentation without inventing a phase', () => {
+  for (const [wording, expected] of [['Alpha listing candidate', 'Alpha'], ['0.4.2 Beta release', 'Beta'], ['Read the guide.', null]]) {
+    const review = createContentReview({...files, 'README.md': encode(wording)}, {archiveSha256:'a'.repeat(64)});
+    assert.equal(review.archivePhase, expected, wording);
+  }
+});
+
 test("review inventory covers locale, template, inline, narrative, documentation and binary provenance", () => {
   const review = createContentReview(files, {archiveSha256:"a".repeat(64)});
   for (const text of ["Close", "Review the result", "A useful label", "Use the table ruling."])

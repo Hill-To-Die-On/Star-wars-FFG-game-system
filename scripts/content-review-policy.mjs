@@ -9,7 +9,7 @@ const hash = value => createHash("sha256").update(value).digest("hex");
 export function createContentReview(files, { archiveSha256, releasePhase = 'Beta' } = {}) {
   if (!['Alpha', 'Beta'].includes(releasePhase)) throw Error('Unknown release phase.');
   const manifest = JSON.parse(decoder.decode(files["system.json"]));
-  const archivePhase = decoder.decode(files['README.md'] ?? new Uint8Array()).match(/\b(Alpha|Beta) listing candidate\b/i)?.[1] ?? null;
+  const archivePhase = decoder.decode(files['README.md'] ?? new Uint8Array()).match(/\b(Alpha|Beta) (?:listing candidate|release)\b/i)?.[1] ?? null;
   const entries = new Map(), inventory = [];
   const add = (category, text, path, location, reviewRole) => {
     if (typeof text !== "string" || !text.trim()) return;
