@@ -147,3 +147,61 @@ test('tabletop writes honor the selected GM session after waiting for an actor r
  await assert.rejects(pending,/GM browser changed/);assert.equal(writes,0);
  selected=true;await service.execute('award',{actorUuid:actor.uuid,request},gm,'session-fence-positive');assert.equal(writes,1);
 });
+function equipmentWorld() {
+ const a=actor();let next=0;const owned=new Map();
+ Object.assign(a,{items:{get:key=>owned.get(key),[Symbol.iterator]:()=>owned.values()},
+  async createEmbeddedDocuments(type,rows){assert.equal(type,'Item');return rows.map(row=>{const created={...structuredClone(row),id:`owned-${++next}`,toObject(){return structuredClone({name:this.name,type:this.type,system:this.system});}};owned.set(created.id,created);return created;});},
+  async deleteEmbeddedDocuments(type,ids){assert.equal(type,'Item');for(const key of ids)owned.delete(key);}});
+ const item=(uuid,type,name,system={})=>({uuid,type,name,toObject:()=>({_id:'source-id',name,type,img:'icons/blaster.svg',system:{quantity:1,price:400,...system},ownership:{default:2},folder:'f',sort:7,_stats:{createdTime:1,lastModifiedBy:'gm'}})});
+ const docs={[a.uuid]:a,'Item.blaster':item('Item.blaster','weapon','Blaster pistol',{damage:6}),'Compendium.star-wars-ffg.gear.Item.stim':item('Compendium.star-wars-ffg.gear.Item.stim','gear','Stimpack'),'Item.talent':item('Item.talent','talent','Grit')};
+ return {a,owned,docs,service:new TabletopWorkflowService({resolve:key=>docs[key]})};
+}
+test('the GM distributes world and compendium equipment with reviewed history and duplicate-safe identity',async()=>{
+ const {a,owned,service}=equipmentWorld();
+ const args={actorUuid:a.uuid,request:{label:'Cantina salvage',items:[{uuid:'Item.blaster',quantity:1},{uuid:'Compendium.star-wars-ffg.gear.Item.stim',quantity:3}],source}};
+ const entry=await service.execute('equip',args,gm,'equip-1');
+ assert.equal(owned.size,2);
+ const created=[...owned.values()];
+ assert.deepEqual(created.map(i=>[i.name,i.type,i.system.quantity]),[['Blaster pistol','weapon',1],['Stimpack','gear',3]]);
+ assert.ok(created.every(i=>i._id===undefined&&i.ownership===undefined&&i.folder===undefined&&i.sort===undefined),'world-only fields are not copied onto the character');
+ assert.deepEqual(created.map(i=>i._stats),[{duplicateSource:'Item.blaster'},{compendiumSource:'Compendium.star-wars-ffg.gear.Item.stim'}],'native v12+ provenance fields record the original');
+ assert.ok(created.every(i=>i.flags?.core?.sourceId===undefined),'the deprecated core sourceId flag is not written');
+ assert.equal(entry.kind,'equipment');assert.deepEqual(entry.items.map(i=>i.name),['Blaster pistol','Stimpack']);
+ assert.equal(a.flags[id].workflowHistory.length,1);
+ await service.execute('equip',args,gm,'equip-1');
+ assert.equal(owned.size,2,'repeating an acknowledged operation does not hand out the items again');
+ await assert.rejects(service.execute('equip',{...args,request:{...args.request,label:'Different'}},gm,'equip-1'),/different/);
+});
+test('equipment undo removes only unchanged distributed items',async()=>{
+ const {a,owned,service}=equipmentWorld();
+ await service.execute('equip',{actorUuid:a.uuid,request:{label:'Medical kit',items:[{uuid:'Compendium.star-wars-ffg.gear.Item.stim',quantity:2}],source}},gm,'equip-2');
+ const [stim]=owned.values();stim.system.quantity=1;
+ await assert.rejects(service.execute('undo-effect',{actorUuid:a.uuid,entryId:'equip-2'},gm,'undo-changed'),/changed/);
+ assert.equal(owned.size,1);
+ stim.system.quantity=2;
+ const undone=await service.execute('undo-effect',{actorUuid:a.uuid,entryId:'equip-2'},gm,'undo-equip');
+ assert.equal(undone.undone,true);assert.equal(owned.size,0);
+});
+test('equipment distribution rejects players, non-characters, non-equipment and missing items without changes',async()=>{
+ const {a,owned,docs,service}=equipmentWorld(),request=items=>({label:'Loot',items,source});
+ await assert.rejects(service.execute('equip',{actorUuid:a.uuid,request:request([{uuid:'Item.blaster'}])},p,'player'),/GM/);
+ await assert.rejects(service.execute('equip',{actorUuid:a.uuid,request:request([{uuid:'Item.talent'}])},gm,'talent'),/weapons, armour, gear/);
+ await assert.rejects(service.execute('equip',{actorUuid:a.uuid,request:request([{uuid:'Item.missing'}])},gm,'missing'),/no longer exists/);
+ await assert.rejects(service.execute('equip',{actorUuid:a.uuid,request:request([])},gm,'empty'),/one to twenty/);
+ await assert.rejects(service.execute('equip',{actorUuid:a.uuid,request:request([{uuid:'Item.blaster',quantity:0}])},gm,'zero'),/Quantity/);
+ docs[a.uuid].type='minion';
+ await assert.rejects(service.execute('equip',{actorUuid:a.uuid,request:request([{uuid:'Item.blaster'}])},gm,'minion'),/player characters/);
+ assert.equal(owned.size,0);assert.equal(a.flags[id]?.workflowHistory,undefined);
+});
+test('session story checks apply through the GM authority and expire at session end',async()=>{
+ const a=actor();a.system.strain={value:0,max:12};a.system.morality={value:50,conflict:3};
+ const service=new TabletopWorkflowService({resolve:()=>a,campaign:()=>({obligation:true,morality:true})});
+ await service.execute('story-effect',{actorUuid:a.uuid,request:{mechanic:'obligation',delta:-2,checkId:'session-1',roll:22,triggered:true}},gm,'story-1');
+ assert.equal(a.system.strain.max,10);
+ await assert.rejects(service.execute('story-effect',{actorUuid:a.uuid,request:{mechanic:'obligation',delta:-1,checkId:'session-1'}},p,'player-story'),/GM/);
+ await service.execute('story-end',{actorUuid:a.uuid,request:{entryId:'story-1'}},gm,'story-end-1');
+ assert.equal(a.system.strain.max,12);
+ await service.execute('morality',{actorUuid:a.uuid,request:{roll:7}},gm,'morality-1');
+ assert.deepEqual([a.system.morality.value,a.system.morality.conflict],[54,0]);
+ assert.deepEqual(a.flags[id].workflowHistory.map(e=>e.kind),['session-story','session-story-end','morality']);
+});

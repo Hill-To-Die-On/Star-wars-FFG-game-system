@@ -92,7 +92,7 @@ test("public source verification records checks without private prose or paths",
 });
 
 test("source coverage requests every unverified signature chart", async () => {
-  const coverage = await readFile("docs/source-coverage.md", "utf8"),
+  const coverage = await readFile("docs/sources/advancement-coverage.md", "utf8"),
     section = coverage.split("## Signature chart photo requests")[1].split(
       "## Coverage limits",
     )[0];

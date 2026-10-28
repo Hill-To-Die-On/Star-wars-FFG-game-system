@@ -10,7 +10,7 @@ import {
 
 const SYSTEM_ID = "star-wars-ffg",
   outputDirectory = new URL("../docs/images/", import.meta.url),
-  reportPath = new URL("../docs/actor-icon-audit.json", import.meta.url),
+  reportPath = new URL("../docs/development/actor-icon-audit.json", import.meta.url),
   previewPath = new URL("../docs/images/actor-icon-token-preview.png", import.meta.url),
   database = JSON.parse(
     await readFile(new URL("../data/reference-database.json", import.meta.url), "utf8"),

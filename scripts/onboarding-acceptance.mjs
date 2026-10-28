@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { createServer } from "node:net";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
-import { installRecoveryArchive } from "./recovery-support.mjs";
+import { installRecoveryArchive, installedCoreVersion, classifyCompatibilityWarning, joinGame } from "./recovery-support.mjs";
 const args=process.argv.slice(2),arg=name=>args.find(v=>v.startsWith(`--${name}=`))?.slice(name.length+3);
 const app=arg("foundry-app"),license=arg("license"),port=Number(arg("port")??30028);
 if(!app||!license||!Number.isInteger(port)||port<1024||port>65535||port===30002)throw Error("Supply a licensed --foundry-app, private --license and isolated --port (never 30002).");
@@ -17,25 +17,32 @@ await copyFile(license,join(output,"Config/license.json"));
 if(arg('dice-so-nice')) {if(!args.includes('--features-only'))throw Error('Optional module checks require --features-only.');const source=resolve(arg('dice-so-nice'));const module=JSON.parse(await readFile(join(source,'module.json'),'utf8'));assert.equal(module.id,'dice-so-nice');await cp(source,join(output,'Data/modules/dice-so-nice'),{recursive:true,dereference:true});}
 await writeFile(join(output,"Config/options.json"),JSON.stringify({port,hostname:"127.0.0.1",upnp:false,world:"onboarding-validation"}));
 const installed=await installRecoveryArchive(resolve("dist/star-wars-ffg.zip"),join(output,"Data/systems/star-wars-ffg"));
-await writeFile(join(output,"Data/worlds/onboarding-validation/world.json"),JSON.stringify({id:"onboarding-validation",title:"Onboarding validation",system:"star-wars-ffg",systemVersion:installed.version,coreVersion:"14.368",compatibility:{minimum:"14",verified:"14.368"},packs:[]}));
-const report={kind:args.includes('--features')||args.includes('--features-only')?"native-beta-feature-check":args.includes('--alpha-play')?"native-onboarding-and-alpha-play":"native-onboarding",version:installed.version,archiveSha256:installed.sha256,port,checks:[],errors:[]};let child,browser,gm;
+const coreVersion=arg("core-version")??await installedCoreVersion(app);
+await writeFile(join(output,"Data/worlds/onboarding-validation/world.json"),JSON.stringify({id:"onboarding-validation",title:"Onboarding validation",system:"star-wars-ffg",systemVersion:installed.version,coreVersion,compatibility:{minimum:"14",verified:coreVersion},packs:[]}));
+const report={kind:args.includes('--features')||args.includes('--features-only')?"native-beta-feature-check":args.includes('--alpha-play')?"native-onboarding-and-alpha-play":"native-onboarding",version:installed.version,archiveSha256:installed.sha256,coreVersion,port,checks:[],errors:[],compatibilityWarnings:[],coreStartupRetries:0};let child,browser,gm;
+// Core deprecations raised by system code fail the run; others are recorded for review.
+const observe=page=>{page.on("pageerror",error=>report.errors.push(error.message));page.on("console",message=>{const warning=message.type()==="warning"&&classifyCompatibilityWarning(message.text());if(warning)report.compatibilityWarnings.push(warning);});};
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function bounded(promise,ms){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('Native onboarding cleanup timed out.')),ms);})]);}finally{clearTimeout(timer);}}
 async function screenshot(name){await gm.screenshot({path:join(output,`${name}.png`)});}
-async function joinWorld(page,name){await page.goto(`http://127.0.0.1:${port}/game`,{waitUntil:"domcontentloaded",timeout:60000});if(page.url().includes("/join")){await page.locator("#join-username").fill(name);await page.getByRole("button",{name:"Join Game Session"}).click();}await page.waitForFunction(()=>globalThis.game?.ready,null,{timeout:60000});}
+async function joinWorld(page,name){report.coreStartupRetries+=await joinGame(page,`http://127.0.0.1:${port}/game`,name,report.errors);}
 try {
- const log=createWriteStream(join(output,"server.log"));child=spawn(process.execPath,[resolve(app),`--dataPath=${output}`,`--port=${port}`,"--world=onboarding-validation"],{windowsHide:true,stdio:["ignore","pipe","pipe"]});child.stdout.pipe(log);child.stderr.pipe(log);
+ // Disposable servers never need the public IP discovery service.
+ const log=createWriteStream(join(output,"server.log"));child=spawn(process.execPath,[resolve(app),`--dataPath=${output}`,`--port=${port}`,"--world=onboarding-validation","--noipdiscovery"],{windowsHide:true,stdio:["ignore","pipe","pipe"]});child.stdout.pipe(log);child.stderr.pipe(log);
  let ready=false;for(let i=0;i<240;i++){if(child.exitCode!==null)throw Error("Isolated Foundry exited; see private server.log.");try{if((await fetch(`http://127.0.0.1:${port}/join`)).ok){ready=true;break;}}catch{}await delay(250);}assert.ok(ready,"Foundry starts within one minute");
  browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:["--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"]});
- const context=await browser.newContext({viewport:{width:1500,height:1000}});gm=await context.newPage();gm.on("pageerror",error=>report.errors.push(error.message));
+ const context=await browser.newContext({viewport:{width:1500,height:1000}});gm=await context.newPage();observe(gm);
  await joinWorld(gm,"Gamemaster");
+ // Prove the console watcher sees core compatibility warnings before trusting an empty list.
+ await gm.evaluate(()=>foundry.utils.logCompatibilityWarning("Star Wars FFG harness probe",{since:14,until:16,once:false}));
+ assert.equal(report.compatibilityWarnings.findIndex(w=>w.message.includes("harness probe")),0,"compatibility warnings are observable");report.compatibilityWarnings.shift();
  if(args.includes('--features-only')) {
    await gm.locator('.step-button[data-action="exit"]').waitFor();await gm.locator('.step-button[data-action="exit"]').click();await gm.locator('#star-wars-welcome').waitFor();
-   await gm.evaluate(async()=>{foundry.nue.Tour.activeTour?.exit();for(const app of [...foundry.applications.instances.values()])if(app.rendered&&app.element?.querySelector(':scope > .window-header'))await app.close();await User.create({name:'Onboarding Player',role:1,password:''});ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
-   if(arg('dice-so-nice')) {await gm.evaluate(()=>game.settings.set('core','moduleConfiguration',{'dice-so-nice':true}));await gm.reload({waitUntil:'domcontentloaded',timeout:60000});await gm.waitForFunction(()=>game.ready&&game.dice3d,null,{timeout:60000});await gm.evaluate(async()=>{foundry.nue.Tour.activeTour?.exit();for(const app of [...foundry.applications.instances.values()])if(app.rendered&&app.element?.querySelector(':scope > .window-header'))await app.close();ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});report.expectedModules=['dice-so-nice'];}
+   await gm.evaluate(async()=>{foundry.nue.Tour.activeTour?.exit();for(const app of [...foundry.applications.instances.values()])if(app.rendered&&app.element?.querySelector(':scope > .window-header'))await app.close();await User.create({name:'Onboarding Player',role:1,password:''});ui.settings.render(true);ui.sidebar.changeTab('settings','primary');ui.sidebar.expand();});
+   if(arg('dice-so-nice')) {await gm.evaluate(()=>game.settings.set('core','moduleConfiguration',{'dice-so-nice':true}));await gm.reload({waitUntil:'domcontentloaded',timeout:60000});await gm.waitForFunction(()=>game.ready&&game.dice3d,null,{timeout:60000});await gm.evaluate(async()=>{foundry.nue.Tour.activeTour?.exit();for(const app of [...foundry.applications.instances.values()])if(app.rendered&&app.element?.querySelector(':scope > .window-header'))await app.close();ui.settings.render(true);ui.sidebar.changeTab('settings','primary');ui.sidebar.expand();});report.expectedModules=['dice-so-nice'];}
    await gm.locator('[data-transaction-authority]').click();await gm.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true}).click();
    await gm.waitForFunction(async()=>(await import('/systems/star-wars-ffg/src/document-transactions.mjs')).getDocumentTransactionBroker().isAuthority());
-   const featureContext=await browser.newContext({viewport:{width:1500,height:1000}}),featurePlayer=await featureContext.newPage();featurePlayer.on('pageerror',error=>report.errors.push(error.message));await joinWorld(featurePlayer,'Onboarding Player');
+   const featureContext=await browser.newContext({viewport:{width:1500,height:1000}}),featurePlayer=await featureContext.newPage();observe(featurePlayer);await joinWorld(featurePlayer,'Onboarding Player');
    let featureDeadline;try{await Promise.race([(await import('./native-feature-acceptance.mjs')).nativeFeatureAcceptance({gm,player:featurePlayer,report,output,filter:arg('feature-filter')}),new Promise((_,reject)=>{featureDeadline=setTimeout(()=>reject(Error('Native feature checks exceeded their twenty-minute bound.')),1200000);})]);}finally{clearTimeout(featureDeadline);await featureContext.close();}
  } else {
  await gm.locator('.step-button[data-action="exit"]').waitFor();await gm.locator('.step-button[data-action="exit"]').click();await gm.locator("#star-wars-welcome").waitFor();
@@ -79,10 +86,10 @@ try {
  assert.equal(await gm.evaluate(()=>game.messages.filter(m=>m.isRoll).length),0,'opening a compact skill does not roll');
  report.checks.push('Character sheet resizes with native handle, compact overview and single-column skills; skill opens a pool without rolling');
  await gm.evaluate(async()=>{for(const instance of [...foundry.applications.instances.values()])if(instance.rendered && instance.element?.querySelector(":scope > .window-header"))await instance.close();});
- const playerContext=await browser.newContext({viewport:{width:1280,height:900}}),player=await playerContext.newPage();player.on("pageerror",error=>report.errors.push(error.message));await joinWorld(player,"Onboarding Player");
+ const playerContext=await browser.newContext({viewport:{width:1280,height:900}}),player=await playerContext.newPage();observe(player);await joinWorld(player,"Onboarding Player");
  await player.locator("#star-wars-welcome").waitFor();assert.equal(await player.getByRole("button",{name:"Choose my books"}).count(),0);await player.getByRole("button",{name:"Continue",exact:true}).click();await player.getByRole("button",{name:"Skip tutorial"}).click();await player.locator("#star-wars-welcome").waitFor({state:"hidden"});await player.reload({waitUntil:"domcontentloaded",timeout:60000});await player.waitForFunction(()=>globalThis.game?.ready);assert.equal(await player.locator("#star-wars-welcome").count(),0);report.checks.push("Player welcome cannot edit campaign books and persists independently");await playerContext.close();
  if(args.includes('--alpha-play')||args.includes('--features')) {
-   const playContext=await browser.newContext({viewport:{width:1500,height:1000}}),playPlayer=await playContext.newPage();playPlayer.on('pageerror',error=>report.errors.push(error.message));await joinWorld(playPlayer,'Onboarding Player');
+   const playContext=await browser.newContext({viewport:{width:1500,height:1000}}),playPlayer=await playContext.newPage();observe(playPlayer);await joinWorld(playPlayer,'Onboarding Player');
    let playDeadline;
    try {await Promise.race([(await import('./alpha-play-acceptance.mjs')).alphaPlayAcceptance({gm,player:playPlayer,report,output}),new Promise((_,reject)=>{playDeadline=setTimeout(()=>reject(Error('Alpha play workflow exceeded its three-minute bound.')),180000);})]);}
    catch(error){try{await playPlayer.screenshot({path:join(output,'alpha-play-failure.png'),timeout:5000});await writeFile(join(output,'alpha-play-failure-dom.html'),await playPlayer.content());}catch{}throw error;}
@@ -91,7 +98,7 @@ try {
    await playContext.close();
  }
  }
- assert.deepEqual(report.errors,[]);report.passed=true;
+ assert.deepEqual(report.errors,[]);assert.deepEqual(report.compatibilityWarnings.filter(w=>w.fromSystem),[],"system code raised core compatibility warnings");report.passed=true;
 } catch(error) {report.failure=error.stack;try { await screenshot("failure"); await writeFile(join(output,"failure-dom.html"),await gm.content()); } catch {} throw error;}
 finally {
  await writeFile(join(output,"results.json"),JSON.stringify(report,null,2));
