@@ -25,6 +25,6 @@ Exact string duplicates appear once across categories. Case, whitespace and mark
 
 The existing `star-wars-ffg.review.<archiveSha256>` storage key and schema version 1 remain compatible with previous unfinished browser drafts. Imports reject another archive, unknown entries, decisions or source scopes. Before a valid import, the current draft is retained under `<key>.before-import` when storage is available.
 
-The generator, workflow scripts, tests and this development note are not shipped in the system ZIP. Regenerating only review metadata/HTML from an unchanged archive leaves the package hash and every text ID intact. Replacements to shipped content require a new archive and the release review described in `docs/alpha-listing.md`.
+The generator, workflow scripts, tests and this development note are not shipped in the system ZIP. Regenerating only review metadata/HTML from an unchanged archive leaves the package hash and every text ID intact. Replacements to shipped content require a new archive and the release review described in `docs/development/foundry-listing.md`.
 
 The Beta phase change updates candidate wiki source labels alongside the roadmap and README. Publication remains a separate operation coordinated with the final release review; technical documentation does not require prepared-copy authorship sign-off. The public release is still 0.3.0.

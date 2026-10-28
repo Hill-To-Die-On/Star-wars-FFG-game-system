@@ -1,0 +1,833 @@
+{
+ "format": "star-wars-critical-tables",
+ "version": 1,
+ "personal": {
+  "sources": [
+   {
+    "book": "Edge of The Empire - Core Book",
+    "page": "217",
+    "table": "Table 6-10: Critical Injury Result"
+   },
+   {
+    "book": "Age of Rebellion - Core Book",
+    "page": "231",
+    "table": "Table 6-10: Critical Injury Result"
+   },
+   {
+    "book": "Force & Destiny - Core Book",
+    "page": "225",
+    "table": "Table 6-10: Critical Injury Result"
+   }
+  ],
+  "rules": {
+   "die": "d100",
+   "perExistingCritical": 10,
+   "minimumResult": 1,
+   "deathAtOrAbove": 151,
+   "notes": "Each unhealed Critical Injury adds +10 to later critical rolls, even after its short-term effect ends (EotE p218, AoR p230, FaD p223). A critical needs a hit whose damage beats soak; one critical roll per hit, but each extra trigger of the critical rating adds +10 (EotE p158, p206; AoR p171, p218; FaD p165, p212). Triumph can trigger a critical regardless of rating (EotE p13). Vicious adds 10 x its rating (EotE p157, AoR p171, FaD p164). Lethal Blows adds +10 per rank (EotE p138, AoR p151; no such talent in the FaD core). Hunter adds +10 per rank against animals (EotE p137, FaD p145). Durable lowers the result by 10 per rank, floor 1, the only stated minimum (EotE p135, AoR p146, FaD p142). Disruptor hits always yield at least the Crippled result (EotE p163, AoR p177). GM may add +50 for planetary-scale weapons hitting a person (EotE p224, AoR p236, FaD p230). Exceeding wound threshold incapacitates and inflicts one Critical Injury (EotE p215, AoR p229, FaD p222). Death: tables list 141-150 The End is Nigh and 151+ Dead; AoR p232 and FaD p224 prose say 151+ kills, but EotE p218 prose says 141 or higher. Heroic Fortitude can temporarily ignore critical effects on Brawn/Agility checks (EotE p137, FaD p145)."
+  },
+  "rows": [
+   {
+    "low": 1,
+    "high": 5,
+    "severity": 1,
+    "name": "Minor Nick",
+    "summary": "Victim takes 1 strain.",
+    "effect": {
+     "kind": "immediate",
+     "strain": 1
+    }
+   },
+   {
+    "low": 6,
+    "high": 10,
+    "severity": 1,
+    "name": "Slowed Down",
+    "summary": "On its next turn the victim may act only in the final allied Initiative slot.",
+    "effect": {
+     "kind": "timed",
+     "duration": "victim's next turn"
+    }
+   },
+   {
+    "low": 11,
+    "high": 15,
+    "severity": 1,
+    "name": "Sudden Jolt",
+    "summary": "Victim lets go of anything it is holding.",
+    "effect": {
+     "kind": "immediate"
+    }
+   },
+   {
+    "low": 16,
+    "high": 20,
+    "severity": 1,
+    "name": "Distracted",
+    "summary": "Victim gets no free maneuver on its next turn.",
+    "effect": {
+     "kind": "timed",
+     "duration": "victim's next turn"
+    }
+   },
+   {
+    "low": 21,
+    "high": 25,
+    "severity": 1,
+    "name": "Off-Balance",
+    "summary": "Victim's next skill check gains one Setback die.",
+    "effect": {
+     "kind": "timed",
+     "pool": {
+      "setback": 1,
+      "scope": "all"
+     },
+     "duration": "victim's next skill check"
+    }
+   },
+   {
+    "low": 26,
+    "high": 30,
+    "severity": 1,
+    "name": "Discouraging Wound",
+    "summary": "Convert one light side Destiny Point to dark side; for an NPC victim, convert dark to light instead.",
+    "effect": {
+     "kind": "immediate"
+    }
+   },
+   {
+    "low": 31,
+    "high": 35,
+    "severity": 1,
+    "name": "Stunned",
+    "summary": "Victim is staggered through the end of its next turn.",
+    "effect": {
+     "kind": "timed",
+     "status": "staggered",
+     "duration": "until the end of the victim's next turn"
+    }
+   },
+   {
+    "low": 36,
+    "high": 40,
+    "severity": 1,
+    "name": "Stinger",
+    "summary": "Victim's next check is one difficulty step harder.",
+    "effect": {
+     "kind": "timed",
+     "pool": {
+      "difficulty": 1,
+      "scope": "all"
+     },
+     "duration": "victim's next check"
+    }
+   },
+   {
+    "low": 41,
+    "high": 45,
+    "severity": 2,
+    "name": "Bowled Over",
+    "summary": "Victim falls prone and takes 1 strain.",
+    "effect": {
+     "kind": "immediate",
+     "strain": 1,
+     "status": "prone"
+    }
+   },
+   {
+    "low": 46,
+    "high": 50,
+    "severity": 2,
+    "name": "Head Ringer",
+    "summary": "Intellect- and Cunning-based checks are one step harder for the rest of the encounter.",
+    "effect": {
+     "kind": "timed",
+     "pool": {
+      "difficulty": 1,
+      "scope": "characteristic:Intellect,Cunning"
+     },
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 51,
+    "high": 55,
+    "severity": 2,
+    "name": "Fearsome Wound",
+    "summary": "Presence- and Willpower-based checks are one step harder for the rest of the encounter.",
+    "effect": {
+     "kind": "timed",
+     "pool": {
+      "difficulty": 1,
+      "scope": "characteristic:Presence,Willpower"
+     },
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 56,
+    "high": 60,
+    "severity": 2,
+    "name": "Agonizing Wound",
+    "summary": "Brawn- and Agility-based checks are one step harder for the rest of the encounter.",
+    "effect": {
+     "kind": "timed",
+     "pool": {
+      "difficulty": 1,
+      "scope": "characteristic:Brawn,Agility"
+     },
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 61,
+    "high": 65,
+    "severity": 2,
+    "name": "Slightly Dazed",
+    "summary": "Victim stays disoriented for the rest of the encounter.",
+    "effect": {
+     "kind": "timed",
+     "status": "disoriented",
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 66,
+    "high": 70,
+    "severity": 2,
+    "name": "Scattered Senses",
+    "summary": "Victim discards every Boost die from its skill checks for the rest of the encounter.",
+    "effect": {
+     "kind": "timed",
+     "pool": {
+      "removeAllBoost": true,
+      "scope": "all"
+     },
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 71,
+    "high": 75,
+    "severity": 2,
+    "name": "Hamstrung",
+    "summary": "Victim has no free maneuver for the rest of the encounter.",
+    "effect": {
+     "kind": "timed",
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 76,
+    "high": 80,
+    "severity": 2,
+    "name": "Overpowered",
+    "summary": "The attacker may at once make one more free attack on the victim using an identical dice pool.",
+    "effect": {
+     "kind": "immediate"
+    }
+   },
+   {
+    "low": 81,
+    "high": 85,
+    "severity": 2,
+    "name": "Winded",
+    "summary": "For the rest of the encounter the victim cannot take strain voluntarily to fuel abilities or buy extra maneuvers.",
+    "effect": {
+     "kind": "timed",
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 86,
+    "high": 90,
+    "severity": 2,
+    "name": "Compromised",
+    "summary": "All of the victim's skill checks are one step harder for the rest of the encounter.",
+    "effect": {
+     "kind": "timed",
+     "pool": {
+      "difficulty": 1,
+      "scope": "all"
+     },
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 91,
+    "high": 95,
+    "severity": 3,
+    "name": "At the Brink",
+    "summary": "Victim takes 1 strain whenever it performs an action.",
+    "effect": {
+     "kind": "until-healed",
+     "recurring": {
+      "strain": 1,
+      "trigger": "each action the victim performs"
+     }
+    }
+   },
+   {
+    "low": 96,
+    "high": 100,
+    "severity": 3,
+    "name": "Crippled",
+    "summary": "A GM-chosen limb is disabled until healed or replaced; checks needing that limb are one step harder.",
+    "effect": {
+     "kind": "until-healed",
+     "duration": "until healed or the limb is replaced"
+    }
+   },
+   {
+    "low": 101,
+    "high": 105,
+    "severity": 3,
+    "name": "Maimed",
+    "summary": "A GM-chosen limb is lost for good. Without a cybernetic, actions needing it are impossible; other actions gain one Setback die.",
+    "effect": {
+     "kind": "permanent",
+     "pool": {
+      "setback": 1,
+      "scope": "all"
+     }
+    }
+   },
+   {
+    "low": 106,
+    "high": 110,
+    "severity": 3,
+    "name": "Horrific Injury",
+    "summary": "Roll d10 to pick a characteristic; it counts as 1 lower until this injury is healed.",
+    "effect": {
+     "kind": "until-healed",
+     "characteristic": {
+      "name": "random-d10",
+      "delta": -1,
+      "d10": {
+       "7": "Intellect",
+       "8": "Cunning",
+       "9": "Presence",
+       "10": "Willpower",
+       "1-3": "Brawn",
+       "4-6": "Agility"
+      }
+     },
+     "duration": "until this Critical Injury is healed"
+    }
+   },
+   {
+    "low": 111,
+    "high": 115,
+    "severity": 3,
+    "name": "Temporarily Lame",
+    "summary": "Until healed, the victim is limited to a single maneuver per turn.",
+    "effect": {
+     "kind": "until-healed",
+     "duration": "until this Critical Injury is healed"
+    }
+   },
+   {
+    "low": 116,
+    "high": 120,
+    "severity": 3,
+    "name": "Blinded",
+    "summary": "Victim loses sight. Upgrade difficulty of all checks twice; Perception and Vigilance checks upgrade three times instead.",
+    "effect": {
+     "kind": "until-healed",
+     "pool": [
+      {
+       "upgradeDifficulty": 2,
+       "scope": "all"
+      },
+      {
+       "upgradeDifficulty": 3,
+       "scope": "skill:Perception,Vigilance",
+       "replacesGeneral": true
+      }
+     ]
+    }
+   },
+   {
+    "low": 121,
+    "high": 125,
+    "severity": 3,
+    "name": "Knocked Senseless",
+    "summary": "Victim is staggered until the encounter ends.",
+    "effect": {
+     "kind": "timed",
+     "status": "staggered",
+     "duration": "until the end of the encounter"
+    }
+   },
+   {
+    "low": 126,
+    "high": 130,
+    "severity": 4,
+    "name": "Gruesome Injury",
+    "summary": "Roll d10 to pick a characteristic; it drops by 1 permanently, never below 1.",
+    "effect": {
+     "kind": "permanent",
+     "characteristic": {
+      "name": "random-d10",
+      "delta": -1,
+      "minimum": 1,
+      "d10": {
+       "7": "Intellect",
+       "8": "Cunning",
+       "9": "Presence",
+       "10": "Willpower",
+       "1-3": "Brawn",
+       "4-6": "Agility"
+      }
+     }
+    }
+   },
+   {
+    "low": 131,
+    "high": 140,
+    "severity": 4,
+    "name": "Bleeding Out",
+    "summary": "Each round at turn start, victim takes 1 wound and 1 strain. Every 5 wounds over threshold adds another Critical Injury (reroll repeats).",
+    "effect": {
+     "kind": "until-healed",
+     "recurring": {
+      "wounds": 1,
+      "strain": 1,
+      "trigger": "start of each of the victim's turns",
+      "extraCriticalPerWoundsOverThreshold": 5
+     }
+    }
+   },
+   {
+    "low": 141,
+    "high": 150,
+    "severity": 4,
+    "name": "The End is Nigh",
+    "summary": "Victim dies once the last Initiative slot of the next round has passed.",
+    "effect": {
+     "kind": "death",
+     "duration": "after the last Initiative slot of the next round"
+    }
+   },
+   {
+    "low": 151,
+    "high": null,
+    "severity": null,
+    "name": "Dead",
+    "summary": "Victim is killed outright.",
+    "effect": {
+     "kind": "death"
+    }
+   }
+  ]
+ },
+ "vehicle": {
+  "sources": [
+   {
+    "book": "Edge of The Empire - Core Book",
+    "page": "244",
+    "table": "Table 7-9: Critical Hit Result"
+   },
+   {
+    "book": "Age of Rebellion - Core Book",
+    "page": "258",
+    "table": "Table 7-9: Critical Hit Result"
+   },
+   {
+    "book": "Force & Destiny - Core Book",
+    "page": "250",
+    "table": "Table 7-9: Critical Hit Result"
+   }
+  ],
+  "rules": {
+   "die": "d100",
+   "perExistingCritical": 10,
+   "minimumResult": null,
+   "deathAtOrAbove": 154,
+   "notes": "deathAtOrAbove means the vehicle is destroyed (Vaporized); Breaking Up (145-153) destroys it after a one-round delay. Damage must exceed armor to cause a Critical Hit (EotE p224, p243). Spending the critical rating cost again on one hit adds +10 per extra critical (EotE p238, AoR p250, FaD p244). Each Critical Hit still on the vehicle adds +10, even if its effect has lapsed (EotE p243, AoR p257, FaD p249). Personal-critical talents and qualities such as Vicious do not apply to vehicles (EotE p238, AoR p250, FaD p244). Hull trauma over threshold: silhouette 3 or less unimportant craft simply explode or are disabled; larger or PC-crewed craft take one Critical Hit and go adrift (EotE p242-243). A crippled ship patched back into the fight takes a Critical Hit at +30 whenever it suffers hull trauma (EotE p243, AoR p256, FaD p248). Severity sets the repair difficulty, which the GM may adjust (EotE p243)."
+  },
+  "rows": [
+   {
+    "low": 1,
+    "high": 9,
+    "severity": 1,
+    "name": "Mechanical Stress",
+    "summary": "Vehicle takes 1 system strain.",
+    "effect": {
+     "kind": "immediate",
+     "vehicle": {
+      "systemStrain": 1
+     }
+    }
+   },
+   {
+    "low": 10,
+    "high": 18,
+    "severity": 1,
+    "name": "Jostled",
+    "summary": "Every crew member takes 1 strain and is disoriented for one round.",
+    "effect": {
+     "kind": "timed",
+     "crew": {
+      "strain": 1,
+      "status": "disoriented"
+     },
+     "duration": "one round"
+    }
+   },
+   {
+    "low": 19,
+    "high": 27,
+    "severity": 1,
+    "name": "Losing Power to Shields",
+    "summary": "Defense in the struck zone drops by 1 until repaired; a vehicle without defense takes 1 system strain instead.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "defense": {
+       "zone": "affected",
+       "delta": -1
+      },
+      "ifNoDefense": {
+       "systemStrain": 1
+      }
+     },
+     "duration": "until the Critical Hit is repaired"
+    }
+   },
+   {
+    "low": 28,
+    "high": 36,
+    "severity": 1,
+    "name": "Knocked Off Course",
+    "summary": "Pilot's next turn allows no maneuvers and requires a Piloting check, difficulty set by current speed, to regain control.",
+    "effect": {
+     "kind": "timed",
+     "duration": "pilot's next turn"
+    }
+   },
+   {
+    "low": 37,
+    "high": 45,
+    "severity": 1,
+    "name": "Tailspin",
+    "summary": "Until the pilot's next turn ends, attacks fired from the vehicle add two Setback dice and all crew are immobilized.",
+    "effect": {
+     "kind": "timed",
+     "pool": {
+      "setback": 2,
+      "scope": "attacks-from-vehicle"
+     },
+     "crew": {
+      "status": "immobilized"
+     },
+     "duration": "until the end of the pilot's next turn"
+    }
+   },
+   {
+    "low": 46,
+    "high": 54,
+    "severity": 1,
+    "name": "Component Hit",
+    "summary": "An attacker-chosen component stops working until the end of the next round (see Tables 7-10 and 7-11).",
+    "effect": {
+     "kind": "timed",
+     "vehicle": {
+      "componentDisabled": "attacker-choice"
+     },
+     "duration": "until the end of the following round"
+    }
+   },
+   {
+    "low": 55,
+    "high": 63,
+    "severity": 2,
+    "name": "Shields Failing",
+    "summary": "Defense in every zone drops by 1 until repaired; a vehicle without defense takes 2 system strain instead.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "defense": {
+       "zone": "all",
+       "delta": -1
+      },
+      "ifNoDefense": {
+       "systemStrain": 2
+      }
+     },
+     "duration": "until the Critical Hit is repaired"
+    }
+   },
+   {
+    "low": 64,
+    "high": 72,
+    "severity": 2,
+    "name": "Navicomputer Failure",
+    "summary": "No hyperspace jumps until repaired (navicomputer or astromech down); a vehicle lacking a hyperdrive loses its navigation instead.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "hyperspaceDisabled": true
+     },
+     "duration": "until the Critical Hit is repaired"
+    }
+   },
+   {
+    "low": 73,
+    "high": 81,
+    "severity": 2,
+    "name": "Power Fluctuations",
+    "summary": "Until repaired, the pilot may not voluntarily take system strain, for example to buy an extra maneuver.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "noVoluntarySystemStrain": true
+     },
+     "duration": "until the Critical Hit is repaired"
+    }
+   },
+   {
+    "low": 82,
+    "high": 90,
+    "severity": 3,
+    "name": "Shields Down",
+    "summary": "Struck zone's defense becomes 0 and other zones lose 1 until repaired; defense may still be shifted in. No-defense vehicles take 4 system strain.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "defense": [
+       {
+        "zone": "affected",
+        "setTo": 0
+       },
+       {
+        "zone": "others",
+        "delta": -1
+       }
+      ],
+      "ifNoDefense": {
+       "systemStrain": 4
+      }
+     },
+     "duration": "until the Critical Hit is repaired"
+    }
+   },
+   {
+    "low": 91,
+    "high": 99,
+    "severity": 3,
+    "name": "Engine Damaged",
+    "summary": "Top speed falls by 1, not below 1, until repaired.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "maxSpeed": {
+       "delta": -1,
+       "minimum": 1
+      }
+     },
+     "duration": "until the Critical Hit is repaired"
+    }
+   },
+   {
+    "low": 100,
+    "high": 108,
+    "severity": 3,
+    "name": "Shield Overload",
+    "summary": "All zones' defense becomes 0 and the vehicle takes 2 system strain; no repair before the encounter ends. No-defense vehicles lose 1 armor.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "defense": {
+       "zone": "all",
+       "setTo": 0
+      },
+      "systemStrain": 2,
+      "repairBlockedUntilEncounterEnds": true,
+      "ifNoDefense": {
+       "armor": -1
+      }
+     },
+     "duration": "until repaired; repair impossible before the encounter ends"
+    }
+   },
+   {
+    "low": 109,
+    "high": 117,
+    "severity": 3,
+    "name": "Engines Down",
+    "summary": "Top speed becomes 0 until repaired, though momentum keeps it on course; no maneuvers until repaired.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "maxSpeed": {
+       "setTo": 0
+      },
+      "noManeuvers": true
+     },
+     "duration": "until the Critical Hit is repaired"
+    }
+   },
+   {
+    "low": 118,
+    "high": 126,
+    "severity": 3,
+    "name": "Major System Failure",
+    "summary": "An attacker-chosen component is wrecked and stays inoperable until the critical is repaired (see Tables 7-10 and 7-11).",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "componentDisabled": "attacker-choice"
+     },
+     "duration": "until the Critical Hit is repaired"
+    }
+   },
+   {
+    "low": 127,
+    "high": 133,
+    "severity": 4,
+    "name": "Major Hull Breach",
+    "summary": "Hull ruptures. Silhouette 4 or less fully depressurizes over rounds equal to silhouette; larger ships lose GM-chosen sections. In atmosphere, apply Destabilized instead.",
+    "effect": {
+     "kind": "narrative"
+    }
+   },
+   {
+    "low": 134,
+    "high": 138,
+    "severity": 4,
+    "name": "Destabilized",
+    "summary": "Hull trauma threshold and system strain threshold are both cut to half their original values until repaired.",
+    "effect": {
+     "kind": "until-healed",
+     "vehicle": {
+      "hullTraumaThresholdFactor": 0.5,
+      "systemStrainThresholdFactor": 0.5
+     },
+     "duration": "until repaired"
+    }
+   },
+   {
+    "low": 139,
+    "high": 144,
+    "severity": 4,
+    "name": "Fire!",
+    "summary": "Vehicle takes 2 system strain at once; anyone in the flames takes fire damage. Extinguishing needs GM-set checks and one round per 2 silhouette.",
+    "effect": {
+     "kind": "immediate",
+     "vehicle": {
+      "systemStrain": 2
+     }
+    }
+   },
+   {
+    "low": 145,
+    "high": 153,
+    "severity": 4,
+    "name": "Breaking Up",
+    "summary": "Vehicle is destroyed at the end of the following round; occupants get one round to bail out or reach escape pods.",
+    "effect": {
+     "kind": "death",
+     "vehicle": {
+      "destroyed": true
+     },
+     "duration": "destroyed at the end of the following round"
+    }
+   },
+   {
+    "low": 154,
+    "high": null,
+    "severity": null,
+    "name": "Vaporized",
+    "summary": "Vehicle is utterly destroyed with no survivors.",
+    "effect": {
+     "kind": "death",
+     "vehicle": {
+      "destroyed": true
+     }
+    }
+   }
+  ]
+ },
+ "healing": {
+  "personal": {
+   "skill": "Medicine",
+   "difficultyBySeverity": {
+    "1": "Easy",
+    "2": "Average",
+    "3": "Hard",
+    "4": "Daunting"
+   },
+   "rules": "A Medicine check at the injury's severity removes that Critical Injury; each injury allows one such check per week. Treating yourself adds two difficulty; lacking proper medical gear adds one. Droids use Mechanics instead, and a droid repairing itself adds only one difficulty. Natural recovery: after each full week of rest, a Resilience check at the severity removes one injury, Triumph clears one more, and failure still heals 1 wound. In a bacta tank the Resilience check comes every 24 hours. Stimpacks, oil baths and repair patches never remove criticals. An injury stays, still adding +10, until removed.",
+   "page": "219-220",
+   "pagesByBook": {
+    "Edge of The Empire - Core Book": "113, 219-221 (Table 6-11 on 220)",
+    "Age of Rebellion - Core Book": "232-233 (Table 6-11 on 233)",
+    "Force & Destiny - Core Book": "226-227 (Table 6-11 on 226)"
+   }
+  },
+  "vehicle": {
+   "skill": "Mechanics",
+   "difficultyBySeverity": {
+    "1": "Easy",
+    "2": "Average",
+    "3": "Hard",
+    "4": "Daunting"
+   },
+   "rules": "Repairs use the Damage Control ship action (any crew member, not pilot-only): a Mechanics check at the critical's severity, which the GM may modify. Failed repairs may be retried repeatedly until fixed, limited only by one action per character per turn. Shield Overload cannot be repaired before the encounter ends. Until repaired, each Critical Hit counts against the vehicle and adds +10 to later critical rolls.",
+   "page": "234, 243-244",
+   "pagesByBook": {
+    "Edge of The Empire - Core Book": "233-234, 243-244",
+    "Age of Rebellion - Core Book": "247, 257-258",
+    "Force & Destiny - Core Book": "240, 249-250"
+   }
+  }
+ },
+ "naturalRest": {
+  "rules": "Every full night's rest heals 1 wound regardless of condition, and a good night's sleep normally clears all strain. After each full week of rest, attempt the Resilience check against one Critical Injury (see healing.personal). Same pages: after an encounter, a Simple Discipline or Cool check recovers 1 strain per success. First aid: one Medicine check per patient per encounter, Easy at or under half wound threshold, Average above half, Hard past threshold; successes heal wounds, Advantage heals strain. Bacta: 1 wound per 2 hours, or per 6 hours while incapacitated. Stimpacks heal 5, then 4, 3, 2, 1 within a day; the sixth does nothing; potency resets after a full night's rest or 24 hours; applying one takes a maneuver while engaged. Droids: oil bath heals 1 wound per hour; repair patches heal 3 each, five per day.",
+  "structured": {
+   "woundsPerNight": 1,
+   "strainAfterRest": "all",
+   "criticalCheckEvery": "week",
+   "endOfEncounterStrain": {
+    "check": "Simple Discipline or Cool",
+    "strainPerSuccess": 1
+   },
+   "medicalCare": {
+    "perPatientPerEncounter": 1,
+    "difficultyByHealth": {
+     "atOrUnderHalfThreshold": "Easy",
+     "overHalfThreshold": "Average",
+     "overThreshold": "Hard"
+    },
+    "woundsPer": "success",
+    "strainPer": "advantage"
+   },
+   "bacta": {
+    "hoursPerWoundWounded": 2,
+    "hoursPerWoundIncapacitated": 6,
+    "criticalCheckEveryHours": 24
+   },
+   "stimpackWoundsBySequence": [
+    5,
+    4,
+    3,
+    2,
+    1,
+    0
+   ],
+   "stimpackReset": "full night's rest or 24 hours",
+   "droid": {
+    "oilBathHoursPerWound": 1,
+    "repairPatchWounds": 3,
+    "repairPatchesPerDay": 5
+   }
+  },
+  "page": "219-221",
+  "pagesByBook": {
+   "Edge of The Empire - Core Book": "219-221",
+   "Age of Rebellion - Core Book": "232-233",
+   "Force & Destiny - Core Book": "226-227"
+  }
+ }
+}

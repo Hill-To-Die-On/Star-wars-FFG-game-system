@@ -1181,6 +1181,46 @@
       }
     },
     {
+      "_id": "2a987bd782f5d3d6",
+      "name": "ARC-170 Heavy Starfighter",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "70"
+      },
+      "stats": {
+        "hullTrauma": 18,
+        "systemStrain": 10,
+        "armor": 4,
+        "silhouette": 3,
+        "speed": 4,
+        "handling": 0,
+        "shields": {
+          "fore": 2,
+          "aft": 1,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "70"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "00372f4dabf6b698",
       "name": "ARC-40b Scout-Reconnaissance Fighter",
       "source": {
@@ -1533,6 +1573,50 @@
       }
     },
     {
+      "_id": "ee108559ea709c38",
+      "name": "AT-TE",
+      "source": {
+        "book": "Rise of the Seperatists",
+        "page": "69"
+      },
+      "stats": {
+        "hullTrauma": 40,
+        "systemStrain": 35,
+        "armor": 4,
+        "silhouette": 4,
+        "speed": 1,
+        "handling": -2,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Rise of the Seperatists",
+            "page": "69"
+          },
+          {
+            "book": "Rise of the Seperatists",
+            "page": "70"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "3ab3fde73af2f955",
       "name": "AV-21 Landspeeder",
       "source": {
@@ -1580,6 +1664,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "27961bbae29f9f34",
+      "name": "Acclamtor-Class Planetary Ship",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "74"
+      },
+      "stats": {
+        "hullTrauma": 80,
+        "systemStrain": 65,
+        "armor": 6,
+        "silhouette": 7,
+        "speed": 2,
+        "handling": -1,
+        "shields": {
+          "fore": 3,
+          "aft": 2,
+          "port": 2,
+          "starboard": 2
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "74"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -2116,6 +2240,46 @@
       }
     },
     {
+      "_id": "8fa1a249c27522f4",
+      "name": "Alpha-3 Nimbus-Class V-Wing Starfighter",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "69"
+      },
+      "stats": {
+        "hullTrauma": 10,
+        "systemStrain": 8,
+        "armor": 2,
+        "silhouette": 3,
+        "speed": 4,
+        "handling": 2,
+        "shields": {
+          "fore": 1,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "69"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "96e7c84065791bf8",
       "name": "Alpha-Class XG-1 \"Star Wing\" Assault Gunboat",
       "source": {
@@ -2167,6 +2331,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "b11473669ba3893b",
+      "name": "Aquaspeeder",
+      "source": {
+        "book": "Force & Destiny - Unlimited Power",
+        "page": "58"
+      },
+      "stats": {
+        "hullTrauma": 8,
+        "systemStrain": 6,
+        "armor": 0,
+        "silhouette": 3,
+        "speed": 2,
+        "handling": 0,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Force & Destiny - Unlimited Power",
+            "page": "58"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -2804,6 +3008,46 @@
       }
     },
     {
+      "_id": "947aee87bf803f62",
+      "name": "Barc Speeder",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "65"
+      },
+      "stats": {
+        "hullTrauma": 6,
+        "systemStrain": 4,
+        "armor": 1,
+        "silhouette": 2,
+        "speed": 3,
+        "handling": 1,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "65"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "3fe4ed984f04e9c9",
       "name": "Barloz-Class Medium Freighter",
       "source": {
@@ -2955,6 +3199,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "6d54bf0ea174f2b0",
+      "name": "BelBullab-22 Heavy Starfighter",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "70"
+      },
+      "stats": {
+        "hullTrauma": 15,
+        "systemStrain": 12,
+        "armor": 3,
+        "silhouette": 3,
+        "speed": 4,
+        "handling": 1,
+        "shields": {
+          "fore": 1,
+          "aft": 1,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "70"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -3456,6 +3740,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "17f4566e6f67fd4c",
+      "name": "CK-6 Swoop",
+      "source": {
+        "book": "Rise of the Seperatists",
+        "page": "67"
+      },
+      "stats": {
+        "hullTrauma": 2,
+        "systemStrain": 3,
+        "armor": 0,
+        "silhouette": 2,
+        "speed": 2,
+        "handling": 0,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Rise of the Seperatists",
+            "page": "67"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -4633,6 +4957,86 @@
       }
     },
     {
+      "_id": "3c1c6e4682dde3d7",
+      "name": "Droch-Class Boarding Ship",
+      "source": {
+        "book": "Rise of the Seperatists",
+        "page": "72"
+      },
+      "stats": {
+        "hullTrauma": 10,
+        "systemStrain": 8,
+        "armor": 2,
+        "silhouette": 3,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 1,
+          "aft": 1,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Rise of the Seperatists",
+            "page": "72"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
+      "_id": "2752bedb1c5ab2a9",
+      "name": "Droid Tri-Fighter",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "71"
+      },
+      "stats": {
+        "hullTrauma": 12,
+        "systemStrain": 8,
+        "armor": 2,
+        "silhouette": 3,
+        "speed": 5,
+        "handling": 2,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "71"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "3506e800d6d0ee33",
       "name": "DustCrawler",
       "source": {
@@ -4831,6 +5235,90 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "b9062640f8876eb2",
+      "name": "ETA-2 Actis-Class Light Interceptor",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "71"
+      },
+      "stats": {
+        "hullTrauma": 10,
+        "systemStrain": 8,
+        "armor": 2,
+        "silhouette": 3,
+        "speed": 6,
+        "handling": 2,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "71"
+          },
+          {
+            "book": "Collapse of the Republic",
+            "page": "72"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
+      "_id": "dd059bb48e11abe6",
+      "name": "ETA-Class Shuttle",
+      "source": {
+        "book": "Rise of the Seperatists",
+        "page": "72"
+      },
+      "stats": {
+        "hullTrauma": 17,
+        "systemStrain": 12,
+        "armor": 3,
+        "silhouette": 4,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 2,
+          "aft": 1,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Rise of the Seperatists",
+            "page": "72"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -6081,6 +6569,50 @@
       }
     },
     {
+      "_id": "b8d36f1e7881a0ab",
+      "name": "HAVW A6 Juggernaut Heavy Armoured Fighting Vehicle",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "66"
+      },
+      "stats": {
+        "hullTrauma": 55,
+        "systemStrain": 50,
+        "armor": 5,
+        "silhouette": 4,
+        "speed": 3,
+        "handling": -1,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "66"
+          },
+          {
+            "book": "Collapse of the Republic",
+            "page": "67"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "0bf0325467b4d047",
       "name": "HH-87 Starhopper Starfighter",
       "source": {
@@ -6132,6 +6664,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "7f994f3e79960cd5",
+      "name": "HMP Droid Gunship",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "64"
+      },
+      "stats": {
+        "hullTrauma": 20,
+        "systemStrain": 16,
+        "armor": 4,
+        "silhouette": 3,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 2,
+          "aft": 1,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "64"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -6224,6 +6796,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "931d2dc8b5e3dd4e",
+      "name": "Hauler Air Skiff",
+      "source": {
+        "book": "Force & Destiny - Unlimited Power",
+        "page": "57"
+      },
+      "stats": {
+        "hullTrauma": 6,
+        "systemStrain": 8,
+        "armor": 0,
+        "silhouette": 2,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Force & Destiny - Unlimited Power",
+            "page": "57"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -6464,6 +7076,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "7ecab9cae69a9cbf",
+      "name": "Hyena-Class Droid Bomber",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "72"
+      },
+      "stats": {
+        "hullTrauma": 14,
+        "systemStrain": 12,
+        "armor": 3,
+        "silhouette": 3,
+        "speed": 4,
+        "handling": 0,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "72"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -8006,6 +8658,90 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "a45d54fb916674e6",
+      "name": "LAAT/C Assault Carrier",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "65"
+      },
+      "stats": {
+        "hullTrauma": 20,
+        "systemStrain": 15,
+        "armor": 2,
+        "silhouette": 3,
+        "speed": 4,
+        "handling": -2,
+        "shields": {
+          "fore": 1,
+          "aft": 1,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "65"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
+      "_id": "7c079c5eeb1c6f8b",
+      "name": "LAAT/I",
+      "source": {
+        "book": "Rise of the Seperatists",
+        "page": "67"
+      },
+      "stats": {
+        "hullTrauma": 20,
+        "systemStrain": 15,
+        "armor": 3,
+        "silhouette": 3,
+        "speed": 4,
+        "handling": -1,
+        "shields": {
+          "fore": 1,
+          "aft": 1,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Rise of the Seperatists",
+            "page": "67"
+          },
+          {
+            "book": "Rise of the Seperatists",
+            "page": "68"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -9632,6 +10368,46 @@
       }
     },
     {
+      "_id": "8428a26a3ed8453e",
+      "name": "Munificent-Class Heavy Frigate",
+      "source": {
+        "book": "Rise of the Seperatists",
+        "page": "77"
+      },
+      "stats": {
+        "hullTrauma": 60,
+        "systemStrain": 55,
+        "armor": 5,
+        "silhouette": 7,
+        "speed": 2,
+        "handling": 0,
+        "shields": {
+          "fore": 3,
+          "aft": 2,
+          "port": 2,
+          "starboard": 2
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Rise of the Seperatists",
+            "page": "77"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "e1fcad508c728d43",
       "name": "Munificient-Class Command, Control, and Communications Frigate",
       "source": {
@@ -9732,6 +10508,50 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "f7ea5167e61fec18",
+      "name": "NR-N99 Persuader Heavy Droid Tank",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "66"
+      },
+      "stats": {
+        "hullTrauma": 25,
+        "systemStrain": 18,
+        "armor": 4,
+        "silhouette": 3,
+        "speed": 2,
+        "handling": -1,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "66"
+          },
+          {
+            "book": "Collapse of the Republic",
+            "page": "68"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -9884,6 +10704,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "805ed15ffdecbebf",
+      "name": "Nu-Class Transport",
+      "source": {
+        "book": "Rise of the Seperatists",
+        "page": "73"
+      },
+      "stats": {
+        "hullTrauma": 30,
+        "systemStrain": 12,
+        "armor": 3,
+        "silhouette": 4,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 2,
+          "aft": 1,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Rise of the Seperatists",
+            "page": "73"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -10149,6 +11009,46 @@
           "price",
           "rarity",
           "restricted"
+        ]
+      }
+    },
+    {
+      "_id": "604d6790cb48d2ab",
+      "name": "Pelta-Class Frigate",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "75"
+      },
+      "stats": {
+        "hullTrauma": 65,
+        "systemStrain": 55,
+        "armor": 4,
+        "silhouette": 6,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 2,
+          "aft": 1,
+          "port": 2,
+          "starboard": 2
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "75"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -10504,6 +11404,50 @@
       }
     },
     {
+      "_id": "32ec6413bd7bb3f6",
+      "name": "Providence-Class Dreadnought",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "75"
+      },
+      "stats": {
+        "hullTrauma": 160,
+        "systemStrain": 125,
+        "armor": 12,
+        "silhouette": 8,
+        "speed": 2,
+        "handling": -3,
+        "shields": {
+          "fore": 2,
+          "aft": 2,
+          "port": 3,
+          "starboard": 3
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "75"
+          },
+          {
+            "book": "Collapse of the Republic",
+            "page": "76"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "4dbe1010eb1580ae",
       "name": "Punworcca 116-Class Interstellar Sloop",
       "source": {
@@ -10549,6 +11493,46 @@
           "name",
           "price",
           "rarity"
+        ]
+      }
+    },
+    {
+      "_id": "346765846f35ed95",
+      "name": "Q-Signal Messenger Drone Vehicle Profile",
+      "source": {
+        "book": "Age of Rebellion - Cyphers & Masks",
+        "page": "53"
+      },
+      "stats": {
+        "hullTrauma": 15,
+        "systemStrain": 10,
+        "armor": 2,
+        "silhouette": 2,
+        "speed": 0,
+        "handling": 0,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Age of Rebellion - Cyphers & Masks",
+            "page": "53"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -11325,6 +12309,50 @@
           "name",
           "price",
           "rarity"
+        ]
+      }
+    },
+    {
+      "_id": "c167abd17df61f36",
+      "name": "STAP Assault Platform",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "65"
+      },
+      "stats": {
+        "hullTrauma": 2,
+        "systemStrain": 3,
+        "armor": 0,
+        "silhouette": 2,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "65"
+          },
+          {
+            "book": "Collapse of the Republic",
+            "page": "66"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -12110,6 +13138,50 @@
           "passengers",
           "price",
           "rarity"
+        ]
+      }
+    },
+    {
+      "_id": "fa28d91dc0265159",
+      "name": "Subjugator-Class Heavy Cruiser",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "76"
+      },
+      "stats": {
+        "hullTrauma": 210,
+        "systemStrain": 150,
+        "armor": 12,
+        "silhouette": 9,
+        "speed": 2,
+        "handling": -3,
+        "shields": {
+          "fore": 3,
+          "aft": 3,
+          "port": 3,
+          "starboard": 3
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "76"
+          },
+          {
+            "book": "Collapse of the Republic",
+            "page": "77"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -13675,6 +14747,50 @@
       }
     },
     {
+      "_id": "fa104b78f1c7639b",
+      "name": "Trident-Class Assault Ship",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "72"
+      },
+      "stats": {
+        "hullTrauma": 35,
+        "systemStrain": 20,
+        "armor": 4,
+        "silhouette": 4,
+        "speed": 4,
+        "handling": 1,
+        "shields": {
+          "fore": 2,
+          "aft": 2,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "72"
+          },
+          {
+            "book": "Collapse of the Republic",
+            "page": "73"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "93130d245907b6c2",
       "name": "UT-60D U-Wing Troop Transport",
       "source": {
@@ -14376,6 +15492,46 @@
       }
     },
     {
+      "_id": "1cc026def20aaa8f",
+      "name": "WLO-5 Light Speeder Tank",
+      "source": {
+        "book": "Collapse of the Republic",
+        "page": "66"
+      },
+      "stats": {
+        "hullTrauma": 12,
+        "systemStrain": 10,
+        "armor": 2,
+        "silhouette": 3,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Collapse of the Republic",
+            "page": "66"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
+        ]
+      }
+    },
+    {
       "_id": "52cb7419455a82ca",
       "name": "Wander-Class Jump Freighter",
       "source": {
@@ -14608,6 +15764,46 @@
           "page",
           "price",
           "rarity"
+        ]
+      }
+    },
+    {
+      "_id": "05b9e71c974c2766",
+      "name": "XP-40 Luxury Coach",
+      "source": {
+        "book": "Force & Destiny - Unlimited Power",
+        "page": "58"
+      },
+      "stats": {
+        "hullTrauma": 10,
+        "systemStrain": 8,
+        "armor": 1,
+        "silhouette": 3,
+        "speed": 3,
+        "handling": 0,
+        "shields": {
+          "fore": 0,
+          "aft": 0,
+          "port": 0,
+          "starboard": 0
+        }
+      },
+      "evidence": {
+        "method": "printed-page",
+        "sourceReferences": [
+          {
+            "book": "Force & Destiny - Unlimited Power",
+            "page": "58"
+          }
+        ],
+        "matchedFields": [
+          "armor",
+          "handling",
+          "hullTrauma",
+          "shields",
+          "silhouette",
+          "speed",
+          "systemStrain"
         ]
       }
     },
@@ -15627,33 +16823,6 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "2a987bd782f5d3d6",
-      "name": "ARC-170 Heavy Starfighter",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "70"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "ee108559ea709c38",
-      "name": "AT-TE",
-      "source": {
-        "book": "Rise of the Seperatists",
-        "page": "69"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "27961bbae29f9f34",
-      "name": "Acclamtor-Class Planetary Ship",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "74"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "585e497c9ed1d6a6",
       "name": "Ainik-Class Scientific Survey Vessel",
       "source": {
@@ -15708,24 +16877,6 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "8fa1a249c27522f4",
-      "name": "Alpha-3 Nimbus-Class V-Wing Starfighter",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "69"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "b11473669ba3893b",
-      "name": "Aquaspeeder",
-      "source": {
-        "book": "Force & Destiny - Unlimited Power",
-        "page": "58"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "f03c0fa16affd3c4",
       "name": "Ark Angel",
       "source": {
@@ -15753,38 +16904,11 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "947aee87bf803f62",
-      "name": "Barc Speeder",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "65"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "6d54bf0ea174f2b0",
-      "name": "BelBullab-22 Heavy Starfighter",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "70"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "bf80fc20c524d141",
       "name": "C-PH Patrol Speeder",
       "source": {
         "book": "Starships And Speeders",
         "page": "11"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "17f4566e6f67fd4c",
-      "name": "CK-6 Swoop",
-      "source": {
-        "book": "Rise of the Seperatists",
-        "page": "67"
       },
       "reason": "no complete structured record"
     },
@@ -15812,42 +16936,6 @@
       "source": {
         "book": "Starships And Speeders",
         "page": "45"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "3c1c6e4682dde3d7",
-      "name": "Droch-Class Boarding Ship",
-      "source": {
-        "book": "Rise of the Seperatists",
-        "page": "72"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "2752bedb1c5ab2a9",
-      "name": "Droid Tri-Fighter",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "71"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "b9062640f8876eb2",
-      "name": "ETA-2 Actis-Class Light Interceptor",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "71"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "dd059bb48e11abe6",
-      "name": "ETA-Class Shuttle",
-      "source": {
-        "book": "Rise of the Seperatists",
-        "page": "72"
       },
       "reason": "no complete structured record"
     },
@@ -15888,29 +16976,11 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "b8d36f1e7881a0ab",
-      "name": "HAVW A6 Juggernaut Heavy Armoured Fighting Vehicle",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "66"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "8f84da39bb1864d1",
       "name": "HCVW A9 Turbo Tank",
       "source": {
         "book": "Starships And Speeders",
         "page": "35"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "7f994f3e79960cd5",
-      "name": "HMP Droid Gunship",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "64"
       },
       "reason": "no complete structured record"
     },
@@ -15933,29 +17003,11 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "931d2dc8b5e3dd4e",
-      "name": "Hauler Air Skiff",
-      "source": {
-        "book": "Force & Destiny - Unlimited Power",
-        "page": "57"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "9b26ceb5aefad8d2",
       "name": "Hound's Tooth",
       "source": {
         "book": "Starships And Speeders",
         "page": "102"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "7ecab9cae69a9cbf",
-      "name": "Hyena-Class Droid Bomber",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "72"
       },
       "reason": "no complete structured record"
     },
@@ -16010,24 +17062,6 @@
       "source": {
         "book": "Starships And Speeders",
         "page": "53"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "a45d54fb916674e6",
-      "name": "LAAT/C Assault Carrier",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "65"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "7c079c5eeb1c6f8b",
-      "name": "LAAT/I",
-      "source": {
-        "book": "Rise of the Seperatists",
-        "page": "67"
       },
       "reason": "no complete structured record"
     },
@@ -16113,47 +17147,11 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "8428a26a3ed8453e",
-      "name": "Munificent-Class Heavy Frigate",
-      "source": {
-        "book": "Rise of the Seperatists",
-        "page": "77"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "f7ea5167e61fec18",
-      "name": "NR-N99 Persuader Heavy Droid Tank",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "66"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "805ed15ffdecbebf",
-      "name": "Nu-Class Transport",
-      "source": {
-        "book": "Rise of the Seperatists",
-        "page": "73"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "439459f57dbf9d7d",
       "name": "Onager-Class Star Destroyer",
       "source": {
         "book": "Starships And Speeders",
         "page": "141"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "604d6790cb48d2ab",
-      "name": "Pelta-Class Frigate",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "75"
       },
       "reason": "no complete structured record"
     },
@@ -16176,29 +17174,11 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "32ec6413bd7bb3f6",
-      "name": "Providence-Class Dreadnought",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "75"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "3a265886368f99df",
       "name": "Punishing One",
       "source": {
         "book": "Starships And Speeders",
         "page": "86"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "346765846f35ed95",
-      "name": "Q-Signal Messenger Drone Vehicle Profile",
-      "source": {
-        "book": "Age of Rebellion - Cyphers & Masks",
-        "page": "53"
       },
       "reason": "no complete structured record"
     },
@@ -16217,15 +17197,6 @@
       "source": {
         "book": "Starships And Speeders",
         "page": "17"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "c167abd17df61f36",
-      "name": "STAP Assault Platform",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "65"
       },
       "reason": "no complete structured record"
     },
@@ -16257,15 +17228,6 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "fa28d91dc0265159",
-      "name": "Subjugator-Class Heavy Cruiser",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "76"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "134de3939322e0f2",
       "name": "TIE Advanced x1",
       "source": {
@@ -16293,15 +17255,6 @@
       "reason": "no complete structured record"
     },
     {
-      "_id": "fa104b78f1c7639b",
-      "name": "Trident-Class Assault Ship",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "72"
-      },
-      "reason": "no complete structured record"
-    },
-    {
       "_id": "24d5a24b546182eb",
       "name": "UEV-M1 Marauder Engineer Squad Carrier",
       "source": {
@@ -16325,24 +17278,6 @@
       "source": {
         "book": "Starships And Speeders",
         "page": "144"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "1cc026def20aaa8f",
-      "name": "WLO-5 Light Speeder Tank",
-      "source": {
-        "book": "Collapse of the Republic",
-        "page": "66"
-      },
-      "reason": "no complete structured record"
-    },
-    {
-      "_id": "05b9e71c974c2766",
-      "name": "XP-40 Luxury Coach",
-      "source": {
-        "book": "Force & Destiny - Unlimited Power",
-        "page": "58"
       },
       "reason": "no complete structured record"
     },
@@ -16385,8 +17320,8 @@
   ],
   "report": {
     "databaseVehicles": 399,
-    "matched": 312,
-    "unresolved": 87,
+    "matched": 341,
+    "unresolved": 58,
     "conflicts": 2
   }
 }

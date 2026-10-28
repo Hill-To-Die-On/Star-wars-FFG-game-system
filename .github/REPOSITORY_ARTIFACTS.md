@@ -65,7 +65,7 @@ Published tags and releases are retained as historical delivery artifacts. Curre
 | Discovery topics | `foundry-vtt`, `foundry-vtt-system`, `star-wars-rpg`, `ffg`, `genesys`, `tabletop-rpg`, `narrative-dice`, `javascript` |
 | Managed labels | `breaking-change`, `content`, `dependencies`, `github-actions`, `javascript`, `needs-triage`, `security`, `skip-changelog`, plus GitHub defaults |
 
-GitHub-hosted validation is operational: PR #20 passed two validate runs, and staging/main require that check from GitHub Actions. The expanded AtlasMind command contract also passed locally in an isolated Node 24 Linux container. GitHub reports no registered AtlasMind runner for this repository, and its existing organization-owner dispatcher condition still requires a separate authorization decision. See `docs/release-audit.md` for current evidence and remaining gates.
+GitHub-hosted validation is operational: PR #20 passed two validate runs, and staging/main require that check from GitHub Actions. The expanded AtlasMind command contract also passed locally in an isolated Node 24 Linux container. GitHub reports no registered AtlasMind runner for this repository, and its existing organization-owner dispatcher condition still requires a separate authorization decision. See `docs/development/release-audit.md` for current evidence and remaining gates.
 
 ## Maintenance check
 

@@ -65,6 +65,7 @@ export function automaticCheckPool({
   vehicleAttack = false,
   attackerSilhouette,
   targetSilhouette,
+  difficultyIncrease = 0,
 } = {}) {
   const reasons = [],
     melee = meleeOverride ?? MELEE_SKILLS.has(skill),
@@ -97,6 +98,7 @@ export function automaticCheckPool({
         error = "Gunnery cannot be used while engaged with an opponent.";
     }
   }
+  if (difficultyIncrease && Number.isInteger(taskDifficulty)) taskDifficulty += difficultyIncrease;
   const basePool = skillPool(characteristic, rank, {
       difficulty: Number.isInteger(taskDifficulty) ? taskDifficulty : 0,
       boost,
@@ -119,6 +121,7 @@ export function automaticCheckPool({
     reasons.push(
       `Target adversary rating: ${adversary} difficulty upgrade${adversary === 1 ? "" : "s"}`,
     );
+  if (difficultyIncrease) reasons.push(`Weapon qualities: ${difficultyIncrease} difficulty`);
   if (talentRules?.reasons?.length) reasons.push(...talentRules.reasons);
   if (boost) reasons.push(`Actor / situation modifier: ${boost} boost`);
   if (setback) reasons.push(`Actor / situation modifier: ${setback} setback`);

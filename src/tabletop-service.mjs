@@ -1,9 +1,11 @@
 import { SYSTEM_ID } from './config.mjs';
 import { ActorTransactionQueue, actorMutationQueue, canSpendXp } from './xp-transactions.mjs';
-import { planActorEffect, planSessionAward, planSlotClaim, planSpend, planUndo, snapshotValues, reviewSnapshot } from './tabletop-workflows.mjs';
+import { planActorEffect, planEquipmentAward, planSessionAward, planSlotClaim, planSpend, planUndo, snapshotValues, reviewSnapshot, itemFingerprint } from './tabletop-workflows.mjs';
 import { activePoolRulings } from './narrative-effects.mjs';
+import { planSessionStoryEffect, planSessionStoryEnd, planMoralityResolution, planDutyContribution } from './session-story.mjs';
 const flag=(doc,key)=>doc.flags?.[SYSTEM_ID]?.[key];
 const clone=value=>structuredClone(value);
+const ACTOR_PLANNERS=Object.freeze({effect:planActorEffect,award:planSessionAward,'story-effect':planSessionStoryEffect,'story-end':planSessionStoryEnd,morality:planMoralityResolution,'duty-contribution':planDutyContribution});
 export const workflowAuthority=users=>Array.from(users??[]).filter(u=>u.active&&u.isGM).sort((a,b)=>String(a.id).localeCompare(String(b.id)))[0];
 export class TabletopWorkflowService {
   #queue=new ActorTransactionQueue();
@@ -45,9 +47,15 @@ export class TabletopWorkflowService {
       });
     }
     if(!user.isGM)throw new Error('The GM must approve this mechanical change.');
-    if(command==='effect'||command==='award') {
+    if(Object.hasOwn(ACTOR_PLANNERS,command)) {
       const actor=await this.resolve(args.actorUuid);if(!actor?.system)throw new Error('The actor no longer exists.');
-      return actorMutationQueue.run(actor.uuid??actor.id,()=>this.#apply(actor,command==='effect'?planActorEffect:planSessionAward,args.request,{user,campaign:this.campaign()},operationId,args.expected));
+      return actorMutationQueue.run(actor.uuid??actor.id,()=>this.#apply(actor,ACTOR_PLANNERS[command],args.request,{user,campaign:this.campaign()},operationId,args.expected));
+    }
+    if(command==='equip') {
+      const actor=await this.resolve(args.actorUuid);if(!actor?.system)throw new Error('The actor no longer exists.');
+      const rows=Array.isArray(args.request?.items)?args.request.items.slice(0,20):[];
+      const sources=await Promise.all(rows.map(row=>typeof row?.uuid==='string'&&row.uuid.length<=512?this.resolve(row.uuid):null));
+      return actorMutationQueue.run(actor.uuid??actor.id,()=>this.#equip(actor,args.request,sources,user,operationId));
     }
     if(command==='undo-effect') {
       const actor=await this.resolve(args.actorUuid);if(!actor)throw new Error('The actor no longer exists.');
@@ -55,6 +63,14 @@ export class TabletopWorkflowService {
       const entries=clone(flag(actor,'workflowHistory')??[]),entry=entries.find(e=>e.id===args.entryId);
       if(!entry)throw new Error('The effect record no longer exists.');
       if(entry.undone)return entry;
+      if(entry.kind==='equipment') {
+        const owned=(entry.createdItems??[]).map(row=>({row,item:actor.items?.get?.(row.id)}));
+        if(owned.some(({row,item})=>!item||itemFingerprint(item)!==row.fingerprint))throw new Error('The distributed items changed or were removed after this entry. Adjust them manually.');
+        entry.undone=true;entry.undoneBy=user.id;entry.undoneAt=this.now();
+        this.assertAuthority();await actor.deleteEmbeddedDocuments('Item',owned.map(({row})=>row.id));
+        await actor.update({[`flags.${SYSTEM_ID}.workflowHistory`]:entries});
+        return entry;
+      }
       const changes=planUndo(actor,entry);entry.undone=true;entry.undoneBy=user.id;entry.undoneAt=this.now();
       this.assertAuthority();await actor.update({...changes,[`flags.${SYSTEM_ID}.workflowHistory`]:entries});
       const linkWarning=await this.#touchLinkedRoll(entry.sourceRollUuid,operationId);
@@ -121,6 +137,17 @@ export class TabletopWorkflowService {
     this.assertAuthority();await actor.update({...plan.after,[`flags.${SYSTEM_ID}.workflowHistory`]:[...entries,entry]});
     const linkWarning=await this.#touchLinkedRoll(plan.sourceRollUuid,id);
     return linkWarning?{...entry,linkWarning}:entry;
+  }
+  async #equip(actor,request,sources,user,id) {
+    const entries=clone(flag(actor,'workflowHistory')??[]),prior=entries.find(e=>e.id===id),fingerprint=JSON.stringify(request);
+    if(prior){if(prior.userId!==user.id||prior.requestFingerprint!==fingerprint)throw new Error('The operation identity belongs to a different actor change.');return prior;}
+    const {create,...plan}=planEquipmentAward(actor,request,sources,{user,campaign:this.campaign()});
+    this.assertAuthority();const created=await actor.createEmbeddedDocuments('Item',create);
+    const entry={...plan,before:'{}',after:'{}',createdItems:created.map(item=>({id:item.id,fingerprint:itemFingerprint(item)})),id,userId:user.id,at:this.now(),requestFingerprint:fingerprint};
+    // Items and their history entry are separate writes; never leave untracked handouts behind.
+    try {this.assertAuthority();await actor.update({[`flags.${SYSTEM_ID}.workflowHistory`]:[...entries,entry]});}
+    catch(error){await actor.deleteEmbeddedDocuments('Item',created.map(item=>item.id));throw error;}
+    return entry;
   }
   async #touchLinkedRoll(sourceRollUuid,operationId) {
     if(!sourceRollUuid)return '';

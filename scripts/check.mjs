@@ -9,6 +9,9 @@ import { validateVehicleLoadouts } from "../src/vehicle-loadout-data.mjs";
 import { validateRollTables } from "../src/roll-tables.mjs";
 import { validateSpeciesAbilityRegistry } from "../src/species-abilities.mjs";
 import { validateBookPlayGuidance } from "../src/book-play-guidance.mjs";
+import { validateNarrativeOptions } from "../src/narrative-options.mjs";
+import { validateWeaponQualities } from "../src/weapon-qualities.mjs";
+import { validateCriticalTables } from "../src/critical-injuries.mjs";
 import { normalizeBookTitle } from "../src/rules.mjs";
 import { auditOriginData } from "../src/origin-data-audit.mjs";
 import { validateLocaleManifest } from "../src/localization.mjs";
@@ -122,6 +125,8 @@ for (const [key, die] of Object.entries(DICE))
         throw new Error("Dice face must be 256 × 256");
     }
   }
+for (const [name, validate] of [["narrative-options", validateNarrativeOptions], ["weapon-qualities", validateWeaponQualities], ["critical-tables", validateCriticalTables]])
+  validate(JSON.parse(await readFile(`data/${name}.json`, "utf8")));
 console.log(
-  "TypeScript, syntax, templates, manifest, integration schemas, versions, public vehicle, origin, species and book-play data, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
+  "TypeScript, syntax, templates, manifest, integration schemas, versions, public vehicle, origin, species and book-play data, core spending, weapon-quality and critical tables, NASA backdrop provenance, all 64 dice faces and versioned d8 aliases passed.",
 );

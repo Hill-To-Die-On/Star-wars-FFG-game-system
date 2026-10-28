@@ -1,103 +1,148 @@
-# Star Wars FFG
+<p align="center">
+  <img src="https://sw-rpg.info/brand/sw-ruleset-mark.svg" alt="Star Wars FFG emblem: Ability, Proficiency and Boost dice projected above a holo-emitter" width="200">
+</p>
 
-A free, independent **Foundry VTT 14** game system for campaigns using **Edge of the Empire**, **Age of Rebellion**, and **Force and Destiny**, separately or together. Published by Hill To Die On.
+<h1 align="center">Star Wars FFG for Foundry VTT</h1>
 
-Original sheets and interface, with familiar narrative dice symbols from an attributed community source. The complete creator-authorized reference database is included: **6,662 original rows across 44 tables**, with statistics, creator notes and book/page references. Vehicle enrichment adds 288 weapon-mount relationships, bringing the searchable catalogue to **6,950 rows across 45 tables**; source-review status distinguishes checked profiles from candidates. Rulebooks, adventure text and official illustrations are not distributed. The books remain necessary. Star Wars FFG is not affiliated with or endorsed by Lucasfilm, Fantasy Flight Games, Asmodee, or EDGE Studio.
+<p align="center">
+  <strong>Edge of the Empire · Age of Rebellion · Force and Destiny</strong><br>
+  One free game system for all three lines, played separately or together in a single campaign.
+</p>
 
-## Getting started and support
+<p align="center">
+  <a href="https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest"><img alt="Latest stable release" src="https://img.shields.io/github/v/release/Hill-To-Die-On/Star-wars-FFG-game-system?label=stable"></a>
+  <a href="https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases"><img alt="Latest Beta release" src="https://img.shields.io/github/v/release/Hill-To-Die-On/Star-wars-FFG-game-system?include_prereleases&amp;label=beta"></a>
+  <img alt="Foundry VTT 14" src="https://img.shields.io/badge/Foundry%20VTT-14-ff6400">
+  <a href="LICENSE"><img alt="MIT licence for original code" src="https://img.shields.io/badge/licence-MIT-blue"></a>
+</p>
 
-[GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) · [First launch and settings](docs/onboarding-settings.md)
+<p align="center">
+  <a href="#install">Install</a> ·
+  <a href="#features">Features</a> ·
+  <a href="https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki">Wiki</a> ·
+  <a href="#companion-site-sw-rpginfo">SW-RPG.info</a>
+</p>
 
-The **0.4.2 Beta release** is English only. Sixteen other translations remain in source for later fluent review and are excluded from the Beta ZIP. The latest stable release remains **0.3.0**. Use the version-specific Beta manifest below, back up worlds and evaluate Beta updates in disposable worlds. Foundry listing review is separate from GitHub release publication; see [Beta submission gates](docs/alpha-listing.md).
+---
 
-The Beta offers a first-launch copyright reminder, a GM bookshelf saved to the world (with optional browser remembrance), and a skippable/replayable interface tour. Settings use native Foundry controls in six logical groups; play windows and journals use the system presentation.
+Bring the narrative dice, the paper-sheet feel and the whole reference index of the FFG Star Wars roleplaying game to your Foundry table. Run a smuggler crew, a Rebel cell and a band of Force adepts side by side. Build pools in a click, spend Advantage and Triumph with GM review, measure range bands across the map, put crews aboard their ships, and look up any talent, weapon or starship by book and page.
 
-[GM quick start](docs/gm-quick-start.md) · [Player quick start](docs/player-quick-start.md) · [Tabletop workflows](docs/tabletop-workflows.md) · [Production gates and limitations](docs/production-readiness.md) · [Backup and recovery](docs/backup-recovery.md) · [Keyboard access and performance](docs/accessibility-performance.md)
-
-In Foundry, open **Configure Settings → Star Wars FFG → Help & rules coverage** for the implementation inventory, campaign-filtered learned effects and an inspectable diagnostic download. The report distinguishes graph verification from effect automation and never changes a character. Diagnostics exclude names, campaign content, settings and credentials; nothing is uploaded.
+It is free, original and independent. Your rulebooks stay essential: Star Wars FFG points you to them rather than replacing them.
 
 ## Install
 
-Use this manifest in Foundry's **Install System → Manifest URL**:
+Paste the **latest release manifest** into Foundry's **Install System → Manifest URL**:
 
 ```text
-https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.2/system.json
+https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json
 ```
 
-The [latest stable manifest](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json) remains available separately; GitHub prereleases do not replace that channel.
+This is the best way to install and stay current. Foundry checks the same address for updates, so each new stable release appears in Foundry's normal **Update** flow. Then create a world using **Star Wars FFG**.
 
-Create a world using **Star Wars FFG**. For the Beta, the GM selects **Settings sidebar → Transaction authority** for one browser tab and repeats that selection after reload or handover. Other GM tabs can view without processing changes; see [transaction authority and recovery](docs/security-authority.md). Enable **Dice So Nice 6.3.1 or later** for animated custom dice. Its absence does not disable rolls or chat results.
+> **Why isn't it in Foundry's package browser?** Foundry has not permitted this system to be listed in its official package directory because of the extent of the data sources it can import from external documents, such as homebrew PDF rules and adventures. The manifest link above is the supported way to install it and receive updates.
 
-The compact seven-die tray beside the chat bar supports quick ad-hoc pools and follows Foundry's public, GM, blind and self chat buttons. Each player can hide it under **Configure Settings → Star Wars FFG → Compact dice tray by chat**.
+**Want the newest features?** The **0.5.0 Beta release** is an English-only GitHub prerelease with everything marked **Beta** below. Install it from its version-specific manifest, back up your worlds first and try it in a disposable world:
 
-## At the table
-
-- Character, minion, rival, nemesis, vehicle and **Group** sheets use an original print-inspired layout and paper texture. Automatic mode maps Edge characters to Frontier, Age characters to Rebellion and Force characters to Mystic; vehicles and Groups follow the campaign's first enabled ruleset. **Default sheet theme** can override automatic selection for one client, and each sheet can make its own final choice.
-- **Foundry interface theme** applies the same three schemes across a losslessly bundled public-domain NASA artist's concept of Saturn beyond Enceladus's geysers, locally bundled interface typography, custom sidebar and pause icons, chat cards, combat tracker, scene tools, player list, hotbar, windows, journals and handouts. It can follow the campaign automatically, use a manually selected scheme or leave Foundry's standard interface untouched. Authored scene artwork remains unobscured.
-- The paper-style Skills tab keeps all 35 standard skills, pools, characteristics, career/group marks, ranks and XP controls in one desktop view. Each user can switch between rulebook-style groups and a single A–Z list; both retain the balanced three-column layout. Its `+` control adds as many persistent custom skills as a character needs, with edit/remove controls, XP advancement and the same automatic/manual roll workflow.
-- Group records include a **Base of Operations**, members, Obligation, optional Duty/Morality, motivations, resources, possessions, contacts and the world's shared Destiny pool. Link characters and use **Sync linked characters** to refresh their recorded story scores.
-- All seven narrative dice, standard symbol faces, separate result axes, Triumph/Despair retention, and upgrades/downgrades.
-- Skills, wounds, strain, defense, Force dice, inventory, vehicle condition and shields.
-- **Configure Settings → Star Wars FFG → Campaign rules & adventure state** lets the GM enable any one, two or all three rule lines; new worlds enable all three. It also selects story mechanics and beginner teaching mode, and moves completed characters into play when the adventure starts.
-- **Reference catalogue** searches the full database. **Owned books** lets the GM select sources from 45 book titles; that selection filters the catalogue for the GM and players, the reference API, starting choices and future imports. **Populate compendiums** creates native documents for the selected books.
-- **Dice & Destiny** opens the pool builder and the persistent shared Destiny pool.
-- [Tabletop tools](docs/tabletop-workflows.md) add reviewed narrative spending, combat-effect previews and undo, player initiative claims, a vehicle dashboard, and session XP/reward review. Unsupported effects remain explicit GM rulings.
-- [Manual and guided character creation](docs/character-creation.md) share source-filtered origins, free-rank validation, equipment budgets and starting-XP checks. The guided path narrows choices through four questions; final application stays separate from source review and readiness for play. A GM enemy guide creates explicitly labelled original NPC presets.
-- [Linked minion groups](docs/minion-groups.md) connect separately positioned members with animated dashed lines when selected. Shared wounds remove casualties from the connections and reduce trained group ranks; healing restores them. The group shares a combat slot and turn budget, including one move per active member for each group manoeuvre.
-- The dedicated **Star Wars FFG · Range bands** scene control draws labelled colour bands from a selected token. It follows the latest selection or retains multiple origins and resolves scale from both scene context and attacker: personal actors use Personal, vehicles use Ship/vehicle, and vehicles on Battlefield scenes use the longer Battlefield/planetary bands. It uses a battlemap's configured grid scale and stores independent click calibrations for gridless Theatre-of-the-Mind scenes. Its optional combat assistant opens the overlay when an encounter starts and follows the acting token. Labels share a guide toward the furthest unobscured viewport corner, rotate smoothly around their individual arcs, and repel from visible tokens and tiles; an edge-safe fallback keeps an off-screen circumference readable. Targeting draws a two-second attack line: solid to the first wall or visible intervening token, dotted from that obstruction to the target, followed by a status card containing the computed pool. **Send dice to pool** replaces the compact chat-side tray with that pool so the GM can add or remove dice before rolling. A blocked shot stops the automatic transfer while the prefilled Manual pool remains available for a GM ruling. Measured target range feeds the ordinary automatic dice-pool builder and the public/DoR APIs. See [range bands](docs/range-bands.md).
-- Actors without portraits receive deterministic, original SVG badges: role colours distinguish players, allies, NPC tiers, vehicles and Groups; 24 abstract character families and 20 vehicle families cover every published database species, hull label and vehicle record. The portrait is also the default token, including safe migration of existing Foundry-default tokens, while separately selected token art is preserved. Characters remain circular and vehicles retain the rounded-square ship frame, with the vehicle facing marks crossing the upper frame corners. Custom portraits keep the inner frame and facing marks. Vehicle footprints convert silhouette display estimates or exact metre dimensions through the active scene scale, allowing characters to stand on boardable tanks and walkers. See the [icon contact sheet, 64-pixel preview and footprint guide](docs/actor-icons.md).
-- [Action and manoeuvre indicators](docs/turn-indicators.md) appear on every character-sheet tab and above selected tokens. Completed combat checks and token drags spend them automatically; strain purchases, action trades, talent effects, round resets and GM/player control share one persistent ledger. Native token HUD controls rotate clockwise or counterclockwise.
-- [Altitude shadows](docs/altitude-shadows.md) project elevated artwork onto lower level surfaces and actor portraits, including from ships on an unseen Sky level. Displacement and softness grow logarithmically with the receiving surface's height gap; the GM controls the scene lighting and receiving planes. This cosmetic cue has no effect on combat rules.
-- [Vehicle crew and passengers](docs/vehicle-crew.md) have a dedicated tab immediately after Overview. The GM can generate editable NPC crews from database species, preview them, and prepare a roster before placing the vehicle. Drag characters aboard; the vehicle carries two small corner circles for free places and the pilot's portrait. The portrait opens a compact, resizable, scrolling roster for duties and selective disembarking, including partial minion groups. Double-click an occupant's portrait or sheet-tab row to open its character sheet. Assigned characters supply the actual skills and talents for vehicle checks.
-- **Private library** imports local JSON into world compendiums. Importing again preserves existing entries.
-- **SW Adversaries** imports [site collections or local exports](docs/sw-adversaries.md) as native adversaries and vehicles. Descriptions, ability rules, motivations and related source records are retained in a private GM compendium and supplied to the DoR adapter.
-- **GM source library** searches decrypted source notes. **GM source key** backs up or restores the browser-held key needed to unlock them; source prose is encrypted before world storage.
-- The Advancement tab displays every owned specialization as an interactive tree. The public catalogue supplies graph positions, links, XP costs, source references and declarative effects without copied source prose. Private node guidance can fill the boxes when the GM imports it locally. Click an eligible talent to spend XP; purchased and shared unranked talents are marked. Structured passive talent effects marked **Auto** feed both sheet and API dice pools. Each tree separately labels structural validation and its printed-chart comparison state.
-- Signature abilities attach to an eligible owned career specialization. Their base node stays locked until a matching bottom-row talent is learned, after which the connected upgrades use the same click-to-buy XP ledger. All 38 graphs are available; two were built from checked printed charts because the private structured dataset lacked them.
-- The Story tab supports any number of structured motivations with category, active/dormant state, player/GM guidance and book reference. The freeform legacy field remains available. Dragging a motivation reference from a privately enriched library carries its local guidance onto the character.
-- Searchable Species and Career controls accept only playable, complete entries from the enabled database sources. Species fills characteristics, starting XP, soak and wound/strain thresholds; Career marks its career skills and derives the starting rules from its source within the GM's enabled campaign lines. Completing creation adds the first specialization and free ranks, applies the selected Obligation, Duty or Morality benefit, and opens an owned-book-filtered equipment picker with live cash and gear-allowance validation. Purchased equipment becomes native actor Items, unspent credits are retained, and a one-time d100 pocket-money roll is recorded in chat. Species and starting Career then lock. Unverified or situational species effects remain flagged for source review and application.
-
-This is an initial development release. The public advancement catalogue supplies 135 specialization graphs and 38 signature-ability graphs, totalling 3,042 copyright-bounded nodes. Privately held pages support 168 full node/cost/connector comparisons; the other 5 charts remain explicitly pending. The private dataset can add local guidance for all 2,700 specialization nodes, most supplied signature nodes, 298 motivation references and structured pool automation for 28 unique passive talents. Other active or situational effects, weapon qualities, critical-injury consequences, cover and terrain, starship maneuvers and expansion subsystems still require an explicit player/GM decision or source adjudication. Automated checks do not constitute an end-to-end adventure playtest. See [validation](docs/validation.md) and [coverage](docs/source-coverage.md) for the exact evidence and remaining gaps.
-
-## Reference library and private chart import
-
-The bundled database needs no import to search. Item, ship and species views show original summaries of recorded facts; the Story tab offers optional species and career background prompts. Use **Reference catalogue → Populate compendiums** to create 4,495 Items, 399 vehicle references and 1,701 journals when all books are enabled. The import merges the separate public advancement catalogue into matching specialization and signature items. All 6,662 original rows, including the dice tables, remain available in the catalogue. This database remains an index to the books and does not contain every vehicle statistic or the source wording of talent effects. See [the reference-library guide](docs/reference-library.md).
-
-Selecting a model with a checked loadout also adds its standard weapons and recorded systems. The first source-page batch covers 11 vehicles, including three confirmed unarmed models. Another 141 structured candidates remain visibly pending review and do not equip weapons automatically. Model changes preserve custom or modified equipment. See [database enrichment and remaining coverage](docs/database-enrichment.md).
-
-The optional private workflow adds structured charts and vehicle statistics from locally held sources:
-
-Node 24 or later:
-
-```powershell
-npm ci
-npm run import:database -- "path/to/database-backup.sql"
-python scripts/enrich-library.py "path/to/DataSet_Full DataSet" "path/to/PDF library" --include-private-talent-text
+```text
+https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.5.0/system.json
 ```
 
-The output is `.local/catalog.json`, deliberately excluded from Git and public releases. Select that file using the **Private library** menu. SQL is parsed without executing it. Public database descriptions remain excluded. The optional flag copies locally held specialization, signature-ability and motivation guidance into this private file; it also imports machine-readable passive dice modifiers. Re-importing fills missing tree guidance and effects without replacing user-authored node text. Illustrations and source files are never imported.
+The latest stable release is **0.3.0**. Requires **Foundry VTT 14**. **Dice So Nice 6.3.1 or later** is recommended for animated physical dice; rolls and chat results work without it.
 
-The supplied structured sources and checked printed charts produced the copyright-bounded public graphs, while private imports can add locally held descriptive guidance. Of 399 vehicles, 312 now have complete public numeric profiles backed by matching structured records, reviewed aliases or held printed pages; the other 87 remain explicitly incomplete rather than receiving guessed values. Full printed-chart verification now covers 132 specialization charts and 36 signature abilities. Another three specialization and two signature charts need comparison; all five are in Fully Operational, which still lacks a matched full PDF.
+## Features
 
-[Source coverage and photo requests](docs/source-coverage.md) distinguish newly held PDFs, remaining missing sources, structurally validated trees and pending comparison with the books. The separate [vehicle source register](docs/vehicle-source-coverage.md) lists every one of the 87 unresolved profiles by book and printed page. The release includes the machine-readable `data/source-requests.json`, which records the resolved Cyphers & Masks page gap without source text, artwork or private paths. Three checked [roll tables](data/roll-tables.json) can be used from the reference browser under the GM's owned-book filter; their result descriptions and special follow-up rules remain in the cited book. Unknown vehicle statistics remain marked. Structurally valid graphs support XP paths while their separate printed-comparison label prevents them from being mistaken for fully checked source transcriptions.
+Features marked **Beta** are in the 0.5.0 Beta release and not yet in the 0.3.0 stable release.
 
-The [species ability register](docs/species-ability-coverage.md) now contains printed-page checks for 39 of 104 playable species. It grants checked starting skill ranks during creation, applies three unconditional check effects and adds three extra free-maneuver effects; the other checked abilities stay visible for situational use. The remaining species retain a clear source-review marker until their book pages are checked.
+### Narrative dice that feel right
 
-## Director of Realms
+- All seven narrative dice with their real silhouettes and symbol faces in chat, separate success, advantage, Triumph and Despair results, and upgrades and downgrades.
+- A pool builder that reads skills, characteristics and talent modifiers from the sheet, and a compact seven-die tray beside the chat bar for quick ad-hoc rolls.
+- A persistent, shared Destiny pool.
+- Full Dice So Nice support, with custom textures for all seven dice.
 
-The system exposes `game.system.api.directorOfRealms` with native actor facts, check guidance, narrative checks, damage handling, campaign configuration, token-to-token range measurement and accessible advancement choices. `readNativeCheckRoll(message)` preserves exact actor/skill context and every narrative result axis without trusting freeform chat notes. `game.system.api.actorContext(actor)` returns structured motivations, learned talent and signature guidance, signature link/unlock state, legal next purchases, verification state and source references. `getCombatRange(sourceToken, targetToken)` reads the same scene scale and calibration as the visible overlay and reports scaled-map elevation plus Foundry sight-wall state. `getCheckTalentRules(actor, skill)` reports automatic modifiers and unresolved decisions before DoR calls `executeCheck`; the same passive modifiers are applied by ordinary character-sheet rolls. `getRulesKnowledgePolicy()` and `getRuleEvidence(query)` require unsupported mechanics to stop for a source review or explicit GM ruling instead of being inferred from general model knowledge.
+### Sheets built for every table role
 
-Director of Realms needs to discover this adapter through its registry. The integration status and installation steps are recorded in [the integration guide](docs/director-of-realms.md). The [private book-art catalogue](docs/book-art-catalogue.md) indexes held-PDF artwork candidates by the GM's selected books for future DoR storytelling; it ships no images. PDF intake remains private through Campaign Studio; it is not part of the public game-system download. A configured AI provider and separate adventure playtests are required before claiming autonomous GM acceptance.
+- Character, minion, rival, nemesis, vehicle and **Group** sheets with an original print-inspired paper layout.
+- Three colour schemes (**Frontier**, **Rebellion** and **Mystic**) chosen automatically from each character's rule line, with per-client and per-sheet overrides.
+- A Skills tab with all 35 standard skills, rulebook grouping or A–Z order, and unlimited custom skills with full XP advancement.
+- Interactive specialization trees and signature abilities: click an eligible talent to spend XP.
+- Structured motivations, and Group records for the Base of Operations, Obligation, Duty, Morality, contacts and shared resources.
+- **Beta:** sheets adapt as you resize them, down to a readable single column.
 
-## Public integration API
+### Character creation without the spreadsheet
 
-`game.system.api.integration` lets external character and campaign builders, community-rule sites and companion Foundry modules discover capabilities, validate versioned packages, import or export characters, adversaries, vehicles and Groups, publish declarative Item rule packs and register site connectors. Version-one character and rule packages remain supported; version two adds the wider Actor contract. Small packages can use a direct URL; larger sites can send one package through an exact-origin, nonce-bound browser handoff. Every external handoff is reviewed in the authenticated Foundry client before it changes the world, and imported data cannot install scripts, macros, arbitrary Active Effects or document permissions.
+- Searchable species and career pickers fill characteristics, thresholds, starting XP and career skills from your enabled books.
+- Starting Obligation, Duty or Morality benefits, an owned-book equipment shop with live budget checks, and the d100 pocket-money roll.
+- **Beta:** manual or guided creation. Four questions narrow the choices, and validation covers free ranks, gear and starting XP.
+- **Beta:** a GM guide that creates clearly labelled, original NPC presets.
 
-The full interchange schema, website example and API reference are in the [public integration guide](docs/integration-api.md). Community rules appear in a player-readable world compendium; the GM controls imports and whether an existing external rule is preserved or explicitly replaced.
+### A reference library in every session
+
+- A searchable catalogue of **6,662 database rows across 44 tables** covering talents, weapons, gear, species, careers and starships, each with book and page references.
+- An **Owned books** filter of 45 titles that limits the catalogue, starting choices and imports to the books your table actually has.
+- One click populates native compendiums with thousands of Items, vehicles and journals.
+- **Beta:** 288 vehicle weapon-mount relationships (6,950 rows across 45 tables). Checked loadouts equip standard weapons automatically, and checked roll tables are ready from the reference browser.
+
+### Combat and vehicles on the map
+
+- Range bands for Personal, Ship and Battlefield scales, drawn from any token, with map-scale and Theatre-of-the-Mind calibration.
+- Measured range and Foundry's line of sight feed the automatic dice pool. A blocked shot stops for a GM ruling.
+- **Beta:** animated attack lines that show exactly where a shot is blocked, then send the computed pool to the dice tray for adjustment.
+- **Beta:** action and manoeuvre indicators on sheets and tokens that spend themselves as you roll and move.
+- **Beta:** linked minion groups with shared wounds, casualties and a shared combat slot.
+- **Beta:** vehicle crew and passengers. Drag characters aboard, generate NPC crews and roll vehicle checks with the assigned crew's actual skills.
+- **Beta:** a vehicle combat dashboard, layered sky and space flight across Foundry scene levels, and cosmetic altitude shadows.
+- **Beta:** distinctive generated portraits and tokens for every species and vehicle family, with vehicle footprints sized to the scene.
+
+### Table tools that keep the GM in charge
+
+- **Beta:** review-and-approve spending for Advantage, Threat, Triumph and Despair, with player proposals and undo.
+- **Beta:** damage and recovery previews with change history, player initiative-slot claims, and session XP and reward review.
+- **Beta:** spending presets from the four core combat spending tables and the weapon's active qualities, each with its core page.
+- **Beta:** criticals rolled on the core Critical Injury and Critical Hit tables, with Vicious, existing criticals and the healing check.
+- **Beta:** weapon qualities such as Accurate, Cumbersome, Pierce and Stun Damage feed the dice pool and damage.
+- **Beta:** session start and end tools for the Obligation and Duty checks and Morality, plus equipment distribution with undo.
+- **Beta:** one selected GM browser processes shared changes, so two players buying from the same XP pool cannot both spend it.
+
+### An interface that looks the part
+
+- An optional themed Foundry interface covering chat, combat tracker, windows, journals, sidebar and hotbar, over a public-domain NASA artist's concept of Saturn and Enceladus.
+- **Beta:** a first-launch welcome with a copyright reminder, a GM bookshelf and a skippable seven-step interface tour.
+- **Beta:** settings in six clear groups, plus a Help & rules coverage window that shows exactly what is automated and what stays a GM ruling.
+
+### Open to the wider community
+
+- A public **integration API** for character builders, campaign tools and community-rule sites to import and export characters, adversaries, vehicles, Groups and rule packs. Every import is reviewed in Foundry first. See the [integration guide](docs/integrations/integration-api.md).
+- **SW Adversaries** imports for [site collections and local exports](docs/integrations/sw-adversaries.md).
+- A private library import for structured data from sources you hold locally. Imported content stays in your world and is never published.
+- An optional adapter for the **Director of Realms** module that hands it exact narrative roll results, actor facts and range measurements. See the [Director of Realms guide](docs/integrations/director-of-realms.md).
+
+## Companion site: SW-RPG.info
+
+<a href="https://sw-rpg.info/"><img src="https://sw-rpg.info/brand/sw-rpg-logo-square.png" alt="Star Wars RPG Info logo" width="128" align="left"></a>
+
+**[SW-RPG.info](https://sw-rpg.info/)** is the field index and Foundry workshop for the Star Wars roleplaying game. Visit it alongside this system.
+
+<br clear="left">
+
+## What's included, and what isn't
+
+Star Wars FFG ships original code, sheets, interface and artwork, the creator-authorized reference database, and familiar narrative dice symbols from an attributed community source. It does **not** include rulebook text, adventure text or official illustrations. You still need the books. Automation covers recorded, structured mechanics. Situational effects, many weapon qualities, critical-injury consequences and some vehicle rules stay explicit GM decisions. See [validation](docs/development/validation.md), [source coverage](docs/sources/advancement-coverage.md) and [production readiness](docs/development/production-readiness.md) for the exact evidence and remaining gaps.
+
+Star Wars FFG is not affiliated with or endorsed by Lucasfilm, Fantasy Flight Games, Asmodee or EDGE Studio. Published by Hill To Die On.
+
+## Guides
+
+- [Documentation index](docs/README.md): every guide, integration reference, data-coverage register and maintainer record
+- [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki): installation, books, interface, characters, combat, integrations and troubleshooting
+- [GM quick start](docs/guides/gm-quick-start.md) · [Player quick start](docs/guides/player-quick-start.md) · [First launch and settings](docs/guides/onboarding-settings.md)
+- [Character creation](docs/guides/character-creation.md) · [Tabletop workflows](docs/guides/tabletop-workflows.md) · [Range bands](docs/guides/range-bands.md) · [Vehicle crew](docs/guides/vehicle-crew.md) · [Minion groups](docs/guides/minion-groups.md)
+- [Reference library](docs/guides/reference-library.md) · [Database enrichment](docs/sources/database-enrichment.md) · [Transaction authority](docs/guides/security-authority.md)
+- [Backup and recovery](docs/guides/backup-recovery.md) · [Accessibility and performance](docs/guides/accessibility-performance.md)
 
 ## Development
 
-Start contribution branches from `dev`; maintainer promotion runs through protected `staging` and `main`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow, content boundaries, and review evidence, and [the GitHub artifact inventory](.github/REPOSITORY_ARTIFACTS.md) for repository governance, dependency automation, and release assets.
+Start contribution branches from `dev`. Maintainer promotion runs through protected `staging` and `main`. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [GitHub artifact inventory](.github/REPOSITORY_ARTIFACTS.md). Node 24 or later:
 
 ```sh
 npm ci
@@ -107,14 +152,12 @@ npm run check
 npm run build
 ```
 
-The release ZIP is `dist/star-wars-ffg.zip`. Its positive allow-list includes runtime files, original and attributed assets, notices, documentation, the two authorized database JSON files, the public advancement catalogue and its verification register. PDFs, SQL backups, private chart prose, adventure passages and SW Adversaries source data remain excluded. `python scripts/generate-dice.py` regenerates the 256px face textures from the attributed community font using Pillow.
+The release ZIP is `dist/star-wars-ffg.zip`. It contains runtime files, original and attributed assets, notices and the authorized database. PDFs, SQL backups, private chart prose, adventure passages and SW Adversaries source data are excluded. The optional private import workflow is described in [database enrichment](docs/sources/database-enrichment.md#reproduction-and-review).
 
-API references: [Foundry system development](https://foundryvtt.com/article/system-development/), [Foundry v14](https://foundryvtt.com/api/), [Dice So Nice custom terms](https://riccisi.gitlab.io/foundryvtt-dice-so-nice/api/terms/).
+API references: [Foundry system development](https://foundryvtt.com/article/system-development/), [Foundry v14 API](https://foundryvtt.com/api/), [Dice So Nice custom terms](https://riccisi.gitlab.io/foundryvtt-dice-so-nice/api/terms/).
 
-MIT license for original project code and artwork only; third-party content is excluded from that grant.
+## Credits and licence
 
-The interface uses locally bundled Roboto, Signika and Rajdhani fonts. Font licences, dice symbol provenance and retained notices are recorded in [third-party notices](THIRD_PARTY_NOTICES.md).
+MIT licence for original project code and artwork only. Third-party content is excluded from that grant. The interface uses locally bundled Roboto, Signika and Rajdhani fonts. Font licences, dice-symbol provenance and retained notices are in [third-party notices](THIRD_PARTY_NOTICES.md).
 
-## Interface artwork credit
-
-The optional interface backdrop is NASA's public-domain *Saturn Through the Veil of Enceladus – Artist's Concept*. Credit: **NASA's Goddard Space Flight Center; art by Dan Gallagher (eMITS)**. A GM client creates the player-visible **Star Wars FFG · Artwork credits** Journal once per world, with the image, credit and a link to the [NASA SVS source and catalogue record](https://svs.gsfc.nasa.gov/14162). Existing Journal content is preserved. Full provenance, source hashes and NASA usage information are retained in [third-party notices](THIRD_PARTY_NOTICES.md).
+The optional interface backdrop is NASA's public-domain *Saturn Through the Veil of Enceladus – Artist's Concept*. Credit: **NASA's Goddard Space Flight Center; art by Dan Gallagher (eMITS)**. A GM client creates the player-visible **Star Wars FFG · Artwork credits** Journal once per world, with the image, credit and a link to the [NASA SVS source and catalogue record](https://svs.gsfc.nasa.gov/14162). Existing Journal content is preserved. Full provenance, source hashes and NASA usage information are in [third-party notices](THIRD_PARTY_NOTICES.md).

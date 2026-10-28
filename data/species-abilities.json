@@ -346,6 +346,491 @@
         { "name": "Microvision", "summary": "Add one Boost die to Perception when closely examining an object.", "application": "manual" },
         { "name": "Radio-wave Communication", "summary": "Communicate silently with other Verpine or tuned comlinks within 100 kilometres.", "application": "manual" }
       ]
+    },
+    {
+      "species": "Bothan",
+      "source": { "book": "Edge of The Empire - Core Book", "cataloguePage": "43", "page": "44" },
+      "startingSkillRanks": ["streetwise"],
+      "abilities": [
+        { "name": "Convincing Demeanor", "summary": "Begins play already holding one rank of the Convincing Demeanor talent.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Droid",
+      "source": { "book": "Edge of The Empire - Core Book", "cataloguePage": "45", "page": "47" },
+      "startingSkillRanks": [],
+      "abilities": [
+        { "name": "Droid Physiology", "summary": "Requires no food, sleep or air; immune to toxins and poisons; may hold up to 6 cybernetic implants regardless of Brawn.", "application": "manual" },
+        { "name": "Droid Skill Training", "summary": "Character creation free ranks: picks 6 of the 8 career skills (not 4) and 3 of 4 first-specialization skills (not 2).", "application": "manual" },
+        { "name": "Inorganic", "summary": "Bacta, stimpacks and Medicine do not heal it; recovers by resting or Mechanics checks, emergency repair patches act as stimpacks. Starts with one Enduring rank.", "application": "manual" },
+        { "name": "Mechanical Being", "summary": "Can never be Force-sensitive, gain a Force rating or use Force powers; immune to mind-affecting Force powers.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Gand",
+      "source": { "book": "Edge of The Empire - Core Book", "cataloguePage": "47", "page": "48" },
+      "startingSkillRanks": ["discipline"],
+      "abilities": [
+        { "name": "Ammonia Breathers", "summary": "Choose at creation: lungless (immune to suffocation, not vacuum wounds) or lunged (ammonia respirator, oxygen is a Rating 8 dangerous atmosphere, +10 starting XP).", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Rodian",
+      "source": { "book": "Edge of The Empire - Core Book", "cataloguePage": "49", "page": "50" },
+      "startingSkillRanks": ["survival"],
+      "abilities": [
+        { "name": "Expert Tracker", "summary": "Begins play already holding one rank of the Expert Tracker talent.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Wookie",
+      "source": { "book": "Edge of The Empire - Core Book", "cataloguePage": "52", "page": "53" },
+      "startingSkillRanks": ["brawl"],
+      "abilities": [
+        { "name": "Wookiee Rage", "summary": "Gains +1 damage on Brawl and Melee attacks once wounded, rising to +2 while suffering a Critical Injury.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Duros",
+      "source": { "book": "Age of Rebellion - Core Book", "cataloguePage": "55", "page": "55" },
+      "startingSkillRanks": ["pilotingSpace"],
+      "abilities": [
+        { "name": "Intuitive Navigation", "summary": "Adds one Advantage to every Astrogation check.", "application": "automatic", "checkAdvantageSkills": ["astrogation"], "automaticAdvantage": 1 }
+      ]
+    },
+    {
+      "species": "Gran",
+      "source": { "book": "Age of Rebellion - Core Book", "cataloguePage": "56", "page": "57" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["charm", "negotiation"],
+      "abilities": [
+        { "name": "Enhanced Vision", "summary": "On ranged attacks and Perception checks, ignores up to two Setback dice from environment or concealment; defense-based Setback still applies.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Ithorian",
+      "source": { "book": "Age of Rebellion - Core Book", "cataloguePage": "58", "page": "58" },
+      "startingSkillRanks": ["survival"],
+      "abilities": [
+        { "name": "Ithorian Bellow", "summary": "Natural sonic attack using Resilience: Damage 6, Critical 4, Short range, Stun Damage, Blast 3, Slow-Firing 2, Concussive 1; costs 3 strain per use.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Mon Calamari",
+      "source": { "book": "Age of Rebellion - Core Book", "cataloguePage": "59", "page": "59" },
+      "startingSkillRanks": ["education"],
+      "abilities": [
+        { "name": "Amphibious", "summary": "Breathes normally underwater, and moving through water imposes no movement penalty.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Sullustans",
+      "source": { "book": "Age of Rebellion - Core Book", "cataloguePage": "60", "page": "60" },
+      "startingSkillRanks": ["astrogation"],
+      "abilities": [
+        { "name": "Skilled Jockey", "summary": "Begins play already holding one rank of the Skilled Jockey talent.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Cerean",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "54", "page": "55" },
+      "startingSkillRanks": ["vigilance"],
+      "abilities": [
+        { "name": "Binary Processing", "summary": "Every Knowledge skill counts as a career skill for this character.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Kel Dor",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "57", "page": "58" },
+      "startingSkillRanks": ["education"],
+      "abilities": [
+        { "name": "Dark Vision", "summary": "Ignores up to two Setback dice caused by darkness on any skill check.", "application": "manual" },
+        { "name": "Atmospheric Requirement", "summary": "Gets an antitox breath mask at creation; oxygen counts as a Rating 8 dangerous atmosphere; can endure vacuum five minutes before its effects begin.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Mirialan",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "58", "page": "59" },
+      "startingSkillRanks": ["discipline", "cool"],
+      "abilities": []
+    },
+    {
+      "species": "Nautolan",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "59", "page": "59" },
+      "startingSkillRanks": ["athletics"],
+      "abilities": [
+        { "name": "Amphibious", "summary": "Breathes normally underwater, and moving through water imposes no movement penalty.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Togruta",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "60", "page": "60" },
+      "startingSkillRanks": ["perception"],
+      "abilities": [
+        { "name": "Pack Instincts", "summary": "When taking the assist maneuver, provides two Boost dice to the assisted check rather than one.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Twi'lek",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "61", "page": "62" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["charm", "deception"],
+      "abilities": [
+        { "name": "Desert Dwellers", "summary": "On skill checks, may discard one Setback die caused by heat or dry desert conditions.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Zabrak",
+      "source": { "book": "Force & Destiny - Core Book", "cataloguePage": "62", "page": "63" },
+      "startingSkillRanks": ["survival"],
+      "abilities": [
+        { "name": "Fearsome Countenance", "summary": "Adds one automatic Advantage to every Coercion check.", "application": "automatic", "checkAdvantageSkills": ["coercion"], "automaticAdvantage": 1 }
+      ]
+    },
+    {
+      "species": "Falleen",
+      "source": { "book": "Edge of The Empire - Fly Casual", "cataloguePage": "18", "page": "20" },
+      "startingSkillRanks": ["charm"],
+      "abilities": [
+        { "name": "Beguiling Pheromones", "summary": "Incidental, once per check: pay 2 strain and upgrade a Charm, Negotiation or Deception check once against an unmasked, air-breathing living target in short range.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Gotal",
+      "source": { "book": "Edge of The Empire - Fly Casual", "cataloguePage": "21", "page": "22" },
+      "startingSkillRanks": ["perception"],
+      "abilities": [
+        { "name": "Energy Sensitivity", "summary": "Usable as a maneuver once each encounter: perceive all living beings within short range and how each one is feeling.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Quarren",
+      "source": { "book": "Edge of The Empire - Fly Casual", "cataloguePage": "23", "page": "24" },
+      "startingSkillRanks": ["negotiation"],
+      "abilities": [
+        { "name": "Amphibious", "summary": "Breathes normally underwater and ignores movement penalties from water.", "application": "manual" },
+        { "name": "Ink Spray", "summary": "Once per encounter, out-of-turn incidental: take 2 strain; a combat check from a character at short range gains one Setback (three if underwater).", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Clawdite",
+      "source": { "book": "Edge of The Empire - No Disintegrations", "cataloguePage": "20", "page": "22" },
+      "startingSkillRanks": ["resilience"],
+      "abilities": [
+        { "name": "Changeling", "summary": "Action: take 3 strain, pass Average Resilience, then copy a previously seen silhouette 1 character's look; Perception opposed by Deception exposes it.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Devaronian",
+      "source": { "book": "Edge of The Empire - No Disintegrations", "cataloguePage": "23", "page": "24" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["survival", "deception"],
+      "abilities": [
+        { "name": "Resilient Metabolism", "summary": "Toxin-resistant physiology grants one automatic Success on every Resilience check.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Kalleran",
+      "source": { "book": "Edge of The Empire - No Disintegrations", "cataloguePage": "25", "page": "26" },
+      "startingSkillRanks": ["streetwise"],
+      "abilities": [
+        { "name": "Hypersensitive Antennae", "summary": "Starts play already holding the Heightened Awareness talent.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Besalisk",
+      "source": { "book": "Edge of The Empire - Special Modifications", "cataloguePage": "20", "page": "21" },
+      "startingSkillRanks": ["resilience"],
+      "abilities": [
+        { "name": "Additional Limbs", "summary": "Extra arms give one additional free maneuver each turn; the normal two-maneuver limit still applies.", "application": "automatic", "freeManeuvers": 1 }
+      ]
+    },
+    {
+      "species": "Dug",
+      "source": { "book": "Edge of The Empire - Special Modifications", "cataloguePage": "22", "page": "24" },
+      "startingSkillRanks": ["brawl"],
+      "abilities": [
+        { "name": "Born to Ride", "summary": "Natural riders of beasts and fast vehicles; gains Defensive Driving (one rank) as a starting talent.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Mustafarian - Northern",
+      "source": { "book": "Edge of The Empire - Special Modifications", "cataloguePage": "24", "page": "26" },
+      "startingSkillRanks": [],
+      "abilities": [
+        { "name": "Heat Adaptation", "summary": "Can strip two Setback dice from checks made to endure hot or arid environmental conditions.", "application": "manual" },
+        { "name": "Starting Talent: Eye for Detail", "summary": "Gains Eye for Detail (one rank) as a starting talent.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Mustafarian - Southern",
+      "source": { "book": "Edge of The Empire - Special Modifications", "cataloguePage": "24", "page": "26" },
+      "startingSkillRanks": [],
+      "abilities": [
+        { "name": "Heat Adaptation", "summary": "Can strip two Setback dice from checks made to endure hot or arid environmental conditions.", "application": "manual" },
+        { "name": "Starting Talent: Enduring", "summary": "Gains Enduring (one rank) as a starting talent.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Gank",
+      "source": { "book": "Edge of The Empire - Lords of Nal Hutta", "cataloguePage": "95", "page": "96" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["coercion", "vigilance"],
+      "abilities": [
+        { "name": "Cyborg", "summary": "May begin with as many as two cybernetics worth 5,000 credits total, raised by bonus Obligation credits; cybernetic cap equals 3 plus Brawn.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Hutt",
+      "source": { "book": "Edge of The Empire - Lords of Nal Hutta", "cataloguePage": "94", "page": "94" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["coercion", "discipline"],
+      "abilities": [
+        { "name": "Starting Talent: Enduring", "summary": "Gains Enduring (one rank) as a starting talent.", "application": "manual" },
+        { "name": "Starting Talent: Nobody's Fool", "summary": "Gains Nobody's Fool (one rank) as a starting talent.", "application": "manual" },
+        { "name": "Ponderous", "summary": "Limited to a single movement maneuver each turn.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Niktos - Green",
+      "source": { "book": "Edge of The Empire - Lords of Nal Hutta", "cataloguePage": "96", "page": "97" },
+      "startingSkillRanks": ["coordination"],
+      "abilities": [
+        { "name": "Climbing Claws", "summary": "Adds a Boost die to Athletics checks for climbing trees or other surfaces its claws can dig into.", "application": "manual" },
+        { "name": "Claws", "summary": "Brawl attacks that deal damage gain +1 damage and use Critical Rating 3.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Niktos - Mountain",
+      "source": { "book": "Edge of The Empire - Lords of Nal Hutta", "cataloguePage": "96", "page": "97" },
+      "startingSkillRanks": ["survival"],
+      "abilities": [
+        { "name": "Starting Talent: Natural Outdoorsman", "summary": "Gains Natural Outdoorsman as a starting talent, allowing a single reroll per session of a Survival or Resilience check.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Niktos - Pale",
+      "source": { "book": "Edge of The Empire - Lords of Nal Hutta", "cataloguePage": "96", "page": "98" },
+      "startingSkillRanks": ["athletics"],
+      "abilities": [
+        { "name": "Swimmer", "summary": "No movement penalties in water; can go without air for twice Brawn in rounds before drowning starts.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Niktos - Red",
+      "source": { "book": "Edge of The Empire - Lords of Nal Hutta", "cataloguePage": "96", "page": "97" },
+      "startingSkillRanks": ["resilience"],
+      "abilities": [
+        { "name": "Desert Adaptation", "summary": "Can discard one Setback die that dry or hot surroundings add to a skill check.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Niktos - Southern",
+      "source": { "book": "Edge of The Empire - Lords of Nal Hutta", "cataloguePage": "96", "page": "98" },
+      "startingSkillRanks": ["perception"],
+      "abilities": [
+        { "name": "Ultrasonic Hearing", "summary": "Adds a Boost die to Perception or Vigilance checks for noticing sounds.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Sakiyan",
+      "source": { "book": "Edge of The Empire - Lords of Nal Hutta", "cataloguePage": "98", "page": "99" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["perception", "vigilance"],
+      "abilities": [
+        { "name": "Starting Talent: Expert Tracker", "summary": "Gains Expert Tracker (one rank) as a starting talent.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Caamasi",
+      "source": { "book": "Age of Rebellion - Desperate Allies", "cataloguePage": "19", "page": "20" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["charm", "discipline"],
+      "abilities": [
+        { "name": "Memnii", "summary": "Once per session, imprint one scene as a lasting memory; can later recall any held memory exactly and share it with Caamasi or Force-sensitive characters.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Gossam",
+      "source": { "book": "Age of Rebellion - Desperate Allies", "cataloguePage": "22", "page": "23" },
+      "startingSkillRanks": ["deception"],
+      "abilities": [
+        { "name": "Small", "summary": "Counts as silhouette 0.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Neimodian",
+      "source": { "book": "Age of Rebellion - Desperate Allies", "cataloguePage": "20", "page": "22" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["deception", "negotiation"],
+      "abilities": []
+    },
+    {
+      "species": "Human - Mandalorian",
+      "source": { "book": "Age of Rebellion - Friends Like These", "cataloguePage": "7", "page": "8" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["brawl", "gunnery", "lightsaber", "melee", "rangedLight", "rangedHeavy"],
+      "abilities": [
+        { "name": "Knowledge Alternative", "summary": "Instead of the combat skill rank, may take one rank in each of two different Knowledge skills; record this choice manually.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Drabatans",
+      "source": { "book": "Dawn of Rebellion", "cataloguePage": "92", "page": "93" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["charm", "leadership"],
+      "abilities": [
+        { "name": "Big Noise", "summary": "On Leadership or Coercion checks, spend two Advantage to include one extra untargeted character or reach targets one range band farther.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Gigoran",
+      "source": { "book": "Dawn of Rebellion", "cataloguePage": "93", "page": "94" },
+      "startingSkillRanks": ["brawl"],
+      "abilities": [
+        { "name": "Adapted to the Cold", "summary": "Ignore one Setback die added by cold weather or snow.", "application": "manual" },
+        { "name": "Low-Tech", "summary": "Mechanics checks on advanced technology have their difficulty upgraded once.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Iakaru",
+      "source": { "book": "Dawn of Rebellion", "cataloguePage": "94", "page": "95" },
+      "startingSkillRanks": ["pilotingSpace"],
+      "abilities": [
+        { "name": "Brachiation", "summary": "Moves through jungle-like terrain without penalty; add one Boost die to Athletics and Coordination checks for climbing, swinging or balancing.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Tognath",
+      "source": { "book": "Dawn of Rebellion", "cataloguePage": "96", "page": "97" },
+      "startingSkillRanks": ["coordination", "perception"],
+      "abilities": [
+        { "name": "Cybernetic Implants", "summary": "The implants and eye lenses granting the Coordination and Perception ranks use one slot of the cybernetic implant limit.", "application": "manual" },
+        { "name": "Primitive Nerves", "summary": "Coercion checks targeting a Tognath add two Setback dice.", "application": "manual" },
+        { "name": "Atmospheric Requirement", "summary": "Needs a breath mask outside its native atmosphere and starts with one; oxygen counts as a rating 5 corrosive atmosphere; tolerates five minutes of vacuum.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Ewok",
+      "source": { "book": "Allies & Adversaries", "cataloguePage": "119", "page": "119" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["stealth", "survival"],
+      "abilities": [
+        { "name": "Silhouette 0", "summary": "Counts as silhouette 0; this is stated within the species' special-abilities line rather than as a separately named ability.", "application": "manual" },
+        { "name": "Acute Senses", "summary": "Add one Boost die to Perception and Vigilance checks.", "application": "automatic", "checkBoostSkills": ["perception", "vigilance"] },
+        { "name": "Low-Tech Users", "summary": "Checks using advanced technology unknown on Endor are upgraded once; the GM may waive familiar gear; 10 XP removes this with GM approval.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Jawa",
+      "source": { "book": "Allies & Adversaries", "cataloguePage": "92", "page": "92" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["negotiation", "skulduggery"],
+      "abilities": [
+        { "name": "Clever Negotiators", "summary": "May roll Negotiation using Cunning rather than Presence.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Lasat",
+      "source": { "book": "Allies & Adversaries", "cataloguePage": "19", "page": "19" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["brawl", "lore"],
+      "abilities": [
+        { "name": "Prehensile Feet", "summary": "Walls and other vertical surfaces can be traversed like level ground.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Tusken Raider",
+      "source": { "book": "Allies & Adversaries", "cataloguePage": "105", "page": "105" },
+      "startingSkillRanks": ["survival"],
+      "abilities": [
+        { "name": "Bantha Riders", "summary": "Athletics or Survival checks made to handle a bantha gain one automatic Success.", "application": "manual" },
+        { "name": "Water Reclamator", "summary": "Reduce the difficulty once on Resilience and Survival checks against extreme heat or lack of water.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Cosian",
+      "source": { "book": "Force & Destiny - Disciples of Harmony", "cataloguePage": "18", "page": "19" },
+      "startingSkillRanks": ["lore"],
+      "abilities": [
+        { "name": "Strong Backed", "summary": "Encumbrance threshold is 10 plus Brawn.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Pau'an",
+      "source": { "book": "Force & Destiny - Disciples of Harmony", "cataloguePage": "20", "page": "20" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["negotiation", "coercion"],
+      "abilities": [
+        { "name": "Sensitive Hearing", "summary": "While wearing ear protection, add one Boost die to Perception and Vigilance checks; without it, add one Threat to those checks instead.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Iktotchi",
+      "source": { "book": "Force & Destiny - Keeping The Peace", "cataloguePage": "18", "page": "19" },
+      "startingSkillRanks": ["vigilance"],
+      "abilities": [
+        { "name": "Precognition", "summary": "Spend a Triumph on an Initiative check so it or an ally within short range gets a free maneuver first; GM may grant visions.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Lannik",
+      "source": { "book": "Force & Destiny - Keeping The Peace", "cataloguePage": "20", "page": "21" },
+      "startingSkillRanks": ["streetwise"],
+      "abilities": [
+        { "name": "Indomitable", "summary": "Remove up to two Setback dice from own checks caused by Critical Injuries, being disoriented, or fear.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Whiphid",
+      "source": { "book": "Force & Destiny - Keeping The Peace", "cataloguePage": "21", "page": "22" },
+      "startingSkillRanks": ["survival"],
+      "abilities": [
+        { "name": "Hardy Survivalist", "summary": "Survival checks gain one automatic Success; stored blubber lets the character go weeks without eating.", "application": "manual" },
+        { "name": "Tusks", "summary": "Damaging Brawl attacks gain +2 damage, Critical Rating 4 and Vicious 1.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Dowutin",
+      "source": { "book": "Force & Destiny - Knights of Fate", "cataloguePage": "18", "page": "19" },
+      "startingSkillRanks": ["resilience"],
+      "abilities": [
+        { "name": "Large", "summary": "Choose silhouette 1 or 2 during character creation.", "application": "manual" },
+        { "name": "Immovable", "summary": "When immobilized, knocked prone or forcibly moved, may take 3 strain (out-of-turn incidental) to ignore that effect; silhouette 2 costs only 1 strain.", "application": "manual" }
+      ]
+    },
+    {
+      "species": "Mikkian",
+      "source": { "book": "Force & Destiny - Knights of Fate", "cataloguePage": "20", "page": "21" },
+      "startingSkillRanks": ["discipline"],
+      "abilities": [
+        { "name": "Sensory Tendrils", "summary": "Add one Boost die to Perception checks.", "application": "automatic", "checkBoostSkills": ["perception"] }
+      ]
+    },
+    {
+      "species": "Phydolon",
+      "source": { "book": "Force & Destiny - Knights of Fate", "cataloguePage": "21", "page": "22" },
+      "startingSkillRanks": [],
+      "choiceSkillRank": true,
+      "choiceSkillOptions": ["cool", "discipline"],
+      "abilities": [
+        { "name": "Symbiotic Resilience", "summary": "Heals one additional wound each night of natural rest; one Critical Injury may be tried for natural recovery nightly rather than weekly.", "application": "manual" },
+        { "name": "Symbiont Isolation", "summary": "Without another Phydolon present, end-of-encounter strain recovery drops by one, to a minimum of one.", "application": "manual" }
+      ]
     }
   ]
 }

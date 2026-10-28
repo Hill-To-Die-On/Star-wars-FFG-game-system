@@ -22,12 +22,12 @@ Native Foundry tests need a licensed installation and an isolated disposable wor
 Git commits identify code revisions; they do not automatically increment the installed system version. Release tooling includes:
 
 ```sh
-npm run version:set -- 0.4.2
+npm run version:set -- 0.5.1
 ```
 
 Choose the intended next number. The command synchronizes package metadata, lockfile, Foundry manifest/download and changelog. It neither tags nor publishes. Use three numeric parts, keep unreleased status explicit and never overwrite an existing release tag.
 
-The 0.4.2 Beta release packages only English and retains draft translations in source. `npm run review:content` generates the exact-ZIP human text review packet after build/audit; it does not automatically approve content or publish a listing.
+The 0.5.0 Beta release packages only English and retains draft translations in source. `npm run review:content` generates the exact-ZIP human text review packet after build/audit; it does not automatically approve content or publish a listing.
 
 The review page offers source and rendered reading views side by side, with source-only and rendered-only options. It formats Markdown and static HTML/templates, resolves packaged English labels, and marks dynamic values and conditional branches. Its plain reading layout keeps source actions inactive. Human evidence and the exact archive binding remain required. The development compiler is pinned to the upstream Handlebars 4.7.10 security fix; the current dependency audit is clean.
 
