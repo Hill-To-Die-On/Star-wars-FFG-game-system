@@ -31,7 +31,7 @@ guidelines.
 
 The player-visible credit explicitly disclaims NASA endorsement. A source,
 pixel-integrity and usage review dated 2026-10-12 is retained in
-[`docs/nasa-artwork-rights.md`](docs/nasa-artwork-rights.md). This background
+[`docs/sources/nasa-artwork-rights.md`](docs/sources/nasa-artwork-rights.md). This background
 credit grants no permission to use NASA emblems or imply NASA approval.
 
 ## Narrative dice symbol font

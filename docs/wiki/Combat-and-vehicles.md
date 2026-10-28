@@ -1,6 +1,6 @@
 # Combat and vehicles
 
-These workflows describe the **0.4.2 Beta release**. The system supports reviewed decisions; it does not silently resolve every rule in every sourcebook.
+These workflows describe the **0.5.0 Beta release**. The system supports reviewed decisions; it does not silently resolve every rule in every sourcebook.
 
 ## Personal combat
 
@@ -12,7 +12,9 @@ These workflows describe the **0.4.2 Beta release**. The system supports reviewe
 
 Range searches use legal edge-to-edge firing paths rather than only the centre line. Obstructions and supported firing arcs constrain the path. Ambiguous geometry requests a GM ruling. Range bands are an aid to the table, not a substitute for narrative positioning.
 
-Combat resolution previews damage, soak, supported Pierce/Breach adjustments and recovery. Tabletop history supports conflict-safe undo. Critical and condition records do not imply that every associated modifier is automated. Reviewed narrative-option tables remain a separate source-coverage task.
+Combat resolution previews damage, soak, supported Pierce/Breach adjustments and recovery. Tabletop history supports conflict-safe undo. Critical and condition records do not imply that every associated modifier is automated.
+
+**New in the 0.5.0 Beta release:** criticals can be rolled on the core Critical Injury and Critical Hit tables, with Vicious, existing criticals, the healing check, immediate strain and lasting Setback handled; weapon qualities such as Accurate, Inaccurate, Superior, Cumbersome, Pierce, Breach and Stun Damage feed rolls and damage; and the spending window offers the four core combat spending tables plus the weapon's active qualities, each with its core page. Difficulty, characteristic and timed critical effects remain GM reminders.
 
 ## Vehicles and crew
 

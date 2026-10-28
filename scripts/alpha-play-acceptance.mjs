@@ -6,7 +6,7 @@ export async function alphaPlayAcceptance({gm,player,report,output}) {
   gm.setDefaultTimeout(30000);player.setDefaultTimeout(30000);
   const check=text=>{report.checks.push(text);console.log('ALPHA PASS '+text);};
   console.log('ALPHA START transaction authority and owned character setup');
-  await gm.evaluate(()=>{ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
+  await gm.evaluate(()=>{ui.settings.render(true);ui.sidebar.changeTab('settings','primary');ui.sidebar.expand();});
   await gm.locator('[data-transaction-authority]').click();
   await gm.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true}).click();
   await gm.waitForFunction(async()=> (await import('/systems/star-wars-ffg/src/document-transactions.mjs')).getDocumentTransactionBroker().isAuthority());
@@ -70,7 +70,7 @@ export async function alphaPlayAcceptance({gm,player,report,output}) {
   await player.waitForFunction(id=>game.messages.some(message=>message.getFlag('star-wars-ffg','actorUuid')===`Actor.${id}`&&message.isRoll),id);
   await gm.waitForFunction(id=>game.messages.some(message=>message.getFlag('star-wars-ffg','actorUuid')===`Actor.${id}`&&message.isRoll),id);
   check('Owned player skill builds and rolls a native narrative pool; the GM receives the same authenticated actor roll');
-  await gm.evaluate(()=>{ui.sidebar.activateTab('chat');ui.sidebar.expand();});
+  await gm.evaluate(()=>{ui.sidebar.changeTab('chat','primary');ui.sidebar.expand();});
   const initial=await gm.evaluate(id=>game.actors.get(id).system.wounds.value,id);
   const resolveEffect=async(kind,amount)=>{
     await gm.evaluate(id=>{void game.system.api.tabletop.resolve(game.actors.get(id));},id);

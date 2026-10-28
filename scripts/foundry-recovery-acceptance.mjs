@@ -6,18 +6,18 @@ import {spawn} from 'node:child_process';
 import {createServer} from 'node:net';
 import assert from 'node:assert/strict';
 import {chromium} from '@playwright/test';
-import {installRecoveryArchive,ownedPath} from './recovery-support.mjs';
+import {installRecoveryArchive,ownedPath,installedCoreVersion,classifyCompatibilityWarning,joinGame} from './recovery-support.mjs';
 
 const args=process.argv.slice(2),arg=name=>args.find(v=>v.startsWith(`--${name}=`))?.slice(name.length+3);
 const foundryApp=arg('foundry-app'),license=arg('license');
-if(!foundryApp||!license)throw Error('Supply --foundry-app=<licensed main.js> and --license=<private license.json>; see docs/backup-recovery.md.');
+if(!foundryApp||!license)throw Error('Supply --foundry-app=<licensed main.js> and --license=<private license.json>; see docs/development/validation.md (Reproducing the checks).');
 const port=Number(arg('port')??30026);
 if(!Number.isInteger(port)||port<1024||port>65535||port===30002)throw Error('Choose an isolated non-production port.');
 const checkPort=createServer();await new Promise((ok,no)=>{checkPort.once('error',no);checkPort.listen(port,'127.0.0.1',ok);});await new Promise(ok=>checkPort.close(ok));
 const parent=resolve(arg('output')??'.local/recovery');await mkdir(parent,{recursive:true});
 const output=await mkdtemp(join(parent,'run-')),archive=resolve(arg('archive')??'dist/star-wars-ffg.zip');
 const baselines=args.filter(v=>v.startsWith('--baseline=')).map(v=>resolve(v.slice(11)));
-const worldId='recovery-acceptance',coreVersion=arg('core-version')??'14.368';
+const worldId='recovery-acceptance',coreVersion=arg('core-version')??await installedCoreVersion(foundryApp);
 const report={kind:'native-packaged-install-upgrade-recovery',coreVersion,port,scenarios:[]};
 let child,browser,page;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -37,7 +37,7 @@ async function prepare(name,zip,worldCopy) {
 }
 async function start(stage) {
   const log=createWriteStream(join(stage.dataPath,'server.log'));
-  child=spawn(process.execPath,[resolve(foundryApp),`--dataPath=${stage.dataPath}`,`--port=${port}`,`--world=${worldId}`],{windowsHide:true,stdio:['ignore','pipe','pipe']});child.stdout.pipe(log);child.stderr.pipe(log);
+  child=spawn(process.execPath,[resolve(foundryApp),`--dataPath=${stage.dataPath}`,`--port=${port}`,`--world=${worldId}`,'--noipdiscovery'],{windowsHide:true,stdio:['ignore','pipe','pipe']});child.stdout.pipe(log);child.stderr.pipe(log);
   const deadline=Date.now()+60_000;
   while(Date.now()<deadline) {
     if(child.exitCode!==null)throw Error('Isolated Foundry exited; inspect its private server.log.');
@@ -45,10 +45,9 @@ async function start(stage) {
     await wait(250);
   }
   browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
-  page=await browser.newPage({viewport:{width:1500,height:1000}});stage.errors=[];page.on('pageerror',e=>stage.errors.push(e.message));
-  await page.goto(`http://127.0.0.1:${port}/game`,{waitUntil:'domcontentloaded',timeout:60_000});
-  if(page.url().includes('/join')){await page.locator('#join-username').fill('Gamemaster');await page.getByRole('button',{name:'Join Game Session'}).click();}
-  await page.waitForFunction(()=>globalThis.game?.ready,null,{timeout:60_000});
+  page=await browser.newPage({viewport:{width:1500,height:1000}});stage.errors=[];stage.compatibilityWarnings=[];page.on('pageerror',e=>stage.errors.push(e.message));
+  page.on('console',message=>{const warning=message.type()==='warning'&&classifyCompatibilityWarning(message.text());if(warning)stage.compatibilityWarnings.push(warning);});
+  stage.coreStartupRetries=await joinGame(page,`http://127.0.0.1:${port}/game`,'Gamemaster',stage.errors);
   await page.waitForFunction(()=>canvas.initialized&&!canvas.loading,null,{timeout:60_000});
   if(stage.freshWorld && await page.evaluate(()=>game.tours.get('core.welcome')?.status===foundry.nue.Tour.STATUS.UNSTARTED)){
     await page.locator('.step-button[data-action="exit"]').waitFor({timeout:30000});
@@ -72,7 +71,7 @@ async function selectAuthority() {
     await page.locator('#star-wars-welcome [data-action="later"]').click();
     await page.locator('#star-wars-welcome').waitFor({state:'hidden'});
   }
-  await page.evaluate(()=>{foundry.nue.Tour.activeTour?.exit?.();ui.settings.render(true);ui.sidebar.activateTab('settings');ui.sidebar.expand();});
+  await page.evaluate(()=>{foundry.nue.Tour.activeTour?.exit?.();ui.settings.render(true);ui.sidebar.changeTab('settings','primary');ui.sidebar.expand();});
   await page.locator('[data-transaction-authority]').click();
   const confirm=page.getByRole('button',{name:'Other tabs stopped - use this tab',exact:true});
   const dialogId=await confirm.evaluate(button=>button.closest('dialog')?.id);
@@ -121,7 +120,7 @@ async function seed() {
     const vehicle=await actors[4].getTokenDocument({x:900,y:300,actorLink:true,rotation:135,width:2,height:3,texture:{src:'icons/svg/anchor.svg'}});
     await scene.createEmbeddedDocuments('Token',[linked.toObject(),unlinked.toObject(),vehicle.toObject()]);await scene.activate();
     await JournalEntry.create({name:'Recovery private note',ownership:{default:0},pages:[{name:'Synthetic reference',type:'text',text:{content:'Original recovery fixture, no book material.',format:1}}]});
-    const pack=await CompendiumCollection.createCompendium({name:'recovery-items',label:'Recovery items',type:'Item',system:game.system.id});
+    const pack=await foundry.documents.collections.CompendiumCollection.createCompendium({name:'recovery-items',label:'Recovery items',type:'Item',system:game.system.id});
     await Item.create({name:'Recovery compendium gear',type:'gear',system:{quantity:1}},{pack:pack.collection});
     await ChatMessage.create({content:'Recovery fixture: preserve this message.',flags:{'star-wars-ffg':{recoveryFixture:true}}});
     return actors.map(a=>a.id);
@@ -158,15 +157,16 @@ try {
   const before=await snapshot(),recovery=await exerciseRecovery();await reloadClient();assert.deepEqual(await snapshot(),before);
   await page.evaluate(()=>foundry.nue.Tour.activeTour?.exit());
   await page.screenshot({path:join(output,'fresh-install.png')});await stop();
-  report.scenarios.push({scenario:'fresh',package:fresh.sha256,runtime:fresh.runtime,selectedAuthority:fresh.selectedAuthority,recovery,persistedAfterReload:true,pageErrors:fresh.errors});
+  report.scenarios.push({scenario:'fresh',package:fresh.sha256,runtime:fresh.runtime,selectedAuthority:fresh.selectedAuthority,recovery,persistedAfterReload:true,pageErrors:fresh.errors,compatibilityWarnings:fresh.compatibilityWarnings,coreStartupRetries:fresh.coreStartupRetries});
   for(const [index,baseline]of baselines.entries()) {
     const original=await prepare(`baseline-${index}`,baseline);await start(original);await seed();const expected=await snapshot();await stop();
     const backup=ownedPath(output,`backup-${index}`);await cp(original.world,backup,{recursive:true,errorOnExist:true,force:false});
     const candidate=await prepare(`upgrade-${index}`,archive,backup);await start(candidate);assert.deepEqual(await snapshot(),expected);const result=await exerciseRecovery();await reloadClient();assert.deepEqual(await snapshot(),expected);await stop();
     const restored=await prepare(`restored-${index}`,baseline,backup);await start(restored);assert.deepEqual(await snapshot(),expected);await stop();
-    report.scenarios.push({scenario:`upgrade-from-${original.version}`,baseline:original.sha256,candidate:candidate.sha256,runtime:candidate.runtime,selectedAuthority:candidate.selectedAuthority,recovery:result,restoredBaseline:true,pageErrors:[...original.errors,...candidate.errors,...restored.errors]});
+    report.scenarios.push({scenario:`upgrade-from-${original.version}`,baseline:original.sha256,candidate:candidate.sha256,runtime:candidate.runtime,selectedAuthority:candidate.selectedAuthority,recovery:result,restoredBaseline:true,pageErrors:[...original.errors,...candidate.errors,...restored.errors],compatibilityWarnings:candidate.compatibilityWarnings});
   }
-  assert.ok(report.scenarios.every(s=>s.pageErrors.length===0),'Native page errors require review');report.passed=true;
+  assert.ok(report.scenarios.every(s=>s.pageErrors.length===0),'Native page errors require review');
+  assert.ok(report.scenarios.every(s=>!(s.compatibilityWarnings??[]).some(w=>w.fromSystem)),'System code raised core compatibility warnings');report.passed=true;
 } catch(error) {report.passed=false;report.failure=error.message;await page?.screenshot({path:join(output,'failure.png')}).catch(()=>{});throw error;}
 finally {
   try{await stop({requireClean:false});}catch(error){report.passed=false;report.cleanupFailure=error.message;process.exitCode=1;}

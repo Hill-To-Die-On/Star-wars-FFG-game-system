@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.5.0 — 2026-10-28
+
+### Beta release channel
+
+- Publish 0.5.0 as an English-only GitHub Beta prerelease with its version-specific manifest; the latest stable manifest remains on 0.3.0.
+
+### Core-rule table workflows
+
+- Roll criticals on the core Critical Injury and Critical Hit tables, adding 10 per existing critical and per Vicious rank plus any reviewed talent modifier. The record keeps the result's severity, healing check and core page. Immediate strain, immediate system strain and Maimed's lasting Setback apply automatically; difficulty, characteristic and timed effects remain GM reminders.
+- Apply weapon qualities to checks: Accurate, Inaccurate, Superior, Inferior, Cumbersome and Unwieldy change the pool with a stated reason, and Pierce, Breach and Stun Damage prefill combat resolution.
+- Offer the 55 options from the four core combat spending tables, plus the rolled weapon's active qualities, as cited presets in the spending window. Options are filtered by the symbols left on the roll and the campaign's book filter.
+- Add **Start session**, which rolls the core Obligation and Duty checks with session-long threshold changes, doubles and over-100 handling, and **End session**, which restores the thresholds and resolves Morality from d10 minus Conflict.
+- Add **Distribute equipment**, which copies items onto a character with native source provenance and undo that leaves edited items alone.
+- Bundle original-wording catalogues of the spending tables, 30 item qualities and both critical tables, each with core page citations.
+
+### Reference data
+
+- Check 55 more species entries against printed pages, bringing coverage to 95 of 104 catalogue rows. Five more unconditional abilities are automated, eleven in all.
+- Add 29 printed vehicle stat blocks, bringing complete profiles to 341 of 399, and rebuild the matching reference rows and vehicle actors.
+
+### Compatibility
+
+- Verify Foundry VTT 14.369. The system uses no removed or deprecated core APIs.
+- Update the licensed native test harnesses for 14.369 and fail them on any system-raised compatibility warning.
+- Update development dependencies and CI actions.
+
 ## 0.4.2 — 2026-10-14
 
 ### Beta release channel

@@ -533,7 +533,7 @@ def main():
     lines += ["", "## Signature chart photo requests", "", "These signature charts have no recorded full printed comparison. A structured graph may already be available, but a complete, straight-on page image is still needed to verify node names, costs and connectors.", "", "| Signature ability | Book | Printed page | Graph |", "|---|---|---|---|"]
     lines += [f"| {row['signatureAbility']} | {row['book']} | {row['page'] or 'Check index'} | {row['graph']} |" for row in missing_signatures] or ["| None identified | | | |"]
     lines += ["", "## Coverage limits", "", "The register covers the supplied databases, not a verified complete publication bibliography. A present PDF can still have missing or unreadable pages. Expansion crafting, mass combat, squadron and Force-power exceptions need their own reference validation; no blanket claim of complete rules automation is made.", ""]
-    Path("docs/source-coverage.md").write_text("\n".join(lines),encoding="utf-8")
+    Path("docs/sources/advancement-coverage.md").write_text("\n".join(lines),encoding="utf-8")
     print(json.dumps({"graphsImported":imported,"charts":len(coverage),"missingPDFs":len(missing),"signatureGraphsImported":signature_imported,"signatureAbilities":len(signature_coverage),"missingSignatureGraphs":[row["signatureAbility"] for row in signature_coverage if row["graph"]=="missing"],"motivationsEnriched":motivations_enriched,"vehiclesEnriched":enriched,"unresolvedGraphs":[r["specialization"] for r in coverage if r["graph"]!="imported"]},indent=2))
 
 if __name__=="__main__": main()

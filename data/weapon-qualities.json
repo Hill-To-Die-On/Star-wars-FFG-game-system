@@ -1,0 +1,945 @@
+{
+ "format": "star-wars-weapon-qualities",
+ "version": 1,
+ "activationRule": {
+  "summary": "Active qualities cost two advantage unless their entry says otherwise; one Triumph activates any single quality. Most need a hit; repeating needs explicit permission.",
+  "defaultAdvantage": 2,
+  "page": "EotE 154 (default cost), 205 (Triumph, combat use); AoR 168, 218; FaD 161, 211"
+ },
+ "qualities": [
+  {
+   "id": "accurate",
+   "name": "Accurate",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Each rating point gives the attacker one Boost die on attack checks made with this weapon.",
+   "automation": {
+    "attackBoostPerRating": 1
+   },
+   "notes": "EotE Table 7-1 lists the quad laser cannon as plain 'Accurate' with no number; AoR and FaD list 'Accurate 1'. Treat a missing rating as 1.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "154"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "168"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "161"
+    }
+   ]
+  },
+  {
+   "id": "auto-fire",
+   "name": "Auto-fire",
+   "rated": false,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": true
+   },
+   "summary": "Optional mode: attack difficulty rises by one; on a hit, each two-advantage spend adds another hit, assignable to targets chosen before rolling.",
+   "automation": {
+    "attackDifficultyIncrease": 1,
+    "optionalMode": true,
+    "extraHitPerActivation": true
+   },
+   "notes": "attackDifficultyIncrease adds one Difficulty die only when the user opts into auto-fire; declining removes both the penalty and the ability to trigger. Extra hits each deal base damage plus uncanceled successes and may go to other targets in range, but only if multiple targets were declared before the roll; the first hit must land on the hardest/highest-defense declared target (GM breaks ties). Each hit can carry its own Critical Injury at normal cost. Soak applies to each hit separately (EotE p.205-206, FaD p.213).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "155"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "168"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "161-162"
+    }
+   ]
+  },
+  {
+   "id": "blast",
+   "name": "Blast",
+   "rated": true,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": false,
+    "onMissAdvantage": 3
+   },
+   "summary": "When activated on a hit, everyone engaged with the target takes rating damage plus net successes; spending three advantage triggers it on a miss too.",
+   "automation": {
+    "blast": {
+     "damagePerRating": 1,
+     "addsNetSuccesses": true,
+     "affectsEngagedWithTarget": true,
+     "includesAllies": true,
+     "onMissAdvantage": 3
+    }
+   },
+   "notes": "On a hit, the splash adds one per success. On a miss (three-advantage option), the original target and everyone engaged with it take the Blast rating only. The GM may extend the effect to everyone in a small enclosed space. EotE describes the on-hit splash as wounds, while AoR and FaD call it damage (so soak would apply); see uncertain.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "155"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "168"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "162"
+    }
+   ]
+  },
+  {
+   "id": "breach",
+   "name": "Breach",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Ignores one point of vehicle armor per rating, equivalent to ten points of personal soak per rating.",
+   "automation": {
+    "breach": true,
+    "armorIgnoredPerRating": 1,
+    "personalSoakIgnoredPerRating": 10
+   },
+   "notes": "Per the EotE FAQ v1.2, Breach (like Pierce) only lowers soak or armor when that hit's damage is applied; it never guarantees damage gets through. Breach has no effect on the soak of a target wearing Cortosis armor. Appears on starship weapons in Table 7-1 (EotE p.230, AoR p.240, FaD p.234).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "155"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "168"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "162"
+    },
+    {
+     "book": "Edge of the Empire FAQ & Errata v1.2",
+     "page": "1"
+    }
+   ]
+  },
+  {
+   "id": "burn",
+   "name": "Burn",
+   "rated": true,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": false
+   },
+   "summary": "If activated on a hit, the target keeps taking the weapon's base damage at the start of its turns for rounds equal to the rating.",
+   "automation": {
+    "damageOverTime": {
+     "amount": "baseDamage",
+     "roundsPerRating": 1,
+     "timing": "startOfTargetTurn"
+    }
+   },
+   "notes": "The victim may use an action to roll on the ground: Average Coordination on hard surfaces, Easy on soft ground; diving into water ends it at once. These remedies assume real fire, and a chemical burn may not be stoppable. EotE ties each tick to the target's actions; AoR and FaD tie it to the beginning of the target's turn, once per round.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "155"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "162"
+    }
+   ]
+  },
+  {
+   "id": "concussive",
+   "name": "Concussive",
+   "rated": true,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": false
+   },
+   "summary": "Activation staggers the target, so it cannot take actions, for as many rounds as the rating.",
+   "automation": {
+    "applyStatus": {
+     "status": "staggered",
+     "roundsPerRating": 1
+    }
+   },
+   "notes": "The staggered condition is defined in the combat chapter (EotE p.218, AoR p.230, FaD p.223).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "155"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "162"
+    }
+   ]
+  },
+  {
+   "id": "cortosis",
+   "name": "Cortosis",
+   "rated": false,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Unrated. A cortosis weapon cannot be damaged by Sunder; cortosis armor keeps its full soak against Pierce and Breach.",
+   "automation": {
+    "weaponImmuneToSunder": true,
+    "armorSoakIgnoresPierceAndBreach": true
+   },
+   "notes": "The background text says rare cortosis can short out a lightsaber blade, but no core gives a rule for this. Printed in all three cores, not just FaD.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "155"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "162-163"
+    }
+   ]
+  },
+  {
+   "id": "cumbersome",
+   "name": "Cumbersome",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Wielders whose Brawn falls below the rating add one difficulty die to every check with the weapon per missing Brawn point.",
+   "automation": {
+    "difficultyIncreaseIfBelow": {
+     "characteristic": "Brawn",
+     "perPointShort": 1
+    }
+   },
+   "notes": "Key renamed from the suggested difficultyUpgradeIfBelow: the book increases difficulty (adds Difficulty dice), not upgrades. The penalty is (rating minus Brawn) Difficulty dice when positive, on all checks using the weapon, not only attacks. Attachment mods can lower the rating (e.g. a FaD p.195 attachment offers Cumbersome -1 mods).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "155"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    }
+   ]
+  },
+  {
+   "id": "defensive",
+   "name": "Defensive",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "While wielded, raises the bearer's melee defense by the rating.",
+   "automation": {
+    "defenseMeleePerRating": 1
+   },
+   "notes": "Melee defense applies against Brawl and Melee checks, plus Lightsaber checks in FaD (p.213). The book says it raises defense, so under EotE errata v2.0 it stacks with provided defense such as armor or cover, with a cap of 4. AoR p.220 and FaD p.213 as printed say defense sources do not stack and the best one is used. Printed in all three cores.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    },
+    {
+     "book": "Edge of the Empire Errata v2.0",
+     "page": "1-2 (entry for core p.206)"
+    }
+   ]
+  },
+  {
+   "id": "deflection",
+   "name": "Deflection",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Raises the wearer's or bearer's ranged defense by the rating.",
+   "automation": {
+    "defenseRangedPerRating": 1
+   },
+   "notes": "Ranged defense covers attacks made with the Gunnery, Ranged (Light) and Ranged (Heavy) skills. Stacking works the same way as for Defensive: EotE errata lets it stack up to a cap of 4, while the AoR and FaD printed text says to use the best source. Printed in all three cores.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    },
+    {
+     "book": "Edge of the Empire Errata v2.0",
+     "page": "1-2 (entry for core p.206)"
+    }
+   ]
+  },
+  {
+   "id": "disorient",
+   "name": "Disorient",
+   "rated": true,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": false
+   },
+   "summary": "Activation disorients the target for rounds equal to the rating; a disoriented character adds a Setback die to all skill checks.",
+   "automation": {
+    "applyStatus": {
+     "status": "disoriented",
+     "roundsPerRating": 1,
+     "setbackOnAllSkillChecks": 1
+    }
+   },
+   "notes": "The disoriented condition is defined in the combat chapter (EotE p.218, AoR p.230, FaD p.224).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    }
+   ]
+  },
+  {
+   "id": "ensnare",
+   "name": "Ensnare",
+   "rated": true,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": false
+   },
+   "summary": "Activation immobilizes the target, blocking maneuvers, for rounds equal to the rating; the target may spend its action on a Hard Athletics check to escape.",
+   "automation": {
+    "applyStatus": {
+     "status": "immobilized",
+     "roundsPerRating": 1,
+     "escapeCheck": {
+      "skill": "Athletics",
+      "difficulty": 3,
+      "costsAction": true
+     }
+    }
+   },
+   "notes": "escapeCheck.difficulty 3 means Hard (three Difficulty dice). The immobilized condition is defined in the combat chapter (EotE p.218, AoR p.230, FaD p.223).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    }
+   ]
+  },
+  {
+   "id": "guided",
+   "name": "Guided",
+   "rated": true,
+   "kind": "active",
+   "activation": {
+    "advantage": 3,
+    "perRating": false,
+    "repeatable": false,
+    "triggersOnMiss": true
+   },
+   "summary": "After a miss, three advantage lets the projectile attack again at round's end, rolling Ability dice equal to the rating against silhouette-based difficulty.",
+   "automation": {
+    "followUpAttack": {
+     "onMiss": true,
+     "timing": "endOfRound",
+     "abilityDicePerRating": 1,
+     "attackerSilhouette": 0,
+     "difficultyFrom": "silhouetteComparison"
+    }
+   },
+   "notes": "Difficulty uses the starship silhouette comparison table (EotE p.235, AoR p.249, FaD p.242), treating the projectile as silhouette 0. A follow-up attack can itself trigger Guided again. A weapon's own entry may change the three-advantage cost. Spoofing countermeasures raise the target's defense against Guided attacks. Found on missile and torpedo launchers in Table 7-1 (EotE p.230, AoR p.240, FaD p.234).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    }
+   ]
+  },
+  {
+   "id": "inaccurate",
+   "name": "Inaccurate",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Each rating point adds one Setback die to attack checks made with this weapon.",
+   "automation": {
+    "attackSetbackPerRating": 1
+   },
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    }
+   ]
+  },
+  {
+   "id": "inferior",
+   "name": "Inferior",
+   "rated": false,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Unrated. Weapons gain an automatic Threat on related checks and lose one base damage; armor gains one encumbrance and loses one defense (or soak).",
+   "automation": {
+    "autoThreat": 1,
+    "baseDamageModifier": -1,
+    "armor": {
+     "encumbranceModifier": 1,
+     "defenseModifier": -1,
+     "soakModifierIfNoDefense": -1,
+     "soakMinimum": 0
+    }
+   },
+   "notes": "autoThreat applies to weapon checks only. For armor with no defense, the penalty moves to soak, which cannot go below 0.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    }
+   ]
+  },
+  {
+   "id": "ion",
+   "name": "Ion",
+   "rated": false,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Unrated. Damage left after armor or soak is applied as system strain to vehicles, or as strain to droids.",
+   "automation": {
+    "damageToSystemStrain": true,
+    "droidDamageToStrain": true
+   },
+   "notes": "Armor and soak still reduce the damage. Spending advantage does not remove system strain (EotE p.225). Ion cannons in Table 7-1 (EotE p.230, AoR p.240, FaD p.234) carry Ion with no rating. No core says how Ion affects non-droid characters.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    },
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "225"
+    }
+   ]
+  },
+  {
+   "id": "knockdown",
+   "name": "Knockdown",
+   "rated": false,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": false,
+    "extraAdvantagePerTargetSilhouetteAbove1": 1
+   },
+   "summary": "Activation knocks the target prone; costs two advantage plus one more for each silhouette step of the target above 1.",
+   "automation": {
+    "applyStatus": {
+     "status": "prone"
+    }
+   },
+   "notes": "Cost formula: 2 + max(0, target silhouette - 1) advantage, unless the weapon's entry says otherwise. A Triumph still pays the whole cost.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "169"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163"
+    }
+   ]
+  },
+  {
+   "id": "limited-ammo",
+   "name": "Limited Ammo",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "The weapon makes attacks equal to its rating before a reload maneuver; spent shots are consumed and must be replaced. Grenades are Limited Ammo 1.",
+   "automation": {
+    "attacksBeforeReloadPerRating": 1,
+    "reloadCost": "maneuver",
+    "consumesAmmo": true
+   },
+   "notes": "Vehicle chapter sidebar: starfighter missiles and torpedoes cannot be reloaded in flight and must be restocked at a base or carrier (EotE p.229, AoR p.242, FaD p.236).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "163-164"
+    },
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "229"
+    }
+   ]
+  },
+  {
+   "id": "linked",
+   "name": "Linked",
+   "rated": true,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": true,
+    "maxActivationsPerRating": 1
+   },
+   "summary": "On a hit, each two-advantage spend adds one more hit on the same target, up to the rating; every hit inflicts base damage plus successes.",
+   "automation": {
+    "extraHitPerActivation": true,
+    "maxExtraHitsPerRating": 1,
+    "sameTargetOnly": true
+   },
+   "notes": "Commonly found on starship weapons (Table 7-1 and ship profiles). A FaD talent (p.151) grants Linked equal to Force rating for one Lightsaber check. No core says whether each extra hit can carry its own Critical (Auto-fire says it can).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "156-157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    }
+   ]
+  },
+  {
+   "id": "pierce",
+   "name": "Pierce",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Each rating point removes one point of the target's soak for this hit; excess Pierce beyond total soak does nothing.",
+   "automation": {
+    "pierce": true,
+    "soakIgnoredPerRating": 1
+   },
+   "notes": "Per the EotE FAQ v1.2, Pierce only lowers soak when damage is applied, so damage at or below the reduced soak still deals nothing. Cortosis armor negates it. EotE p.166 / AoR p.182: a force pike loses Pierce while on its stun setting (a weapon-specific rule).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    },
+    {
+     "book": "Edge of the Empire FAQ & Errata v1.2",
+     "page": "1"
+    }
+   ]
+  },
+  {
+   "id": "prepare",
+   "name": "Prepare",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Before attacking, the user must spend preparation maneuvers equal to the rating.",
+   "automation": {
+    "prepManeuversPerRating": 1
+   },
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    }
+   ]
+  },
+  {
+   "id": "slow-firing",
+   "name": "Slow-Firing",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "After firing, the weapon must sit idle for rounds equal to the rating before it can attack again.",
+   "automation": {
+    "cooldownRoundsPerRating": 1
+   },
+   "notes": "Typical on turbolasers, heavy ion cannons and ordnance launchers in Table 7-1 (EotE p.230, AoR p.240, FaD p.234). The book's example: rating 2 means two full rounds pass before the weapon fires again.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    },
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "230"
+    }
+   ]
+  },
+  {
+   "id": "stun",
+   "name": "Stun",
+   "rated": true,
+   "kind": "active",
+   "activation": {
+    "advantage": 2,
+    "perRating": false,
+    "repeatable": false
+   },
+   "summary": "Activation inflicts strain on the target equal to the rating.",
+   "automation": {
+    "strainPerRating": 1,
+    "ignoresSoak": true
+   },
+   "notes": "Different from Stun Damage. ignoresSoak comes from the general rule that soak does not reduce strain unless something says otherwise (EotE p.207, AoR p.221, FaD p.213); the Stun entry itself does not mention soak.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    }
+   ]
+  },
+  {
+   "id": "stun-damage",
+   "name": "Stun Damage",
+   "rated": false,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Unrated. The weapon's damage is applied as strain rather than wounds, after soak reduction.",
+   "automation": {
+    "damageToStrain": true
+   },
+   "notes": "Soak still applies. The same entry also covers the Stun setting variant (see stun-setting).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    }
+   ]
+  },
+  {
+   "id": "stun-setting",
+   "name": "Stun Setting",
+   "rated": false,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Weapon can be toggled (incidental) to deal Stun Damage; while set to stun its range becomes short and cannot be extended.",
+   "automation": {
+    "toggleMode": "stun",
+    "toggleCost": "incidental",
+    "whenToggled": {
+     "damageToStrain": true,
+     "rangeFixed": "Short"
+    }
+   },
+   "notes": "Not a separate heading in the qualities list. It is the variant described inside Stun Damage, and appears as 'Stun setting' in weapon tables and blaster descriptions (EotE p.160, AoR p.173, FaD p.167). EotE p.157 originally said free action; errata changed it to incidental. Kind 'passive' is used because it is a mode switch, not an advantage spend.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "160"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "173"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "167"
+    },
+    {
+     "book": "Edge of the Empire Errata v2.0",
+     "page": "1 (entry for core p.157)"
+    }
+   ]
+  },
+  {
+   "id": "sunder",
+   "name": "Sunder",
+   "rated": false,
+   "kind": "active",
+   "activation": {
+    "advantage": 1,
+    "perRating": false,
+    "repeatable": true
+   },
+   "summary": "Unrated. Each single-advantage activation damages one openly held item of the target by one step; repeated activations can destroy it.",
+   "automation": {
+    "damageTargetItemStepsPerActivation": 1
+   },
+   "notes": "Damage steps: undamaged, minor, moderate, major; a weapon already at major is destroyed. Several activations in one attack may hit the same item. Weapons with Cortosis are immune. Printed in all three cores.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    }
+   ]
+  },
+  {
+   "id": "superior",
+   "name": "Superior",
+   "rated": false,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Unrated. Weapons gain an automatic Advantage on related checks and one base damage; armor loses one encumbrance and gains one soak.",
+   "automation": {
+    "autoAdvantage": 1,
+    "baseDamageModifier": 1,
+    "armor": {
+     "encumbranceModifier": -1,
+     "soakModifier": 1
+    }
+   },
+   "notes": "autoAdvantage applies to weapon checks only; armor gets only the encumbrance and soak changes.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "170"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    }
+   ]
+  },
+  {
+   "id": "tractor",
+   "name": "Tractor",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "On a hit the target vessel cannot move unless its pilot passes a Piloting check whose difficulty equals the rating.",
+   "automation": {
+    "pilotingEscapeDifficultyPerRating": 1
+   },
+   "notes": "pilotingEscapeDifficultyPerRating means the number of Difficulty dice equals the rating. Tractor beams fire like any weapon, usually with Gunnery, and have no damage or Crit (Table 7-1: Light 2, Medium 4, Heavy 6). EotE says the difficulty is 'based on' the rating; AoR and FaD say 'equal to' it. EotE and AoR note the rating appears in parentheses in stat blocks.",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "171"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    },
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "230"
+    }
+   ]
+  },
+  {
+   "id": "unwieldy",
+   "name": "Unwieldy",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Wielders whose Agility falls below the rating add one difficulty die to every check with the weapon per missing Agility point.",
+   "automation": {
+    "difficultyIncreaseIfBelow": {
+     "characteristic": "Agility",
+     "perPointShort": 1
+    }
+   },
+   "notes": "Only in the Force and Destiny core; not in the EotE or AoR qualities lists. Works like Cumbersome but uses Agility, and also adds Difficulty dice rather than upgrading. Seen on FaD double-bladed lightsabers and electrostaffs.",
+   "sources": [
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    }
+   ]
+  },
+  {
+   "id": "vicious",
+   "name": "Vicious",
+   "rated": true,
+   "kind": "passive",
+   "activation": null,
+   "summary": "Critical Injury or Critical Hit rolls from this weapon add ten per rating point.",
+   "automation": {
+    "criticalBonusPerRating": 10
+   },
+   "notes": "Adds on top of the +10 granted for every additional crit trigger on the same hit (EotE p.158/206, AoR p.171).",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "157"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "171"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "164"
+    }
+   ]
+  }
+ ]
+}
