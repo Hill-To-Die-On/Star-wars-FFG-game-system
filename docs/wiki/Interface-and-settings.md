@@ -1,10 +1,10 @@
 # Interface and settings
 
-In the 0.4.2 Beta release, **Rule data review** appears under **Help & diagnostics**; all six documented settings groups are retained.
+In the 0.5.0 Beta release, **Rule data review** appears under **Help & diagnostics**; all six documented settings groups are retained.
 
-The 0.4.2 Beta release uses the credited NASA artwork for the automatic new-world welcome scene. The same artwork sits behind the interface, but a viewed scene's map or solid background covers it. Existing tactical scenes and assigned maps are preserved.
+The 0.5.0 Beta release uses the credited NASA artwork for the automatic new-world welcome scene. The same artwork sits behind the interface, but a viewed scene's map or solid background covers it. Existing tactical scenes and assigned maps are preserved.
 
-**The first-launch tour and these settings groups are part of the 0.4.2 Beta release.** Settings retain Foundry's own controls, theme, permissions, search and save behavior. Gameplay windows use the system's paper-and-datapad presentation. Journals follow the selected interface theme.
+**The first-launch tour and these settings groups are part of the 0.5.0 Beta release.** Settings retain Foundry's own controls, theme, permissions, search and save behavior. Gameplay windows use the system's paper-and-datapad presentation. Journals follow the selected interface theme.
 
 | Group | What belongs here |
 | --- | --- |

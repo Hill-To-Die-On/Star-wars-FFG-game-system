@@ -6,7 +6,7 @@ test("source requests close the supplied Cyphers page gaps without publishing pr
   const requests = JSON.parse(
       await readFile("data/source-requests.json", "utf8"),
     ),
-    coverage = await readFile("docs/source-coverage.md", "utf8");
+    coverage = await readFile("docs/sources/advancement-coverage.md", "utf8");
 
   assert.equal(requests.format, "star-wars-ffg-source-requests");
   assert.equal(requests.version, 1);

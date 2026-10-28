@@ -1,0 +1,576 @@
+{
+ "format": "star-wars-narrative-options",
+ "version": 1,
+ "reviewedFields": [
+  "symbol",
+  "cost",
+  "context",
+  "book",
+  "page"
+ ],
+ "tables": [
+  {
+   "id": "personal-advantage",
+   "context": "personal-combat",
+   "symbols": "advantage-triumph",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "206",
+     "table": "6-2"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "219",
+     "table": "6-2"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "212",
+     "table": "6-2"
+    }
+   ],
+   "notes": [
+    "Each option in the 1-, 2- and 3-Advantage rows may be bought with one Triumph instead of the listed Advantage.",
+    "Options in the Triumph rows need Triumph itself: one or two Triumph as recorded; Advantage cannot buy them.",
+    "Combat rules beside the table: one Triumph can trigger a Critical Injury whatever the Critical rating, or one quality whatever its Advantage cost (EotE 205, AoR 218, FaD 211).",
+    "The acting player normally chooses how Advantage and Triumph are spent unless the GM has good cause to decide instead (EotE 205, AoR 217, FaD 211).",
+    "All three books present the list as common examples, not a closed list; other uses agreed by GM and players are allowed."
+   ]
+  },
+  {
+   "id": "personal-threat",
+   "context": "personal-combat",
+   "symbols": "threat-despair",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "207",
+     "table": "6-3"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "219",
+     "table": "6-3"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "212",
+     "table": "6-3"
+    }
+   ],
+   "notes": [
+    "Each option in the 1-, 2- and 3-Threat rows may be triggered by one Despair instead of the listed Threat.",
+    "Options in the Despair row need Despair itself.",
+    "The GM normally spends Threat and Despair, and may hand that choice to players, for example on NPC checks (EotE 205, AoR 218, FaD 211).",
+    "Options and costs match in all three cores; only Edge adds a repeatable note to the strain option, plus minor wording and cross-reference page changes."
+   ]
+  },
+  {
+   "id": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbols": "advantage-triumph",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "236",
+     "table": "7-5"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "251",
+     "table": "7-6"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "243",
+     "table": "7-6"
+    }
+   ],
+   "notes": [
+    "Each option in the 1-, 2- and 3-Advantage rows may be bought with one Triumph instead of the listed Advantage.",
+    "Options in the Triumph rows need Triumph itself: one or two Triumph as recorded.",
+    "Vehicle rules beside the table: one Triumph can trigger a Critical Hit whatever the weapon's Critical rating, or one weapon quality whatever its Advantage cost (EotE 235, AoR 250, FaD 243).",
+    "No strain-recovery row: system strain cannot be recovered by spending Advantage (EotE 225, AoR 237, FaD 231).",
+    "Options and costs match in all three cores; table number is 7-5 in Edge but 7-6 in AoR and FaD."
+   ]
+  },
+  {
+   "id": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbols": "threat-despair",
+   "sources": [
+    {
+     "book": "Edge of The Empire - Core Book",
+     "page": "236",
+     "table": "7-6"
+    },
+    {
+     "book": "Age of Rebellion - Core Book",
+     "page": "251",
+     "table": "7-7"
+    },
+    {
+     "book": "Force & Destiny - Core Book",
+     "page": "243",
+     "table": "7-7"
+    }
+   ],
+   "notes": [
+    "Each option in the 1-, 2- and 3-Threat rows may be triggered by one Despair instead of the listed Threat.",
+    "Options in the Despair rows need Despair itself; the major-collision row also requires the check to have failed.",
+    "Options and costs match in all three cores; table number is 7-6 in Edge but 7-7 in AoR and FaD."
+   ]
+  }
+ ],
+ "options": [
+  {
+   "id": "personal-adv-recover-strain",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "The acting character regains 1 strain."
+  },
+  {
+   "id": "personal-adv-boost-next-ally",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "The next ally to take a turn gets a Boost die on that check."
+  },
+  {
+   "id": "personal-adv-notice-detail",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "Spot one useful detail of the battlefield, for example a door control or a vulnerable point."
+  },
+  {
+   "id": "personal-adv-critical-injury",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "Trigger a Critical Injury on a hit that gets past soak; Advantage needed equals the weapon's Critical rating.",
+   "costVaries": true
+  },
+  {
+   "id": "personal-adv-activate-quality",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "Trigger an active quality of the weapon or item; Advantage needed is set by that quality.",
+   "costVaries": true
+  },
+  {
+   "id": "personal-adv-free-maneuver",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 2,
+   "label": "Take one extra maneuver straight away, without going over two maneuvers in the turn."
+  },
+  {
+   "id": "personal-adv-setback-target",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 2,
+   "label": "The target's next check gains a Setback die."
+  },
+  {
+   "id": "personal-adv-boost-any-ally",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 2,
+   "label": "Any ally, or the acting character, gains a Boost die on their next check."
+  },
+  {
+   "id": "personal-adv-negate-defense",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "Strip the target's defense bonuses, such as cover or Guarded Stance, for the remainder of this round."
+  },
+  {
+   "id": "personal-adv-ignore-environment",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "Disregard hostile surroundings (bad weather, zero-g and the like) through the end of your next turn."
+  },
+  {
+   "id": "personal-adv-disable-instead",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "Instead of wounds or strain, briefly cripple the foe or one of their items; GM decides the effect."
+  },
+  {
+   "id": "personal-adv-defense-bonus",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "Acting character's melee or ranged defense rises by 1 through the close of their next turn."
+  },
+  {
+   "id": "personal-adv-disarm",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "Make the target let go of the weapon, melee or ranged, in its hands."
+  },
+  {
+   "id": "personal-tri-upgrade-target-difficulty",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "triumph",
+   "cost": 1,
+   "label": "Make the target's next check harder by upgrading its difficulty once."
+  },
+  {
+   "id": "personal-tri-upgrade-ally",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "triumph",
+   "cost": 1,
+   "label": "One ally's next check, or the acting character's own, gets its ability upgraded once."
+  },
+  {
+   "id": "personal-tri-vital-action",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "triumph",
+   "cost": 1,
+   "label": "Pull off something crucial to the scene, like disabling a door mechanism to cut off pursuit."
+  },
+  {
+   "id": "personal-tri-destroy-equipment",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "triumph",
+   "cost": 2,
+   "label": "On a damaging hit, ruin one piece of gear the target currently relies on, like its weapon."
+  },
+  {
+   "id": "personal-tri-destroy-lightsaber",
+   "table": "personal-advantage",
+   "context": "personal-combat",
+   "symbol": "triumph",
+   "cost": 2,
+   "label": "Destroy a foe's wielded lightsaber; the GM may let its crystal be recovered for a new hilt.",
+   "onlyIn": [
+    "Force & Destiny - Core Book"
+   ]
+  },
+  {
+   "id": "personal-thr-suffer-strain",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "threat",
+   "cost": 1,
+   "label": "The acting character takes 1 strain."
+  },
+  {
+   "id": "personal-thr-lose-maneuver-benefit",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "threat",
+   "cost": 1,
+   "label": "The acting character loses an earlier maneuver's benefit, such as cover, until repeating that maneuver."
+  },
+  {
+   "id": "personal-thr-opponent-maneuver",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "threat",
+   "cost": 2,
+   "label": "An enemy may take one free maneuver at once in reply."
+  },
+  {
+   "id": "personal-thr-boost-target",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "threat",
+   "cost": 2,
+   "label": "The target gains a Boost die on its next check."
+  },
+  {
+   "id": "personal-thr-setback-ally",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "threat",
+   "cost": 2,
+   "label": "The acting character or an ally adds a Setback die to their next action."
+  },
+  {
+   "id": "personal-thr-fall-prone",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "threat",
+   "cost": 3,
+   "label": "The acting character ends up prone."
+  },
+  {
+   "id": "personal-thr-enemy-advantage",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "threat",
+   "cost": 3,
+   "label": "Hand the enemy a big opening in the encounter, such as ruining the party's own escape route."
+  },
+  {
+   "id": "personal-des-out-of-ammo",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "despair",
+   "cost": 1,
+   "label": "The ranged weapon is empty and cannot be used again this encounter."
+  },
+  {
+   "id": "personal-des-upgrade-ally-difficulty",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "despair",
+   "cost": 1,
+   "label": "An ally's next check, possibly the acting character's, has its difficulty upgraded once."
+  },
+  {
+   "id": "personal-des-damage-item",
+   "table": "personal-threat",
+   "context": "personal-combat",
+   "symbol": "despair",
+   "cost": 1,
+   "label": "The acting character's tool or melee weapon is damaged under the gear repair rules."
+  },
+  {
+   "id": "vehicle-adv-boost-next-ally",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "The next ally to take a turn gets a Boost die on a Computers, Gunnery, Mechanics or Piloting check."
+  },
+  {
+   "id": "vehicle-adv-notice-detail",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "Spot one key detail of the battle, like a gap in enemy formation or a vulnerable spot."
+  },
+  {
+   "id": "vehicle-adv-critical-hit",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "Trigger a Critical Hit on a hit that gets past armor; Advantage needed equals the weapon's Critical rating.",
+   "costVaries": true
+  },
+  {
+   "id": "vehicle-adv-activate-quality",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 1,
+   "label": "Trigger an active quality of the vehicle weapon; Advantage needed is set by that quality.",
+   "costVaries": true
+  },
+  {
+   "id": "vehicle-adv-free-maneuver",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 2,
+   "label": "Take an extra maneuver now, if the acting character has not yet made two this turn."
+  },
+  {
+   "id": "vehicle-adv-setback-target",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 2,
+   "label": "The target's next Gunnery or Piloting check gains a Setback die."
+  },
+  {
+   "id": "vehicle-adv-boost-any-ally",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 2,
+   "label": "Any ally, or the acting character, gains a Boost die on their next Computers, Gunnery, Mechanics or Piloting check."
+  },
+  {
+   "id": "vehicle-adv-disable-component",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "Temporarily knock out a chosen component of the target vessel in place of system strain or hull damage."
+  },
+  {
+   "id": "vehicle-adv-ignore-terrain",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "Disregard hazardous terrain or space phenomena through the end of your next turn."
+  },
+  {
+   "id": "vehicle-adv-pilot-only-maneuver",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "If flying or driving, gain an extra Pilot Only maneuver at no cost, within the per-turn limit."
+  },
+  {
+   "id": "vehicle-adv-veer-off",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "advantage",
+   "cost": 3,
+   "label": "Force the target vessel to swerve away, cancelling its Aim and Stay on Target maneuvers."
+  },
+  {
+   "id": "vehicle-tri-upgrade-target-difficulty",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "triumph",
+   "cost": 1,
+   "label": "The target's next Gunnery or Piloting check has its difficulty upgraded once."
+  },
+  {
+   "id": "vehicle-tri-upgrade-ally",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "triumph",
+   "cost": 1,
+   "label": "Any ally's next Computers, Gunnery, Mechanics or Piloting check has its ability upgraded once."
+  },
+  {
+   "id": "vehicle-tri-vital-action",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "triumph",
+   "cost": 1,
+   "label": "Make a battle-turning move, for example crippling a key enemy system or escaping a chaser."
+  },
+  {
+   "id": "vehicle-tri-destroy-component",
+   "table": "vehicle-advantage",
+   "context": "vehicle-combat",
+   "symbol": "triumph",
+   "cost": 2,
+   "label": "Destroy a chosen ship component outright in place of system strain or hull damage; it stays down until repaired."
+  },
+  {
+   "id": "vehicle-thr-slow-down",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "threat",
+   "cost": 1,
+   "label": "If piloting, erratic flying drops the vehicle's speed by 1."
+  },
+  {
+   "id": "vehicle-thr-lose-maneuver-benefit",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "threat",
+   "cost": 1,
+   "label": "Lose an earlier maneuver's benefit (Aim or Evasive Maneuvers, say) until it is repeated."
+  },
+  {
+   "id": "vehicle-thr-system-strain",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "threat",
+   "cost": 1,
+   "label": "The acting character's vehicle takes 1 system strain."
+  },
+  {
+   "id": "vehicle-thr-opponent-maneuver",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "threat",
+   "cost": 2,
+   "label": "An enemy may take one free maneuver at once in reply."
+  },
+  {
+   "id": "vehicle-thr-boost-target",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "threat",
+   "cost": 2,
+   "label": "The target's next Gunnery or Piloting check gains a Boost die."
+  },
+  {
+   "id": "vehicle-thr-setback-ally",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "threat",
+   "cost": 2,
+   "label": "The acting character or an ally adds a Setback die to their next action."
+  },
+  {
+   "id": "vehicle-thr-initiative-last",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "threat",
+   "cost": 3,
+   "label": "The Initiative slot the acting player used moves to the end of the order."
+  },
+  {
+   "id": "vehicle-thr-enemy-advantage",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "threat",
+   "cost": 3,
+   "label": "Give the enemy a big opening; for instance, checks against your vehicle get easier until your next turn."
+  },
+  {
+   "id": "vehicle-des-weapon-component-hit",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "despair",
+   "cost": 1,
+   "label": "The ship's main weapon system, or the one being crewed, suffers Component Hit effects without adding to Critical Hits."
+  },
+  {
+   "id": "vehicle-des-upgrade-ally-difficulty",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "despair",
+   "cost": 1,
+   "label": "An ally's next Computers, Gunnery, Mechanics or Piloting check, possibly the acting character's, has its difficulty upgraded once."
+  },
+  {
+   "id": "vehicle-des-minor-collision",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "despair",
+   "cost": 1,
+   "label": "The acting character has a minor collision with a close-range foe or the surrounding terrain."
+  },
+  {
+   "id": "vehicle-des-major-collision",
+   "table": "vehicle-threat",
+   "context": "vehicle-combat",
+   "symbol": "despair",
+   "cost": 1,
+   "label": "On a failed check, the acting character has a major collision with a close-range foe or surrounding terrain.",
+   "condition": "check-failed"
+  }
+ ]
+}

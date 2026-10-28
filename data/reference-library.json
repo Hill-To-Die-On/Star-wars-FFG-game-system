@@ -178407,38 +178407,42 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "74",
+            "Hull_Trauma": 80,
+            "System_Strain": 65,
+            "Armor": 6,
+            "Silhouette": 7,
+            "Speed": 2,
+            "Handling": -1,
+            "Defense_fore": 3,
+            "Defense_aft": 2,
+            "Defense_port": 2,
+            "Defense_starboard": 2,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 80
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 65
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 6,
+          "silhouette": 7,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
-          "handling": 0,
+          "handling": -1,
           "shields": {
-            "fore": 0,
-            "aft": 0,
-            "port": 0,
-            "starboard": 0
+            "fore": 3,
+            "aft": 2,
+            "port": 2,
+            "starboard": 2
           }
         },
         "items": []
@@ -180092,35 +180096,39 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "69",
+            "Hull_Trauma": 10,
+            "System_Strain": 8,
+            "Armor": 2,
+            "Silhouette": 3,
+            "Speed": 4,
+            "Handling": 2,
+            "Defense_fore": 1,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 10
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 8
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 2,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 4
           },
-          "handling": 0,
+          "handling": 2,
           "shields": {
-            "fore": 0,
+            "fore": 1,
             "aft": 0,
             "port": 0,
             "starboard": 0
@@ -180343,31 +180351,35 @@
             "Region": "",
             "Book": "Force & Destiny - Unlimited Power",
             "Page": "58",
+            "Hull_Trauma": 8,
+            "System_Strain": 6,
+            "Armor": 0,
+            "Silhouette": 3,
+            "Speed": 2,
+            "Handling": 0,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 8
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 6
           },
           "armor": 0,
-          "silhouette": 0,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
           "handling": 0,
           "shields": {
@@ -180424,36 +180436,40 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "70",
+            "Hull_Trauma": 18,
+            "System_Strain": 10,
+            "Armor": 4,
+            "Silhouette": 3,
+            "Speed": 4,
+            "Handling": 0,
+            "Defense_fore": 2,
+            "Defense_aft": 1,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 18
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 10
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 4,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 4
           },
           "handling": 0,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 2,
+            "aft": 1,
             "port": 0,
             "starboard": 0
           }
@@ -181739,33 +181755,37 @@
             "Region": "",
             "Book": "Rise of the Seperatists",
             "Page": "69",
+            "Hull_Trauma": 40,
+            "System_Strain": 35,
+            "Armor": 4,
+            "Silhouette": 4,
+            "Speed": 1,
+            "Handling": -2,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 40
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 35
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 4,
+          "silhouette": 4,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 1
           },
-          "handling": 0,
+          "handling": -2,
           "shields": {
             "fore": 0,
             "aft": 0,
@@ -182329,33 +182349,37 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "65",
+            "Hull_Trauma": 6,
+            "System_Strain": 4,
+            "Armor": 1,
+            "Silhouette": 2,
+            "Speed": 3,
+            "Handling": 1,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 6
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 4
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 1,
+          "silhouette": 2,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
-          "handling": 0,
+          "handling": 1,
           "shields": {
             "fore": 0,
             "aft": 0,
@@ -182674,36 +182698,40 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "70",
+            "Hull_Trauma": 15,
+            "System_Strain": 12,
+            "Armor": 3,
+            "Silhouette": 3,
+            "Speed": 4,
+            "Handling": 1,
+            "Defense_fore": 1,
+            "Defense_aft": 1,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 15
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 12
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 3,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 4
           },
-          "handling": 0,
+          "handling": 1,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 1,
+            "aft": 1,
             "port": 0,
             "starboard": 0
           }
@@ -184302,31 +184330,35 @@
             "Region": "",
             "Book": "Rise of the Seperatists",
             "Page": "67",
+            "Hull_Trauma": 2,
+            "System_Strain": 3,
+            "Armor": 0,
+            "Silhouette": 2,
+            "Speed": 2,
+            "Handling": 0,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "armor": 0,
-          "silhouette": 0,
+          "silhouette": 2,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
           "handling": 0,
           "shields": {
@@ -186444,36 +186476,40 @@
             "Region": "",
             "Book": "Rise of the Seperatists",
             "Page": "72",
+            "Hull_Trauma": 10,
+            "System_Strain": 8,
+            "Armor": 2,
+            "Silhouette": 3,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 1,
+            "Defense_aft": 1,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 10
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 8
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 2,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 1,
+            "aft": 1,
             "port": 0,
             "starboard": 0
           }
@@ -186525,33 +186561,37 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "71",
+            "Hull_Trauma": 12,
+            "System_Strain": 8,
+            "Armor": 2,
+            "Silhouette": 3,
+            "Speed": 5,
+            "Handling": 2,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 12
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 8
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 2,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 5
           },
-          "handling": 0,
+          "handling": 2,
           "shields": {
             "fore": 0,
             "aft": 0,
@@ -187116,33 +187156,37 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "71",
+            "Hull_Trauma": 10,
+            "System_Strain": 8,
+            "Armor": 2,
+            "Silhouette": 3,
+            "Speed": 6,
+            "Handling": 2,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 10
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 8
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 2,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 6
           },
-          "handling": 0,
+          "handling": 2,
           "shields": {
             "fore": 0,
             "aft": 0,
@@ -187197,36 +187241,40 @@
             "Region": "",
             "Book": "Rise of the Seperatists",
             "Page": "72",
+            "Hull_Trauma": 17,
+            "System_Strain": 12,
+            "Armor": 3,
+            "Silhouette": 4,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 2,
+            "Defense_aft": 1,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 17
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 12
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 3,
+          "silhouette": 4,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 2,
+            "aft": 1,
             "port": 0,
             "starboard": 0
           }
@@ -189900,31 +189948,35 @@
             "Region": "",
             "Book": "Force & Destiny - Unlimited Power",
             "Page": "57",
+            "Hull_Trauma": 6,
+            "System_Strain": 8,
+            "Armor": 0,
+            "Silhouette": 2,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 6
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 8
           },
           "armor": 0,
-          "silhouette": 0,
+          "silhouette": 2,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {
@@ -190157,33 +190209,37 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "66",
+            "Hull_Trauma": 55,
+            "System_Strain": 50,
+            "Armor": 5,
+            "Silhouette": 4,
+            "Speed": 3,
+            "Handling": -1,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 55
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 50
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 5,
+          "silhouette": 4,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
-          "handling": 0,
+          "handling": -1,
           "shields": {
             "fore": 0,
             "aft": 0,
@@ -190489,36 +190545,40 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "64",
+            "Hull_Trauma": 20,
+            "System_Strain": 16,
+            "Armor": 4,
+            "Silhouette": 3,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 2,
+            "Defense_aft": 1,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 20
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 16
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 4,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 2,
+            "aft": 1,
             "port": 0,
             "starboard": 0
           }
@@ -191174,31 +191234,35 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "72",
+            "Hull_Trauma": 14,
+            "System_Strain": 12,
+            "Armor": 3,
+            "Silhouette": 3,
+            "Speed": 4,
+            "Handling": 0,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 14
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 12
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 3,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 4
           },
           "handling": 0,
           "shields": {
@@ -194621,36 +194685,40 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "65",
+            "Hull_Trauma": 20,
+            "System_Strain": 15,
+            "Armor": 2,
+            "Silhouette": 3,
+            "Speed": 4,
+            "Handling": -2,
+            "Defense_fore": 1,
+            "Defense_aft": 1,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 20
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 15
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 2,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 4
           },
-          "handling": 0,
+          "handling": -2,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 1,
+            "aft": 1,
             "port": 0,
             "starboard": 0
           }
@@ -194702,36 +194770,40 @@
             "Region": "",
             "Book": "Rise of the Seperatists",
             "Page": "67",
+            "Hull_Trauma": 20,
+            "System_Strain": 15,
+            "Armor": 3,
+            "Silhouette": 3,
+            "Speed": 4,
+            "Handling": -1,
+            "Defense_fore": 1,
+            "Defense_aft": 1,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 20
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 15
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 3,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 4
           },
-          "handling": 0,
+          "handling": -1,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 1,
+            "aft": 1,
             "port": 0,
             "starboard": 0
           }
@@ -198279,38 +198351,42 @@
             "Region": "",
             "Book": "Rise of the Seperatists",
             "Page": "77",
+            "Hull_Trauma": 60,
+            "System_Strain": 55,
+            "Armor": 5,
+            "Silhouette": 7,
+            "Speed": 2,
+            "Handling": 0,
+            "Defense_fore": 3,
+            "Defense_aft": 2,
+            "Defense_port": 2,
+            "Defense_starboard": 2,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 60
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 55
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 5,
+          "silhouette": 7,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
           "handling": 0,
           "shields": {
-            "fore": 0,
-            "aft": 0,
-            "port": 0,
-            "starboard": 0
+            "fore": 3,
+            "aft": 2,
+            "port": 2,
+            "starboard": 2
           }
         },
         "items": []
@@ -198798,33 +198874,37 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "66",
+            "Hull_Trauma": 25,
+            "System_Strain": 18,
+            "Armor": 4,
+            "Silhouette": 3,
+            "Speed": 2,
+            "Handling": -1,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 25
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 18
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 4,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
-          "handling": 0,
+          "handling": -1,
           "shields": {
             "fore": 0,
             "aft": 0,
@@ -198879,36 +198959,40 @@
             "Region": "",
             "Book": "Rise of the Seperatists",
             "Page": "73",
+            "Hull_Trauma": 30,
+            "System_Strain": 12,
+            "Armor": 3,
+            "Silhouette": 4,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 2,
+            "Defense_aft": 1,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 30
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 12
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 3,
+          "silhouette": 4,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 2,
+            "aft": 1,
             "port": 0,
             "starboard": 0
           }
@@ -199387,38 +199471,42 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "75",
+            "Hull_Trauma": 65,
+            "System_Strain": 55,
+            "Armor": 4,
+            "Silhouette": 6,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 2,
+            "Defense_aft": 1,
+            "Defense_port": 2,
+            "Defense_starboard": 2,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 65
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 55
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 4,
+          "silhouette": 6,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {
-            "fore": 0,
-            "aft": 0,
-            "port": 0,
-            "starboard": 0
+            "fore": 2,
+            "aft": 1,
+            "port": 2,
+            "starboard": 2
           }
         },
         "items": []
@@ -200240,38 +200328,42 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "75",
+            "Hull_Trauma": 160,
+            "System_Strain": 125,
+            "Armor": 12,
+            "Silhouette": 8,
+            "Speed": 2,
+            "Handling": -3,
+            "Defense_fore": 2,
+            "Defense_aft": 2,
+            "Defense_port": 3,
+            "Defense_starboard": 3,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 160
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 125
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 12,
+          "silhouette": 8,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
-          "handling": 0,
+          "handling": -3,
           "shields": {
-            "fore": 0,
-            "aft": 0,
-            "port": 0,
-            "starboard": 0
+            "fore": 2,
+            "aft": 2,
+            "port": 3,
+            "starboard": 3
           }
         },
         "items": []
@@ -200577,28 +200669,32 @@
             "Region": "",
             "Book": "Age of Rebellion - Cyphers & Masks",
             "Page": "53",
+            "Hull_Trauma": 15,
+            "System_Strain": 10,
+            "Armor": 2,
+            "Silhouette": 2,
+            "Speed": 0,
+            "Handling": 0,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 15
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 10
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 2,
+          "silhouette": 2,
           "speed": {
             "value": 0,
             "max": 0
@@ -203058,31 +203154,35 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "65",
+            "Hull_Trauma": 2,
+            "System_Strain": 3,
+            "Armor": 0,
+            "Silhouette": 2,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "armor": 0,
-          "silhouette": 0,
+          "silhouette": 2,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {
@@ -204114,38 +204214,42 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "76",
+            "Hull_Trauma": 210,
+            "System_Strain": 150,
+            "Armor": 12,
+            "Silhouette": 9,
+            "Speed": 2,
+            "Handling": -3,
+            "Defense_fore": 3,
+            "Defense_aft": 3,
+            "Defense_port": 3,
+            "Defense_starboard": 3,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 210
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 150
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 12,
+          "silhouette": 9,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 2
           },
-          "handling": 0,
+          "handling": -3,
           "shields": {
-            "fore": 0,
-            "aft": 0,
-            "port": 0,
-            "starboard": 0
+            "fore": 3,
+            "aft": 3,
+            "port": 3,
+            "starboard": 3
           }
         },
         "items": []
@@ -206755,36 +206859,40 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "72",
+            "Hull_Trauma": 35,
+            "System_Strain": 20,
+            "Armor": 4,
+            "Silhouette": 4,
+            "Speed": 4,
+            "Handling": 1,
+            "Defense_fore": 2,
+            "Defense_aft": 2,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 35
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 20
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 4,
+          "silhouette": 4,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 4
           },
-          "handling": 0,
+          "handling": 1,
           "shields": {
-            "fore": 0,
-            "aft": 0,
+            "fore": 2,
+            "aft": 2,
             "port": 0,
             "starboard": 0
           }
@@ -208885,31 +208993,35 @@
             "Region": "",
             "Book": "Collapse of the Republic",
             "Page": "66",
+            "Hull_Trauma": 12,
+            "System_Strain": 10,
+            "Armor": 2,
+            "Silhouette": 3,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 12
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 10
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 2,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {
@@ -209311,31 +209423,35 @@
             "Region": "Core Region",
             "Book": "Force & Destiny - Unlimited Power",
             "Page": "58",
+            "Hull_Trauma": 10,
+            "System_Strain": 8,
+            "Armor": 1,
+            "Silhouette": 3,
+            "Speed": 3,
+            "Handling": 0,
+            "Defense_fore": 0,
+            "Defense_aft": 0,
+            "Defense_port": 0,
+            "Defense_starboard": 0,
+            "Profile_Evidence": "printed-page",
             "Weapons_Status": "not recorded"
           },
           "incomplete": [
-            "hullTrauma.max",
-            "systemStrain.max",
-            "armor",
-            "silhouette",
-            "speed.max",
-            "handling",
-            "shields",
             "installed weapons"
           ],
           "hullTrauma": {
             "value": 0,
-            "max": 0
+            "max": 10
           },
           "systemStrain": {
             "value": 0,
-            "max": 0
+            "max": 8
           },
-          "armor": 0,
-          "silhouette": 0,
+          "armor": 1,
+          "silhouette": 3,
           "speed": {
             "value": 0,
-            "max": 0
+            "max": 3
           },
           "handling": 0,
           "shields": {

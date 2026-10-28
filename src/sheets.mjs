@@ -13,6 +13,7 @@ import {
 import { DICE, skillPool } from "./dice/core.mjs";
 import { rollPool } from "./dice/foundry.mjs";
 import { activePoolRulings, addPoolRulings, unspentTalentRemovals } from "./narrative-effects.mjs";
+import { qualityCheckEffects } from "./weapon-qualities.mjs";
 import { turnPanelHTML, bindTurnControls, turnCostHTML } from "./turn-economy-foundry.mjs";
 import { crewPanelHTML, bindCrewControls, vehicleForActor, crewCheckDialog } from "./vehicle-crew-foundry.mjs";
 import {
@@ -333,6 +334,7 @@ export function poolBuilderContext(actor, key, item, skill, characteristic, rank
             ? "close"
             : "short"),
     impairment=impairmentForCheck(actor,key),
+    qualities=qualityCheckEffects(combat?item:null,actor),
     context = {
       actor,
       actorName: actor.name,
@@ -351,8 +353,12 @@ export function poolBuilderContext(actor, key, item, skill, characteristic, rank
       rangeBand,
       rangeOptions,
       talentRules: actor.talentRulesForCheck(key),
-      boost: (crew?.boost ?? 0) + speciesBonuses.boost,
-      setback: (crew?.setback ?? 0)+impairment.setback,
+      boost: (crew?.boost ?? 0) + speciesBonuses.boost + qualities.boost,
+      setback: (crew?.setback ?? 0)+impairment.setback+qualities.setback,
+      qualityDifficulty: qualities.difficulty,
+      qualityAdvantage: qualities.advantage,
+      qualityThreat: qualities.threat,
+      qualityReasons: qualities.reasons,
       impairmentNote: impairment.note,
       speciesReasons: speciesBonuses.reasons,
       speciesAdvantage: speciesBonuses.advantage,
@@ -377,6 +383,7 @@ export function poolBuilderContext(actor, key, item, skill, characteristic, rank
     vehicleAttack: context.vehicleAttack,
     attackerSilhouette: context.attackerSilhouette,
     targetSilhouette: context.targetSilhouette,
+    difficultyIncrease: context.qualityDifficulty,
   });
   context.talentDecisions = context.talentRules?.decisions ?? [];
   context.unusedTalentRemovals=unspentTalentRemovals(context.automatic.basePool,context.talentRules);
@@ -544,6 +551,7 @@ function attachPoolBuilder(dialog, context) {
       vehicleAttack: context.vehicleAttack,
       attackerSilhouette: context.attackerSilhouette,
       targetSilhouette: context.targetSilhouette,
+      difficultyIncrease: context.qualityDifficulty,
     });
     if(context.combat && context.target.shields && !root.querySelector("[data-vehicle-zone]")?.value)
       result.error ||= "Choose the target's agreed defence zone.";
@@ -719,9 +727,10 @@ export async function checkDialog(actor, key, item, options = {}) {
     turnCost: form.turnCost,
     automaticResults: {
       ...finalTalentRules.automaticResults,
-      advantage: (finalTalentRules.automaticResults?.advantage ?? 0) + context.speciesAdvantage,
+      advantage: (finalTalentRules.automaticResults?.advantage ?? 0) + context.speciesAdvantage + context.qualityAdvantage,
+      threat: (finalTalentRules.automaticResults?.threat ?? 0) + context.qualityThreat,
     },
-    ruleNotes: [...finalTalentRules.reasons, ...context.speciesReasons, ...(context.impairmentNote?[context.impairmentNote]:[]), ...(form.sightRulingNote ? [form.sightRulingNote] : [])],
+    ruleNotes: [...finalTalentRules.reasons, ...context.speciesReasons, ...context.qualityReasons, ...(context.impairmentNote?[context.impairmentNote]:[]), ...(form.sightRulingNote ? [form.sightRulingNote] : [])],
   });
   if (item && result.outcome.passed) {
     ui.notifications.info(

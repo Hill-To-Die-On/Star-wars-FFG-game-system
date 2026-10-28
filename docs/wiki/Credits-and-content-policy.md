@@ -2,7 +2,7 @@
 
 The interface backdrop is **Saturn Through the Veil of Enceladus – Artist's Concept**, credited by NASA to **Dan Gallagher (eMITS), NASA's Goddard Space Flight Center**. See the [NASA catalogue record](https://svs.gsfc.nasa.gov/14162) and its usage information. The installed Artwork credits journal and repository THIRD_PARTY_NOTICES retain the provenance.
 
-The 2026-10-12 [NASA rights review](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/blob/codex/alpha-listing/docs/nasa-artwork-rights.md) checks the specific SVS terms, matching lossless pixels, attribution and absence of logos/people. The current free Beta background use is consistent with those terms. No NASA endorsement or approval is claimed; future branding, advertising or merchandise requires its own review.
+The 2026-10-12 [NASA rights review](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/blob/main/docs/sources/nasa-artwork-rights.md) checks the specific SVS terms, matching lossless pixels, attribution and absence of logos/people. The current free Beta background use is consistent with those terms. No NASA endorsement or approval is claimed; future branding, advertising or merchandise requires its own review.
 
 Narrative dice glyphs come from the attributed StarWarsFoundryVTT/StarWarsFFG community source. The relevant upstream licence is bundled. Roboto, Signika and Rajdhani keep their own licences; system code licensing does not replace third-party asset terms.
 
