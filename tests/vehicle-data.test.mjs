@@ -166,15 +166,15 @@ test("published vehicle data is complete, bounded and free of private material",
   );
   assert.deepEqual(published.report, {
     databaseVehicles: 399,
-    matched: 312,
-    unresolved: 87,
+    matched: 341,
+    unresolved: 58,
     conflicts: 2,
   });
   assert.equal(
     published.records.filter(
       (record) => record.evidence.method === "printed-page",
     ).length,
-    36,
+    65,
   );
   assert.equal(
     published.unresolved.filter(
