@@ -8,6 +8,7 @@ Newest entries come first; same-day entries are in reverse order of recording wh
 
 | Date | Area | Environment | Result | Section |
 | --- | --- | --- | --- | --- |
+| 2026-10-28 | 0.5.0 Beta release candidate | Licensed standalone Foundry 14.369, zero modules; unit tests, seven browser fixtures, release audit | Passed: 14 onboarding checks, alpha-play workflow and all 60 feature checks on the 0.5.0 archive; 818 unit tests; 389-file audit; no page errors or compatibility warnings | [Details](#2026-10-28--050-beta-release-candidate) |
 | 2026-10-28 | Core-rule table workflows, species and vehicle sources | Licensed standalone Foundry 14.369, zero modules; unit tests | Passed: 14 onboarding checks, alpha-play workflow and all 60 feature checks, including equipment distribution, story checks and Morality, rolled criticals, core spending presets and weapon-quality pools; 818 unit tests; no page errors or compatibility warnings | [Details](#2026-10-28--core-rule-table-workflows-species-and-vehicle-sources) |
 | 2026-10-28 | Foundry 14.369 compatibility | Licensed standalone Foundry 14.369, zero modules; source API audit | Passed: 14 onboarding checks, alpha-play GM/player workflow, all 55 feature checks and fresh-install recovery; no page errors or compatibility warnings. Harness-only fixes needed | [Details](#2026-10-28--foundry-14369-compatibility) |
 | 2026-10-13 | Beta native feature regression | Licensed Foundry 14.368, separate GM/player browsers, disposable worlds; Dice So Nice 6.4.2 | Two export defects found and fixed; 785 Node tests pass | [Details](#2026-10-13--beta-native-feature-regression) |
@@ -40,6 +41,10 @@ Newest entries come first; same-day entries are in reverse order of recording wh
 | 2026-09-24 | 0.2.1 upgrade and hosted CI status | Existing isolated Foundry world; GitHub Actions | Upgrade passed; hosted CI did not start (billing lock) | [Details](#2026-09-24--021-upgrade-and-hosted-ci-status) |
 | 2026-09-24 | Group sheet, SW Adversaries source and DoR adventure bundles | Source and repository review; earlier isolated DoR world | Recorded | [Details](#2026-09-24--group-sheet-sw-adversaries-source-and-dor-adventure-bundles) |
 | Cumulative | Live acceptance register | Several Foundry 14.368 worlds and module versions | See the register | [Details](#undated-and-cumulative-records) |
+
+## 2026-10-28 — 0.5.0 Beta release candidate
+
+The 0.5.0 candidate changes only version metadata, release notes, documentation and the feature harness's version assertion, which now reads `system.json`. Its runtime matches the previous entry. The archive built from it (SHA-256 `7784f556…bce2`) passed the full native journey in licensed standalone Foundry 14.369 with zero modules: 14 onboarding checks, the alpha-play GM/player workflow and all 60 feature checks, reporting system version 0.5.0. No page errors, core compatibility warnings or startup retries were recorded. 818 unit tests, `npm run typecheck`, the seven browser fixtures, `npm run check`, the build (389 files) and the release audit pass. Recording this entry changes the packaged copy of this log, so the published archive's hash differs from the tested one; no other file differs. Dice So Nice, DoR and upgrade-from-baseline scenarios were not repeated. Installation from the public release URL is checked after publication.
 
 ## 2026-10-28 — Core-rule table workflows, species and vehicle sources
 

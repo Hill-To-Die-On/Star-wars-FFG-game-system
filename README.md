@@ -41,17 +41,17 @@ This is the best way to install and stay current. Foundry checks the same addres
 
 > **Why isn't it in Foundry's package browser?** Foundry has not permitted this system to be listed in its official package directory because of the extent of the data sources it can import from external documents, such as homebrew PDF rules and adventures. The manifest link above is the supported way to install it and receive updates.
 
-**Want the newest features?** The **0.4.2 Beta release** is an English-only GitHub prerelease with everything marked **Beta** below. Install it from its version-specific manifest, back up your worlds first and try it in a disposable world:
+**Want the newest features?** The **0.5.0 Beta release** is an English-only GitHub prerelease with everything marked **Beta** below. Install it from its version-specific manifest, back up your worlds first and try it in a disposable world:
 
 ```text
-https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.2/system.json
+https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.5.0/system.json
 ```
 
 The latest stable release is **0.3.0**. Requires **Foundry VTT 14**. **Dice So Nice 6.3.1 or later** is recommended for animated physical dice; rolls and chat results work without it.
 
 ## Features
 
-Features marked **Beta** are in the 0.4.2 Beta release and not yet in the 0.3.0 stable release.
+Features marked **Beta** are in the 0.5.0 Beta release and not yet in the 0.3.0 stable release.
 
 ### Narrative dice that feel right
 
@@ -98,6 +98,10 @@ Features marked **Beta** are in the 0.4.2 Beta release and not yet in the 0.3.0 
 
 - **Beta:** review-and-approve spending for Advantage, Threat, Triumph and Despair, with player proposals and undo.
 - **Beta:** damage and recovery previews with change history, player initiative-slot claims, and session XP and reward review.
+- **Beta:** spending presets from the four core combat spending tables and the weapon's active qualities, each with its core page.
+- **Beta:** criticals rolled on the core Critical Injury and Critical Hit tables, with Vicious, existing criticals and the healing check.
+- **Beta:** weapon qualities such as Accurate, Cumbersome, Pierce and Stun Damage feed the dice pool and damage.
+- **Beta:** session start and end tools for the Obligation and Duty checks and Morality, plus equipment distribution with undo.
 - **Beta:** one selected GM browser processes shared changes, so two players buying from the same XP pool cannot both spend it.
 
 ### An interface that looks the part

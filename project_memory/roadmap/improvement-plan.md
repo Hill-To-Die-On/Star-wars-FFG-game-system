@@ -7,7 +7,7 @@ This is AtlasMind's canonical backlog for the Star Wars FFG Foundry system. Evid
 - Project: Star Wars FFG game system
 - Project type: Foundry VTT 14 system
 - Delivery: `dev` → protected `staging` → protected `main`
-- Current milestone: **0.4.2 Beta**, selected by The User on 2026-10-13 for broader user testing and defect fixing. Existing source-verification, provenance and acceptance items retain their evidence-based status.
+- Current milestone: **0.5.0 Beta**, selected by The User on 2026-10-28 to release the core-rule table workflows for broader user testing, following the 0.4.2 Beta of 2026-10-13. Existing source-verification, provenance and acceptance items retain their evidence-based status.
 - Scope: Edge of the Empire, Age of Rebellion and Force and Destiny, separately or together
 - Public-content boundary: creator-authorized database plus original code and art; held PDFs, extracted pages, copied rule prose and private campaign material stay outside releases
 

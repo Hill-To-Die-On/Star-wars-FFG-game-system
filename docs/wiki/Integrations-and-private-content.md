@@ -18,7 +18,7 @@ Versioned imports can carry characters, adversaries, vehicles, groups and commun
 
 Use the repository's public API documentation and schemas for the installed system version. Never place API keys or private source text in a public handoff URL.
 
-In the 0.4.2 Beta release, exported default portraits regenerate on import. Custom raster portraits and ordinary asset paths are retained. Actor packages also preserve character metadata, vehicle registration, Group starting assets and resource history. These corrections are included in 0.4.2 Beta.
+In the 0.5.0 Beta release, exported default portraits regenerate on import. Custom raster portraits and ordinary asset paths are retained. Actor packages also preserve character metadata, vehicle registration, Group starting assets and resource history. These corrections are included in 0.5.0 Beta.
 
 ## Local libraries and source notes
 
@@ -28,4 +28,4 @@ Export the GM source key before clearing browser data or moving to another brows
 
 ## Candidate actor-group imports
 
-Version-three actor-group packages are included in 0.4.2 Beta. A GM reviews a batch of actors with stable authored nodes and directional relationships; imported actors retain the graph provenance for connected tools. Version-one character and version-two actor imports remain supported. This does not invent relationship strength or claim live Director of Realms acceptance. See [the integration API](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/blob/dev/docs/integrations/integration-api.md) for the contract.
+Version-three actor-group packages are included in 0.5.0 Beta. A GM reviews a batch of actors with stable authored nodes and directional relationships; imported actors retain the graph provenance for connected tools. Version-one character and version-two actor imports remain supported. This does not invent relationship strength or claim live Director of Realms acceptance. See [the integration API](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/blob/main/docs/integrations/integration-api.md) for the contract.

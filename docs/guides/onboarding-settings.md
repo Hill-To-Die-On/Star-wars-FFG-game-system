@@ -83,4 +83,4 @@ Inputs and roll buttons stay available at every size. The window stays within th
 
 ## Online wiki
 
-The [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) covers installation, books and campaign rules, the interface, characters, combat and vehicles, integrations, troubleshooting, contribution and credits. It labels the stable 0.3.0 release and the 0.4.2 Beta separately.
+The [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) covers installation, books and campaign rules, the interface, characters, combat and vehicles, integrations, troubleshooting, contribution and credits. It labels the stable 0.3.0 release and the 0.5.0 Beta separately.

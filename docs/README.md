@@ -2,7 +2,7 @@
 
 Guides for players and GMs, references for integrators, data-coverage registers and maintainer records for the Star Wars FFG system for Foundry VTT. If you are new, start with the [GM quick start](guides/gm-quick-start.md) or the [Player quick start](guides/player-quick-start.md).
 
-These guides describe the code on this branch, which can be ahead of the published releases. The latest stable release is **0.3.0** and the latest Beta is **0.4.2**; check the [changelog](../CHANGELOG.md) for what each release contains. The [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) gives a shorter overview of the same material.
+These guides describe the code on this branch, which can be ahead of the published releases. The latest stable release is **0.3.0** and the latest Beta is **0.5.0**; check the [changelog](../CHANGELOG.md) for what each release contains. The [GitHub wiki](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/wiki) gives a shorter overview of the same material.
 
 ## Folders
 

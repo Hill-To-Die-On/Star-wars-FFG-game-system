@@ -1,7 +1,9 @@
 /** Licensed native Foundry feature regression. Only disposable onboarding worlds. */
 import assert from 'node:assert/strict';
-import {writeFile} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
+
+const {version:systemVersion}=JSON.parse(await readFile(new URL('../system.json',import.meta.url),'utf8'));
 
 export async function nativeFeatureAcceptance({gm,player,report,output,filter}) {
   assert.equal(await gm.evaluate(()=>game.world.id),'onboarding-validation');
@@ -49,7 +51,7 @@ export async function nativeFeatureAcceptance({gm,player,report,output,filter}) 
     const result=await gm.evaluate(async()=>{
       const textures=await Promise.all(['systems/star-wars-ffg/assets/ui/saturn-enceladus-concept.webp',game.actors.get(__betaFeatureFixture.actors.character).img].map(async url=>({url,status:(await fetch(url)).status})));
       return {core:game.version,system:game.system.version,modules:[...game.modules.values()].filter(m=>m.active).map(m=>m.id),textures,api:Object.keys(game.system.api),credits:game.journal.has('SFFGArtCredits01')};
-    });assert.equal(result.system,'0.4.2');assert.deepEqual(result.modules,report.expectedModules??[]);assert.ok(result.credits);assert.ok(result.textures.every(t=>t.status===200));return result;
+    });assert.equal(result.system,systemVersion);assert.deepEqual(result.modules,report.expectedModules??[]);assert.ok(result.credits);assert.ok(result.textures.every(t=>t.status===200));return result;
   });
   for(const [type,id]of Object.entries(fixture.actors))await step('sheet-'+type,'native UI',async()=>{
     const sheet=await openActor(id);assert.equal(await sheet.locator('[name="name"]').inputValue(),'Beta QA '+type);
