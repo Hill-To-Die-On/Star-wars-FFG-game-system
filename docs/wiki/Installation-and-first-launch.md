@@ -1,16 +1,24 @@
 # Installation and first launch
 
-Use Foundry VTT **14**. The Beta has been tested against **14.368**; do not assume compatibility with another major version.
+Use Foundry VTT **14**. The 0.3.0 stable release was verified on **14.368**; the 0.4.2 Beta runtime has passed native checks on **14.368** and **14.369**. Do not assume compatibility with another major version.
 
-1. In Foundry Setup, choose Install System and paste the manifest below.
+Star Wars FFG is not in Foundry's package browser. Foundry has not permitted this system to be listed in its official package directory because of the extent of the data sources it can import from external documents, such as homebrew PDF rules and adventures. Install it from a manifest URL instead.
+
+1. In Foundry Setup, choose Install System and paste the latest release manifest below.
 2. Create a new world using Star Wars FFG.
 3. Log in as GM and check sheets and chat before adding optional modules.
 
 ```text
-https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.2/system.json
+https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json
 ```
 
-This version-specific URL installs 0.4.2 Beta. The [latest stable manifest](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/latest/download/system.json) remains on 0.3.0. Back up an existing world before upgrading.
+This is the best way to install and stay current: Foundry checks the same address for updates, so each new stable release appears in Foundry's normal update flow. It currently installs **0.3.0**. Back up an existing world before upgrading.
+
+To evaluate the 0.4.2 Beta instead, use its version-specific manifest:
+
+```text
+https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/releases/download/v0.4.2/system.json
+```
 
 ## First-launch setup — 0.4.2 Beta release
 

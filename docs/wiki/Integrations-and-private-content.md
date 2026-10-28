@@ -28,4 +28,4 @@ Export the GM source key before clearing browser data or moving to another brows
 
 ## Candidate actor-group imports
 
-Version-three actor-group packages are included in 0.4.2 Beta. A GM reviews a batch of actors with stable authored nodes and directional relationships; imported actors retain the graph provenance for connected tools. Version-one character and version-two actor imports remain supported. This does not invent relationship strength or claim live Director of Realms acceptance. See [the integration API](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/blob/dev/docs/integration-api.md) for the contract.
+Version-three actor-group packages are included in 0.4.2 Beta. A GM reviews a batch of actors with stable authored nodes and directional relationships; imported actors retain the graph provenance for connected tools. Version-one character and version-two actor imports remain supported. This does not invent relationship strength or claim live Director of Realms acceptance. See [the integration API](https://github.com/Hill-To-Die-On/Star-wars-FFG-game-system/blob/main/docs/integrations/integration-api.md) for the contract.

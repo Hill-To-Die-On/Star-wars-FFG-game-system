@@ -377,7 +377,7 @@ def main():
         help="Ignored numeric profiles transcribed from held printed source pages.",
     )
     parser.add_argument("--output", type=Path, default=Path("data/vehicle-stats.json"))
-    parser.add_argument("--coverage", type=Path, default=Path("docs/vehicle-source-coverage.md"))
+    parser.add_argument("--coverage", type=Path, default=Path("docs/sources/vehicle-source-coverage.md"))
     args = parser.parse_args()
 
     database = json.loads(args.database.read_text(encoding="utf-8"))
