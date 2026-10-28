@@ -80,7 +80,7 @@ export async function nativeFeatureAcceptance({gm,player,report,output,filter}) 
     const results=[];for(const [name,page]of [['gm',gm],['player',player]]) {await page.waitForFunction(id=>__betaDsn.completed.includes(id),id,{timeout:90000});const value=await page.evaluate(id=>({module:game.modules.get('dice-so-nice').version,started:__betaDsn.started.includes(id),complete:__betaDsn.completed.includes(id),terms:game.messages.get(id).rolls[0].dice.map(d=>d.options.starWarsDie),renderer:!!game.dice3d.box.renderer?.domElement,meshes:game.dice3d.box.throwEngine.diceList.length}),id);assert.ok(value.started);assert.ok(value.complete);assert.ok(value.renderer);assert.equal(value.terms.length,7);assert.equal(value.meshes,7);await page.screenshot({path:join(output,'feature-dsn-'+name+'.png')});results.push({client:name,...value});}return results;
   });
   await step('compact-chat-dice-add-remove-clear-roll','native UI',async()=>{
-    await gm.evaluate(async()=>{await game.settings.set('star-wars-ffg','compactChatDice',true);ui.sidebar.activateTab('chat');ui.sidebar.expand();});
+    await gm.evaluate(async()=>{await game.settings.set('star-wars-ffg','compactChatDice',true);ui.sidebar.changeTab('chat','primary');ui.sidebar.expand();});
     const tray=gm.locator('.sf-compact-dice').first();await tray.waitFor();const ability=tray.locator('[data-compact-die="ability"]');
     await ability.click();await ability.click();await ability.click({modifiers:['Shift']});assert.equal(await ability.getAttribute('data-count'),'1');
     await tray.locator('[data-compact-clear]').click();assert.equal(await ability.getAttribute('data-count'),'0');assert.equal(await tray.locator('[data-compact-roll]').isDisabled(),true);
@@ -142,7 +142,7 @@ export async function nativeFeatureAcceptance({gm,player,report,output,filter}) 
   await step('xp-insufficient-and-observer-denial','native API',async()=>{
     const result=await gm.evaluate(async()=>{const a=game.actors.get(__betaFeatureFixture.advancement);await a.update({'system.xp.available':0});const before=a.system.advancement.length;let error='';try{await a.buySkill('athletics');}catch(e){error=e.message;}return {error,xp:a.system.xp.available,before,after:a.system.advancement.length};});assert.ok(result.error);assert.equal(result.xp,0);assert.equal(result.after,result.before);
     const denied=await player.evaluate(async id=>{try{await game.actors.get(id).buySkill('athletics');return '';}catch(e){return e.message;}},await gm.evaluate(()=>__betaFeatureFixture.advancement));assert.ok(denied);
-    await gm.evaluate(()=>{ui.sidebar.activateTab('chat');ui.sidebar.expand();});await gm.locator('[data-authority-review]').first().click();await gm.locator('dialog [name="note"]').fill('Synthetic QA: verified XP and advancement were unchanged after the refused purchase.');await gm.getByRole('button',{name:'I checked the state - release lock',exact:true}).click();
+    await gm.evaluate(()=>{ui.sidebar.changeTab('chat','primary');ui.sidebar.expand();});await gm.locator('[data-authority-review]').first().click();await gm.locator('dialog [name="note"]').fill('Synthetic QA: verified XP and advancement were unchanged after the refused purchase.');await gm.getByRole('button',{name:'I checked the state - release lock',exact:true}).click();
     await gm.waitForFunction(()=>!Object.values(game.settings.get('star-wars-ffg','authorityReceipts')).some(r=>r.status==='review'));
   });
   await step('signature-attachment-lock-unlock-and-purchase','native UI and document API',async()=>{
@@ -251,6 +251,80 @@ export async function nativeFeatureAcceptance({gm,player,report,output,filter}) 
     const result=await gm.evaluate(id=>game.actors.get(id).getFlag('star-wars-ffg','conditions'),fixture.actors.character);assert.equal(result.find(c=>c.name==='QA distracted').modifier.die,'setback');
     const roll=await gm.evaluate(async id=>{const r=await game.actors.get(id).rollSkill('athletics',{difficulty:0,turnCost:'none'});return r.pool;},fixture.actors.character);assert.ok(roll.setback>=1);
     await gm.evaluate(()=>{void game.system.api.tabletop.history(game.actors.get(__betaFeatureFixture.actors.character));});await gm.locator('dialog [data-undo]').first().click();await gm.waitForFunction(id=>!(game.actors.get(id).getFlag('star-wars-ffg','conditions')||[]).length,fixture.actors.character);await gm.locator('dialog h3').filter({hasText:'undone'}).waitFor();await gm.locator('dialog').getByRole('button',{name:'Close',exact:true}).click();return {condition:result,appliedPool:roll,undo:true};
+  });
+  await step('equipment-distribution-and-undo','native UI and embedded Item API',async()=>{
+    const uuid=await gm.evaluate(async()=>(await Item.create({name:'QA distribution medpac',type:'gear',system:{quantity:1}})).uuid);
+    await gm.evaluate(()=>{void game.system.api.tabletop.equipment(game.actors.get(__betaFeatureFixture.actors.character));});
+    await gm.locator(`dialog [name="give-${uuid}"]`).check();await gm.locator(`dialog [name="qty-${uuid}"]`).fill('2');
+    await gm.getByRole('button',{name:'Preview handout',exact:true}).click();await gm.locator('dialog .sf-equipment-review').getByText('QA distribution medpac').waitFor();
+    await gm.getByRole('button',{name:'Give reviewed equipment',exact:true}).click();
+    await gm.waitForFunction(id=>game.actors.get(id).items.some(i=>i.name==='QA distribution medpac'&&i.system.quantity===2),fixture.actors.character);
+    const given=await gm.evaluate(id=>{const item=game.actors.get(id).items.find(i=>i.name==='QA distribution medpac');return {quantity:item.system.quantity,duplicateSource:item._stats.duplicateSource,history:game.actors.get(id).getFlag('star-wars-ffg','workflowHistory').at(-1).kind};},fixture.actors.character);
+    assert.equal(given.duplicateSource,uuid);assert.equal(given.history,'equipment');
+    await gm.evaluate(()=>{void game.system.api.tabletop.history(game.actors.get(__betaFeatureFixture.actors.character));});await gm.locator('dialog [data-undo]').first().click();
+    await gm.waitForFunction(id=>!game.actors.get(id).items.some(i=>i.name==='QA distribution medpac'),fixture.actors.character);await gm.locator('dialog h3').filter({hasText:'undone'}).first().waitFor();await gm.locator('dialog').getByRole('button',{name:'Close',exact:true}).click();
+    return {...given,undo:true};
+  });
+  await step('session-story-checks-and-morality','native UI, Roll and actor history',async()=>{
+    // Party Obligation of 100 or more triggers on every d100, so the check is deterministic.
+    const before=await gm.evaluate(async id=>{const campaign=game.settings.get('star-wars-ffg','campaign');await game.settings.set('star-wars-ffg','campaign',{...campaign,obligation:true,duty:false,morality:true});
+      await game.actors.get(id).update({'system.obligation.value':100,'system.morality.value':50,'system.morality.conflict':3});
+      return {campaign,strain:Object.fromEntries(game.actors.filter(a=>a.type==='character'&&a.hasPlayerOwner).map(a=>[a.id,a.system.strain.max]))};},fixture.actors.character);
+    try {
+      await gm.evaluate(()=>{void game.system.api.tabletop.sessionStart();});await gm.getByRole('button',{name:'Roll checks',exact:true}).click();
+      await gm.getByRole('button',{name:'Apply reviewed changes',exact:true}).click();
+      await gm.waitForFunction(({id,max})=>game.actors.get(id).system.strain.max<max,{id:fixture.actors.character,max:before.strain[fixture.actors.character]});
+      const started=await gm.evaluate(id=>game.actors.get(id).system.strain.max,fixture.actors.character);
+      assert.ok([2,4].includes(before.strain[fixture.actors.character]-started),'the triggered character loses two strain threshold, or four on doubles');
+      await gm.evaluate(()=>{void game.system.api.tabletop.sessionEnd();});await gm.getByRole('button',{name:'Roll and preview',exact:true}).click();
+      await gm.getByRole('button',{name:'Apply reviewed changes',exact:true}).click();
+      await gm.waitForFunction(strain=>Object.entries(strain).every(([id,max])=>game.actors.get(id).system.strain.max===max),before.strain);
+      await gm.waitForFunction(id=>game.actors.get(id).system.morality.conflict===0,fixture.actors.character);
+      const ended=await gm.evaluate(id=>{const a=game.actors.get(id);return {morality:a.system.morality.value,kinds:a.getFlag('star-wars-ffg','workflowHistory').map(e=>e.kind).slice(-3)};},fixture.actors.character);
+      assert.deepEqual(ended.kinds,['session-story','session-story-end','morality']);assert.ok(ended.morality>=48&&ended.morality<=57,'Morality moves by d10 minus 3 Conflict');
+      return {startedStrainMax:started,...ended};
+    } finally {await gm.evaluate(campaign=>game.settings.set('star-wars-ffg','campaign',campaign),before.campaign);}
+  });
+  await step('critical-table-roll-and-undo','native UI and Roll',async()=>{
+    const campaign=await gm.evaluate(async()=>{const c=game.settings.get('star-wars-ffg','campaign');await game.settings.set('star-wars-ffg','campaign',{...c,bookMode:'all'});return c;});
+    try {
+      await gm.evaluate(()=>{void game.system.api.tabletop.resolve(game.actors.get(__betaFeatureFixture.actors.character));});await gm.locator('dialog [name="kind"]').selectOption('critical');
+      assert.equal(await gm.locator('dialog [name="rollCritical"]').isChecked(),true);await gm.locator('dialog [name="note"]').fill('Original synthetic QA critical.');
+      await gm.getByRole('button',{name:'Review change',exact:true}).click();await gm.locator('dialog .sf-review-change').getByText(/d100 \d+ →/).waitFor();
+      await gm.getByRole('button',{name:'Apply reviewed changes',exact:true}).click();
+      await gm.waitForFunction(id=>(game.actors.get(id).system.criticals??[]).some(c=>c.total),fixture.actors.character);
+      const critical=await gm.evaluate(id=>game.actors.get(id).system.criticals.find(c=>c.total),fixture.actors.character);
+      assert.ok(critical.name&&critical.total>=1&&/Core Book/.test(critical.source.book));
+      await gm.evaluate(()=>{void game.system.api.tabletop.history(game.actors.get(__betaFeatureFixture.actors.character));});await gm.locator('dialog [data-undo]').first().click();
+      await gm.waitForFunction(id=>!(game.actors.get(id).system.criticals??[]).some(c=>c.total),fixture.actors.character);await gm.locator('dialog').getByRole('button',{name:'Close',exact:true}).click();
+      return critical;
+    } finally {await gm.evaluate(c=>game.settings.set('star-wars-ffg','campaign',c),campaign);}
+  });
+  await step('narrative-spending-core-table-preset','native UI and bundled catalogue',async()=>{
+    const campaign=await gm.evaluate(async()=>{const c=game.settings.get('star-wars-ffg','campaign');await game.settings.set('star-wars-ffg','campaign',{...c,bookMode:'all'});return c;});
+    try {
+      const message=await gm.evaluate(async()=>{const a=game.actors.get(__betaFeatureFixture.actors.character);for(let n=0;n<4;n++){const roll=await game.system.api.rollPool({boost:10},{actor:a,label:'QA preset roll',turnCost:'none'});if(roll.outcome.advantage>0)return game.messages.filter(m=>m.isRoll&&m.flavor==='QA preset roll').at(-1).id;}throw Error('No spendable result in four rolls');});
+      await gm.evaluate(id=>{void game.system.api.tabletop.spend(game.messages.get(id));},message);
+      const value=await gm.locator('dialog [name="preset"] option',{hasText:'The acting character regains 1 strain.'}).getAttribute('value');
+      await gm.locator('dialog [name="preset"]').selectOption(value);
+      assert.equal(await gm.locator('dialog [name="advantage"]').inputValue(),'1');assert.equal(await gm.locator('dialog [name="book"]').inputValue(),'Edge of The Empire - Core Book');
+      await gm.getByRole('button',{name:'Review decision',exact:true}).click();await gm.getByRole('button',{name:'Record GM decision',exact:true}).click();
+      await gm.waitForFunction(id=>game.messages.get(id).getFlag('star-wars-ffg','spending')?.length===1,message);
+      const entry=await gm.evaluate(id=>game.messages.get(id).getFlag('star-wars-ffg','spending')[0],message);
+      assert.deepEqual([entry.cost.advantage,entry.source.page,entry.source.verification],[1,'206','gm-reviewed']);return entry;
+    } finally {await gm.evaluate(c=>game.settings.set('star-wars-ffg','campaign',c),campaign);}
+  });
+  await step('weapon-quality-pool-effects','native sheet roll builder',async()=>{
+    const result=await gm.evaluate(async id=>{
+      const actor=game.actors.get(id),[item]=await actor.createEmbeddedDocuments('Item',[{name:'QA heavy repeater',type:'weapon',system:{skill:'rangedHeavy',damage:9,range:'medium',qualities:'Accurate 2, Superior, Cumbersome 9, Vicious 2'}}]);
+      try {
+        const {poolBuilderContext}=await import('/systems/star-wars-ffg/src/sheets.mjs'),definition=actor.skillDefinition('rangedHeavy');
+        const context=poolBuilderContext(actor,'rangedHeavy',item,definition,definition.characteristic,actor.skillRank('rangedHeavy'));
+        return {boost:context.boost,advantage:context.qualityAdvantage,difficulty:context.qualityDifficulty,brawn:actor.system.characteristics.brawn,reasons:context.qualityReasons};
+      } finally {await item.delete();}
+    },fixture.actors.character);
+    assert.ok(result.boost>=2);assert.equal(result.advantage,1);assert.equal(result.difficulty,Math.max(0,9-result.brawn));
+    assert.ok(result.reasons.some(reason=>/Accurate 2: 2 boost/.test(reason)));return result;
   });
   await step('narrative-spending-future-die-used-once','native UI and authenticated roll',async()=>{
     const message=await gm.evaluate(async()=>{const a=game.actors.get(__betaFeatureFixture.actors.character);for(let n=0;n<4;n++){const roll=await game.system.api.rollPool({boost:10},{actor:a,label:'QA spendable roll',turnCost:'none'});if(roll.outcome.advantage>0){const message=game.messages.filter(m=>m.isRoll&&m.flavor==='QA spendable roll').at(-1);return message.id;}}throw Error('No spendable result in four rolls');});

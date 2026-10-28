@@ -3,6 +3,7 @@ import { damageAfterSoak, minionState } from './mechanics.mjs';
 import { canSpendXp } from './xp-transactions.mjs';
 import { bookAllowed } from './rules.mjs';
 import { validateFutureEffect, validatePoolModifier } from './narrative-effects.mjs';
+import { criticalOutcome, criticalAutomation } from './critical-injuries.mjs';
 
 export const SYMBOLS = Object.freeze(['advantage','threat','triumph','despair']);
 export const FORCE_PIPS = Object.freeze(['light','dark']);
@@ -98,20 +99,32 @@ export function planActorEffect(actor,request,{user,campaign={}}={}) {
     const before=integer(actor.system[request.resource]?.value,'Current damage'),amount=integer(request.amount,'Recovery');
     put(plan,actor,`system.${request.resource}.value`,Math.max(0,before-amount));
   } else if(request.kind==='critical'||request.kind==='condition') {
-    // TODO: apply critical/condition modifiers after reviewed source mechanics are encoded.
-    if(!request.label?.trim())throw new Error('Name the reviewed critical or condition.');
+    // TODO: encode critical difficulty and characteristic effects once ongoing pool modifiers support difficulty.
+    const rolled=request.kind==='critical'&&request.critical;
+    if(!rolled&&!request.label?.trim())throw new Error('Name the reviewed critical or condition.');
     const key=request.kind==='critical'&&!vehicle?'system.criticals':`flags.${SYSTEM_ID}.${request.kind==='critical'?'vehicleCriticals':'conditions'}`;
     const entries=copy(getPath(actor,key)??[]),id=String(request.entryId??'');
     if(!id)throw new Error('An effect identity is required.');
     if(request.remove) {
       const found=entries.findIndex(e=>e.id===id);if(found<0)throw new Error('The recorded effect no longer exists.');entries.splice(found,1);
+      plan.warning='Recorded for GM adjudication. No unverified dice or characteristic modifier is inferred.';
+    } else if(rolled) {
+      if(entries.some(e=>e.id===id))throw new Error('The effect already exists.');
+      const table=vehicle?'vehicle':'personal',outcome=criticalOutcome(table,{...request.critical,existing:entries.length},campaign),automation=criticalAutomation(table,outcome.row,actor.type);
+      const modifier=validatePoolModifier(request.modifier)??automation.modifier;
+      plan.source=outcome.source;plan.label=`${outcome.row.name} · critical ${outcome.total}`;
+      entries.push({id,name:outcome.row.name,source:outcome.source,note:String(request.note??'').slice(0,2000),modifier,automation:modifier?'pool-modifier':'record-only',
+        roll:request.critical.roll,total:outcome.total,severity:outcome.row.severity,summary:outcome.row.summary,duration:outcome.row.effect.duration??null,healing:outcome.healing});
+      for(const {resource,amount} of automation.resources)put(plan,actor,`system.${resource}.value`,integer(actor.system[resource]?.value,'Current damage')+amount);
+      plan.warning=[outcome.row.effect.kind==='death'?`Result ${outcome.total} · ${outcome.row.name}: ${table==='personal'?'the character dies':'the vehicle is destroyed'}. ${outcome.row.summary}`:'',
+        automation.manual??'',modifier?'Its dice modifier applies to matching future checks until this critical is removed.':''].filter(Boolean).join(' ')||'Recorded with its severity and healing check.';
     } else {
       if(entries.some(e=>e.id===id))throw new Error('The effect already exists.');
       const modifier=validatePoolModifier(request.modifier);
       entries.push({id,name:request.label.trim().slice(0,200),source,note:String(request.note??'').slice(0,2000),modifier,automation:modifier?'pool-modifier':'record-only'});
+      plan.warning=request.modifier?'The GM-reviewed dice modifier applies to matching future checks until this condition is removed.':'Recorded for GM adjudication. No unverified dice or characteristic modifier is inferred.';
     }
     put(plan,actor,key,entries);
-    plan.warning=request.modifier?'The GM-reviewed dice modifier applies to matching future checks until this condition is removed.':'Recorded for GM adjudication. No unverified dice or characteristic modifier is inferred.';
   } else if(request.kind==='vehicle-state') {
     if(!vehicle)throw new Error('Choose a vehicle.');
     if(request.speed!==undefined)put(plan,actor,'system.speed.value',integer(request.speed,'Speed',0,actor.system.speed.max));
@@ -147,6 +160,27 @@ export function planSessionAward(actor,request,{user,campaign={}}={}) {
   if(!Object.keys(plan.after).length&&!plan.downtime.trim())throw new Error('Enter an award, reviewed story adjustment or downtime note.');
   return plan;
 }
+export const DISTRIBUTABLE_ITEMS = Object.freeze(['weapon','armor','gear','attachment']);
+/** Handouts copy native items; world identity, folders and permissions stay with the original. */
+export function planEquipmentAward(actor,request,sources,{user,campaign={}}={}) {
+  requireGM(user);
+  if(actor?.type!=='character')throw new Error('Equipment distribution applies to player characters.');
+  const rows=Array.isArray(request?.items)?request.items:[];
+  if(!rows.length||rows.length>20)throw new Error('Choose one to twenty items to give.');
+  const create=rows.map((row,index)=>{
+    const item=sources[index];
+    if(!item)throw new Error('A chosen item no longer exists.');
+    if(!DISTRIBUTABLE_ITEMS.includes(item.type))throw new Error('Only weapons, armour, gear and attachments can be distributed.');
+    const quantity=integer(row.quantity??1,'Quantity',1,999);
+    const {_id,ownership,folder,sort,_stats,...data}=item.toObject();
+    // Native v12+ provenance; the legacy flags.core.sourceId is deprecated.
+    const origin=String(item.uuid).startsWith('Compendium.')?{compendiumSource:item.uuid}:{duplicateSource:item.uuid};
+    return {...data,system:{...data.system,quantity},_stats:origin};
+  });
+  return {kind:'equipment',label:String(request.label||'Equipment distribution').trim().slice(0,200),source:reviewedSource(request.source,campaign),before:{},after:{},
+    items:create.map(data=>({name:String(data.name).slice(0,200),type:data.type,quantity:data.system.quantity,sourceUuid:data._stats.compendiumSource??data._stats.duplicateSource})),create};
+}
+export const itemFingerprint = item => JSON.stringify({name:item.name,system:item.toObject().system});
 export function planSlotClaim(combat,actor,request,{user}={}) {
   if(!combat?.started || combat.round!==request.round)throw new Error('The combat round changed. Refresh the slot list.');
   if(!canSpendXp(actor,user))throw new Error('Owner permission is required to claim a turn.');
