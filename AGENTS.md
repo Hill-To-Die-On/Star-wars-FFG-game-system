@@ -88,5 +88,7 @@ Any Foundry work (a new Foundry release or compatibility check, a Foundry API qu
 core bug, running a test Foundry) starts from the shared skill `.agents/skills/foundry-vtt/SKILL.md`.
 Its `references/project.md` holds this repository's rules: the build last verified live, where
 results are recorded, and the test port (30210, never 30000). `SKILL.md` and
-`references/recent-builds.md` are shared with other Foundry repositories: keep them general, and put
-anything specific to this system in `references/project.md`.
+`references/recent-builds.md` are shared with other Foundry repositories and synced from
+https://github.com/JoelBondoux/agent-skills: edit them there, never this copy, and put anything
+specific to this system in `references/project.md`. That repository's `CATALOGUE.md` lists other
+shared skills that may fit.

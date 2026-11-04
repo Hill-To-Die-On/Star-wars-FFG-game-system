@@ -12,8 +12,12 @@ means your file search. Paths are relative to the repository root.
 This file holds what is true for **any** Foundry package, and so does `references/recent-builds.md`
 (what changed in recent Foundry builds): both are the same in every repository that has this skill.
 The one file that differs is `references/project.md`: this repository's own Foundry rules (its
-manifest, the build it last verified live, its test port and helpers). To add the skill to another
-Foundry project, copy the folder and write a new `references/project.md`.
+manifest, the build it last verified live, its test port and helpers). If it is missing, write one
+from `templates/project.md` before relying on project facts.
+
+The shared files come from https://github.com/JoelBondoux/agent-skills/tree/main/skills/foundry/foundry-vtt.
+Change them there, never in a repository's copy, then sync the copies with that repository's sync
+script (its README says how). `references/project.md` belongs to each repository and is never synced.
 
 ## 1. Sources of truth (check these, not memory)
 
@@ -120,4 +124,5 @@ The project file says which port and folder this repository uses.
 
 When you review a new build, add it to `references/recent-builds.md` (keep about five). When you
 learn a Foundry fact the hard way, add it to section 3 if it holds for any package, or to the
-project file if it is a project rule.
+project file if it is a project rule. Shared files are edited in the agent-skills repository and
+synced out; a change made only in one repository's copy is overwritten by the next sync.
