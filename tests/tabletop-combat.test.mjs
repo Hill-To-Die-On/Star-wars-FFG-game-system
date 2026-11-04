@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 globalThis.Combat=class {get combatant(){return this.turns[this.turn];}getFlag(ns,key){return this.flags[ns]?.[key];}};
+globalThis.Combatant=class {};
 const {StarWarsCombat,initiativeSightWarning}=await import('../src/combat.mjs');
 test('initiative warns when opposed actors have no verified sight, without forbidding other detection',()=>{
  const hero={actor:{hasPlayerOwner:true},token:{id:'hero'}};

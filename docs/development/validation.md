@@ -8,6 +8,7 @@ Newest entries come first; same-day entries are in reverse order of recording wh
 
 | Date | Area | Environment | Result | Section |
 | --- | --- | --- | --- | --- |
+| 2026-11-04 | Foundry 14.370 compatibility | Licensed standalone Foundry 14.370, zero modules, port 30210; source and release-note review; unit tests, seven browser fixtures, release audit | Passed on the 0.5.1 candidate: 14 onboarding checks, alpha-play workflow, all 63 feature checks and fresh-install recovery; 827 unit tests; 389-file audit; no page errors or compatibility warnings. One system bug fixed (claimed-slot turn) | [Details](#2026-11-04--foundry-14370-compatibility) |
 | 2026-10-28 | 0.5.0 Beta release candidate | Licensed standalone Foundry 14.369, zero modules; unit tests, seven browser fixtures, release audit | Passed: 14 onboarding checks, alpha-play workflow and all 60 feature checks on the 0.5.0 archive; 818 unit tests; 389-file audit; no page errors or compatibility warnings | [Details](#2026-10-28--050-beta-release-candidate) |
 | 2026-10-28 | Core-rule table workflows, species and vehicle sources | Licensed standalone Foundry 14.369, zero modules; unit tests | Passed: 14 onboarding checks, alpha-play workflow and all 60 feature checks, including equipment distribution, story checks and Morality, rolled criticals, core spending presets and weapon-quality pools; 818 unit tests; no page errors or compatibility warnings | [Details](#2026-10-28--core-rule-table-workflows-species-and-vehicle-sources) |
 | 2026-10-28 | Foundry 14.369 compatibility | Licensed standalone Foundry 14.369, zero modules; source API audit | Passed: 14 onboarding checks, alpha-play GM/player workflow, all 55 feature checks and fresh-install recovery; no page errors or compatibility warnings. Harness-only fixes needed | [Details](#2026-10-28--foundry-14369-compatibility) |
@@ -41,6 +42,34 @@ Newest entries come first; same-day entries are in reverse order of recording wh
 | 2026-09-24 | 0.2.1 upgrade and hosted CI status | Existing isolated Foundry world; GitHub Actions | Upgrade passed; hosted CI did not start (billing lock) | [Details](#2026-09-24--021-upgrade-and-hosted-ci-status) |
 | 2026-09-24 | Group sheet, SW Adversaries source and DoR adventure bundles | Source and repository review; earlier isolated DoR world | Recorded | [Details](#2026-09-24--group-sheet-sw-adversaries-source-and-dor-adventure-bundles) |
 | Cumulative | Live acceptance register | Several Foundry 14.368 worlds and module versions | See the register | [Details](#undated-and-cumulative-records) |
+
+## 2026-11-04 — Foundry 14.370 compatibility
+
+Foundry **14.370** (Stable 12, 2 November 2026) is the newest core release. It was the only build between the previously verified 14.369 and the newest. Its one breaking change is `CalendarData#onUpdateWorldTime` receiving `deltaTime`.
+
+Each relevant change was searched for in `src/`, `templates/`, `tests/` and `scripts/`, with core's own 14.370 source read where behaviour mattered:
+
+| 14.370 change | Verdict |
+| --- | --- |
+| World time stored as whole seconds; `CalendarData#onUpdateWorldTime` receives `deltaTime` (breaking) | No impact: the system reads and writes no world time and has no calendar |
+| `DiceTerm#minValue`, `#minResult`, `#maxResult`; coin, fate and keep/drop fixes; `(-X)dY`; `Xd0` | No impact: the seven narrative dice extend `Die` with faces numbered from 1, use no modifiers and never roll a negative or zero-faced term. New native check confirms bounds, minimise/maximise and round trip |
+| `Combatant#_preDeleteOperation` turn fix | Exposed a system bug, **fixed** (below) |
+| Tiles named from their texture | No impact: the welcome backdrop matches tiles by texture, never by name |
+| Pack-index pollution | No impact: indexed fields are `type`, `system.*` and `flags.*`, no embedded paths |
+| `toCompendium()` fix | No impact: not used |
+| Region template mode and grid spaces | No impact: the system does not configure Regions or Measured Templates |
+| Hidden tokens for a player owning two or more | No workaround to remove: system code only adds its own hidden-token filters. New native check confirms the hidden token stays hidden for that player |
+| `Token#_createMesh` and `createTokenMesh`; `LIMITED` compendium journals; `ActorDelta#getUserLevel`; compendium ownership | No impact: the system patches no token mesh creation and relies on none of the old behaviour |
+
+**Fixed, in `src/combat.mjs`.** Core keeps the turn across Combatant writes by asking `Combat#combatant`, and for a claimed initiative slot the system answers with the claimant. So when a participant had claimed another combatant's slot, any Combatant create, update or delete, or `resetAll`, moved the turn to the claimant's own slot. It reproduced live on 14.370 and is covered by `tests/combat-claimed-slot.test.mjs` (five of its tests fail without the fix) and the native check `combat-claimed-slot-keeps-the-turn`, which failed before the fix and passes after it. The update path does not depend on the 14.370 fix, so the bug probably predates this build, but the system was not rerun on 14.369 to confirm that. `StarWarsCombatant` now gives core the slot while it works out the turn; players, turn markers and sounds still see the claimant.
+
+The 0.5.1 candidate archive (SHA-256 `9e2d07a7…a8da`) passed the full native journey in licensed standalone Foundry 14.370 with zero modules: 14 onboarding checks, the alpha-play GM/player workflow and all 63 feature checks, followed by the packaged fresh-install recovery scenario (damage 2 → 5 → undo 2, persistence after reload). Servers ran on port 30210 in disposable data folders, alongside the GM's own Foundry on port 30000, which was not touched. No page errors or core compatibility warnings were recorded. One recognized startup retry was recorded on the journey and none on recovery. 827 unit tests, `npm run typecheck`, the seven browser fixtures, `npm run check`, the build (389 files) and the release audit pass. Recording this entry changes the packaged copy of this log and the wiki and changelog copies, so a later archive's hash differs from the tested one; no runtime file differs.
+
+Harness changes: the persistence check's 15-second reload wait failed once on 14.370, because a world with imported compendiums took 14 to 19 seconds to reload; it now waits up to 60 seconds and reports each time. The combat checks now turn the range assistant off with its real value `off`; `false` left it running, and its prompt could race cleanup. `tests/content-review-ui.mjs` now honours `CHROMIUM_PATH`. Windows notes: this run used Playwright's Chromium 149 headless shell through `CHROMIUM_PATH`, because the installed Playwright expected a newer browser build and the full `chrome.exe` would not start on this machine (`spawn UNKNOWN`). The same error failed one test-file start in a loaded run; the file passed alone and in the complete rerun.
+
+Not repeated on 14.370: Dice So Nice, Director of Realms and upgrade-from-baseline scenarios. Independent human play was not performed. The published release ZIP was not installed; 0.5.1 is an unreleased candidate.
+
+Roadmap ideas from this build, none started: `CONFIG.Region.templateModeConfig` and its `gridBased` option for blast and area templates on the system's grid; grid-space Region holes for Blast that spares allies.
 
 ## 2026-10-28 — 0.5.0 Beta release candidate
 

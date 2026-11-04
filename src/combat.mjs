@@ -2,6 +2,17 @@ import { SYSTEM_ID } from "./config.mjs";
 import { initiativeScore } from "./mechanics.mjs";
 import { groupDefinition } from "./minion-groups.mjs";
 const initiativeSightWarnings = new WeakSet();
+const slotTurnViews = new WeakMap();
+/** While core works out which turn to keep, Combat#combatant names the slot, not its claimant. */
+async function withSlotTurn(combat, run) {
+  if (!combat) return run();
+  slotTurnViews.set(combat, (slotTurnViews.get(combat) ?? 0) + 1);
+  try {
+    return await run();
+  } finally {
+    slotTurnViews.set(combat, slotTurnViews.get(combat) - 1);
+  }
+}
 
 export function initiativeSightWarning(combatants, measure) {
   const entries = Array.from(combatants ?? []);
@@ -77,10 +88,25 @@ export class StarWarsCombat extends Combat {
   }
   get combatant() {
     const slot = super.combatant;
-    return slot ? this.getClaimedCombatant(slot.id) : slot;
+    return slot && !slotTurnViews.get(this) ? this.getClaimedCombatant(slot.id) : slot;
+  }
+  resetAll(options) {
+    return withSlotTurn(this, () => super.resetAll(options));
   }
   async claimSlot(combatantId, actor, tokenId = null) {
     const { requestTabletop } = await import("./tabletop-foundry.mjs");
     return requestTabletop("claim", {combatUuid:this.uuid,slotId:combatantId,actorUuid:actor.uuid,round:this.round});
+  }
+}
+
+export class StarWarsCombatant extends Combatant {
+  static _preCreateOperation(documents, operation, user) {
+    return withSlotTurn(operation.parent, () => super._preCreateOperation(documents, operation, user));
+  }
+  static _preUpdateOperation(documents, operation, user) {
+    return withSlotTurn(operation.parent, () => super._preUpdateOperation(documents, operation, user));
+  }
+  static _preDeleteOperation(documents, operation, user) {
+    return withSlotTurn(operation.parent, () => super._preDeleteOperation(documents, operation, user));
   }
 }

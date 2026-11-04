@@ -4,10 +4,11 @@ import { registerMinionGroups } from "../src/minion-groups-foundry.mjs";
 import { rollPool } from "../src/dice/foundry.mjs";
 const sid="star-wars-ffg";
 test("real actor damage and roll entry points follow the linked group and combat adds only one slot",async()=>{
- const keys=["Actor","Item","Combat","game","Hooks","ui","foundry"],original=Object.fromEntries(keys.map(k=>[k,globalThis[k]]));
+ const keys=["Actor","Item","Combat","Combatant","game","Hooks","ui","foundry"],original=Object.fromEntries(keys.map(k=>[k,globalThis[k]]));
  const hooks=new Map(),warnings=[];
  globalThis.Actor=class{};globalThis.Item=class{};
  globalThis.Combat=class{async createEmbeddedDocuments(_type,data){return data;}};
+ globalThis.Combatant=class{};
  globalThis.Hooks={on:(key,fn)=>hooks.set(key,fn)};
  globalThis.ui={notifications:{warn:m=>warnings.push(m)}};
  const scene={id:"scene",tokens:[]},actors=new Map();
