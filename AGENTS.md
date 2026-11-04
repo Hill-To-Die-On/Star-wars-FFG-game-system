@@ -81,3 +81,14 @@ The GitHub wiki is maintained product documentation, not a one-time deliverable.
 - Keep the wiki, README, changelog, and relevant guides consistent. Recheck version-sensitive instructions and remove stale caveats when the evidence supports doing so. Roadmap changes still follow the canonical AtlasMind synchronization rules above; the wiki is not a separate completion ledger.
 - Publish reviewed wiki source changes to the separate wiki repository as part of the authorized delivery, preserving concurrent edits. Verify that the published pages match the source and that changed links and navigation work. A commit to `docs/wiki/` alone does not update the public wiki. If publication is blocked or not authorized, report the exact unpublished pages and blocker rather than declaring the wiki current.
 - Keep all examples, screenshots, and troubleshooting material within the project's public-content boundaries: no credentials, private campaign data, copyrighted book prose, or scans.
+
+## Foundry work
+
+Any Foundry work (a new Foundry release or compatibility check, a Foundry API question, a suspected
+core bug, running a test Foundry) starts from the shared skill `.agents/skills/foundry-vtt/SKILL.md`.
+Its `references/project.md` holds this repository's rules: the build last verified live, where
+results are recorded, and the test port (30210, never 30000). `SKILL.md` and
+`references/recent-builds.md` are shared with other Foundry repositories and synced from
+https://github.com/JoelBondoux/agent-skills: edit them there, never this copy, and put anything
+specific to this system in `references/project.md`. That repository's `CATALOGUE.md` lists other
+shared skills that may fit.
