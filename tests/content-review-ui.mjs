@@ -23,7 +23,7 @@ const review=createContentReview({
 },{archiveSha256:'f'.repeat(64)});
 const html=contentReviewPage(review),server=createServer((request,response)=>{response.writeHead(200,{'content-type':'text/html; charset=utf-8'});response.end(html);});
 await new Promise(ok=>server.listen(0,'127.0.0.1',ok));
-const url=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({headless:true});
+const url=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
 const errors=[],externalRequests=[];
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}});page.on('pageerror',error=>errors.push(error.message));

@@ -1,6 +1,6 @@
 # This repository: Star Wars FFG game system
 
-Last build verified live: **14.369** (`system.json` `compatibility.verified`, recorded 2026-10-28 in
+Last build verified live: **14.370** (`system.json` `compatibility.verified`, recorded 2026-11-04 in
 `docs/development/validation.md`).
 
 A Foundry **game system** (id `star-wars-ffg`, manifest `system.json`), v14 only: `compatibility`
@@ -9,7 +9,7 @@ A Foundry **game system** (id `star-wars-ffg`, manifest `system.json`), v14 only
 ## Checking a new Foundry release here
 
 - Record the review and every live result in `docs/development/validation.md` (a summary row plus a
-  dated section); the 2026-10-28 "Foundry 14.369 compatibility" entry is the model.
+  dated section); the 2026-11-04 "Foundry 14.370 compatibility" entry is the model.
 - Raise `compatibility.verified` only after the native acceptance below passes on that build, then
   update the "Last build verified live" line above in the same change.
 - The wiki source `docs/wiki/` states compatibility to users: update it, and publish it, as

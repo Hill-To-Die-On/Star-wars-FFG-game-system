@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.1 — Unreleased
+
+### Compatibility
+
+- Verify Foundry VTT 14.370. Review its notes against the system; the one required code change is the turn fix below.
+
+### Combat
+
+- Keep the turn on a claimed initiative slot. When a participant claimed another combatant's slot, editing, adding or removing any combatant, or resetting initiative, moved the turn to the claimant's own slot. Removing the claimed slot now passes the turn to the next remaining slot.
+
+### Native test harness
+
+- Add native checks for claimed-slot turns, narrative dice bounds and round trips on core's new dice helpers, and hidden tokens for a player who owns two or more.
+- Wait up to 60 seconds for a reload in the persistence check, and report how long each took; a world with imported compendiums takes longer than the old 15-second limit.
+- Turn the combat range assistant off with its real setting value (`off`) in the combat checks; the old value left it running, and its prompt could race the check's cleanup.
+
 ## 0.5.0 — 2026-10-28
 
 ### Beta release channel

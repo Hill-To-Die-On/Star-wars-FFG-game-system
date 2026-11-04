@@ -1,6 +1,6 @@
 # Installation and first launch
 
-Use Foundry VTT **14**. The 0.3.0 stable release was verified on **14.368**; the 0.5.0 Beta runtime has passed native checks on **14.369**. Do not assume compatibility with another major version.
+Use Foundry VTT **14**. The 0.3.0 stable release was verified on **14.368**; the 0.5.0 Beta runtime has passed native checks on **14.369**. The unreleased 0.5.1 candidate has passed native checks on **14.370**; it is not available to install until it is released. Do not assume compatibility with another major version.
 
 Star Wars FFG is not in Foundry's package browser. Foundry has not permitted this system to be listed in its official package directory because of the extent of the data sources it can import from external documents, such as homebrew PDF rules and adventures. Install it from a manifest URL instead.
 
