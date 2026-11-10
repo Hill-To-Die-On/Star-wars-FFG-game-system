@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.5.1 — Unreleased
+## 0.5.1 — 2026-11-10
+
+### Beta release channel
+
+- Publish 0.5.1 as an English-only GitHub Beta prerelease with its version-specific manifest; the latest stable manifest remains on 0.3.0.
 
 ### Compatibility
 

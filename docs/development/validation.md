@@ -67,7 +67,7 @@ The 0.5.1 candidate archive (SHA-256 `9e2d07a7…a8da`) passed the full native j
 
 Harness changes: the persistence check's 15-second reload wait failed once on 14.370, because a world with imported compendiums took 14 to 19 seconds to reload; it now waits up to 60 seconds and reports each time. The combat checks now turn the range assistant off with its real value `off`; `false` left it running, and its prompt could race cleanup. `tests/content-review-ui.mjs` now honours `CHROMIUM_PATH`. Windows notes: this run used Playwright's Chromium 149 headless shell through `CHROMIUM_PATH`, because the installed Playwright expected a newer browser build and the full `chrome.exe` would not start on this machine (`spawn UNKNOWN`). The same error failed one test-file start in a loaded run; the file passed alone and in the complete rerun.
 
-Not repeated on 14.370: Dice So Nice, Director of Realms and upgrade-from-baseline scenarios. Independent human play was not performed. The published release ZIP was not installed; 0.5.1 is an unreleased candidate.
+Not repeated on 14.370: Dice So Nice, Director of Realms and upgrade-from-baseline scenarios. Independent human play was not performed. 0.5.1 was published as a Beta prerelease on 2026-11-10; installation from the public release URL is checked after publication.
 
 Roadmap ideas from this build, none started: `CONFIG.Region.templateModeConfig` and its `gridBased` option for blast and area templates on the system's grid; grid-space Region holes for Blast that spares allies.
 
