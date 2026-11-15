@@ -21,7 +21,16 @@ test("wounds determine DoR effect strength and only bleeding actors get blood",(
   assert.deepEqual(damageVisualState(droid),{kind:"sparks",severity:1,preset:"sparks"});
   assert.deepEqual(damageVisualState({...droid,system:{...droid.system,wounds:{value:9,max:12}}}),{kind:"sparks",severity:3,preset:"sparks"});
   const organic={type:"character",system:{species:"Human",metadata:{damageVisual:"auto"},wounds:{value:5,max:12}}};
-  assert.equal(damageVisualState(organic).preset,"bleed");
+  assert.equal(damageVisualState(organic).preset,"wounded");
   assert.equal(damageVisualState({...organic,system:{...organic.system,metadata:{damageVisual:"none"}}}).kind,"none");
   assert.equal(damageVisualState({...organic,system:{...organic.system,wounds:{value:0,max:12}}}).kind,"none");
+});
+
+
+test("only exact active bleeding status requests blood, including at zero wounds",()=>{
+  const actor={type:"character",system:{wounds:{value:0,max:12}},effects:[{statuses:new Set(["bleeding"])}]};
+  assert.deepEqual(damageVisualState(actor),{kind:"blood",severity:1,preset:"bleed"});
+  for(const effect of [{disabled:true,statuses:new Set(["bleeding"])},{isSuppressed:true,statuses:new Set(["bleeding"])},{name:"Bleeding",statuses:new Set(["wounded"])}])
+    assert.equal(damageVisualState({...actor,effects:[effect]}).kind,"none");
+  assert.equal(damageVisualState({...actor,system:{...actor.system,metadata:{damageVisual:"none"}}}).kind,"none");
 });

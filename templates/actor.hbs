@@ -144,7 +144,7 @@
 <button type="button" class="sf-primary" data-action="damage">Apply damage</button>
 <p class="sf-hint">Damage accumulates. A threshold is exceeded only when the current value is greater.</p>
 {{#unless isVehicle}}<div class="sf-form-grid sf-damage-settings">
-<label title="DoR shows sparks for damaged droids and blood for damaged actors that bleed. Override this for a character that does not bleed.">Damage appearance<select name="system.metadata.damageVisual">{{selectOptions damageVisualOptions selected=damageVisualSelected}}</select></label>
+<label title="Director of Realms shows a wound indicator for injuries, sparks for droids, and blood for an active Bleeding condition.">Damage appearance<select name="system.metadata.damageVisual">{{selectOptions damageVisualOptions selected=damageVisualSelected}}</select></label>
 {{#if isAdversary}}<label title="An impairment adds one setback die to the relevant checks until repaired.">Impairment<select name="system.metadata.damageImpairment">{{selectOptions damageImpairmentOptions selected=damageImpairmentSelected}}</select></label>{{/if}}
 </div>{{/unless}}
 </section>
@@ -177,6 +177,17 @@
 <button type="button" data-action="skill" data-skill="vigilance">Vigilance</button>
 </div>{{/unless}}</section>
 </div>
+<section class="sf-panel sf-status" aria-label="Status">
+<h2>Status</h2>
+<ul>{{#each conditions}}<li>
+<strong>{{name}}</strong>{{#if source}} <small>{{source}}</small>{{/if}}
+{{#if description}}<p>{{description}}</p>{{/if}}
+{{#each changes}}<p>{{field}} · {{operation}} {{value}}</p>{{/each}}
+{{#if recordOnly}}<small>Recorded for GM review · GM applies the cited rule</small>
+{{else}}{{#if injury}}{{#unless changes.length}}<small>Check the recorded rule for its consequences</small>{{/unless}}
+{{else}}{{#if markerOnly}}<small>Condition marker · check the rule for its consequences</small>{{/if}}{{/if}}{{/if}}
+</li>{{else}}<li>No active conditions or injuries.</li>{{/each}}</ul>
+</section>
       {{#if isVehicle}}<section class="sf-panel">
 <h2>Deflector shields</h2>
 <div class="sf-form-grid">
@@ -284,8 +295,10 @@
     {{#if inventory}}<div class="sf-inventory-layout">
 <section class="sf-panel sf-inventory-panel" aria-label="Equipment">
 <div class="sf-section-heading"><h2>Equipment</h2><button type="button" data-action="addItem">Add item</button></div>
-<p class="sf-hint">Weapons, armor, gear, and attachments. Drag more from the local compendiums.</p>
-{{#each equipmentItems}}<article class="sf-item-card">
+<p class="sf-hint">Drag items from the local compendiums.</p>
+{{#each equipmentGroups}}
+<h3 class="sf-inventory-subhead">{{label}}</h3>
+{{#each items}}<article class="sf-item-card">
 <img src="{{img}}" alt="">
 <div class="sf-item-body">
 <div class="sf-item-head"><button type="button" data-action="item" data-item="{{id}}">{{name}}</button><span class="sf-item-type">{{typeLabel}}{{#if quantity}} · ×{{quantity}}{{/if}}{{#if equipped}} · Equipped{{/if}}</span></div>
@@ -295,7 +308,8 @@
 {{#if needsReview}}<small class="sf-item-warning">Source statistics needed</small>{{else}}{{#if noGlance}}<small class="sf-item-warning">No summary recorded; open to review.</small>{{/if}}{{/if}}
 </div>
 <div class="sf-item-actions">{{#if weapon}}<button type="button" data-action="skill" data-item="{{id}}">Roll</button>{{/if}}<button type="button" data-action="removeItem" data-item="{{id}}" aria-label="Remove {{name}}">×</button></div>
-</article>{{else}}<p class="sf-hint">No equipment recorded yet.</p>{{/each}}
+</article>{{/each}}
+{{else}}<p class="sf-hint">No equipment recorded yet.</p>{{/each}}
 </section>
 <section class="sf-panel sf-inventory-panel" aria-label="Abilities">
 <div class="sf-section-heading"><h2>Abilities</h2>{{#if hasGMNotes}}<button type="button" data-action="gmNotes">GM source notes</button>{{/if}}</div>
@@ -338,11 +352,13 @@
 </div>
 {{#if isCharacter}}{{#unless originsLocked}}{{#if homebrew.active}}<p class="sf-hint">Set homebrew starting statistics, skills, abilities, XP and equipment manually. The GM completes this setup using the Homebrew identity panel above.</p>{{else}}<div class="sf-button-row"><button type="button" data-action="createCharacter" data-mode="manual">Manual creation</button><button type="button" data-action="createCharacter" data-mode="guided">Guide me</button></div>{{/if}}{{/unless}}{{/if}}
 <p class="sf-hint">Purchase connected talents with available XP. Structured passive effects marked Auto feed the dice pool; use the cited book for every node whose wording is not supplied by a private library.</p>
+{{#if canAddSpecialization}}<button type="button" data-action="addSpecialization">Add specialization</button>{{/if}}
 {{#if canRefreshGuidance}}<button type="button" data-action="refreshTalentGuidance">Refresh owned talent guidance from local library</button>{{/if}}
+{{#if canRestoreStarterAdvancement}}<button type="button" data-action="restoreStarterAdvancement">Restore starter advancement from owned JSON</button>{{/if}}
 </section>
 {{#each advancementTrees}}<section class="sf-panel">
 <h2>{{#if signature}}Signature ability · {{/if}}{{name}}</h2>
-<p class="sf-hint">{{source.book}} · p. {{source.page}} · {{#if verified}}Structured graph imported{{else}}No structured graph available{{/if}} · {{sourceVerificationLabel}}
+<p class="sf-hint">{{source.book}} · p. {{source.page}} · {{#if verified}}Structured graph imported{{else}}{{#if nodes.length}}Purchases open after source connections are verified{{else}}No structured graph available{{/if}}{{/if}} · {{sourceVerificationLabel}}
 {{#if signature}} · Linked to {{#if linkSpecialization}}{{linkSpecialization}}{{else}}no specialization{{/if}} · {{#if linkUnlocked}}Base ability unlocked{{else}}Learn a marked bottom-row talent to unlock the base ability{{/if}}{{/if}}
 </p>
 {{#if nodes.length}}<div class="sf-tree" style="height:{{treeHeight}}px">

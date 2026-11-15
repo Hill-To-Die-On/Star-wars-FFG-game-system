@@ -21,6 +21,7 @@ import {
   importSwaDialog,
   campaignDialog,
   checkDialog,
+  openRequestedSkillCheck,
 } from "./sheets.mjs";
 import { registerVehicleCrew, crewApi } from "./vehicle-crew-foundry.mjs";
 import { registerDice, registerDiceSoNice, rollPool } from "./dice/foundry.mjs";
@@ -40,7 +41,7 @@ import { importLibrary, refreshLibraryLabels } from "./library.mjs";
 import { convertSwa } from "./swa-import.mjs";
 import { convertSwaSource } from "./swa-source.mjs";
 import { DICE } from "./dice/core.mjs";
-import { StarWarsCombat } from "./combat.mjs";
+import { StarWarsCombat, StarWarsCombatant } from "./combat.mjs";
 import {
   refreshGMNotes,
   searchGMSourceNotes,
@@ -261,6 +262,7 @@ Hooks.once("init", () => {
   CONFIG.Actor.documentClass = StarWarsActor;
   CONFIG.Item.documentClass = StarWarsItem;
   CONFIG.Combat.documentClass = StarWarsCombat;
+  CONFIG.Combatant.documentClass = StarWarsCombatant;
   CONFIG.Actor.dataModels = Object.fromEntries(
     ["character", "minion", "rival", "nemesis"].map((type) => [
       type,
@@ -480,6 +482,7 @@ Hooks.once("init", () => {
     restricted: true,
   });
   game.system.api = Object.freeze({
+    openRequestedSkillCheck,
     rollPool,
     importLibrary,
     actorContext,

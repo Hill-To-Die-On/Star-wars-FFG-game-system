@@ -20,11 +20,15 @@ import {
   ROLL_DICE,
   DIFFICULTY_PRESETS,
   automaticCheckPool,
+  requestedCheckPool,
   adjustPool,
   setDifficulty,
   shiftUpgrade,
 } from "./dice/builder.mjs";
 import { availableTalents } from "./advancement.mjs";
+import { reviewStarterAdvancement, restoreStarterAdvancement } from "./starter-advancement.mjs";
+import { specializationAllowed, specializationChoices } from "./specialization-choices.mjs";
+import { getLibraryPack } from "./library-packs.mjs";
 import {
   DEFAULT_CAMPAIGN,
   validateCampaign,
@@ -39,6 +43,7 @@ import { portraitArtworkFacing } from "./facing-calibration.mjs";
 import { bindFacingRing, openTokenFacingEditor } from "./facing-calibration-foundry.mjs";
 import { gmSightRuling } from "./line-of-sight-ruling.mjs";
 import { referenceSummary } from "./reference-summaries.mjs";
+import { characterConditions } from "./character-conditions.mjs";
 import { speciesAbilityEntry, speciesCheckBonuses, validateNonCareerSkillChoices } from "./species-abilities.mjs";
 import {
   careerStoryPrompts,
@@ -656,6 +661,18 @@ function attachPoolBuilder(dialog, context) {
     if(event.target.matches('[name="selectedTalent"]')) { refreshTalentRules(); renderAutomatic(); }
   });
   setMode("auto");
+  if (context.requestedPool) {
+    context.unusedTalentRemovals = unspentTalentRemovals(context.requestedPool.basePool, context.talentRules);
+    writePool(context.requestedPool.pool);
+    setMode("manual");
+  }
+}
+/** Open a native editable skill check without rolling until the player confirms. */
+export async function openRequestedSkillCheck(actor, skill, opposition) {
+  if (!actor || typeof actor.skillDefinition !== "function" || !actor.skillDefinition(skill))
+    throw new Error("Choose a valid native skill.");
+  requestedCheckPool({ characteristic: 0, rank: 0, opposition });
+  return checkDialog(actor, skill, null, { requestedOpposition: opposition });
 }
 export async function checkDialog(actor, key, item, options = {}) {
   const definition = actor.skillDefinition(key);
@@ -675,6 +692,10 @@ export async function checkDialog(actor, key, item, options = {}) {
       rank,
       options,
     );
+  if (options.requestedOpposition) context.requestedPool = requestedCheckPool({
+    characteristic: context.characteristicValue, rank, opposition: options.requestedOpposition,
+    boost: context.boost, setback: context.setback, talentRules: context.talentRules,
+  });
   context.narrativeRulings=activePoolRulings(actor,definition.key);
   const form = await DialogV2.prompt({
     window: { title: `${item?.name ?? definition.label} · Build dice pool` },
@@ -765,6 +786,8 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       applySpeciesSkills: this.applySpeciesSkills,
       rollStoryHooks: this.rollStoryHooks,
       refreshTalentGuidance: this.refreshTalentGuidance,
+      restoreStarterAdvancement: this.restoreStarterAdvancement,
+      addSpecialization: this.addSpecialization,
       editMotivation: this.editMotivation,
       removeMotivation: this.removeMotivation,
       buySkill: this.buySkill,
@@ -1015,7 +1038,8 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       isVehicle: actor.isVehicle,
       isCharacter: actor.type === "character",
       isAdversary: ["minion","rival","nemesis"].includes(actor.type),
-      damageVisualOptions: {auto:"Automatic by species",blood:"Blood",sparks:"Sparks",none:"No damage effect"},
+      conditions: characterConditions(actor, {localize: (key) => game.i18n.localize(key)}),
+      damageVisualOptions: {auto:"Automatic by species",blood:"Wound indicator",sparks:"Sparks",none:"No damage effect"},
       damageVisualSelected: s.metadata?.damageVisual ?? "auto",
       damageImpairmentOptions: Object.fromEntries(Object.entries(DAMAGE_IMPAIRMENTS).map(([key,value])=>[key,value.label])),
       damageImpairmentSelected: s.metadata?.damageImpairment ?? "none",
@@ -1093,6 +1117,8 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       careerBackground: Object.hasOwn(s.creation ?? {}, "careerBackground") ? s.creation.careerBackground : careerBackgroundDefault(s.career),
       canTidyBioNotes: actor.type === "character" && this.isEditable && separateLegacyBiography(s).changed,
       canRefreshGuidance: game.user.isGM && this.isEditable && actor.items.some((item) => ["specialization", "signatureAbility"].includes(item.type)),
+      canRestoreStarterAdvancement: game.user.isGM && this.isEditable && actor.type === "character",
+      canAddSpecialization: this.isEditable && actor.isOwner && actor.type === "character",
       canGenerateEnemy: game.user.isGM && this.isEditable && ["minion","rival","nemesis"].includes(actor.type) && !actor.items.size && !s.metadata?.enemyGuideApplied && !groupDefinition(actor),
       originsLocked,
       characteristicsLocked:
@@ -1240,14 +1266,7 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       if (!bookAllowed(item.system.source.book, campaign))
         throw new Error("This book is not enabled for this campaign.");
       if (item.type === "specialization" && this.actor.type === "character") {
-        const cost = this.actor.specializationPrice(item);
-        if (
-          await DialogV2.confirm({
-            window: { title: "Acquire specialization" },
-            content: `<p>Add ${escapeHTML(item.name)} for ${cost} XP? Its additional skills become career skills; this does not grant another set of free ranks.</p>`,
-          })
-        )
-          await this.actor.acquireSpecialization(item);
+        await this.confirmSpecialization(item);
         return;
       }
       if (
@@ -1458,6 +1477,83 @@ export class StarWarsActorSheet extends HandlebarsApplicationMixin(
       this.actor.assertOwner();
       const count = await rollMissingStoryHooks(this.actor);
       if (count) ui.notifications.info(`${count} story ${count === 1 ? "hook" : "hooks"} added to the character.`);
+      this.render();
+    } catch (error) { notifyError(error); }
+  }
+  async confirmSpecialization(item) {
+    if (!this.isEditable || !this.actor.isOwner || this.actor.type !== "character")
+      throw new Error("Open an editable character sheet you own to add a specialization.");
+    if (!item?.uuid || !specializationAllowed(item, game.settings.get(SYSTEM_ID, "campaign")))
+      throw new Error("Choose a native specialization from a library allowed by this campaign's books and rule lines.");
+    const cost = this.actor.specializationPrice(item);
+    if (cost > this.actor.system.xp.available)
+      throw new Error(`This specialization costs ${cost} XP; only ${this.actor.system.xp.available} is available.`);
+    if (!await DialogV2.confirm({
+      window: { title: "Acquire specialization" },
+      content: `<p>Add ${escapeHTML(item.name)} for ${cost} XP? Its additional skills become career skills; this does not grant another set of free ranks or change the original career.</p>`,
+    })) return;
+    if (!specializationAllowed(item, game.settings.get(SYSTEM_ID, "campaign")) || this.actor.specializationPrice(item) !== cost)
+      throw new Error("Specialization choices changed during review. Choose again to review the current price.");
+    await this.actor.acquireSpecialization(item);
+    this.render();
+  }
+  static async addSpecialization() {
+    try {
+      if (!this.isEditable || !this.actor.isOwner || this.actor.type !== "character")
+        throw new Error("Open an editable character sheet you own to add a specialization.");
+      if (!this.actor.items.some(item => item.type === "specialization"))
+        throw new Error("Choose the free first specialization with character creation. The GM can separately restore a missing starter chart from owned JSON.");
+      const pack = getLibraryPack("Item");
+      if (!pack || pack.visible === false)
+        throw new Error("Ask the GM to import the Equipment & advancement library before adding a specialization.");
+      await pack.getIndex({ fields: ["type", "system.career", "system.universal", "system.source.book", "system.source.page"] });
+      const choices = specializationChoices(this.actor, pack.index, game.settings.get(SYSTEM_ID, "campaign"));
+      if (!choices.length) throw new Error("No additional specializations are available in this library under the campaign's source settings.");
+      const id = await DialogV2.prompt({
+        window: { title: "Add specialization" },
+        content: `<p>Available XP: ${this.actor.system.xp.available}. Already-owned and disallowed sources are excluded. The next step confirms the native purchase.</p><label>Specialization<select name="specialization"><option value="">Choose a specialization</option>${choices.map(choice => `<option value="${escapeHTML(choice.id)}" ${choice.affordable ? "" : "disabled"}>${escapeHTML(choice.name)} · ${choice.cost} XP${choice.affordable ? "" : " (not enough XP)"} · ${escapeHTML(choice.book)}${choice.page ? ` p. ${escapeHTML(choice.page)}` : ""}</option>`).join("")}</select></label>`,
+        ok: { label: "Review purchase", callback: (_event, button) => button.form.elements.specialization.value },
+        rejectClose: false,
+      });
+      if (!id) return;
+      if (!choices.some(choice => choice.id === id && choice.affordable)) throw new Error("Choose an available specialization from this list.");
+      await this.confirmSpecialization(await pack.getDocument(id));
+    } catch (error) { notifyError(error); }
+  }
+  static async restoreStarterAdvancement() {
+    try {
+      if (!game.user.isGM || !this.isEditable) throw new Error("Only the GM can restore starter advancement on an editable character sheet.");
+      const file = await DialogV2.prompt({
+        window: { title: "Restore starter advancement" },
+        content: '<p>Select one native starter specialization JSON prepared from your owned PDF. The file stays in this world. Review its character and source before attaching the missing tree.</p><input type="file" name="starter" accept=".json">',
+        ok: { label: "Review file", callback: (_event, button) => button.form.elements.starter.files[0] },
+        rejectClose: false,
+      });
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) throw new Error("Choose a starter JSON file smaller than 2 MB.");
+      const review = reviewStarterAdvancement(this.actor, JSON.parse(await file.text()), game.user);
+      const confirmation = await DialogV2.prompt({
+        window: { title: "Review starter advancement restoration" },
+        position: { width: 620 },
+        content: `<p>Attach <strong>${escapeHTML(review.name)}</strong> to <strong>${escapeHTML(review.actorName)}</strong> (${escapeHTML(review.actorUuid)})?</p>
+          <p>Source character: <strong>${escapeHTML(review.character)}</strong> · Career: ${escapeHTML(review.career)}.</p>
+          <p>${escapeHTML(review.filename)} · ${escapeHTML(review.source.book)} · Physical PDF chart page ${review.page}; identity page ${review.identityPage}.</p>
+          <p><small>PDF SHA-256: ${escapeHTML(review.sourceSha256)}. This is the file's provenance claim; compare it with your owned source.</small></p>
+          <p>${review.nodes} unpurchased nodes · ${review.links} printed links · ${review.isolatedNodes} isolated non-entry nodes. ${review.readOnly ? "Read-only chart: purchases remain disabled until its source connections are verified." : "Source connections marked verified in this file."}</p>
+          ${review.heldReason ? `<p>${escapeHTML(review.heldReason)}</p>` : ""}
+          <details><summary>Review nodes and printed costs</summary><ul>${review.nodeReview.map(node => `<li>Row ${node.row + 1}, column ${node.col + 1}: ${escapeHTML(node.name)} · ${node.cost} XP</li>`).join("")}</ul></details>
+          <p>Only the missing tree is attached. Available XP, total XP, purchases, career skills and other actor statistics stay unchanged. Existing or conflicting trees are refused.</p>
+          <label>Type the source character's name to bind this sheet to that folio<input type="text" name="character" autocomplete="off"></label>
+          <label><input type="checkbox" name="sourceReviewed">I checked the owned PDF identity and chart pages: this is this actor's starter tree, with no purchases to restore.</label>`,
+        ok: {
+          label: review.readOnly ? "Attach read-only starter chart" : "Attach unpurchased starter chart",
+          callback: (_event, button) => ({ actorUuid: review.actorUuid, character: button.form.elements.character.value.trim(), sourceReviewed: button.form.elements.sourceReviewed.checked }),
+        },
+        rejectClose: false,
+      });
+      if (!confirmation) return;
+      await restoreStarterAdvancement(this.actor, review, confirmation, game.user);
+      ui.notifications.info("Starter advancement attached. XP and purchases are unchanged.");
       this.render();
     } catch (error) { notifyError(error); }
   }
