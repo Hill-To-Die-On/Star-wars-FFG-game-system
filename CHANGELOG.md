@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.5.3 — 2026-11-15
+
+### Beta release channel
+
+- Publish 0.5.3 as an English-only GitHub Beta prerelease with a version-specific manifest. The latest stable manifest stays on 0.3.0.
+
+### Character sheets
+
+- Add Status to Overview with active effects, their sheet adjustments, and source-cited injury records.
+- Group Inventory into Weapons, Armour, and Tools and gear. Use category icons when an item has no distinct artwork.
+- Offer Add specialization with the same reviewed XP purchase as drag and drop. Give GMs a separate no-XP restoration flow for an owned starter chart.
+
+### Director of Realms integration
+
+- Open a requested native skill check with a supplied opposition pool for player review and editing before rolling.
+- Show a wound marker for ordinary organic wounds. Use blood only while an active Bleeding condition is recorded and keep sparks for machinery.
+- Resolve a saved roll against its exact recorded scene token when that actor is unlinked from the world directory.
+
+## 0.5.1 — 2026-11-10
+
+### Beta release channel
+
+- Publish 0.5.1 as an English-only GitHub Beta prerelease with its version-specific manifest; the latest stable manifest remains on 0.3.0.
+
+### Compatibility
+
+- Verify Foundry VTT 14.370. Review its notes against the system; the one required code change is the turn fix below.
+
+### Combat
+
+- Keep the turn on a claimed initiative slot. When a participant claimed another combatant's slot, editing, adding or removing any combatant, or resetting initiative, moved the turn to the claimant's own slot. Removing the claimed slot now passes the turn to the next remaining slot.
+
+### Native test harness
+
+- Add native checks for claimed-slot turns, narrative dice bounds and round trips on core's new dice helpers, and hidden tokens for a player who owns two or more.
+- Wait up to 60 seconds for a reload in the persistence check, and report how long each took; a world with imported compendiums takes longer than the old 15-second limit.
+- Turn the combat range assistant off with its real setting value (`off`) in the combat checks; the old value left it running, and its prompt could race the check's cleanup.
+
 ## 0.5.0 — 2026-10-28
 
 ### Beta release channel

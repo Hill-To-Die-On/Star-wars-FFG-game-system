@@ -239,11 +239,55 @@ export async function nativeFeatureAcceptance({gm,player,report,output,filter}) 
   });
   await step('combat-initiative-slots-next-round-and-cleanup','native Combat API and UI',async()=>{
     const result=await gm.evaluate(async()=>{
-      await game.settings.set('star-wars-ffg','combatRangeAssistant',false);const f=__betaFeatureFixture,scene=game.scenes.get(f.scene),tokens=[scene.tokens.get(f.tokens.character),scene.tokens.get(f.tokens.rival)];
+      await game.settings.set('star-wars-ffg','combatRangeAssistant','off');const f=__betaFeatureFixture,scene=game.scenes.get(f.scene),tokens=[scene.tokens.get(f.tokens.character),scene.tokens.get(f.tokens.rival)];
       const combat=await Combat.create({scene:scene.id,active:true});await combat.createEmbeddedDocuments('Combatant',tokens.map(t=>({tokenId:t.id,actorId:t.actorId,sceneId:scene.id})));await combat.rollInitiative(combat.combatants.map(c=>c.id),{skill:'cool'});await combat.startCombat();__betaFeatureFixture.combat=combat.id;return {id:combat.id,round:combat.round,slots:combat.combatants.map(c=>({id:c.id,initiative:c.initiative,side:c.getFlag('star-wars-ffg','slotSide')}))};
     });assert.equal(result.round,1);assert.deepEqual(result.slots.map(s=>s.side).sort(),['npc','pc']);assert.ok(result.slots.every(s=>Number.isFinite(s.initiative)));
     await gm.evaluate(()=>{void game.system.api.tabletop.initiative(game.combats.get(__betaFeatureFixture.combat));});await gm.locator('dialog [name="slotId"]').waitFor();await close(gm);
     const ended=await gm.evaluate(async()=>{const c=game.combats.get(__betaFeatureFixture.combat);await c.nextRound();const round=c.round;await c.delete();return {round,left:game.combats.has(c.id)};});assert.equal(ended.round,2);assert.equal(ended.left,false);return result;
+  });
+  // Core reads Combat#combatant when it keeps the turn across Combatant writes; a claimed slot must not move it.
+  await step('combat-claimed-slot-keeps-the-turn','native Combat and Combatant API',async()=>{
+    const result=await gm.evaluate(async()=>{
+      await game.settings.set('star-wars-ffg','combatRangeAssistant','off');const f=__betaFeatureFixture,scene=game.scenes.get(f.scene),tokens=['rival','nemesis','character'].map(k=>scene.tokens.get(f.tokens[k]));
+      const combat=await Combat.create({scene:scene.id,active:true});const created=await combat.createEmbeddedDocuments('Combatant',tokens.map(t=>({tokenId:t.id,actorId:t.actorId,sceneId:scene.id})));
+      await combat.updateEmbeddedDocuments('Combatant',created.map((c,i)=>({_id:c.id,initiative:30-i*10})));await combat.startCombat();
+      const [first,second,third]=combat.turns.map(c=>c.id),current=()=>combat.turns[combat.turn]?.id;
+      await combat.update({'flags.star-wars-ffg.slotClaims':[{round:combat.round,slotId:first,actorUuid:combat.combatants.get(second).actor.uuid}]});
+      const claim={slot:current(),active:combat.combatant.id};
+      await combat.updateEmbeddedDocuments('Combatant',[{_id:third,hidden:true}]);const afterUpdate=current();
+      await combat.deleteEmbeddedDocuments('Combatant',[third]);const afterDelete=current();
+      await combat.deleteEmbeddedDocuments('Combatant',[first]);const afterSlotDelete=current();
+      await combat.delete();return {first,second,claim,afterUpdate,afterDelete,afterSlotDelete};
+    });
+    assert.deepEqual(result.claim,{slot:result.first,active:result.second},'the claimant acts in the claimed slot');
+    assert.equal(result.afterUpdate,result.first,'updating another combatant keeps the claimed slot current');
+    assert.equal(result.afterDelete,result.first,'deleting another combatant keeps the claimed slot current');
+    assert.equal(result.afterSlotDelete,result.second,'deleting the claimed slot passes the turn to the next survivor');
+    return result;
+  });
+  await step('narrative-dice-term-bounds-and-round-trip','native Roll API',async()=>{
+    const result=await gm.evaluate(async()=>{
+      const {DICE}=await import('/systems/star-wars-ffg/src/dice/core.mjs'),Roll=foundry.dice.Roll,rows=[];
+      for(const [key,die] of Object.entries(DICE)){
+        const term=new CONFIG.Dice.terms[die.term]({number:1}),min=await new Roll(`1d${die.term}`).evaluate({minimize:true}),max=new Roll(`1d${die.term}`).evaluateSync({maximize:true}),many=await new Roll(`40d${die.term}`).evaluate(),copy=Roll.fromData(JSON.parse(JSON.stringify(many.toJSON())));
+        rows.push({key,faces:die.faces.length,minValue:term.minValue,minResult:term.minResult,maxResult:term.maxResult,min:min.dice[0].results[0].result,max:max.dice[0].results[0].result,inRange:many.dice[0].results.every(r=>r.result>=1&&r.result<=die.faces.length),count:many.dice[0].results.length,sameTotal:copy.total===many.total,sameResults:JSON.stringify(copy.dice[0].results)===JSON.stringify(many.dice[0].results),option:copy.dice[0].options.starWarsDie});
+      }
+      return rows;
+    });
+    assert.equal(result.length,7);
+    for(const row of result)assert.deepEqual(row,{...row,minValue:1,minResult:1,maxResult:row.faces,min:1,max:row.faces,inRange:true,count:40,sameTotal:true,sameResults:true,option:row.key});
+    return result;
+  });
+  await step('hidden-token-stays-hidden-for-two-token-owner','native canvas, separate player client',async()=>{
+    const hiddenId=fixture.tokens.rival;
+    await gm.evaluate(async({scene,id})=>{await game.scenes.get(scene).tokens.get(id).update({hidden:true});},{scene:fixture.scene,id:hiddenId});
+    try {
+      await player.evaluate(async scene=>{await game.scenes.get(scene).view();await canvas.draw();},fixture.scene);
+      // Token#visible is set by the next perception refresh; wait for it rather than read it mid-draw.
+      await player.waitForFunction(id=>{const token=canvas.tokens.get(id);return canvas.ready&&token?.document.hidden===true&&token.isVisible===false&&token.visible===false;},hiddenId,{timeout:30000});
+      const seen=await player.evaluate(id=>({owned:canvas.tokens.placeables.filter(t=>t.document.isOwner).length,hiddenRendered:canvas.tokens.get(id).visible}),hiddenId);
+      assert.ok(seen.owned>=2,'the player owns at least two tokens on the scene');assert.equal(seen.hiddenRendered,false);return seen;
+    } finally {await gm.evaluate(async({scene,id})=>{await game.scenes.get(scene).tokens.get(id).update({hidden:false});},{scene:fixture.scene,id:hiddenId});}
   });
   await step('vehicle-dashboard-adjust-speed-and-shields','native UI',async()=>{
     await gm.evaluate(()=>{void game.system.api.tabletop.vehicle(game.actors.get(__betaFeatureFixture.actors.vehicle));});await gm.locator('.sf-vehicle-dashboard').waitFor();await gm.locator('[data-dashboard="state"]').click();await gm.locator('dialog [name="speed"]').fill('2');await gm.locator('dialog [name="fore"]').fill('1');await gm.getByRole('button',{name:'Review',exact:true}).click();await gm.getByRole('button',{name:'Apply reviewed changes',exact:true}).click();await gm.waitForFunction(id=>game.actors.get(id).system.speed.value===2&&game.actors.get(id).system.shields.fore===1,fixture.actors.vehicle);
@@ -398,7 +442,7 @@ export async function nativeFeatureAcceptance({gm,player,report,output,filter}) 
     return tested;
   });
   await step('reload-world-data-identity-and-persistence','native GM/player reload',async()=>{
-    const before=await gm.evaluate(()=>Object.fromEntries(Object.entries(__betaFeatureFixture.actors).map(([type,id])=>[type,game.actors.get(id).toObject()])));await gm.reload({waitUntil:'domcontentloaded',timeout:60000});await gm.waitForFunction(()=>game.ready);const after=await gm.evaluate(ids=>Object.fromEntries(Object.entries(ids).map(([type,id])=>[type,game.actors.get(id).toObject()])),fixture.actors);assert.deepEqual(after,before);await player.reload({waitUntil:'domcontentloaded',timeout:60000});await player.waitForFunction(()=>game.ready);assert.equal(await player.evaluate(id=>game.actors.get(id).name,fixture.actors.character),'Beta QA character');
+    const before=await gm.evaluate(()=>Object.fromEntries(Object.entries(__betaFeatureFixture.actors).map(([type,id])=>[type,game.actors.get(id).toObject()])));const gmStarted=Date.now();await gm.reload({waitUntil:'domcontentloaded',timeout:60000});await gm.waitForFunction(()=>game.ready,null,{timeout:60000});const gmReloadMs=Date.now()-gmStarted,after=await gm.evaluate(ids=>Object.fromEntries(Object.entries(ids).map(([type,id])=>[type,game.actors.get(id).toObject()])),fixture.actors);assert.deepEqual(after,before);const playerStarted=Date.now();await player.reload({waitUntil:'domcontentloaded',timeout:60000});await player.waitForFunction(()=>game.ready,null,{timeout:60000});const playerReloadMs=Date.now()-playerStarted;assert.equal(await player.evaluate(id=>game.actors.get(id).name,fixture.actors.character),'Beta QA character');return {gmReloadMs,playerReloadMs};
   });
   report.notTested=[...(report.expectedModules?.includes('dice-so-nice')?[]:['Dice So Nice animated rendering (system-only run)']),'External Director of Realms runtime/provider workflows','All possible species, talents, vehicle loadouts and campaign configurations','Independent human play acceptance'];
   report.featureSummary={passed:checks.filter(c=>c.passed).length,failed:issues.length,skipped:checks.filter(c=>c.skipped).length,filter:filter??null,nativeFoundry:true,independentHumanReview:false};

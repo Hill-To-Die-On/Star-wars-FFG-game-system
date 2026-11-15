@@ -29,11 +29,16 @@ export function impairmentForCheck(actor,skill) {
 export function damageVisualState(actor) {
   const system=actor?.system??{},resource=actor?.type==="vehicle"?system.hullTrauma:system.wounds;
   const wounds=Number(resource?.value??0),maximum=Number(resource?.max??0);
-  if(!Number.isFinite(wounds)||!Number.isFinite(maximum)||wounds<=0||maximum<=0)return {kind:"none",severity:0,preset:null};
   const preference=String(system.metadata?.damageVisual??"auto");
-  const kind=preference==="none"?"none":preference==="blood"||preference==="sparks"?preference:
-    actor?.type==="vehicle"||/\bdroid\b/i.test(String(system.species??""))?"sparks":"blood";
-  if(kind==="none")return {kind:"none",severity:0,preset:null};
-  const severity=Math.max(1,Math.min(3,Math.ceil(3*wounds/maximum)));
-  return {kind,severity,preset:kind==="blood"?"bleed":"sparks"};
+  if(preference==="none")return {kind:"none",severity:0,preset:null};
+  const mechanical=preference==="sparks"||(preference!=="blood"&&
+    (actor?.type==="vehicle"||/\bdroid\b/i.test(String(system.species??""))));
+  // Names and accumulated wounds do not establish a bleeding condition.
+  const effects=actor?.appliedEffects??actor?.effects??[];
+  const bleeding=!mechanical&&Array.from(effects).some(effect=>!effect.disabled&&!effect.isSuppressed&&effect.statuses?.has?.("bleeding"));
+  const wounded=Number.isFinite(wounds)&&Number.isFinite(maximum)&&wounds>0&&maximum>0;
+  if(!bleeding&&!wounded)return {kind:"none",severity:0,preset:null};
+  const severity=wounded?Math.max(1,Math.min(3,Math.ceil(3*wounds/maximum))):1;
+  const kind=mechanical?"sparks":bleeding?"blood":"wounded";
+  return {kind,severity,preset:kind==="blood"?"bleed":kind};
 }

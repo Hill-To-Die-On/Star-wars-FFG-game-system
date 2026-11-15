@@ -104,9 +104,32 @@ async function confirmPlan(actor,plan) {
   return foundry.applications.api.DialogV2.confirm({...dialogDefaults,window:{...dialogDefaults.window,title:'Review combat change'},content:`<div class="sf-tabletop-body"><section class="sf-tabletop-section"><h2>${esc(actor.name)}</h2>${reviewHTML(plan)}</section></div>`,yes:{label:'Apply reviewed changes'},no:{label:'Back'}});
 }
 
+/** A native token roll can target a synthetic Actor outside the world directory. */
+export async function recordedSyntheticTarget(message,scene,lookup=globalThis.fromUuid) {
+  const uuid=flag(message,'targetActorUuid');
+  if(typeof uuid!=='string'||!uuid.startsWith('Scene.'))return;
+  const held=()=>{throw new Error('The recorded token is unavailable on this roll scene. Reopen the scene and check the original target.');};
+  if(!/^Scene\.[\w-]+\.Token\.[\w-]+\.Actor\.[\w-]+$/.test(uuid)||
+    message.isRoll!==true||message.rolls?.length!==1||!flag(message,'outcome')||!scene?.id||message.speaker?.scene!==scene.id)return held();
+  const actor=await lookup(uuid),token=actor?.token;
+  if(!actor?.isToken||actor.uuid!==uuid||!token?.id||token.parent!==scene||token.hidden||
+    scene.tokens?.get(token.id)!==token||token.actor!==actor)return held();
+  return actor;
+}
+
 export async function openResolution(actor,{message,weapon}={}) {
   if(!game.user.isGM)throw new Error('The GM reviews combat effects.');
-  if(!actor){const pick=await prompt('Choose affected actor',`<section class="sf-tabletop-section"><h2>Who is affected?</h2><p class="sf-ruling-status">Confirm the target before recording damage, recovery or a condition.</p><label>Actor<select name="actor">${options(visibleActors().filter(a=>a.type!=='group').map(a=>({id:a.uuid,name:a.name})),flag(message,'targetActorUuid'))}</select></label></section>`,'Choose');if(!pick)return;actor=await fromUuid(pick.actor);}
+  const boundTarget=actor?undefined:await recordedSyntheticTarget(message,globalThis.canvas?.scene);
+  if(!actor){
+    const candidates=boundTarget?[{id:boundTarget.uuid,name:boundTarget.name+' · recorded scene token'}]:
+      visibleActors().filter(a=>a.type!=='group').map(a=>({id:a.uuid,name:a.name}));
+    const pick=await prompt('Choose affected actor',`<section class="sf-tabletop-section"><h2>Who is affected?</h2><p class="sf-ruling-status">Confirm the target before recording damage, recovery or a condition.</p><label>Actor<select name="actor">${options(candidates,flag(message,'targetActorUuid'))}</select></label></section>`,'Choose');
+    if(!pick)return;
+    if(boundTarget&&(pick.actor!==boundTarget.uuid||await recordedSyntheticTarget(message,globalThis.canvas?.scene)!==boundTarget))
+      throw new Error('The recorded token changed during review.');
+    actor=boundTarget??await fromUuid(pick.actor);
+    if(!actor)throw new Error('The selected actor is unavailable.');
+  }
   const vehicle=actor.type==='vehicle',facts=flag(message,'outcome'),resources=vehicle?['hullTrauma','systemStrain']:['wounds','strain'];
   if(message&&!weapon&&flag(message,'actorUuid')) {
     const attacker=await fromUuid(flag(message,'actorUuid'));
@@ -140,6 +163,8 @@ export async function openResolution(actor,{message,weapon}={}) {
   if(form.kind==='critical'&&form.rollCritical==='on')request.critical={roll:await rollDie('1d100',`${actor.name} · critical`),vicious:Number(form.vicious),modifier:Number(form.critModifier)};
   const plan=planActorEffect(actor,request,{user:game.user,campaign:campaign()});
   if(await confirmPlan(actor,plan)){
+    if(boundTarget&&await recordedSyntheticTarget(message,globalThis.canvas?.scene)!==boundTarget)
+      throw new Error('The recorded token changed during review.');
     const result=await requestTabletop('effect',{actorUuid:actor.uuid,request,expected:reviewSnapshot(plan)});
     ui.notifications.info(`Applied to ${actor.name}. Undo is available in Tabletop history.`);
     if(result.linkWarning)ui.notifications.warn(result.linkWarning);

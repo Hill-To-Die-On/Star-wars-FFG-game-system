@@ -1,10 +1,17 @@
-import { SKILLS } from "./config.mjs";
+import { SKILLS, SYSTEM_PATH } from "./config.mjs";
 import { talentActivation } from "./talent-activation.mjs";
 import { renderTalentMarkup, talentMarkupText } from "./talent-markup.mjs";
 import { learnedTalentRules } from "./talent-rules.mjs";
 import { speciesAbilityEntry } from "./species-abilities.mjs";
 
-const EQUIPMENT_TYPES = new Set(["weapon", "armor", "gear", "attachment"]);
+const GENERIC_ITEM_ART = `${SYSTEM_PATH}/assets/item.svg`;
+const ITEM_ART_PLACEHOLDERS = new Set(["icons/svg/item-bag.svg", GENERIC_ITEM_ART]);
+const EQUIPMENT_GROUPS = [
+  { label: "Weapons", icons: { weapon: `${SYSTEM_PATH}/assets/weapon.svg` } },
+  { label: "Armour", icons: { armor: "icons/svg/shield.svg" } },
+  { label: "Tools and gear", icons: { gear: GENERIC_ITEM_ART, attachment: "icons/svg/upgrade.svg" } },
+];
+const EQUIPMENT_ICONS = new Map(EQUIPMENT_GROUPS.flatMap(({icons}) => Object.entries(icons)));
 const TYPE_LABELS = Object.freeze({
   weapon: "Weapon", armor: "Armor", gear: "Gear", attachment: "Attachment",
   species: "Species", career: "Career", specialization: "Specialization",
@@ -58,7 +65,7 @@ export function inventoryGlance(item) {
       add("Defense", s.defense);
     }
     add("Encumbrance", s.encumbrance);
-  } else if (EQUIPMENT_TYPES.has(type)) {
+  } else if (EQUIPMENT_ICONS.has(type)) {
     add("Encumbrance", s.encumbrance);
     if (type === "attachment") add("Hard points", s.hardpoints);
     add("Price", present(s.price) ? `${s.price} cr` : "");
@@ -84,20 +91,22 @@ export function inventoryGlance(item) {
   }
 
   const detail = short(type === "weapon" && present(s.qualities) ? s.qualities : s.description),
-    quantity = Number(s.quantity ?? 1);
+    quantity = Number(s.quantity ?? 1),
+    artwork = typeof item?.img === "string" ? item.img.trim() : "",
+    fallback = !artwork || ITEM_ART_PLACEHOLDERS.has(artwork) ? EQUIPMENT_ICONS.get(type) : undefined;
   return {
     id: item?.id,
     name: item?.name,
     type,
     typeLabel: TYPE_LABELS[type] ?? clean(type),
-    img: item?.img,
+    img: fallback ?? item?.img,
     chips,
     detail,
     source,
     needsReview,
     noGlance: !chips.length && !detail,
     quantity: Number.isFinite(quantity) && quantity > 1 ? quantity : null,
-    equipped: EQUIPMENT_TYPES.has(type) && s.equipped === true,
+    equipped: EQUIPMENT_ICONS.has(type) && s.equipped === true,
     weapon: type === "weapon",
   };
 }
@@ -109,7 +118,7 @@ export function inventoryGroups(input) {
     equipmentItems = [], abilityItems = [], ownedAbilityItems = [];
   for (const item of sourceItems) {
     const view = inventoryGlance(item);
-    (EQUIPMENT_TYPES.has(item?.type) ? equipmentItems : abilityItems).push(view);
+    (EQUIPMENT_ICONS.has(view.type) ? equipmentItems : abilityItems).push(view);
   }
   if (actor) {
     const byId = new Map(sourceItems.map((item) => [item.id, item]));
@@ -156,7 +165,7 @@ export function inventoryGroups(input) {
         if (!present(ability?.name)) continue;
         ownedAbilityItems.push(abilityCard({
           id: `${item.id}:ability:${index}`, name: ability.name,
-          typeLabel: EQUIPMENT_TYPES.has(item.type) ? "Equipment ability" : "Granted ability",
+          typeLabel: EQUIPMENT_ICONS.has(item.type) ? "Equipment ability" : "Granted ability",
           activation: ability.activation, detail: ability.summary ?? ability.description,
           source: ability.source?.book ? ability.source : item.system?.source,
           origin: item.name, needsReview: (item.system?.incomplete?.length ?? 0) > 0 ||
@@ -166,6 +175,10 @@ export function inventoryGroups(input) {
       }
     }
   }
-  return { equipmentItems, abilityItems, ownedAbilityItems,
+  const equipmentGroups = EQUIPMENT_GROUPS.map(({label, icons}) => ({
+    label,
+    items: equipmentItems.filter(({type}) => Object.hasOwn(icons, type)),
+  })).filter(({items}) => items.length > 0);
+  return { equipmentGroups, abilityItems, ownedAbilityItems,
     hasAnyAbilities: ownedAbilityItems.length + abilityItems.length > 0 };
 }

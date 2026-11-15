@@ -34,3 +34,18 @@ test('replacing a sheet root detaches the old drop listener',()=>{
   old.dispatchEvent(new Event('drop'));assert.equal(drops,0);
   sheet.element.dispatchEvent(new Event('drop'));assert.equal(drops,1);
 });
+
+test('requested check opens native confirmation and cancellation never rolls', async () => {
+  let dialog;
+  globalThis.game = {user: {targets: new Set()}, settings: {get: () => 'publicroll'}};
+  foundry.applications.api.DialogV2.prompt = async options => { dialog = options; return null; };
+  const actor = {type:'npc', name:'Scout', system:{characteristics:{intellect:3}, criticals:[]},
+    skillDefinition:key => key === 'Computers' ? {key:'computers', label:'Computers', group:'General', state:{characteristic:'intellect'}} : null,
+    skillRank: () => 2, talentRulesForCheck: () => null, assertOwner: () => {}};
+  const {openRequestedSkillCheck} = await import('../src/sheets.mjs');
+  assert.equal(await openRequestedSkillCheck(actor,'Computers',{difficulty:1,challenge:0,setback:0}), undefined);
+  assert.match(dialog.window.title,/Computers/);
+  assert.match(dialog.ok.label,/Roll/);
+  await assert.rejects(openRequestedSkillCheck({...actor, assertOwner: () => {throw new Error('Owner permission is required.');}},'Computers',{difficulty:1,challenge:0,setback:0}), /Owner permission/);
+  await assert.rejects(openRequestedSkillCheck(actor,'Wrong',{difficulty:1,challenge:0,setback:0}), /valid native skill/);
+});
