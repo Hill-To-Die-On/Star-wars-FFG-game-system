@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.5.3 — 2026-11-15
+
+### Beta release channel
+
+- Publish 0.5.3 as an English-only GitHub Beta prerelease with a version-specific manifest. The latest stable manifest stays on 0.3.0.
+
+### Character sheets
+
+- Add Status to Overview with active effects, their sheet adjustments, and source-cited injury records.
+- Group Inventory into Weapons, Armour, and Tools and gear. Use category icons when an item has no distinct artwork.
+- Offer Add specialization with the same reviewed XP purchase as drag and drop. Give GMs a separate no-XP restoration flow for an owned starter chart.
+
+### Director of Realms integration
+
+- Open a requested native skill check with a supplied opposition pool for player review and editing before rolling.
+- Show a wound marker for ordinary organic wounds. Use blood only while an active Bleeding condition is recorded and keep sparks for machinery.
+- Resolve a saved roll against its exact recorded scene token when that actor is unlinked from the world directory.
+
 ## 0.5.1 — 2026-11-10
 
 ### Beta release channel

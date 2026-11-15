@@ -24,7 +24,11 @@ export async function syncDorDamageEffect(token,{
     if(prior.wounds!==wounds)await doc.setFlag(SYSTEM_ID,"damageVfx",{...prior,wounds});
     return true;
   }
-  if(prior?.id)await api.visualEffect({action:"stop",id:prior.id});
+  if(prior?.id) {
+    const stopped=await api.visualEffect({action:"stop",id:prior.id});
+    if(stopped!==true)return false;
+    await doc.unsetFlag?.(SYSTEM_ID,"damageVfx");
+  }
   if(state.kind==="none") {
     if(prior)await doc.unsetFlag?.(SYSTEM_ID,"damageVfx");
     return true;
@@ -50,7 +54,10 @@ export function registerDorDamageEffects() {
   const all=()=>{for(const token of globalThis.canvas?.tokens?.placeables??[])schedule(token);};
   Hooks.on("canvasReady",all);
   Hooks.on("drawToken",schedule);
-  Hooks.on("updateActor",actor=>{for(const token of globalThis.canvas?.tokens?.placeables??[])if(token.actor?.id===actor.id)schedule(token);});
+  const actorChanged=actor=>{if(!actor)return;for(const token of globalThis.canvas?.tokens?.placeables??[])if(token.actor===actor||token.actor?.uuid===actor?.uuid&&actor?.uuid)schedule(token);};
+  Hooks.on("updateActor",actorChanged);
+  for(const event of ["createActiveEffect","updateActiveEffect","deleteActiveEffect"])
+    Hooks.on(event,effect=>actorChanged(effect.parent?.documentName==="Actor"?effect.parent:effect.parent?.actor));
   Hooks.on("updateToken",document=>{const token=globalThis.canvas?.tokens?.get?.(document.id);if(token)schedule(token);});
   Hooks.on("deleteToken",document=>{
     const id=document.getFlag?.(SYSTEM_ID,"damageVfx")?.id;

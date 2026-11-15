@@ -16,6 +16,15 @@ test("wiki navigation resolves to committed pages and distinguishes the candidat
   const home=await readFile(new URL("../docs/wiki/Home.md",import.meta.url),"utf8");
   const {version}=JSON.parse(await readFile(new URL('../system.json',import.meta.url),'utf8'));
   assert.match(home,/stable release is \*\*0\.3\.0/);
-  assert.ok(home.includes(`**${version} Beta release**`));
+  const changelog=await readFile(new URL("../CHANGELOG.md",import.meta.url),"utf8");
+  const versions=Array.from(changelog.matchAll(/^## ([\d.]+) — (Unreleased|\d{4}-\d{2}-\d{2})$/gm));
+  const manifestEntry=versions.find(([,number])=>number===version);
+  assert.ok(manifestEntry,"The manifest version has a changelog entry");
+  const published=versions.find(([, , date])=>date!=="Unreleased");
+  assert.ok(published && home.includes(`**${published[1]} Beta release**`));
+  if (manifestEntry[2]==="Unreleased") {
+    assert.ok(home.includes(`**${version} local candidate**`));
+    assert.ok(!home.includes(`**${version} Beta release**`));
+  }
   assert.match(home,/English only/);
 });

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import Handlebars from "handlebars";
 import { inventoryGlance, inventoryGroups } from "../src/inventory-glance.mjs";
 
 const item = (type, system = {}, name = type) => ({
@@ -9,10 +10,37 @@ const item = (type, system = {}, name = type) => ({
 
 test("inventory separates every supported item type without losing entries", () => {
   const types = ["weapon", "armor", "gear", "attachment", "species", "career", "specialization", "talent", "forcePower", "signatureAbility", "reference"];
-  const grouped = inventoryGroups(types.map((type) => item(type)));
-  assert.deepEqual(grouped.equipmentItems.map(({type}) => type), types.slice(0, 4));
+  const items = ["attachment", "gear", "armor", "weapon", ...types.slice(4)].map((type) => item(type));
+  const grouped = inventoryGroups(items);
+  assert.deepEqual(grouped.equipmentGroups.map(({label, items}) => [label, items.map(({type}) => type)]), [
+    ["Weapons", ["weapon"]], ["Armour", ["armor"]], ["Tools and gear", ["attachment", "gear"]],
+  ]);
   assert.deepEqual(grouped.abilityItems.map(({type}) => type), types.slice(4));
-  assert.equal(grouped.equipmentItems.length + grouped.abilityItems.length, types.length);
+  assert.equal(grouped.equipmentGroups.flatMap(({items}) => items).length + grouped.abilityItems.length, types.length);
+  assert.deepEqual(inventoryGroups([item("gear")]).equipmentGroups.map(({label}) => label), ["Tools and gear"]);
+});
+
+test("only missing and generic equipment artwork uses distinct category fallbacks", () => {
+  const items = [
+    {...item("weapon"), img: undefined},
+    {...item("armor"), img: "icons/svg/item-bag.svg"},
+    {...item("gear"), img: "systems/star-wars-ffg/assets/item.svg"},
+    {...item("attachment"), img: ""},
+    {...item("weapon"), id: "stock", img: "systems/star-wars-ffg/assets/weapon.svg"},
+    {...item("armor"), id: "custom", img: "worlds/my-world/gear/item.svg"},
+  ];
+  const artwork = Object.fromEntries(
+    inventoryGroups(items).equipmentGroups.flatMap(({items}) => items.map(({id, img}) => [id, img])),
+  );
+  assert.deepEqual(artwork, {
+    "weapon-1": "systems/star-wars-ffg/assets/weapon.svg",
+    stock: "systems/star-wars-ffg/assets/weapon.svg",
+    "armor-1": "icons/svg/shield.svg",
+    custom: "worlds/my-world/gear/item.svg",
+    "gear-1": "systems/star-wars-ffg/assets/item.svg",
+    "attachment-1": "icons/svg/upgrade.svg",
+  });
+  assert.equal(items[1].img, "icons/svg/item-bag.svg", "fallback is a view-only value");
 });
 
 test("equipment cards expose recorded combat and carrying stats before opening an item", () => {
@@ -84,7 +112,8 @@ test("registered species traits and explicit item abilities are collected with t
   assert.equal(grouped.ownedAbilityItems.find(({name}) => name === "Sensor Sweep")?.source, "Field notes · p. 4");
   assert.ok(grouped.ownedAbilityItems.some(({typeLabel}) => typeLabel === "Species trait"),
     "source-checked species traits must not vanish because they lack Item documents");
-  assert.ok(grouped.equipmentItems.some(({name}) => name === "Scanner"), "equipment stays in Equipment");
+  assert.ok(grouped.equipmentGroups.some(({items}) => items.some(({name}) => name === "Scanner")),
+    "equipment stays in Equipment");
 });
 
 test("Inventory tab contains separate Equipment and Abilities panels with visible glance values", () => {
@@ -92,12 +121,27 @@ test("Inventory tab contains separate Equipment and Abilities panels with visibl
   const inventory = template.match(/\{\{#if inventory\}\}([\s\S]*?)\{\{\/if\}\}\s*\{\{#if advancement\}\}/)?.[1] ?? "";
   assert.match(inventory, /<h2>Equipment<\/h2>/);
   assert.match(inventory, /<h2>Abilities<\/h2>/);
-  assert.match(inventory, /\{\{#each equipmentItems\}\}/);
+  assert.match(inventory, /\{\{#each equipmentGroups\}\}/);
   assert.match(inventory, /\{\{#each abilityItems\}\}/);
   assert.match(inventory, /\{\{#each ownedAbilityItems\}\}/);
   assert.match(inventory, /\{\{#each chips\}\}/);
   assert.match(inventory, /\{\{detail\}\}/);
-  assert.match(inventory, /data-action="item"/);
+  const render = Handlebars.compile(inventory);
+  const markup = render(inventoryGroups([
+    item("gear", {}, "Repair kit"),
+    item("armor", { equipped: true }, "Protective coat"),
+    { ...item("weapon", {damage: 6}, "Training blaster"), img: "" },
+    item("attachment", {}, "Scope"),
+    item("talent", {}, "Quick Draw"),
+  ]));
+  assert.match(markup, /Weapons[\s\S]*Training blaster[\s\S]*Armour[\s\S]*Protective coat[\s\S]*Tools and gear[\s\S]*Repair kit[\s\S]*Scope[\s\S]*Quick Draw/);
+  assert.match(markup, /<img src="systems\/star-wars-ffg\/assets\/weapon.svg" alt="">/);
+  assert.match(markup, /data-action="skill" data-item="weapon-1">Roll/);
+  assert.match(markup, /data-action="item" data-item="armor-1">Protective coat/);
+  assert.match(markup, /Armor · Equipped/);
+  assert.match(markup, /data-action="removeItem" data-item="attachment-1"/);
+  assert.match(render(inventoryGroups([])), /No equipment recorded yet/);
+  assert.doesNotMatch(render(inventoryGroups([])), /Tools and gear/);
 });
 
 test("theme control keeps its name accessible while revealing the visible label on focus or hover", () => {
