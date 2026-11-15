@@ -139,6 +139,18 @@ export function automaticCheckPool({
   };
 }
 
+/** Build a requested skill pool with source-supplied opposition before native talent effects. */
+export function requestedCheckPool({ characteristic, rank, opposition, boost = 0, setback = 0, talentRules } = {}) {
+  if (!opposition || !["difficulty", "challenge", "setback"].every(key =>
+    Number.isSafeInteger(opposition[key]) && opposition[key] >= 0 && opposition[key] <= 8) ||
+    opposition.difficulty + opposition.challenge > 8)
+    throw new Error("A complete, bounded requested opposition pool is required.");
+  const basePool = normalizePool({ ...skillPool(characteristic, rank, { difficulty: 0, boost, setback }),
+    difficulty: opposition.difficulty, challenge: opposition.challenge,
+    setback: setback + opposition.setback });
+  return { basePool, pool: talentRules ? applyTalentPool(basePool, talentRules) : basePool };
+}
+
 export function adjustPool(pool, die, delta) {
   if (!ROLL_DICE.includes(die))
     throw new Error(`Unknown roll-builder die: ${die}`);

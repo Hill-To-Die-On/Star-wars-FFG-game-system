@@ -21,6 +21,7 @@ import {
   importSwaDialog,
   campaignDialog,
   checkDialog,
+  openRequestedSkillCheck,
 } from "./sheets.mjs";
 import { registerVehicleCrew, crewApi } from "./vehicle-crew-foundry.mjs";
 import { registerDice, registerDiceSoNice, rollPool } from "./dice/foundry.mjs";
@@ -481,6 +482,7 @@ Hooks.once("init", () => {
     restricted: true,
   });
   game.system.api = Object.freeze({
+    openRequestedSkillCheck,
     rollPool,
     importLibrary,
     actorContext,

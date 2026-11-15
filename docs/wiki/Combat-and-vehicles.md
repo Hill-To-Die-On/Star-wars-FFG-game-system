@@ -29,5 +29,6 @@ Native levels and elevation support vertical relationships where the scene geome
 ## Minions and turns
 
 Linked minions share group ranks, wounds and turn handling; defeated members leave the active connection and rejoin when restored. Check group membership before applying damage.
+In the 0.5.3 Beta, open **Combat resolution** on a targeted native roll to review the saved target. For an unlinked token, open its scene to review and confirm that exact token.
 
 The GM chooses whether players may manually manage action/manoeuvre indicators. Automatic spending applies to supported committed checks and drags, not every possible movement API. Extra manoeuvres remain subject to cost and limits.
